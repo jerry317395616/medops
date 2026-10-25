@@ -12,12 +12,12 @@
 		"new_frappe_tests_defined": 20,
 		"isolated_domain_suite": "c70e338:20 budget service/HTTP tests passed; final312 full and protected checks pending",
 		"full_integration": {
-			"commit": "9c098b8484346cb00c8232c858dfaf6c132b6f67",
-			"fresh_site": "cod031-9c098b8.localhost",
-			"passed": 310,
+			"commit": "02399a3af86b3e095639d3a6a587817fccec4fd0",
+			"fresh_site": "cod031-02399a3.localhost",
+			"passed": 312,
 			"repeat_migrations": 2,
 			"budget_dual_process_races": 5,
-			"final_312": "pending"
+			"final_permission_order": "pending"
 		},
 		"api_and_ui": "Browser passed create08,12period exact100000.01 save/reload,freeze08,clone10,funding-source maintenance and actual CSV download with12rows totaling100000.01.",
 		"protected_ci": {
@@ -26,7 +26,8 @@
 			"final_candidate": "pending"
 		},
 		"secret_scanning": "Exact API-route false positives removed from unreleased feature history; complete backup retained; fresh full history117commits and current tree zero findings; no scanner exceptions added.",
-		"reference_rename_snapshot": "c70e338:20 budget tests passed. Old1c75de5 reached native DB conflict after missing new reference; source fences/current reads now return controlled409 and a fresh retry denies referenced rename."
+		"reference_rename_snapshot": "c70e338:20 budget tests passed. Old1c75de5 reached native DB conflict after missing new reference; source fences/current reads now return controlled409 and a fresh retry denies referenced rename.",
+		"native_rename_permission_order": "78c3c36 regression reproduced missing native source write check before reference inspection; repaired candidate awaiting repeat suite and protected CI."
 	},
 	"prior_base": {
 		"commit": "72af62556e2ec42b899748742de7a9c9d2ede0d2",

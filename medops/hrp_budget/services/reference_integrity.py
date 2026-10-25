@@ -31,6 +31,9 @@ def protect_reference_rename(doc, method=None, *args, **kwargs):
 	references = REFERENCES.get(doc.doctype)
 	if not references:
 		return
+	# The legacy native RPC invokes before_rename before validate_rename checks
+	# permissions. Do not inspect HRP references or acquire their locks first.
+	doc.check_permission("write")
 	# Share the source fence with planning/master-data writers. Native rename
 	# loaded doc through a consistent read before this hook; both the source
 	# and reference lookups must be current reads after a possible lock wait.
