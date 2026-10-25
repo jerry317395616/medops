@@ -262,18 +262,23 @@ def notify_current_task(case_name: str, todo_name: str, kind: str) -> bool:
 		return False
 	if not _readable(_source(case), todo.allocated_to):
 		return False
+	email = frappe.db.get_value("User", todo.allocated_to, "email")
+	if not email:
+		return False
 	make_notification_logs(
-		{
-			"type": "Alert",
-			"subject": f"服务时限超时：第 {int(case.get(kind + '_level') or 0)} 级",
-			"document_type": case.reference_doctype,
-			"document_name": case.reference_name,
-			"from_user": todo.assigned_by,
-			"email_content": "请打开业务单据查看待处理事项。",
-			"link": f"/desk/todo/{todo_name}",
-			"dedupe_on": ["for_user", "link"],
-		},
-		[todo.allocated_to],
+		frappe._dict(
+			{
+				"type": "Alert",
+				"subject": f"服务时限超时：第 {int(case.get(kind + '_level') or 0)} 级",
+				"document_type": case.reference_doctype,
+				"document_name": case.reference_name,
+				"from_user": todo.assigned_by,
+				"email_content": "请打开业务单据查看待处理事项。",
+				"link": f"/desk/todo/{todo_name}",
+				"dedupe_on": ["link"],
+			}
+		),
+		[email],
 	)
 	return True
 
