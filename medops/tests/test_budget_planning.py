@@ -289,6 +289,49 @@ class TestBudgetPlanningServices(IntegrationTestCase):
 		self.assertEqual([row["amount"] for row in spread].count("0.000000001"), 1)
 		self.assertEqual(before, {dt: frappe.db.count(dt) for dt in before})
 
+	def test_native_short_fiscal_year_clamps_month_edges_and_conserves_allocation(self):
+		short = frappe.get_doc(
+			{
+				"doctype": "Fiscal Year",
+				"year": "COD031-SHORT-2027",
+				"is_short_year": 1,
+				"year_start_date": "2027-02-10",
+				"year_end_date": "2027-04-09",
+				"companies": [{"company": COMPANY}],
+			}
+		).insert(ignore_permissions=True)
+		version = save_budget_version(
+			build_version(
+				{
+					"company": COMPANY,
+					"hospital": HOSPITAL,
+					"organization_version": self.org,
+					"fiscal_year": short.name,
+					"subject": "月中起止短年度",
+				}
+			),
+			idempotency_key=key("short-year"),
+		)
+		periods = read_budget("version", version["name"])["periods"]
+		self.assertEqual(
+			[(x["period_start"], x["period_end"]) for x in periods],
+			[
+				("2027-02-10", "2027-02-28"),
+				("2027-03-01", "2027-03-31"),
+				("2027-04-01", "2027-04-09"),
+			],
+		)
+		self.assertEqual(
+			[x["amount"] for x in spread_budget_amount(version["name"], "0.02")], ["0.01", "0.01", "0.00"]
+		)
+		command = plan_command(version["name"], self.unit, self.value["name"], self.fund["name"])
+		with self.assertRaises(IoneApplicationError):
+			save_budget_plan(
+				replace(command, lines=(replace(command.lines[0], period_index=4),)),
+				idempotency_key=key("short-year-outside"),
+			)
+		self.assertEqual(frappe.db.count(PLAN, {"budget_version": version["name"]}), 0)
+
 	def test_freeze_clone_and_old_financial_inputs_are_immutable(self):
 		version, command, result = self.new_plan("0.30")
 		previous_number = get_version(version["name"]).version_number

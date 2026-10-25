@@ -9,7 +9,7 @@
 	],
 	"checks": {
 		"pure_tests_last_passed": 331,
-		"new_frappe_tests_defined": 17,
+		"new_frappe_tests_defined": 18,
 		"isolated_domain_suite": "0ce114c:17 budget+20business rules+5governance passed",
 		"full_integration": {
 			"commit": "0ce114cef008935a945c6736923cdc4aafd76a28",
