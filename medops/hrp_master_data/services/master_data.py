@@ -28,6 +28,7 @@ from medops.hrp_master_data.doctype.hrp_master_data_domain.hrp_master_data_domai
 from medops.hrp_master_data.doctype.hrp_master_data_request.hrp_master_data_request import (
 	HRPMasterDataRequest,
 )
+from medops.hrp_workflow_authorization.services.business_rules import enforce_business_rules, lock_rule_scope
 from medops.services.audit_context import emit_audit_event, service_audit_scope
 from medops.services.domain_service import DomainService
 from medops.services.errors import (
@@ -578,8 +579,6 @@ class SubmitMasterDataRequestService(DomainService[MasterDataRequestSubmit]):
 	def validate(self, command: MasterDataRequestSubmit) -> None:
 		request = _get_request(command.request_name)
 		_assert_request_owner(request)
-		if request.docstatus != 0 or request.request_status != "Draft":
-			raise_ione_error("INVALID_STATE_TRANSITION")
 
 	def perform(self, command: MasterDataRequestSubmit) -> dict[str, object]:
 		current_revision = HRPMasterDataRequest.lock_revision(
@@ -591,6 +590,7 @@ class SubmitMasterDataRequestService(DomainService[MasterDataRequestSubmit]):
 		if request.docstatus != 0 or request.request_status != "Draft":
 			raise_ione_error("INVALID_STATE_TRANSITION")
 		domain = _get_domain(request.master_data_domain)
+		lock_rule_scope(request)
 		_assert_proposal_current(request, domain=domain)
 		if request.target_name:
 			pending = frappe.db.sql(
@@ -609,6 +609,7 @@ class SubmitMasterDataRequestService(DomainService[MasterDataRequestSubmit]):
 			)
 			if pending:
 				raise_ione_error("CONFLICT")
+		enforce_business_rules(request, "submit", required=False)
 		request.request_status = "Pending Review"
 		request.submitted_at = now_datetime()
 		request.flags.master_data_service_write = True

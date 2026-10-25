@@ -1580,3 +1580,87 @@
   audit: Redacted state revision and digest
   version: v1
   domain_group: Core
+- api_code: CORE-038
+  app: medops
+  method: POST
+  path: /api/method/medops.api.v1.core.rules.upsert
+  description: 保存业务规则
+  request_schema: policy,expected_revision
+  response_schema: name,revision,policy_digest,policy,correlation_id,request_id,idempotency_replayed
+  required_role: System Manager or HRP System Manager
+  idempotency: Required for write
+  transaction_boundary: Single DB transaction
+  audit: Redacted policy digest counts and outcome
+  version: v1
+  domain_group: Core
+  async: 'No'
+- api_code: CORE-039
+  app: medops
+  method: GET
+  path: /api/method/medops.api.v1.core.rules.get
+  description: 查看业务规则配置
+  request_schema: rule_name
+  response_schema: name,policy,revision,policy_digest
+  required_role: System Manager or HRP System Manager or HRP Auditor
+  idempotency: Not required (read-only)
+  transaction_boundary: Read-only
+  audit: Redacted policy digest counts and outcome
+  version: v1
+  domain_group: Core
+  async: 'No'
+- api_code: CORE-040
+  app: medops
+  method: POST
+  path: /api/method/medops.api.v1.core.rules.evaluate
+  description: 实时业务规则试算
+  request_schema: doctype,name,action
+  response_schema: schema_version,reference_doctype,reference_name,source_modified,target_action,configured,allowed,outcome,rules_evaluated,rules,source_digest,rule_set_digest,decision_digest,correlation_id,request_id,idempotency_replayed
+  required_role: Authenticated role with source scope and field read permissions
+  idempotency: Not required (read-only)
+  transaction_boundary: Read-only
+  audit: Redacted policy digest counts and outcome
+  version: v1
+  domain_group: Core
+  async: 'No'
+- api_code: CORE-041
+  app: medops
+  method: POST
+  path: /api/method/medops.api.v1.core.rules.record
+  description: 留存历史验证证据
+  request_schema: doctype,name,action,expected_source_modified,expected_decision_digest
+  response_schema: log,historical_evidence_only,correlation_id,request_id,idempotency_replayed
+  required_role: Authenticated role with source scope and field read permissions
+  idempotency: Required for write
+  transaction_boundary: Single DB transaction
+  audit: Redacted policy digest counts and outcome
+  version: v1
+  domain_group: Core
+  async: 'No'
+- api_code: CORE-042
+  app: medops
+  method: GET
+  path: /api/method/medops.api.v1.core.rules.execution_log
+  description: 读取历史验证证据
+  request_schema: log_name
+  response_schema: name,reference_doctype,reference_name,source_modified,target_action,evaluated_at,purpose,recorded_outcome,decision_digest,rules,historical_evidence_only
+  required_role: Authenticated role with current source and field read permissions
+  idempotency: Not required (read-only)
+  transaction_boundary: Read-only
+  audit: Redacted policy digest counts and outcome
+  version: v1
+  domain_group: Core
+  async: 'No'
+- api_code: CORE-043
+  app: medops
+  method: GET
+  path: /api/method/medops.api.v1.core.rules.logs
+  description: 按源权限查询历史验证记录
+  request_schema: offset,limit,doctype,name
+  response_schema: items,next_offset
+  required_role: Authenticated role with source scope and field read permissions
+  idempotency: Not required (read-only)
+  transaction_boundary: Read-only
+  audit: Redacted policy digest counts and outcome
+  version: v1
+  domain_group: Core
+  async: 'No'

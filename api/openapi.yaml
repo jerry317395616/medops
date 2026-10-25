@@ -5798,6 +5798,367 @@ paths:
         schema:
           type: integer
           minimum: 1
+  /api/method/medops.api.v1.core.rules.upsert:
+    post:
+      operationId: core_038
+      summary: 保存业务规则
+      tags:
+      - medops
+      security:
+      - tokenAuth: []
+      responses:
+        '200':
+          description: Current preview or historical evidence according to endpoint
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                - message
+                properties:
+                  message:
+                    type: object
+        '400':
+          description: Invalid declarative input
+        '401':
+          description: Authentication required
+        '403':
+          description: Source scope or field permission denied
+        '404':
+          description: Source or policy not found
+        '409':
+          description: Snapshot or revision conflict
+        '508':
+          description: Retry entire transaction with the same idempotency key
+      x-api-code: CORE-038
+      x-required-role: System Manager or HRP System Manager
+      x-transaction-boundary: Single DB transaction
+      x-idempotency: Required for write
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required:
+              - policy
+              properties:
+                policy:
+                  type: object
+                  description: Closed declarative policy; when_json and assertion_json use bounded all/any, scalar or child-table predicates. No scripts.
+                expected_revision:
+                  type: integer
+                  minimum: 0
+      parameters:
+      - in: header
+        name: Idempotency-Key
+        required: true
+        schema:
+          type: string
+          minLength: 8
+          maxLength: 140
+  /api/method/medops.api.v1.core.rules.get:
+    get:
+      operationId: core_039
+      summary: 查看业务规则配置
+      tags:
+      - medops
+      security:
+      - tokenAuth: []
+      responses:
+        '200':
+          description: Current preview or historical evidence according to endpoint
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                - message
+                properties:
+                  message:
+                    type: object
+        '400':
+          description: Invalid declarative input
+        '401':
+          description: Authentication required
+        '403':
+          description: Source scope or field permission denied
+        '404':
+          description: Source or policy not found
+        '409':
+          description: Snapshot or revision conflict
+        '508':
+          description: Retry entire transaction with the same idempotency key
+      x-api-code: CORE-039
+      x-required-role: System Manager or HRP System Manager or HRP Auditor
+      x-transaction-boundary: Read-only
+      x-idempotency: Not required (read-only)
+      parameters:
+      - in: query
+        name: rule_name
+        required: true
+        schema:
+          type: string
+          maxLength: 140
+  /api/method/medops.api.v1.core.rules.evaluate:
+    post:
+      operationId: core_040
+      summary: 实时业务规则试算
+      tags:
+      - medops
+      security:
+      - tokenAuth: []
+      responses:
+        '200':
+          description: Current preview or historical evidence according to endpoint
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                - message
+                properties:
+                  message:
+                    type: object
+        '400':
+          description: Invalid declarative input
+        '401':
+          description: Authentication required
+        '403':
+          description: Source scope or field permission denied
+        '404':
+          description: Source or policy not found
+        '409':
+          description: Snapshot or revision conflict
+        '508':
+          description: Retry entire transaction with the same idempotency key
+      x-api-code: CORE-040
+      x-required-role: Authenticated role with source scope and field read permissions
+      x-transaction-boundary: Read-only
+      x-idempotency: Not required (read-only)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required:
+              - doctype
+              - name
+              - action
+              properties:
+                doctype:
+                  type: string
+                  maxLength: 140
+                name:
+                  type: string
+                  maxLength: 140
+                action:
+                  type: string
+                  enum:
+                  - validate
+                  - amend
+                  - approve
+                  - cancel
+                  - create
+                  - pay
+                  - post
+                  - reconcile
+                  - release
+                  - review
+                  - submit
+  /api/method/medops.api.v1.core.rules.record:
+    post:
+      operationId: core_041
+      summary: 留存历史验证证据
+      tags:
+      - medops
+      security:
+      - tokenAuth: []
+      responses:
+        '200':
+          description: Current preview or historical evidence according to endpoint
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                - message
+                properties:
+                  message:
+                    type: object
+        '400':
+          description: Invalid declarative input
+        '401':
+          description: Authentication required
+        '403':
+          description: Source scope or field permission denied
+        '404':
+          description: Source or policy not found
+        '409':
+          description: Snapshot or revision conflict
+        '508':
+          description: Retry entire transaction with the same idempotency key
+      x-api-code: CORE-041
+      x-required-role: Authenticated role with source scope and field read permissions
+      x-transaction-boundary: Single DB transaction
+      x-idempotency: Required for write
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required:
+              - doctype
+              - name
+              - action
+              - expected_source_modified
+              - expected_decision_digest
+              properties:
+                doctype:
+                  type: string
+                  maxLength: 140
+                name:
+                  type: string
+                  maxLength: 140
+                action:
+                  type: string
+                  enum:
+                  - validate
+                  - amend
+                  - approve
+                  - cancel
+                  - create
+                  - pay
+                  - post
+                  - reconcile
+                  - release
+                  - review
+                  - submit
+                expected_source_modified:
+                  type: string
+                  maxLength: 140
+                expected_decision_digest:
+                  type: string
+                  pattern: ^[0-9a-f]{64}$
+      parameters:
+      - in: header
+        name: Idempotency-Key
+        required: true
+        schema:
+          type: string
+          minLength: 8
+          maxLength: 140
+  /api/method/medops.api.v1.core.rules.execution_log:
+    get:
+      operationId: core_042
+      summary: 读取历史验证证据
+      tags:
+      - medops
+      security:
+      - tokenAuth: []
+      responses:
+        '200':
+          description: Current preview or historical evidence according to endpoint
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                - message
+                properties:
+                  message:
+                    type: object
+        '400':
+          description: Invalid declarative input
+        '401':
+          description: Authentication required
+        '403':
+          description: Source scope or field permission denied
+        '404':
+          description: Source or policy not found
+        '409':
+          description: Snapshot or revision conflict
+        '508':
+          description: Retry entire transaction with the same idempotency key
+      x-api-code: CORE-042
+      x-required-role: Authenticated role with current source and field read permissions
+      x-transaction-boundary: Read-only
+      x-idempotency: Not required (read-only)
+      parameters:
+      - in: query
+        name: log_name
+        required: true
+        schema:
+          type: string
+          maxLength: 140
+  /api/method/medops.api.v1.core.rules.logs:
+    get:
+      operationId: core_043
+      summary: 按源权限查询历史验证记录
+      tags:
+      - medops
+      security:
+      - tokenAuth: []
+      responses:
+        '200':
+          description: Current preview or historical evidence according to endpoint
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                - message
+                properties:
+                  message:
+                    type: object
+        '400':
+          description: Invalid declarative input
+        '401':
+          description: Authentication required
+        '403':
+          description: Source scope or field permission denied
+        '404':
+          description: Source or policy not found
+        '409':
+          description: Snapshot or revision conflict
+        '508':
+          description: Retry entire transaction with the same idempotency key
+      x-api-code: CORE-043
+      x-required-role: Authenticated role with source scope and field read permissions
+      x-transaction-boundary: Read-only
+      x-idempotency: Not required (read-only)
+      parameters:
+      - in: query
+        name: offset
+        required: false
+        schema:
+          type: integer
+          minimum: 0
+          maximum: 10000
+      - in: query
+        name: limit
+        required: false
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 50
+      - in: query
+        name: doctype
+        required: false
+        schema:
+          type: string
+          maxLength: 140
+      - in: query
+        name: name
+        required: false
+        schema:
+          type: string
+          maxLength: 140
 components:
   headers:
     CorrelationId:

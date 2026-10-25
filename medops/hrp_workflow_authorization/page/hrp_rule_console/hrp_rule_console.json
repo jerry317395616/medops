@@ -1,0 +1,16 @@
+{
+	"doctype": "Page",
+	"name": "hrp-rule-console",
+	"page_name": "hrp-rule-console",
+	"title": "业务规则验证",
+	"module": "HRP Workflow Authorization",
+	"standard": "Yes",
+	"system_page": 0,
+	"roles": [
+		{ "role": "System Manager" },
+		{ "role": "HRP System Manager" },
+		{ "role": "HRP Data Steward" },
+		{ "role": "HRP User" },
+		{ "role": "HRP Auditor" }
+	]
+}

@@ -1,7 +1,7 @@
 {
 	"app": "medops",
 	"charts": [],
-	"content": "[{\"id\":\"authorization-header\",\"type\":\"header\",\"data\":{\"text\":\"权限与授权\",\"col\":12}},{\"id\":\"access-scope-shortcut\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"访问范围\",\"col\":3}},{\"id\":\"approval-matrix-shortcut\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"审批矩阵\",\"col\":3}},{\"id\":\"segregation-rule-shortcut\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"职责分离规则\",\"col\":3}},{\"id\":\"delegation-shortcut\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"审批委托\",\"col\":3}},{\"id\":\"delegation-report-shortcut\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"委托与超期清单\",\"col\":3}},{\"id\":\"sla-HRP SLA Policy\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"服务时限策略\",\"col\":3}},{\"id\":\"sla-hrp-sla-console\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"服务时限与超时待办\",\"col\":3}}]",
+	"content": "[{\"id\":\"authorization-header\",\"type\":\"header\",\"data\":{\"text\":\"权限与授权\",\"col\":12}},{\"id\":\"access-scope-shortcut\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"访问范围\",\"col\":3}},{\"id\":\"approval-matrix-shortcut\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"审批矩阵\",\"col\":3}},{\"id\":\"segregation-rule-shortcut\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"职责分离规则\",\"col\":3}},{\"id\":\"delegation-shortcut\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"审批委托\",\"col\":3}},{\"id\":\"delegation-report-shortcut\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"委托与超期清单\",\"col\":3}},{\"id\":\"sla-HRP SLA Policy\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"服务时限策略\",\"col\":3}},{\"id\":\"sla-hrp-sla-console\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"服务时限与超时待办\",\"col\":3}},{\"id\":\"rules-HRP Business Rule\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"业务规则\",\"col\":3}},{\"id\":\"rules-hrp-rule-console\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"规则验证与记录\",\"col\":3}}]",
 	"creation": "2026-08-12 00:00:00.000000",
 	"custom_blocks": [],
 	"docstatus": 0,
@@ -101,6 +101,24 @@
 			"link_type": "Page",
 			"onboard": 0,
 			"type": "Link"
+		},
+		{
+			"hidden": 0,
+			"is_query_report": 0,
+			"label": "业务规则",
+			"link_to": "HRP Business Rule",
+			"link_type": "DocType",
+			"onboard": 0,
+			"type": "Link"
+		},
+		{
+			"hidden": 0,
+			"is_query_report": 0,
+			"label": "规则验证与记录",
+			"link_to": "hrp-rule-console",
+			"link_type": "Page",
+			"onboard": 0,
+			"type": "Link"
 		}
 	],
 	"modified": "2026-08-13 00:00:00.000000",
@@ -169,6 +187,20 @@
 			"doc_view": "",
 			"label": "服务时限与超时待办",
 			"link_to": "hrp-sla-console",
+			"type": "Page"
+		},
+		{
+			"color": "Grey",
+			"doc_view": "List",
+			"label": "业务规则",
+			"link_to": "HRP Business Rule",
+			"type": "DocType"
+		},
+		{
+			"color": "Grey",
+			"doc_view": "",
+			"label": "规则验证与记录",
+			"link_to": "hrp-rule-console",
 			"type": "Page"
 		}
 	],

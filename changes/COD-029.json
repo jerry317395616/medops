@@ -1,0 +1,65 @@
+{
+	"schema_version": 1,
+	"task_id": "COD-029",
+	"title": "实现业务规则引擎",
+	"status": "Implemented",
+	"risk_level": "critical",
+	"change_types": [
+		"application",
+		"architecture",
+		"configuration",
+		"data",
+		"documentation",
+		"security"
+	],
+	"affected_modules": [
+		"HRP Workflow Authorization",
+		"HRP Master Data",
+		"HRP Foundation"
+	],
+	"breaking_change": false,
+	"adr_ids": [
+		"ADR-0025"
+	],
+	"path_globs": [
+		"README.md",
+		"DELIVERY_MANIFEST.json",
+		"VALIDATION_REPORT.json",
+		"SHA256SUMS.txt",
+		"api/**",
+		"architecture/business_rules.md",
+		"architecture/production_readiness.md",
+		"architecture/adr/ADR-0025-declarative-business-rule-evidence.md",
+		"backlog/**",
+		"changes/COD-029.json",
+		"design/**",
+		"doctype_blueprints/hrp_workflow_authorization/hrp_business_rule.json",
+		"doctype_blueprints/hrp_workflow_authorization/hrp_rule_execution_log.json",
+		"medops/api/v1/core/rules.py",
+		"medops/common/business_rules.py",
+		"medops/hrp_workflow_authorization/**",
+		"medops/hrp_master_data/services/master_data.py",
+		"medops/hrp_master_data/tests/test_business_rule_bridge.py",
+		"medops/hrp_foundation/tests/test_change_governance.py",
+		"medops/setup/**",
+		"medops/hooks.py",
+		"scripts/repository_contract.py",
+		"tests/**"
+	],
+	"permissions_impact": "管理员维护策略，审计员只读配置；试算和证据必须同时满足源单据、组织范围、字段及遮罩权限；通用日志列表仅超级用户，其他角色使用逐条范围接口。",
+	"migration_impact": "新增规则与只追加证据模型、三个索引及入口；无策略种子，无历史源扫描或业务数据重算。",
+	"rollback_plan": "备份隔离Site；暂停本项目队列及调度后回退应用代码，保留规则和历史证据；业务更正仍走标准取消流程。",
+	"security_impact": "有限JSON条件与类型契约，无脚本/SQL/表达式；实时判断不缓存，幂等证据只返回历史记录标识；按源与字段权限保护推断通道，日志不存原文；共享配置锁防止校验时更改规则。",
+	"test_plan": [
+		"声明式树、Decimal、字段与日期比较、明细、复杂度与默认拒绝",
+		"规则幂等、修订及元数据漂移",
+		"源/组织/字段/遮罩权限与历史证据保护",
+		"实时试算不重放，源或策略变化拒绝过时快照",
+		"真实主数据提交阻断、警示、回滚和原键重试",
+		"HTTP认证、输入、读取及写入幂等",
+		"完整质量与受保护CI、独立Bench并发、重复迁移及隔离发布"
+	],
+	"owner": "MedOps Maintainers",
+	"created_on": "2026-10-25",
+	"updated_on": "2026-10-25"
+}

@@ -123,6 +123,16 @@ SQL、Python 或任意表达式，首个预留产生后不能改变方案格式�
 helper；完整模型、安全、迁移和回滚规则见 `architecture/access_scope.md` 与
 `architecture/adr/ADR-0018-fail-closed-organization-access-scopes.md`。
 
+## 业务规则与验证记录
+
+`HRP Business Rule` 在真实单据及组织范围内执行字段、日期、金额、条件组合和明细约束，
+使用受限 JSON 条件及冻结字段契约。`CORE-038` 至 `CORE-043` 提供修订配置、实时试算、
+只追加证据及可见记录查询；“权限与授权”工作区提供配置表单和“业务规则验证”页面。
+
+主数据申请提交已接入：阻断条件失败时回滚提交，提醒条件通过后保留同事务证据。
+实时判断同时检查源单据、数据范围、字段及遮罩权限；历史记录只作证据，不能重放为当前
+业务授权。完整语义、上限、接口与回滚方法见 `architecture/business_rules.md`。
+
 ## 非生产环境
 
 ```bash

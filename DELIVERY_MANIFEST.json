@@ -7,16 +7,16 @@
 		"custom_apps": 1,
 		"modules": 36,
 		"design_doctypes": 400,
-		"design_fields": 10064,
+		"design_fields": 10074,
 		"doctype_blueprints": 400,
-		"starter_doctypes": 24,
-		"repository_contract_tests": 301,
-		"frappe_integration_tests": 232,
+		"starter_doctypes": 26,
+		"repository_contract_tests": 310,
+		"frappe_integration_tests": 254,
 		"environment_profiles": 3,
 		"fixture_rules": 3,
 		"fixture_files": 3,
-		"architecture_decisions": 24,
-		"change_records": 29,
+		"architecture_decisions": 25,
+		"change_records": 30,
 		"change_risk_rules": 5,
 		"error_definitions": 12,
 		"error_translations": 28
@@ -156,6 +156,12 @@
 		"architecture/sla.md",
 		"architecture/adr/ADR-0023-frozen-sla-cycles.md",
 		"backlog/COD-028.md",
-		"architecture/adr/ADR-0024-database-conflict-job-boundaries.md"
+		"architecture/adr/ADR-0024-database-conflict-job-boundaries.md",
+		"architecture/business_rules.md",
+		"architecture/adr/ADR-0025-declarative-business-rule-evidence.md",
+		"backlog/COD-029.md",
+		"medops/common/business_rules.py",
+		"medops/api/v1/core/rules.py",
+		"medops/setup/business_rules.py"
 	]
 }
