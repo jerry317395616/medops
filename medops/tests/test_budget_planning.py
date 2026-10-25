@@ -405,7 +405,7 @@ class TestBudgetPlanningServices(IntegrationTestCase):
 				"Primary must still have the old snapshot",
 			)
 			with self.assertRaises(IoneApplicationError):
-				frappe.rename_doc("Account", account.name, "COD031-Renamed-" + token + " - C031")
+				frappe.rename_doc("Account", account.name, "COD031-Renamed-" + token + " - C031", force=True)
 		finally:
 			frappe.local.db = primary
 			primary.rollback()
