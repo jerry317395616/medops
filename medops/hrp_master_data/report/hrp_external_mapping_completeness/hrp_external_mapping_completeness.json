@@ -1,0 +1,34 @@
+{
+	"doctype": "Report",
+	"name": "HRP External Mapping Completeness",
+	"report_name": "HRP External Mapping Completeness",
+	"module": "HRP Master Data",
+	"ref_doctype": "HRP Reference Link",
+	"report_type": "Script Report",
+	"is_standard": "Yes",
+	"disabled": 0,
+	"prepared_report": 0,
+	"add_total_row": 0,
+	"columns": [],
+	"filters": [],
+	"roles": [
+		{
+			"role": "System Manager"
+		},
+		{
+			"role": "HRP System Manager"
+		},
+		{
+			"role": "HRP Data Steward"
+		},
+		{
+			"role": "HRP User"
+		},
+		{
+			"role": "HRP Auditor"
+		},
+		{
+			"role": "HRP Integration User"
+		}
+	]
+}

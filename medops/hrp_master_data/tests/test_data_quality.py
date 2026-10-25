@@ -541,7 +541,7 @@ class TestDataQuality(IntegrationTestCase):
 		targets = [frappe._dict(name=f"COD022-BATCH-{index:03}") for index in range(DATA_QUALITY_BATCH_SIZE)]
 		with (
 			patch(
-				"medops.hrp_master_data.services.data_quality.frappe.get_list",
+				"medops.hrp_foundation.services.reference_links.scheduled_population",
 				return_value=targets,
 			),
 			patch(

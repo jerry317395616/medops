@@ -19,6 +19,7 @@ from scripts.repository_contract import (
 	validate_branch_policy,
 	validate_change_governance,
 	validate_ci_pipeline,
+	validate_core_reports_contract,
 	validate_data_quality_contract,
 	validate_domain_service_contract,
 	validate_environment_profiles,
@@ -44,6 +45,20 @@ ROOT = Path(__file__).resolve().parents[1]
 
 
 class RepositoryContractTest(unittest.TestCase):
+	def test_prepared_core_report_is_rejected_by_contract(self) -> None:
+		with tempfile.TemporaryDirectory() as temp:
+			root = Path(temp)
+			path = Path(
+				"medops/hrp_master_data/report/hrp_data_quality_issue_trend/hrp_data_quality_issue_trend.json"
+			)
+			metadata = json.loads((ROOT / path).read_text(encoding="utf-8"))
+			metadata["prepared_report"] = 1
+			(root / path).parent.mkdir(parents=True)
+			(root / path).write_text(json.dumps(metadata), encoding="utf-8")
+			self.assertIn(
+				"core report must execute live reviewed source: RPT-006", validate_core_reports_contract(root)
+			)
+
 	def test_current_repository_satisfies_contract(self) -> None:
 		self.assertEqual(collect_violations(ROOT), [])
 

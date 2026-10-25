@@ -465,6 +465,7 @@ def _stored_nodes(organization_version: str) -> tuple[OrganizationNode, ...]:
 			"remarks",
 		],
 		order_by="lft asc",
+		limit_page_length=0,
 	)
 	code_by_name = {row.name: row.code for row in rows}
 	payload = [
@@ -614,6 +615,7 @@ def _public_nodes(organization_version: str) -> list[dict[str, object]]:
 			"remarks",
 		],
 		order_by="lft asc",
+		limit_page_length=0,
 	)
 	code_by_name = {row.name: row.code for row in rows}
 	stack: list[int] = []

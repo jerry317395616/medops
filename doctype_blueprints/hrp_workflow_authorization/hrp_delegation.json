@@ -1,210 +1,296 @@
 {
-	"actions": [],
-	"allow_rename": 0,
-	"autoname": "format:DLG-.YYYY.-.#####",
-	"creation": "2026-08-13 00:00:00.000000",
-	"description": "将审批矩阵中的特定审批责任在受控有效期内委托给具备同等基础权限和组织范围的系统用户。",
-	"doctype": "DocType",
-	"engine": "InnoDB",
-	"field_order": [
-		"delegation_section",
-		"matrix",
-		"matrix_revision",
-		"matrix_digest",
-		"target_doctype",
-		"scope_section",
-		"company",
-		"hospital",
-		"organization_unit",
-		"include_descendants",
-		"principal_section",
-		"from_user",
-		"to_user",
-		"step_sequence",
-		"validity_section",
-		"valid_from",
-		"valid_to",
-		"status",
-		"reason",
-		"control_section",
-		"policy_digest",
-		"revoked_at",
-		"revoked_by",
-		"revocation_reason",
-		"expired_at"
-	],
-	"fields": [
-		{ "fieldname": "delegation_section", "fieldtype": "Section Break", "label": "审批委托" },
-		{
-			"fieldname": "matrix",
-			"fieldtype": "Link",
-			"in_list_view": 1,
-			"label": "审批矩阵",
-			"options": "HRP Approval Matrix",
-			"read_only": 1,
-			"reqd": 1,
-			"search_index": 1
-		},
-		{ "fieldname": "matrix_revision", "fieldtype": "Int", "label": "矩阵修订号", "read_only": 1, "reqd": 1 },
-		{ "fieldname": "matrix_digest", "fieldtype": "Data", "label": "矩阵策略摘要", "read_only": 1, "reqd": 1 },
-		{
-			"fieldname": "target_doctype",
-			"fieldtype": "Link",
-			"label": "适用单据类型",
-			"options": "DocType",
-			"read_only": 1,
-			"reqd": 1,
-			"search_index": 1
-		},
-		{ "fieldname": "scope_section", "fieldtype": "Section Break", "label": "组织范围" },
-		{
-			"fieldname": "company",
-			"fieldtype": "Link",
-			"in_list_view": 1,
-			"label": "法人",
-			"options": "Company",
-			"read_only": 1,
-			"reqd": 1,
-			"search_index": 1
-		},
-		{
-			"fieldname": "hospital",
-			"fieldtype": "Link",
-			"label": "医院",
-			"options": "HRP Hospital",
-			"read_only": 1,
-			"reqd": 1,
-			"search_index": 1
-		},
-		{
-			"fieldname": "organization_unit",
-			"fieldtype": "Link",
-			"label": "组织单元",
-			"options": "HRP Organization Unit",
-			"read_only": 1,
-			"search_index": 1
-		},
-		{
-			"default": "0",
-			"fieldname": "include_descendants",
-			"fieldtype": "Check",
-			"label": "包含下级组织",
-			"read_only": 1
-		},
-		{ "fieldname": "principal_section", "fieldtype": "Section Break", "label": "委托双方" },
-		{
-			"fieldname": "from_user",
-			"fieldtype": "Link",
-			"in_list_view": 1,
-			"label": "委托人",
-			"options": "User",
-			"read_only": 1,
-			"reqd": 1,
-			"search_index": 1
-		},
-		{
-			"fieldname": "to_user",
-			"fieldtype": "Link",
-			"in_list_view": 1,
-			"label": "受托人",
-			"options": "User",
-			"read_only": 1,
-			"reqd": 1,
-			"search_index": 1
-		},
-		{
-			"description": "留空表示委托该矩阵中的全部本人审批步骤。",
-			"fieldname": "step_sequence",
-			"fieldtype": "Int",
-			"label": "限定审批步骤",
-			"read_only": 1,
-			"search_index": 1
-		},
-		{ "fieldname": "validity_section", "fieldtype": "Section Break", "label": "有效期" },
-		{
-			"fieldname": "valid_from",
-			"fieldtype": "Date",
-			"in_list_view": 1,
-			"label": "开始日期",
-			"read_only": 1,
-			"reqd": 1,
-			"search_index": 1
-		},
-		{
-			"fieldname": "valid_to",
-			"fieldtype": "Date",
-			"in_list_view": 1,
-			"label": "结束日期",
-			"read_only": 1,
-			"reqd": 1,
-			"search_index": 1
-		},
-		{
-			"fieldname": "status",
-			"fieldtype": "Select",
-			"in_list_view": 1,
-			"label": "状态",
-			"options": "Scheduled\nActive\nRevoked\nExpired",
-			"read_only": 1,
-			"reqd": 1,
-			"search_index": 1
-		},
-		{ "fieldname": "reason", "fieldtype": "Small Text", "label": "委托原因", "read_only": 1 },
-		{ "fieldname": "control_section", "fieldtype": "Section Break", "label": "控制信息" },
-		{
-			"fieldname": "policy_digest",
-			"fieldtype": "Data",
-			"label": "委托策略摘要",
-			"no_copy": 1,
-			"read_only": 1,
-			"reqd": 1
-		},
-		{ "fieldname": "revoked_at", "fieldtype": "Datetime", "label": "撤销时间", "no_copy": 1, "read_only": 1 },
-		{
-			"fieldname": "revoked_by",
-			"fieldtype": "Link",
-			"label": "撤销人",
-			"no_copy": 1,
-			"options": "User",
-			"read_only": 1
-		},
-		{
-			"fieldname": "revocation_reason",
-			"fieldtype": "Small Text",
-			"label": "撤销原因",
-			"no_copy": 1,
-			"read_only": 1
-		},
-		{ "fieldname": "expired_at", "fieldtype": "Datetime", "label": "失效时间", "no_copy": 1, "read_only": 1 }
-	],
-	"index_web_pages_for_search": 0,
-	"links": [],
-	"modified": "2026-08-13 00:00:00.000000",
-	"modified_by": "Administrator",
-	"module": "HRP Workflow Authorization",
-	"name": "HRP Delegation",
-	"owner": "Administrator",
-	"permissions": [
-		{ "email": 1, "export": 1, "print": 1, "read": 1, "report": 1, "role": "System Manager" },
-		{ "email": 1, "export": 1, "print": 1, "read": 1, "report": 1, "role": "HRP System Manager" },
-		{ "print": 1, "read": 1, "report": 1, "role": "HRP Department Manager" },
-		{ "print": 1, "read": 1, "report": 1, "role": "HRP User" },
-		{ "export": 1, "print": 1, "read": 1, "report": 1, "role": "HRP Auditor" }
-	],
-	"search_fields": "matrix,target_doctype,company,hospital,organization_unit,from_user,to_user,status",
-	"sort_field": "modified",
-	"sort_order": "DESC",
-	"states": [],
-	"title_field": "matrix",
-	"track_changes": 1,
-	"custom": 0,
-	"x_hrp": {
-		"app": "medops",
-		"retention_years": 10,
-		"data_classification": "内部",
-		"key_indexes": ["matrix", "from_user", "to_user", "status", "valid_from", "valid_to"],
-		"standard_references": [],
-		"domain_group": "Core",
-		"module_package": "hrp_workflow_authorization"
-	}
+  "actions": [],
+  "allow_rename": 0,
+  "autoname": "format:DLG-.YYYY.-.#####",
+  "creation": "2026-08-13 00:00:00.000000",
+  "description": "将审批矩阵中的特定审批责任在受控有效期内委托给具备同等基础权限和组织范围的系统用户。",
+  "doctype": "DocType",
+  "engine": "InnoDB",
+  "field_order": [
+    "delegation_section",
+    "matrix",
+    "matrix_revision",
+    "matrix_digest",
+    "target_doctype",
+    "scope_section",
+    "company",
+    "hospital",
+    "organization_unit",
+    "include_descendants",
+    "principal_section",
+    "from_user",
+    "to_user",
+    "step_sequence",
+    "validity_section",
+    "valid_from",
+    "valid_to",
+    "status",
+    "reason",
+    "control_section",
+    "policy_digest",
+    "revoked_at",
+    "revoked_by",
+    "revocation_reason",
+    "expired_at"
+  ],
+  "fields": [
+    {
+      "fieldname": "delegation_section",
+      "fieldtype": "Section Break",
+      "label": "审批委托"
+    },
+    {
+      "fieldname": "matrix",
+      "fieldtype": "Link",
+      "in_list_view": 1,
+      "label": "审批矩阵",
+      "options": "HRP Approval Matrix",
+      "read_only": 1,
+      "reqd": 1,
+      "search_index": 1
+    },
+    {
+      "fieldname": "matrix_revision",
+      "fieldtype": "Int",
+      "label": "矩阵修订号",
+      "read_only": 1,
+      "reqd": 1
+    },
+    {
+      "fieldname": "matrix_digest",
+      "fieldtype": "Data",
+      "label": "矩阵策略摘要",
+      "read_only": 1,
+      "reqd": 1
+    },
+    {
+      "fieldname": "target_doctype",
+      "fieldtype": "Link",
+      "label": "适用单据类型",
+      "options": "DocType",
+      "read_only": 1,
+      "reqd": 1,
+      "search_index": 1
+    },
+    {
+      "fieldname": "scope_section",
+      "fieldtype": "Section Break",
+      "label": "组织范围"
+    },
+    {
+      "fieldname": "company",
+      "fieldtype": "Link",
+      "in_list_view": 1,
+      "label": "法人",
+      "options": "Company",
+      "read_only": 1,
+      "reqd": 1,
+      "search_index": 1
+    },
+    {
+      "fieldname": "hospital",
+      "fieldtype": "Link",
+      "label": "医院",
+      "options": "HRP Hospital",
+      "read_only": 1,
+      "reqd": 1,
+      "search_index": 1
+    },
+    {
+      "fieldname": "organization_unit",
+      "fieldtype": "Link",
+      "label": "组织单元",
+      "options": "HRP Organization Unit",
+      "read_only": 1,
+      "search_index": 1
+    },
+    {
+      "default": "0",
+      "fieldname": "include_descendants",
+      "fieldtype": "Check",
+      "label": "包含下级组织",
+      "read_only": 1
+    },
+    {
+      "fieldname": "principal_section",
+      "fieldtype": "Section Break",
+      "label": "委托双方"
+    },
+    {
+      "fieldname": "from_user",
+      "fieldtype": "Link",
+      "in_list_view": 1,
+      "label": "委托人",
+      "options": "User",
+      "read_only": 1,
+      "reqd": 1,
+      "search_index": 1
+    },
+    {
+      "fieldname": "to_user",
+      "fieldtype": "Link",
+      "in_list_view": 1,
+      "label": "受托人",
+      "options": "User",
+      "read_only": 1,
+      "reqd": 1,
+      "search_index": 1
+    },
+    {
+      "description": "留空表示委托该矩阵中的全部本人审批步骤。",
+      "fieldname": "step_sequence",
+      "fieldtype": "Int",
+      "label": "限定审批步骤",
+      "read_only": 1,
+      "search_index": 1
+    },
+    {
+      "fieldname": "validity_section",
+      "fieldtype": "Section Break",
+      "label": "有效期"
+    },
+    {
+      "fieldname": "valid_from",
+      "fieldtype": "Date",
+      "in_list_view": 1,
+      "label": "开始日期",
+      "read_only": 1,
+      "reqd": 1,
+      "search_index": 1
+    },
+    {
+      "fieldname": "valid_to",
+      "fieldtype": "Date",
+      "in_list_view": 1,
+      "label": "结束日期",
+      "read_only": 1,
+      "reqd": 1,
+      "search_index": 1
+    },
+    {
+      "fieldname": "status",
+      "fieldtype": "Select",
+      "in_list_view": 1,
+      "label": "状态",
+      "options": "Scheduled\nActive\nRevoked\nExpired",
+      "read_only": 1,
+      "reqd": 1,
+      "search_index": 1
+    },
+    {
+      "fieldname": "reason",
+      "fieldtype": "Small Text",
+      "label": "委托原因",
+      "read_only": 1
+    },
+    {
+      "fieldname": "control_section",
+      "fieldtype": "Section Break",
+      "label": "控制信息"
+    },
+    {
+      "fieldname": "policy_digest",
+      "fieldtype": "Data",
+      "label": "委托策略摘要",
+      "no_copy": 1,
+      "read_only": 1,
+      "reqd": 1
+    },
+    {
+      "fieldname": "revoked_at",
+      "fieldtype": "Datetime",
+      "label": "撤销时间",
+      "no_copy": 1,
+      "read_only": 1
+    },
+    {
+      "fieldname": "revoked_by",
+      "fieldtype": "Link",
+      "label": "撤销人",
+      "no_copy": 1,
+      "options": "User",
+      "read_only": 1
+    },
+    {
+      "fieldname": "revocation_reason",
+      "fieldtype": "Small Text",
+      "label": "撤销原因",
+      "no_copy": 1,
+      "read_only": 1
+    },
+    {
+      "fieldname": "expired_at",
+      "fieldtype": "Datetime",
+      "label": "失效时间",
+      "no_copy": 1,
+      "read_only": 1
+    }
+  ],
+  "index_web_pages_for_search": 0,
+  "links": [],
+  "modified": "2026-08-13 00:00:00.000000",
+  "modified_by": "Administrator",
+  "module": "HRP Workflow Authorization",
+  "name": "HRP Delegation",
+  "owner": "Administrator",
+  "permissions": [
+    {
+      "email": 1,
+      "export": 1,
+      "print": 1,
+      "read": 1,
+      "report": 1,
+      "role": "System Manager"
+    },
+    {
+      "email": 1,
+      "export": 1,
+      "print": 1,
+      "read": 1,
+      "report": 1,
+      "role": "HRP System Manager"
+    },
+    {
+      "print": 1,
+      "read": 1,
+      "report": 1,
+      "role": "HRP Department Manager"
+    },
+    {
+      "print": 1,
+      "read": 1,
+      "report": 1,
+      "role": "HRP User"
+    },
+    {
+      "export": 1,
+      "print": 1,
+      "read": 1,
+      "report": 1,
+      "role": "HRP Auditor"
+    }
+  ],
+  "search_fields": "matrix,target_doctype,company,hospital,organization_unit,from_user,to_user,status",
+  "sort_field": "modified",
+  "sort_order": "DESC",
+  "states": [],
+  "title_field": "matrix",
+  "track_changes": 1,
+  "custom": 0,
+  "x_hrp": {
+    "app": "medops",
+    "retention_years": 10,
+    "data_classification": "内部",
+    "key_indexes": [
+      "matrix",
+      "from_user",
+      "to_user",
+      "status",
+      "valid_from",
+      "valid_to"
+    ],
+    "standard_references": [],
+    "domain_group": "Core",
+    "module_package": "hrp_workflow_authorization"
+  }
 }

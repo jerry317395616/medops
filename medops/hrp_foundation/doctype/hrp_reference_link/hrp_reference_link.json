@@ -1,0 +1,182 @@
+{
+	"doctype": "DocType",
+	"name": "HRP Reference Link",
+	"module": "HRP Foundation",
+	"custom": 0,
+	"engine": "InnoDB",
+	"autoname": "field:identity_key",
+	"title_field": "target_name",
+	"is_submittable": 0,
+	"istable": 0,
+	"issingle": 0,
+	"track_changes": 1,
+	"allow_rename": 0,
+	"field_order": [
+		"company",
+		"hospital",
+		"organization_unit",
+		"master_data_domain",
+		"target_doctype",
+		"target_name",
+		"identity_key",
+		"enabled",
+		"valid_from",
+		"valid_to",
+		"revision"
+	],
+	"fields": [
+		{
+			"fieldname": "company",
+			"label": "法人",
+			"fieldtype": "Link",
+			"read_only": 1,
+			"reqd": 1,
+			"options": "Company"
+		},
+		{
+			"fieldname": "hospital",
+			"label": "医院",
+			"fieldtype": "Link",
+			"read_only": 1,
+			"reqd": 1,
+			"options": "HRP Hospital"
+		},
+		{
+			"fieldname": "organization_unit",
+			"label": "科室或组织",
+			"fieldtype": "Link",
+			"read_only": 1,
+			"reqd": 0,
+			"options": "HRP Organization Unit"
+		},
+		{
+			"fieldname": "master_data_domain",
+			"label": "主数据域",
+			"fieldtype": "Link",
+			"read_only": 1,
+			"reqd": 1,
+			"options": "HRP Master Data Domain"
+		},
+		{
+			"fieldname": "target_doctype",
+			"label": "标准类型",
+			"fieldtype": "Link",
+			"read_only": 1,
+			"reqd": 1,
+			"options": "DocType"
+		},
+		{
+			"fieldname": "target_name",
+			"label": "主数据编号",
+			"fieldtype": "Dynamic Link",
+			"read_only": 1,
+			"reqd": 1,
+			"options": "target_doctype"
+		},
+		{
+			"fieldname": "identity_key",
+			"label": "登记身份",
+			"fieldtype": "Data",
+			"read_only": 1,
+			"reqd": 1,
+			"unique": 1
+		},
+		{
+			"fieldname": "enabled",
+			"label": "启用",
+			"fieldtype": "Check",
+			"read_only": 1,
+			"reqd": 1,
+			"default": "1"
+		},
+		{
+			"fieldname": "valid_from",
+			"label": "生效日期",
+			"fieldtype": "Date",
+			"read_only": 1,
+			"reqd": 1
+		},
+		{
+			"fieldname": "valid_to",
+			"label": "失效日期",
+			"fieldtype": "Date",
+			"read_only": 1,
+			"reqd": 0
+		},
+		{
+			"fieldname": "revision",
+			"label": "修订",
+			"fieldtype": "Int",
+			"read_only": 1,
+			"reqd": 1,
+			"default": "1"
+		}
+	],
+	"permissions": [
+		{
+			"role": "System Manager",
+			"read": 1,
+			"report": 1,
+			"export": 1,
+			"print": 1,
+			"write": 0,
+			"create": 0,
+			"delete": 0
+		},
+		{
+			"role": "HRP System Manager",
+			"read": 1,
+			"report": 1,
+			"export": 1,
+			"print": 1,
+			"write": 0,
+			"create": 0,
+			"delete": 0
+		},
+		{
+			"role": "HRP Data Steward",
+			"read": 1,
+			"report": 1,
+			"export": 1,
+			"print": 1,
+			"write": 0,
+			"create": 0,
+			"delete": 0
+		},
+		{
+			"role": "HRP User",
+			"read": 1,
+			"report": 1,
+			"export": 1,
+			"print": 1,
+			"write": 0,
+			"create": 0,
+			"delete": 0
+		},
+		{
+			"role": "HRP Auditor",
+			"read": 1,
+			"report": 1,
+			"export": 1,
+			"print": 1,
+			"write": 0,
+			"create": 0,
+			"delete": 0
+		},
+		{
+			"role": "HRP Integration User",
+			"read": 1,
+			"report": 1,
+			"export": 1,
+			"print": 1,
+			"write": 0,
+			"create": 0,
+			"delete": 0
+		}
+	],
+	"sort_field": "modified",
+	"sort_order": "DESC",
+	"actions": [],
+	"links": [],
+	"states": []
+}

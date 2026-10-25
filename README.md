@@ -31,8 +31,8 @@ DocType和36个模块保持业务边界；详见 `architecture/medops_identity.m
 pyproject.toml                  Press/Frappe 应用元数据
 medops/                       单一 Frappe 应用源码
 architecture/                 单应用架构、模块注册表和版本策略
-design/                       400 个 DocType 与字段等机器可读设计
-doctype_blueprints/           按模块重组的 400 份 DocType 蓝图
+design/                       401 个 DocType 与字段等机器可读设计
+doctype_blueprints/           按模块重组的 401 份 DocType 蓝图
 api/ workflows/ backlog/      API、工作流和 Codex 任务
 scripts/                      初始化、安装、加模块、版本锁定和校验脚本
 AGENTS.md                      Codex 仓库级强制规则
@@ -443,3 +443,7 @@ Pull Request、`main` 推送和人工运行都会触发 `.github/workflows/ci.ym
 
 CI 使用一次性测试密码且不连接 Press 或生产环境。完整设计、安全边界和本地
 复现命令见 `architecture/ci_pipeline.md`。
+
+## 核心工作台与管理报表
+
+应用首页预览个人待办、待复核申请、质量问题和服务时限，并提供八张核心报表。医院使用的标准主数据须显式登记；定时质量巡检仅处理有效登记，升级时需先确认登记范围。组织差异、主数据时效、重复值、编码映射、真实质量历史、委托和职责初筛均重查当前来源与导出权限。详见 `architecture/core_operational_reports.md`；医院完整业务与容量验收仍以 `architecture/production_readiness.md` 为准。

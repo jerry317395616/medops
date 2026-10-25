@@ -6,17 +6,17 @@
 	"counts": {
 		"custom_apps": 1,
 		"modules": 36,
-		"design_doctypes": 400,
-		"design_fields": 10075,
-		"doctype_blueprints": 400,
-		"starter_doctypes": 26,
-		"repository_contract_tests": 314,
-		"frappe_integration_tests": 267,
+		"design_doctypes": 401,
+		"design_fields": 10078,
+		"doctype_blueprints": 401,
+		"starter_doctypes": 28,
+		"repository_contract_tests": 321,
+		"frappe_integration_tests": 292,
 		"environment_profiles": 3,
 		"fixture_rules": 3,
 		"fixture_files": 3,
-		"architecture_decisions": 26,
-		"change_records": 31,
+		"architecture_decisions": 27,
+		"change_records": 32,
 		"change_risk_rules": 5,
 		"error_definitions": 12,
 		"error_translations": 28
@@ -169,6 +169,12 @@
 		"medops/common/master_data_security.py",
 		"medops/services/data_access.py",
 		"medops/api/v1/master_data_access.py",
-		"medops/setup/master_data_access.py"
+		"medops/setup/master_data_access.py",
+		"architecture/core_operational_reports.md",
+		"architecture/adr/ADR-0027-core-operational-reports.md",
+		"backlog/COD-030.md",
+		"medops/services/core_reports.py",
+		"medops/services/core_workbench.py",
+		"medops/api/v1/core_workbench.py"
 	]
 }

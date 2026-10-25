@@ -313,7 +313,9 @@ def _existing_issue(issue_key: str) -> tuple[HRPDataQualityIssue | None, int | N
 	)
 	if not rows:
 		return None, None
-	return _issue_doc(str(rows[0].name)), int(rows[0].revision or 0)
+	return cast(
+		HRPDataQualityIssue, frappe.get_doc(DATA_QUALITY_ISSUE_DOCTYPE, str(rows[0].name), for_update=True)
+	), int(rows[0].revision or 0)
 
 
 class EvaluateDataQualityService(DomainService[DataQualityEvaluate]):
@@ -589,21 +591,12 @@ def run_data_quality_rule_batch(
 		require_document_read(rule)
 		if int(rule.revision) != int(expected_rule_revision):
 			raise_ione_error("CONFLICT")
-		domain, policy = get_operational_master_data_domain(rule.master_data_domain, lock=False)
+		domain, _policy = get_operational_master_data_domain(rule.master_data_domain, lock=False)
 		if domain.target_doctype != rule.target_doctype:
 			raise_ione_error("CONFIGURATION_INVALID")
-		filters: dict[str, object] = {"name": (">", after_name)} if after_name else {}
-		if policy.company_field:
-			filters[policy.company_field] = rule.company
-		if not frappe.has_permission(policy.target_doctype, ptype="read"):
-			raise_ione_error("PERMISSION_DENIED")
-		rows = frappe.get_list(
-			policy.target_doctype,
-			filters=filters,
-			fields=["name"],
-			order_by="name asc",
-			limit_page_length=DATA_QUALITY_BATCH_SIZE,
-		)
+		from medops.hrp_foundation.services.reference_links import scheduled_population
+
+		rows = scheduled_population(rule, after_name, DATA_QUALITY_BATCH_SIZE)
 		processed = 0
 		failed = 0
 		for row in rows:

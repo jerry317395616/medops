@@ -6241,6 +6241,158 @@ paths:
       x-required-role: Authenticated role with current scope and native source field read permissions
       x-transaction-boundary: Read-only
       x-idempotency: Not required (read-only)
+  /api/method/medops.api.v1.core_workbench.register_population:
+    post:
+      operationId: core_045
+      summary: 登记医院使用的标准主数据
+      tags:
+      - medops
+      security:
+      - tokenAuth: []
+      responses:
+        '200':
+          description: Current authorized result only
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FrappeResponse'
+        '400':
+          description: Invalid or excessive input; narrow filters
+        '401':
+          description: Authentication required
+        '403':
+          description: Current native, scope, field or export permission denied
+        '409':
+          description: Revision or identity conflict
+      x-api-code: CORE-045
+      x-required-role: System Manager or HRP System Manager or HRP Data Steward
+      x-transaction-boundary: Single DB transaction
+      x-idempotency: Required for write
+      parameters:
+      - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - scope
+              - entries
+              properties:
+                scope:
+                  type: object
+                entries:
+                  type: array
+                  minItems: 1
+                  maxItems: 100
+                  items:
+                    type: object
+              additionalProperties: false
+  /api/method/medops.api.v1.core_workbench.overview:
+    get:
+      operationId: core_046
+      summary: 查询核心工作台的实际可见事项
+      tags:
+      - medops
+      security:
+      - tokenAuth: []
+      responses:
+        '200':
+          description: Current authorized result only
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FrappeResponse'
+        '400':
+          description: Invalid or excessive input; narrow filters
+        '401':
+          description: Authentication required
+        '403':
+          description: Current native, scope, field or export permission denied
+        '409':
+          description: Revision or identity conflict
+      x-api-code: CORE-046
+      x-required-role: Authenticated core role with current source permissions
+      x-transaction-boundary: Read-only
+      x-idempotency: Not required (read-only)
+      parameters:
+      - in: query
+        name: filters
+        required: false
+        schema:
+          type: string
+  /api/method/medops.api.v1.core_workbench.report:
+    get:
+      operationId: core_047
+      summary: 执行八张核心报表的受控查询
+      tags:
+      - medops
+      security:
+      - tokenAuth: []
+      responses:
+        '200':
+          description: Current authorized result only
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FrappeResponse'
+        '400':
+          description: Invalid or excessive input; narrow filters
+        '401':
+          description: Authentication required
+        '403':
+          description: Current native, scope, field or export permission denied
+        '409':
+          description: Revision or identity conflict
+      x-api-code: CORE-047
+      x-required-role: Report role plus current native scope and field read permissions
+      x-transaction-boundary: Read-only
+      x-idempotency: Not required (read-only)
+      parameters:
+      - in: query
+        name: code
+        required: true
+        schema:
+          type: string
+      - in: query
+        name: filters
+        required: false
+        schema:
+          type: string
+  /api/method/medops.api.v1.core_workbench.population:
+    get:
+      operationId: core_048
+      summary: 查询当前可见医院主数据登记
+      tags:
+      - medops
+      security:
+      - tokenAuth: []
+      responses:
+        '200':
+          description: Current authorized result only
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FrappeResponse'
+        '400':
+          description: Invalid or excessive input; narrow filters
+        '401':
+          description: Authentication required
+        '403':
+          description: Current native, scope, field or export permission denied
+        '409':
+          description: Revision or identity conflict
+      x-api-code: CORE-048
+      x-required-role: Native reference read role and current target permissions
+      x-transaction-boundary: Read-only
+      x-idempotency: Not required (read-only)
+      parameters:
+      - in: query
+        name: filters
+        required: false
+        schema:
+          type: string
 components:
   headers:
     CorrelationId:

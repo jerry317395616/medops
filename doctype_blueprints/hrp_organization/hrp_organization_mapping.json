@@ -117,44 +117,36 @@
   ],
   "permissions": [
     {
+      "email": 1,
+      "export": 1,
+      "print": 1,
+      "read": 1,
+      "report": 1,
       "role": "System Manager",
-      "read": 1,
-      "write": 0,
-      "create": 0,
-      "delete": 0,
-      "submit": 0,
-      "cancel": 0,
-      "amend": 0
+      "share": 1
     },
     {
+      "email": 1,
+      "export": 1,
+      "print": 1,
+      "read": 1,
+      "report": 1,
       "role": "HRP System Manager",
-      "read": 1,
-      "write": 0,
-      "create": 0,
-      "delete": 0,
-      "submit": 0,
-      "cancel": 0,
-      "amend": 0
+      "share": 1
     },
     {
+      "email": 1,
+      "export": 1,
+      "print": 1,
+      "read": 1,
+      "report": 1,
       "role": "HRP Data Steward",
-      "read": 1,
-      "write": 0,
-      "create": 0,
-      "delete": 0,
-      "submit": 0,
-      "cancel": 0,
-      "amend": 0
+      "share": 1
     },
     {
-      "role": "HRP Integration User",
       "read": 1,
-      "write": 0,
-      "create": 0,
-      "delete": 0,
-      "submit": 0,
-      "cancel": 0,
-      "amend": 0
+      "report": 1,
+      "role": "HRP Integration User"
     }
   ],
   "links": [],
