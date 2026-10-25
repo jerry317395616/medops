@@ -25,7 +25,7 @@
 			"final_candidate": "pending"
 		},
 		"secret_scanning": "Exact API-route false positives removed from unreleased feature history; complete backup retained; fresh full history117commits and current tree zero findings; no scanner exceptions added.",
-		"reference_rename_snapshot": "Two-connection regressions corrected for pinned test-helper restoration; reproducing old source/reference checks before applying the isolated production fix."
+		"reference_rename_snapshot": "Unfixed1c75de5 reproduced stale reference lookup reaching native database conflict under privileged rename; source/current-reference fences and controlled409 boundary added; fixed20-test run pending."
 	},
 	"prior_base": {
 		"commit": "72af62556e2ec42b899748742de7a9c9d2ede0d2",

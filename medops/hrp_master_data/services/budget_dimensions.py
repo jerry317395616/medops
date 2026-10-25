@@ -167,6 +167,13 @@ class UpsertBudgetMaster(DomainService[MasterUpsert]):
 	def perform(self, command):
 		doctype = MASTER_TYPES[command.kind]
 		hospital = frappe.get_doc("HRP Hospital", command.hospital, for_update=True)
+		# A concurrent native company rename must not rekey a newly inserted
+		# master after its identity was calculated from the old company name.
+		if not frappe.db.get_value("Company", command.company, "name", for_update=True):
+			raise_ione_error("RESOURCE_NOT_FOUND")
+		company = frappe.get_doc("Company", command.company, for_update=True)
+		if not native_read(company, {"name"}):
+			raise_ione_error("PERMISSION_DENIED")
 		if hospital.company != command.company or not native_read(
 			hospital, {"company", "enabled", "valid_from", "valid_to"}
 		):

@@ -404,8 +404,13 @@ class TestBudgetPlanningServices(IntegrationTestCase):
 				0,
 				"Primary must still have the old snapshot",
 			)
-			with self.assertRaises(IoneApplicationError):
+			with self.assertRaises(IoneApplicationError) as guarded:
 				frappe.rename_doc("Account", account.name, "COD031-Renamed-" + token + " - C031", force=True)
+			self.assertIn(guarded.exception.definition.key, {"CONFLICT", "OPERATION_NOT_ALLOWED"})
+			primary.rollback()
+			with self.assertRaises(IoneApplicationError) as current:
+				frappe.rename_doc("Account", account.name, "COD031-Renamed-" + token + " - C031", force=True)
+			self.assertEqual(current.exception.definition.key, "OPERATION_NOT_ALLOWED")
 		finally:
 			frappe.local.db = primary
 			primary.rollback()

@@ -28,6 +28,21 @@ def protect_reference_rename(doc, method=None, *args, **kwargs):
 	standard controllers. This hook never writes to standard ERP documents.
 	"""
 	del method, args, kwargs
-	for doctype, field in REFERENCES.get(doc.doctype, ()):
-		if frappe.db.table_exists(doctype) and frappe.db.exists(doctype, {field: doc.name}):
-			raise_ione_error("OPERATION_NOT_ALLOWED")
+	references = REFERENCES.get(doc.doctype)
+	if not references:
+		return
+	# Share the source fence with planning/master-data writers. Native rename
+	# loaded doc through a consistent read before this hook; both the source
+	# and reference lookups must be current reads after a possible lock wait.
+	try:
+		if not frappe.db.get_value(doc.doctype, doc.name, "name", for_update=True):
+			raise_ione_error("CONFLICT")
+		for doctype, field in references:
+			if frappe.db.table_exists(doctype) and frappe.db.get_value(
+				doctype, {field: doc.name}, "name", for_update=True
+			):
+				raise_ione_error("OPERATION_NOT_ALLOWED")
+	except (frappe.QueryDeadlockError, frappe.QueryTimeoutError) as exc:
+		# The outer native request owns rollback/retry. A rejected current read
+		# is a controlled conflict, never permission to use the earlier snapshot.
+		raise_ione_error("CONFLICT", cause=exc)
