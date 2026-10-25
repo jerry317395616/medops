@@ -15,7 +15,7 @@
     "ci_required_context": "Required",
     "ci_required_display_name": "CI / Required",
     "ci_github_run_id": 31677482467,
-    "ci_github_run_url": "https://github.com/jerry317395616/ione_hrp/actions/runs/31677482467",
+    "ci_github_run_url": "https://github.com/jerry317395616/medops/actions/runs/31677482467",
     "ci_github_run_commit": "759f7d8b7cb32531c3806d2eb5a5619428de3391",
     "ci_quality_job_success": true,
     "ci_security_job_success": true,
@@ -368,16 +368,16 @@
     "github_branch_policy": "solo-maintainer-pull-request-baseline",
     "branch_protection_automation": true,
     "local_main_push_guard": true,
-    "github_repository": "https://github.com/jerry317395616/ione_hrp",
+    "github_repository": "https://github.com/jerry317395616/medops",
     "github_validated_parent_commit": "db09bcd751b59ed96be8a942c1662ff269831523",
     "github_pull_request": 34,
-    "github_pull_request_url": "https://github.com/jerry317395616/ione_hrp/pull/34",
+    "github_pull_request_url": "https://github.com/jerry317395616/medops/pull/34",
     "modules_txt_matches_registry": true,
     "doctype_catalog_count": 400,
     "field_catalog_count": 10046,
     "blueprint_count": 400,
     "single_app_catalog": [
-      "ione_hrp"
+      "medops"
     ],
     "production_full_backup_prefix": "pre-cod026-20260813-154409",
     "production_http_ping": 302,
@@ -423,7 +423,7 @@
     "access_scope_arbitrary_filter_code_enabled": false,
     "access_scope_production_doctypes_added": 2,
     "access_scope_ci_pending": false,
-    "direct_bench_candidate_image": "local/frappe-unified:ione-hrp-cod024-7eb6dd1",
+    "direct_bench_candidate_image": "local/frappe-unified:medops-cod024-7eb6dd1",
     "direct_bench_candidate_test_site": "cod024-test2.localhost",
     "direct_bench_candidate_tests_passed": 9,
     "direct_bench_candidate_test_site_removed": true,
@@ -435,7 +435,7 @@
     "production_http_root": 302,
     "production_compose_project": "frappe-unified",
     "production_current_image": "local/frappe-unified:cod026-db09bcd",
-    "production_current_ione_hrp_commit": "db09bcd751b59ed96be8a942c1662ff269831523",
+    "production_current_medops_commit": "db09bcd751b59ed96be8a942c1662ff269831523",
     "production_installed_apps": 24,
     "production_scheduler_enabled": true,
     "production_workers_online": 2,
@@ -470,7 +470,7 @@
     "production_access_scope_guest_http_rejected": 401,
     "production_http_desk": 301,
     "production_rollback_image": "local/frappe-unified:rollback-pre-cod026-running-20260813-154659",
-    "production_previous_ione_hrp_commit": "ff35587e8323873519a630810ef3d54ded9c75ea",
+    "production_previous_medops_commit": "ff35587e8323873519a630810ef3d54ded9c75ea",
     "cod_025_local_quality_passed": true,
     "approval_matrix_schema_version": 1,
     "approval_matrix_unit_tests": 8,
@@ -528,5 +528,5 @@
   "not_run": [
     "full upstream Frappe/ERPNext/HRMS application test suites"
   ],
-  "reason_not_run": "COD-026 已通过本地门禁、GitHub 必需检查、锁定 MariaDB Bench 重复迁移、7 项委托专项测试、199 项 ione_hrp 全应用测试、完整生产备份、两遍生产迁移与数据完整性验收。完整上游 Frappe、ERPNext 与 HRMS 应用测试套件超出自定义应用变更范围。"
+  "reason_not_run": "COD-026 已通过本地门禁、GitHub 必需检查、锁定 MariaDB Bench 重复迁移、7 项委托专项测试、199 项 medops 全应用测试、完整生产备份、两遍生产迁移与数据完整性验收。完整上游 Frappe、ERPNext 与 HRMS 应用测试套件超出自定义应用变更范围。"
 }

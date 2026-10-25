@@ -6,7 +6,7 @@
 `Department` 和 `Cost Center`。HRP 业务可以按组织版本保留历史口径，同时继续通过
 ERPNext 标准控制器处理部门和成本中心相关业务。
 
-映射是连接层，不拥有标准主数据。`ione_hrp` 不创建、重命名、移动、停用或删除
+映射是连接层，不拥有标准主数据。`medops` 不创建、重命名、移动、停用或删除
 `Department`/`Cost Center`，这些操作仍由 ERPNext 标准控制器负责。
 
 ## 聚合与约束

@@ -1,0 +1,69 @@
+{
+	"schema_version": 1,
+	"app": "medops",
+	"fixture_auto_order": true,
+	"rules": [
+		{
+			"doctype": "Custom Field",
+			"ownership_field": "module",
+			"ownership_source": "modules",
+			"depends_on": [],
+			"description": "Custom fields explicitly assigned to one of the 36 MedOps modules."
+		},
+		{
+			"doctype": "Property Setter",
+			"ownership_field": "module",
+			"ownership_source": "modules",
+			"depends_on": ["Custom Field"],
+			"description": "Property overrides explicitly assigned to one of the 36 MedOps modules."
+		},
+		{
+			"doctype": "Custom DocPerm",
+			"ownership_field": "role",
+			"ownership_source": "core_roles",
+			"depends_on": [],
+			"description": "Standard DocType permissions owned by an MedOps core role."
+		}
+	],
+	"forbidden_doctypes": [
+		"Access Log",
+		"Activity Log",
+		"Communication",
+		"Email Account",
+		"Email Queue",
+		"Error Log",
+		"File",
+		"Has Role",
+		"Integration Request",
+		"OAuth Authorization Code",
+		"OAuth Client",
+		"Scheduled Job Log",
+		"Session Default Settings",
+		"System Settings",
+		"User",
+		"User Permission",
+		"__Auth"
+	],
+	"volatile_fields": ["creation", "idx", "lft", "modified", "modified_by", "owner", "rgt"],
+	"sensitive_field_names": [
+		"access_token",
+		"api_key",
+		"api_secret",
+		"authorization_code",
+		"client_secret",
+		"database_password",
+		"encryption_key",
+		"login_password",
+		"password",
+		"private_key",
+		"refresh_token",
+		"secret",
+		"smtp_password",
+		"token"
+	],
+	"sensitive_value_patterns": [
+		"(?i)-----BEGIN(?: [A-Z]+)? PRIVATE KEY-----",
+		"(?i)\\bBearer\\s+[A-Za-z0-9._~+/=-]{12,}",
+		"(?i)\\b(?:password|api[_-]?secret|access[_-]?token|refresh[_-]?token|private[_-]?key)\\s*[:=]\\s*[^\\s,;]{6,}"
+	]
+}

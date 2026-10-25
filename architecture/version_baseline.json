@@ -1,32 +1,32 @@
 {
   "as_of": "2026-07-29",
   "lock_file": "../resolved_versions.lock.json",
-  "source_policy": "official GitHub develop heads resolved together and pinned before any environment is promoted",
+  "source_policy": "Personal GitHub forks owned by jerry317395616, immutable inherited commits",
   "release_family": "v17 nightly/develop",
   "repositories": {
     "frappe": {
-      "url": "https://github.com/frappe/frappe.git",
-      "branch": "develop",
+      "url": "https://github.com/jerry317395616/frappe.git",
+      "branch": "medops-v17-20261025",
       "version_marker": "17.0.0-dev",
-      "commit": "883224ff626c4635a58c47133f1ba6101cdbd938"
+      "commit": "4880ad14d2b067e8db1a8356ef2d325713cc3cf4"
     },
     "erpnext": {
-      "url": "https://github.com/frappe/erpnext.git",
+      "url": "https://github.com/jerry317395616/erpnext.git",
       "branch": "develop",
       "version_marker": "17.0.0-dev",
       "commit": "372dff2ffa232f54595f48c2639d828c4a64ddde"
     },
     "hrms": {
-      "url": "https://github.com/frappe/hrms.git",
-      "branch": "develop",
+      "url": "https://github.com/jerry317395616/hrms.git",
+      "branch": "medops-v17-20261025",
       "version_marker": "17.0.0-dev",
-      "commit": "2d9e4a0bc7a8d18c42c25cc7ff95eb52b460c6b1"
+      "commit": "370b052071a63d89640c4a706faf61b40561e748"
     },
-    "ione_hrp": {
+    "medops": {
       "path": ".",
       "branch": "project-defined",
       "version_marker": "0.1.0",
-      "commit": "tracked by the protected ione_hrp main branch"
+      "commit": "tracked by the protected medops main branch"
     }
   },
   "runtime": {

@@ -2,7 +2,7 @@
 
 ## 权威模型
 
-`ione_hrp.common.audit_context.AuditContext` 是请求和后台任务上下文的唯一模型。
+`medops.common.audit_context.AuditContext` 是请求和后台任务上下文的唯一模型。
 它是不可变的进程内对象，不是 DocType，也不产生数据库记录：
 
 | 字段 | 来源 | 语义 |
@@ -37,7 +37,7 @@ response       -> X-Correlation-ID + X-Request-ID
 ## 直接服务调用
 
 不经过 HTTP 或后台任务钩子的公开服务入口必须使用
-`ione_hrp.services.audit_context.service_audit_scope`。每个最外层服务调用获得
+`medops.services.audit_context.service_audit_scope`。每个最外层服务调用获得
 独立的 `request_id`，退出时自动清理上下文；同一作用域内的嵌套服务复用上下文，
 且不能替换 `correlation_id`。若已经存在 HTTP 或任务上下文，服务作用域只校验并
 继承该上下文，不会提前清理或覆盖它。
@@ -47,7 +47,7 @@ response       -> X-Correlation-ID + X-Request-ID
 
 ## 后台任务传播
 
-跨队列调用必须使用 `ione_hrp.services.audit_context.enqueue_with_audit`。该服务
+跨队列调用必须使用 `medops.services.audit_context.enqueue_with_audit`。该服务
 附加只包含 schema、关联 ID 和父请求 ID 的保留载荷。Frappe 的 `before_job`
 钩子在调用目标函数前 `pop` 载荷并生成新的请求 ID，因此业务函数不会收到保留
 参数。没有载荷的计划任务获得新的关联 ID；损坏载荷被丢弃、记录脱敏警告并以
@@ -71,7 +71,7 @@ response       -> X-Correlation-ID + X-Request-ID
 
 ## API、权限与幂等
 
-`GET /api/method/ione_hrp.api.v1.audit.get_audit_context` 只允许已认证用户，返回
+`GET /api/method/medops.api.v1.audit.get_audit_context` 只允许已认证用户，返回
 当前安全上下文和 `http_write_enabled=false`。重复请求不写 `Version`、
 `Comment` 或 `Error Log`；复用相同关联 ID 时，每个请求仍生成唯一请求 ID。
 

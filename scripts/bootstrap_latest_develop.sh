@@ -109,13 +109,19 @@ start_temporary_redis() {
 FRAPPE_COMMIT="$(lock_value frappe commit)"
 ERPNEXT_COMMIT="$(lock_value erpnext commit)"
 HRMS_COMMIT="$(lock_value hrms commit)"
+FRAPPE_BRANCH="$(lock_value frappe branch)"
+ERPNEXT_BRANCH="$(lock_value erpnext branch)"
+HRMS_BRANCH="$(lock_value hrms branch)"
 
 if ! command -v uv >/dev/null 2>&1; then
   echo "uv is required. Install it first, then rerun." >&2
   exit 1
 fi
 
-uv tool install frappe-bench --force
+command -v bench >/dev/null 2>&1 || {
+  echo "Install an approved Bench tool before bootstrap; this script does not fetch official repositories." >&2
+  exit 1
+}
 
 if [[ -e "$BENCH_DIR" ]]; then
   echo "Bench directory already exists: $BENCH_DIR" >&2
@@ -123,8 +129,8 @@ if [[ -e "$BENCH_DIR" ]]; then
 fi
 
 bench init "$BENCH_DIR" \
-  --frappe-path https://github.com/frappe/frappe.git \
-  --frappe-branch develop \
+  --frappe-path https://github.com/jerry317395616/frappe.git \
+  --frappe-branch "$FRAPPE_BRANCH" \
   --python "$PYTHON_BIN" \
   --skip-assets \
   --dev
@@ -133,22 +139,22 @@ cd "$BENCH_DIR"
 configure_bench_ports
 start_temporary_redis
 pin_app frappe "$FRAPPE_COMMIT"
-bench get-app --branch develop erpnext https://github.com/frappe/erpnext.git
+bench get-app --branch "$ERPNEXT_BRANCH" erpnext https://github.com/jerry317395616/erpnext.git
 pin_app erpnext "$ERPNEXT_COMMIT"
-bench get-app --branch develop hrms https://github.com/frappe/hrms.git
+bench get-app --branch "$HRMS_BRANCH" hrms https://github.com/jerry317395616/hrms.git
 pin_app hrms "$HRMS_COMMIT"
 bench setup requirements
 
-git clone --no-hardlinks "$ROOT_DIR" "$BENCH_DIR/apps/ione_hrp"
-./env/bin/python -m pip install -e apps/ione_hrp
+git clone --no-hardlinks "$ROOT_DIR" "$BENCH_DIR/apps/medops"
+./env/bin/python -m pip install -e apps/medops
 python3 - "$BENCH_DIR/sites/apps.txt" <<'PYAPPS'
 import sys
 from pathlib import Path
 
 path = Path(sys.argv[1])
 apps = [line.strip() for line in path.read_text(encoding="utf-8").splitlines() if line.strip()]
-if "ione_hrp" not in apps:
-    apps.append("ione_hrp")
+if "medops" not in apps:
+    apps.append("medops")
 path.write_text("\n".join(apps) + "\n", encoding="utf-8")
 PYAPPS
 
@@ -165,9 +171,9 @@ bench new-site "$SITE_NAME" \
 
 bench --site "$SITE_NAME" install-app erpnext
 bench --site "$SITE_NAME" install-app hrms
-bench --site "$SITE_NAME" install-app ione_hrp
+bench --site "$SITE_NAME" install-app medops
 bench set-config -g developer_mode "$DEVELOPER_MODE"
 bench --site "$SITE_NAME" migrate
-bench build --app ione_hrp
+bench build --app medops
 
 echo "Ready. Run: cd '$BENCH_DIR' && bench start"

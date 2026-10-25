@@ -10,7 +10,7 @@ from pathlib import Path
 from typing import Any, cast
 from unittest.mock import patch
 
-from ione_hrp.common.performance_baseline import (
+from medops.common.performance_baseline import (
 	PERFORMANCE_BASELINES_PATH,
 	PerformanceBaselineContractError,
 	evaluate_performance_run,
@@ -60,7 +60,7 @@ class TestPerformanceBaselineContract(unittest.TestCase):
 		second = load_performance_baseline_registry()
 		self.assertEqual(first.sha256, second.sha256)
 		self.assertEqual(first.schema_version, 1)
-		self.assertEqual(first.app, "ione_hrp")
+		self.assertEqual(first.app, "medops")
 		self.assertEqual(first.policy.k6_version, "2.1.0")
 		self.assertEqual(len(first.scenarios), 1)
 		scenario = first.get("platform-module-registry-read")
@@ -99,7 +99,7 @@ class TestPerformanceBaselineContract(unittest.TestCase):
 			("method", "POST", "must be GET"),
 			("contains_personal_data", True, "must be false"),
 			("read_only", False, "must be true"),
-			("path", "/api/method/ione_hrp.api.v1.modules.list_modules?debug=1", "unsafe"),
+			("path", "/api/method/medops.api.v1.modules.list_modules?debug=1", "unsafe"),
 		):
 			payload = self._payload()
 			payload["scenarios"][0][field] = value
@@ -280,7 +280,7 @@ class TestPerformanceBaselineContract(unittest.TestCase):
 		run.assert_called_once()
 
 	def test_k6_script_uses_contract_gate_and_source_controlled_get_only_path(self) -> None:
-		script = (ROOT / "ione_hrp" / "load_tests" / "performance_baseline.js").read_text(encoding="utf-8")
+		script = (ROOT / "medops" / "load_tests" / "performance_baseline.js").read_text(encoding="utf-8")
 		self.assertIn("get_performance_baseline_contract", script)
 		self.assertIn("NON_PRODUCTION_LOAD_TEST", script)
 		self.assertIn("load_test_available === true", script)

@@ -1,17 +1,17 @@
 workspace,label_cn,app,audience,content,domain_group
-HRP Home,统一首页,ione_hrp,all users,待办、预警、快捷入口、关键指标,Portal
-HRP Executive Cockpit,院领导驾驶舱,ione_hrp,HRP Hospital Executive,战略、财务、资源、风险指标,Platform
-HRP Master Data,主数据中心,ione_hrp,HRP Data Steward,主数据、映射、质量和变更,Core
-HRP Budget,全面预算,ione_hrp,HRP Budget User,编制、控制、调整、执行和预测,Finance
-HRP Finance,财务报账,ione_hrp,HRP Finance User,费用、资金、凭证和对账,Finance
-HRP Costing,成本核算,ione_hrp,HRP Cost Manager,归集、分摊、病种与DRG/DIP成本,Finance
-HRP Procurement,采购招标,ione_hrp,HRP Procurement User,需求、寻源、招标、订单和价格,Supply
-HRP Supplier,供应商协同,ione_hrp,HRP Supplier Manager,准入、证照、风险和评价,Supply
-HRP Contract,合同中心,ione_hrp,HRP Contract User,起草、审批、履约、付款和档案,Supply
-HRP SPD,耗材SPD,ione_hrp,HRP Supply Manager,库存、智能柜、UDI和患者追溯,Supply
-HRP Asset,资产设备,ione_hrp,HRP Asset Manager,资产、设备、维保、计量和效益,Asset
-HRP People,人力资质,ione_hrp,HRP HR User,资质、排班、人力和绩效,People
-HRP Projects,项目科研,ione_hrp,HRP Project User,项目、科研、教学、基建和IT,Project
-HRP Governance,内控审计,ione_hrp,HRP Internal Auditor,控制、风险、审计和整改,Governance
-HRP Integration,集成运维,ione_hrp,HRP Integration Operator,接口、消息、错误和对账,Platform
-HRP Data & AI,数据智能,ione_hrp,HRP Data Analyst,指标、BI、知识和AI调用,Platform
+HRP Home,统一首页,medops,all users,待办、预警、快捷入口、关键指标,Portal
+HRP Executive Cockpit,院领导驾驶舱,medops,HRP Hospital Executive,战略、财务、资源、风险指标,Platform
+HRP Master Data,主数据中心,medops,HRP Data Steward,主数据、映射、质量和变更,Core
+HRP Budget,全面预算,medops,HRP Budget User,编制、控制、调整、执行和预测,Finance
+HRP Finance,财务报账,medops,HRP Finance User,费用、资金、凭证和对账,Finance
+HRP Costing,成本核算,medops,HRP Cost Manager,归集、分摊、病种与DRG/DIP成本,Finance
+HRP Procurement,采购招标,medops,HRP Procurement User,需求、寻源、招标、订单和价格,Supply
+HRP Supplier,供应商协同,medops,HRP Supplier Manager,准入、证照、风险和评价,Supply
+HRP Contract,合同中心,medops,HRP Contract User,起草、审批、履约、付款和档案,Supply
+HRP SPD,耗材SPD,medops,HRP Supply Manager,库存、智能柜、UDI和患者追溯,Supply
+HRP Asset,资产设备,medops,HRP Asset Manager,资产、设备、维保、计量和效益,Asset
+HRP People,人力资质,medops,HRP HR User,资质、排班、人力和绩效,People
+HRP Projects,项目科研,medops,HRP Project User,项目、科研、教学、基建和IT,Project
+HRP Governance,内控审计,medops,HRP Internal Auditor,控制、风险、审计和整改,Governance
+HRP Integration,集成运维,medops,HRP Integration Operator,接口、消息、错误和对账,Platform
+HRP Data & AI,数据智能,medops,HRP Data Analyst,指标、BI、知识和AI调用,Platform

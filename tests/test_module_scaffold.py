@@ -5,8 +5,8 @@ import unittest
 from pathlib import Path
 from unittest.mock import patch
 
-from ione_hrp.scaffold.module import create_module_files
-from ione_hrp.services.module_registry import (
+from medops.scaffold.module import create_module_files
+from medops.services.module_registry import (
 	REQUIRED_MODULE_SUBPACKAGES,
 	ModuleRegistry,
 	ModuleRegistryError,
@@ -36,7 +36,7 @@ def _create_source_tree(root: Path) -> None:
 		dump_module_registry(registry),
 		encoding="utf-8",
 	)
-	package_root = root / "ione_hrp"
+	package_root = root / "medops"
 	package_root.mkdir()
 	(package_root / "modules.txt").write_text("HRP Foundation\n", encoding="utf-8")
 	module_root = package_root / "hrp_foundation"
@@ -64,7 +64,7 @@ class ModuleScaffoldTest(unittest.TestCase):
 
 			self.assertEqual(result["module_count"], 2)
 			self.assertEqual(
-				(root / "ione_hrp" / "modules.txt").read_text(encoding="utf-8"),
+				(root / "medops" / "modules.txt").read_text(encoding="utf-8"),
 				"HRP Foundation\nHRP Medical Insurance\n",
 			)
 			registry = load_module_registry(root)
@@ -72,14 +72,14 @@ class ModuleScaffoldTest(unittest.TestCase):
 			self.assertEqual(registry.modules[-1].package, "hrp_medical_insurance")
 			for subpackage in REQUIRED_MODULE_SUBPACKAGES:
 				self.assertTrue(
-					(root / "ione_hrp" / "hrp_medical_insurance" / subpackage / "__init__.py").is_file()
+					(root / "medops" / "hrp_medical_insurance" / subpackage / "__init__.py").is_file()
 				)
 
 	def test_duplicate_is_rejected_without_changing_source(self) -> None:
 		with tempfile.TemporaryDirectory() as temp:
 			root = Path(temp)
 			_create_source_tree(root)
-			modules_before = (root / "ione_hrp" / "modules.txt").read_bytes()
+			modules_before = (root / "medops" / "modules.txt").read_bytes()
 			registry_before = (root / "architecture" / "module_registry.yaml").read_bytes()
 			with self.assertRaises(FileExistsError):
 				create_module_files(
@@ -89,7 +89,7 @@ class ModuleScaffoldTest(unittest.TestCase):
 					description="重复模块。",
 					app_root=root,
 				)
-			self.assertEqual((root / "ione_hrp" / "modules.txt").read_bytes(), modules_before)
+			self.assertEqual((root / "medops" / "modules.txt").read_bytes(), modules_before)
 			self.assertEqual(
 				(root / "architecture" / "module_registry.yaml").read_bytes(),
 				registry_before,
@@ -99,11 +99,11 @@ class ModuleScaffoldTest(unittest.TestCase):
 		with tempfile.TemporaryDirectory() as temp:
 			root = Path(temp)
 			_create_source_tree(root)
-			modules_before = (root / "ione_hrp" / "modules.txt").read_bytes()
+			modules_before = (root / "medops" / "modules.txt").read_bytes()
 			registry_before = (root / "architecture" / "module_registry.yaml").read_bytes()
 			with (
 				patch(
-					"ione_hrp.scaffold.module.validate_module_source_tree",
+					"medops.scaffold.module.validate_module_source_tree",
 					side_effect=[[], ["injected validation failure"]],
 				),
 				self.assertRaisesRegex(ModuleRegistryError, "injected validation failure"),
@@ -116,8 +116,8 @@ class ModuleScaffoldTest(unittest.TestCase):
 					app_root=root,
 				)
 
-			self.assertFalse((root / "ione_hrp" / "hrp_medical_insurance").exists())
-			self.assertEqual((root / "ione_hrp" / "modules.txt").read_bytes(), modules_before)
+			self.assertFalse((root / "medops" / "hrp_medical_insurance").exists())
+			self.assertEqual((root / "medops" / "modules.txt").read_bytes(), modules_before)
 			self.assertEqual(
 				(root / "architecture" / "module_registry.yaml").read_bytes(),
 				registry_before,

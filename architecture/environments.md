@@ -2,12 +2,12 @@
 
 ## 目标
 
-COD-006 为 `ione_hrp` 建立可重复的非生产环境。默认拓扑是一种环境一个
+COD-006 为 `medops` 建立可重复的非生产环境。默认拓扑是一种环境一个
 Bench、一个 Site 和一个数据库用户；三个 Bench 使用相同的
 `resolved_versions.lock.json`，但目录和全部服务端口互不复用。任何配置档
 都不得指向 `manager.myyr.top`、生产目录或生产数据。
 
-机器权威为 `ione_hrp/config/environment_profiles.json`。环境管理器和运行时
+机器权威为 `medops/config/environment_profiles.json`。环境管理器和运行时
 状态服务共同读取该文件，不维护第二套配置。
 
 ## 环境矩阵
@@ -20,8 +20,8 @@ Bench、一个 Site 和一个数据库用户；三个 Bench 使用相同的
 
 三个配置档都关闭邮件队列、外部集成和公开访问。Redis cache、Redis queue、
 Socket.IO 和文件监听端口也分别唯一。演示站点由
-`ione_hrp.setup.demo.setup_synthetic_demo` 调用 ERPNext 标准 Setup Wizard
-控制器创建 `I-ONE HRP Synthetic Demonstration Hospital`；重复执行返回
+`medops.setup.demo.setup_synthetic_demo` 调用 ERPNext 标准 Setup Wizard
+控制器创建 `MedOps Synthetic Demonstration Hospital`；重复执行返回
 `changed=false`，存在其他公司时拒绝运行。
 
 ## 准备
@@ -45,7 +45,7 @@ python scripts/environment_manager.py plan demo
 ```
 
 计划输出不含密码、令牌或服务器私有配置。默认 Bench 位于
-`~/.local/share/ione_hrp/environments/<profile>/frappe-bench`。
+`~/.local/share/medops/environments/<profile>/frappe-bench`。
 
 ## 创建和运行
 
@@ -56,20 +56,20 @@ python scripts/environment_manager.py provision demo
 ```
 
 首次运行创建锁定 Bench、安装 ERPNext、Frappe HR 和唯一自研 App
-`ione_hrp`，随后写入站点级安全配置、设置调度器并迁移。目标已存在时不会
+`medops`，随后写入站点级安全配置、设置调度器并迁移。目标已存在时不会
 重建或清空数据库，只校验锁定提交和已安装 App，再幂等应用同一配置。
 
 演示站点完成 ERPNext 合成机构初始化：
 
 ```bash
-cd ~/.local/share/ione_hrp/environments/demo/frappe-bench
-bench --site hrp-demo.localhost execute ione_hrp.setup.demo.setup_synthetic_demo
+cd ~/.local/share/medops/environments/demo/frappe-bench
+bench --site hrp-demo.localhost execute medops.setup.demo.setup_synthetic_demo
 ```
 
 启动某个 Bench：
 
 ```bash
-cd ~/.local/share/ione_hrp/environments/development/frappe-bench
+cd ~/.local/share/medops/environments/development/frappe-bench
 bench start
 ```
 
@@ -88,7 +88,7 @@ python scripts/environment_manager.py verify demo
 已认证用户可只读调用：
 
 ```text
-GET /api/method/ione_hrp.api.v1.environment.get_environment_status
+GET /api/method/medops.api.v1.environment.get_environment_status
 ```
 
 响应不包含 Bench 路径、端口、数据库名或秘密；未受管理的生产站点只报告
@@ -116,7 +116,7 @@ Error Log、脱敏审计和四个 App 工作树。CI 为节省构建时间共享
 正式配置仍是一环境一 Bench。
 
 验收证据为 GitHub Actions
-[`30436254750`](https://github.com/jerry317395616/ione_hrp/actions/runs/30436254750)：
+[`30436254750`](https://github.com/jerry317395616/medops/actions/runs/30436254750)：
 56 项仓库契约与单元测试、18 项 Frappe 集成测试通过；三个 Site 均无配置漂移
 且 `Error Log` 为 0；测试配置和演示数据重复执行均保持幂等。该运行使用提交
 `21fcaa3fc0c389445964a194e15103ec66fbeb5e`，三个锁定上游工作树均为干净状态。

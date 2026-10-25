@@ -46,7 +46,7 @@
   "links": [],
   "actions": [],
   "x_hrp": {
-    "app": "ione_hrp",
+    "app": "medops",
     "retention_years": 10,
     "data_classification": "内部",
     "key_indexes": ["issue_key", "issue_status", "severity", "last_evaluated_at"],

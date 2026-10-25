@@ -1,13 +1,21 @@
-# 美妍伊人医院 HRP V4.0 — Frappe v17 单应用多模块开发包
+# 医衡 MedOps 医院运营与资源管理
 
-本包把原先的九个自研 Frappe App 合并为一个应用：`ione_hrp`。所有医院 HRP 业务能力通过 **36 个标准 Frappe Module** 组织，并共享同一套安装、版本、权限、事件、接口、测试和发布生命周期。仓库的默认分支为 `main`，治理规则见 `architecture/repository_governance.md`。
+MedOps 是原 `ione_hrp` HRP项目的新名称，继续提供医院运营与资源管理能力，
+作为美妍伊人医疗生态的第一个自研项目。整体医疗开发站点与此应用分别管理。
+正式依赖优先复用Frappe生态标准应用；所有应用Git来源必须位于
+`https://github.com/jerry317395616/`，不从官方仓库直接克隆或拉取。
+
+本次更名只在全新空站安装，不是既有ione_hrp站点的原地迁移程序。原有HRP
+DocType和36个模块保持业务边界；详见 `architecture/medops_identity.md`。
+
+本包把原先的九个自研 Frappe App 合并为一个应用：`medops`。所有医院 HRP 业务能力通过 **36 个标准 Frappe Module** 组织，并共享同一套安装、版本、权限、事件、接口、测试和发布生命周期。仓库的默认分支为 `main`，治理规则见 `architecture/repository_governance.md`。
 
 ## 源码基线
 
-- Frappe：`frappe/frappe@883224ff626c4635a58c47133f1ba6101cdbd938`
-- ERPNext：`frappe/erpnext@372dff2ffa232f54595f48c2639d828c4a64ddde`
-- Frappe HR：`frappe/hrms@2d9e4a0bc7a8d18c42c25cc7ff95eb52b460c6b1`
-- 三个提交均解析自官方 `develop`，版本标识均为 `17.0.0-dev`
+- Frappe：`jerry317395616/frappe@4880ad14d2b067e8db1a8356ef2d325713cc3cf4`
+- ERPNext：`jerry317395616/erpnext@372dff2ffa232f54595f48c2639d828c4a64ddde`
+- Frappe HR：`jerry317395616/hrms@370b052071a63d89640c4a706faf61b40561e748`
+- 三项依赖保持原 v17 功能基线；Frappe和HRMS仅替换依赖来源地址，版本标识均为 `17.0.0-dev`
 - Python：`>=3.10,<3.15`（兼容当前 Press v17 运行时）
 - 默认数据库：MariaDB
 
@@ -21,7 +29,7 @@
 
 ```text
 pyproject.toml                  Press/Frappe 应用元数据
-ione_hrp/                       单一 Frappe 应用源码
+medops/                       单一 Frappe 应用源码
 architecture/                 单应用架构、模块注册表和版本策略
 design/                       400 个 DocType 与字段等机器可读设计
 doctype_blueprints/           按模块重组的 400 份 DocType 蓝图
@@ -133,19 +141,19 @@ python scripts/environment_manager.py provision development
 
 ## 测试数据工厂
 
-`ione_hrp/config/test_data_scenarios.json` 登记版本化合成场景。生成只允许受管
+`medops/config/test_data_scenarios.json` 登记版本化合成场景。生成只允许受管
 `development`/`test` Site，并同时要求测试开关、仅合成数据、非公开访问和外部集成关闭。
 场景由应用内静态 builder 实现，不接受任意 DocType/字段、SQL 或动态导入；写入复用
 领域服务权限、savepoint、加密幂等和标准控制器。
 
 `PLT-017` 只读接口可查询场景和安全策略，生成动作只通过
-`ione_hrp.hrp_foundation.services.generate_test_data` 执行。工厂不生成 PII、不记录
+`medops.hrp_foundation.services.generate_test_data` 执行。工厂不生成 PII、不记录
 种子或记录名，也不提供通用删除；持久测试数据通过 replaceable Site 重建清理。完整
 模型、调用、验证和回滚方法见 `architecture/test_data_factory.md`。
 
 ## 性能基线与压测
 
-`ione_hrp/config/performance_baselines.json` 版本化登记只读场景、资源硬上限和
+`medops/config/performance_baselines.json` 版本化登记只读场景、资源硬上限和
 smoke/baseline/load 阈值。`PLT-018` 只允许系统管理员读取注册表与环境许可；压测只能由
 站点外的官方 k6 执行，不能从 Web 请求、后台任务或调度器启动。
 
@@ -165,15 +173,15 @@ python scripts/performance_baseline.py \
 
 ## 软件供应链安全与SBOM
 
-`ione_hrp/config/software_supply_chain.json` 固定 CycloneDX 1.7、扫描工具版本、
+`medops/config/software_supply_chain.json` 固定 CycloneDX 1.7、扫描工具版本、
 Linux 二进制 SHA-256、失败阈值和限期例外。`Security` CI 作业在完整 Git 历史上运行
-Bandit、Gitleaks、pip-audit、npm audit 和 Grype，并生成包含 `ione_hrp`、三项锁定
+Bandit、Gitleaks、pip-audit、npm audit 和 Grype，并生成包含 `medops`、三项锁定
 上游以及 Python/Node 依赖的确定性 SBOM。
 
 Frappe 站点只提供系统管理角色可读的 `PLT-019` 治理契约：
 
 ```text
-GET /api/method/ione_hrp.api.v1.security.get_software_supply_chain_contract
+GET /api/method/medops.api.v1.security.get_software_supply_chain_contract
 ```
 
 站点、worker 和生产环境不能启动扫描，也不保存原始报告。CI 只上传最终 SBOM、脱敏
@@ -182,7 +190,7 @@ GET /api/method/ione_hrp.api.v1.security.get_software_supply_chain_contract
 
 ## Fixtures 治理
 
-Fixture 只用于 `ione_hrp` 对标准 Frappe/ERPNext/HRMS 对象的受控配置扩展。
+Fixture 只用于 `medops` 对标准 Frappe/ERPNext/HRMS 对象的受控配置扩展。
 当前白名单为模块归属的 Custom Field、Property Setter，以及五个 HRP 核心角色
 归属的 Custom DocPerm。导出前先运行：
 
@@ -227,17 +235,17 @@ ADR 状态机、风险门禁、审计与回滚规则见
 
 ## 统一异常与错误码
 
-所有 `ione_hrp` 模块通过 `ione_hrp.services.errors` 抛出受控异常，不直接调用
-`frappe.throw`。`ione_hrp/config/error_catalog.json` 定义稳定的
+所有 `medops` 模块通过 `medops.services.errors` 抛出受控异常，不直接调用
+`frappe.throw`。`medops/config/error_catalog.json` 定义稳定的
 `IONE-CORE-xxxx` 机器码、HTTP 状态、重试语义和日志级别；英文源消息通过
-标准 `ione_hrp/translations/zh.csv` 提供中文。错误响应包含安全的
+标准 `medops/translations/zh.csv` 提供中文。错误响应包含安全的
 `ione_error` 摘要、`X-Ione-Error-Code` 与随机 `X-Ione-Error-ID`，不包含
 原因消息、堆栈、路径或业务载荷。
 
 管理员可只读查询错误目录：
 
 ```text
-GET /api/method/ione_hrp.api.v1.errors.get_error_catalog
+GET /api/method/medops.api.v1.errors.get_error_catalog
 ```
 
 错误目录没有 HTTP 写入口，也不创建 DocType 或站点数据。命名、兼容、安全、
@@ -248,7 +256,7 @@ GET /api/method/ione_hrp.api.v1.errors.get_error_catalog
 应用使用锁定 Frappe v17 的请求和后台任务钩子，为每次执行生成服务端
 `request_id`，并通过 `correlation_id` 关联 HTTP、服务和队列调用。所有响应
 返回 `X-Correlation-ID` 与 `X-Request-ID`；受控错误体也包含这两个安全字段。
-跨队列调用必须使用 `ione_hrp.services.audit_context.enqueue_with_audit`，自研
+跨队列调用必须使用 `medops.services.audit_context.enqueue_with_audit`，自研
 结构化审计必须使用 `emit_audit_event`，不得记录用户、患者、请求正文、路径、
 站点或凭据。直接服务入口使用 `service_audit_scope` 隔离相邻调用，并在 HTTP
 或后台任务中继承已有上下文。
@@ -256,7 +264,7 @@ GET /api/method/ione_hrp.api.v1.errors.get_error_catalog
 已认证用户可只读查询当前请求上下文：
 
 ```text
-GET /api/method/ione_hrp.api.v1.audit.get_audit_context
+GET /api/method/medops.api.v1.audit.get_audit_context
 ```
 
 该能力不创建 DocType 或数据库记录。ID 规则、任务父子传播、权限、脱敏和回滚
@@ -264,7 +272,7 @@ GET /api/method/ione_hrp.api.v1.audit.get_audit_context
 
 ## 领域服务与写入幂等
 
-所有新的业务写入必须通过 `ione_hrp.services.domain_service.DomainService` 执行，并由所属
+所有新的业务写入必须通过 `medops.services.domain_service.DomainService` 执行，并由所属
 模块的 `services` 包暴露公共 facade。模板方法统一处理角色校验、领域校验、审计上下文、
 数据库 savepoint、稳定异常和持久化幂等；服务不得调用 `frappe.db.commit()`，最终提交归
 Frappe 请求或任务事务所有。
@@ -274,7 +282,7 @@ Frappe 请求或任务事务所有。
 同键异参返回 `IONE-CORE-0007`。首个实现是：
 
 ```text
-POST /api/method/ione_hrp.api.v1.modules.set_module_enabled
+POST /api/method/medops.api.v1.modules.set_module_enabled
 Idempotency-Key: deploy-20260729-budget-enable
 ```
 
@@ -294,7 +302,7 @@ DocType 的通用写 API，也不创建万能 JSON 台账。
 仍须调用 ERPNext 标准控制器。平台公共契约可由系统管理员只读查询：
 
 ```text
-GET /api/method/ione_hrp.api.v1.ledgers.get_immutable_ledger_contract
+GET /api/method/medops.api.v1.ledgers.get_immutable_ledger_contract
 ```
 
 模型字段、具体模块接入方法、并发语义、安全边界和回滚规则见
@@ -315,7 +323,7 @@ COD-013 提供领域事件和集成消息的公共基类。Outbox 在业务事�
 公共只读契约：
 
 ```text
-GET /api/method/ione_hrp.api.v1.messages.get_transactional_message_contract
+GET /api/method/medops.api.v1.messages.get_transactional_message_contract
 ```
 
 本基线不创建通用生产消息表，也不提前实现外部系统网络投递。详细设计见
@@ -346,7 +354,7 @@ python scripts/version_lock.py --verify-remote-heads
 
 ```bash
 cd /path/to/frappe-bench
-bench ione-hrp-create-module   --name "HRP Medical Insurance"   --group "Finance"   --label-cn "医保运营"   --description "医保目录、结算、拒付和申诉管理"   --yes
+bench medops-create-module   --name "HRP Medical Insurance"   --group "Finance"   --label-cn "医保运营"   --description "医保目录、结算、拒付和申诉管理"   --yes
 bench --site hrp.localhost migrate
 ```
 
@@ -366,8 +374,8 @@ python scripts/checksums.py
 python -m unittest discover -s tests -p "test_*.py"
 ```
 
-只允许仓库根目录的 `ione_hrp` 一个自研 App。禁止将 Frappe、ERPNext、Frappe HR
-源码复制到本仓库，禁止新建 `ione_hrp_*` 业务 App。
+只允许仓库根目录的 `medops` 一个自研 App。禁止将 Frappe、ERPNext、Frappe HR
+源码复制到本仓库，禁止新建 `medops_*` 业务 App。
 
 ## 开发质量工具
 
@@ -398,7 +406,7 @@ Pull Request、`main` 推送和人工运行都会触发 `.github/workflows/ci.ym
 - `Security` 固定并校验扫描工具，扫描完整 Git 历史和依赖，生成 CycloneDX 1.7
   SBOM，并只上传脱敏安全证据；
 - `Integration` 用锁定的 Frappe、ERPNext、Frappe HR 提交创建临时 Bench，
-  迁移新站点并运行全部 `ione_hrp` 集成测试；
+  迁移新站点并运行全部 `medops` 集成测试；
 - `Required` 只在 Quality、Security 和 Integration 都成功时通过，并由分支保护要求
   `Required` 检查上下文（GitHub 页面显示为 `CI / Required`）。
 

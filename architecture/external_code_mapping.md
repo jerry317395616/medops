@@ -3,7 +3,7 @@
 ## 目标与边界
 
 `HRP External Code Mapping` 在外部系统编码与 ERPNext 标准主数据之间提供确定性的双向解析。
-它属于 `ione_hrp` 的 `HRP Master Data` 模块，不拥有也不修改 `Department`、`Cost Center`、
+它属于 `medops` 的 `HRP Master Data` 模块，不拥有也不修改 `Department`、`Cost Center`、
 `Item`、`Supplier` 或 `Warehouse`。这些标准对象仍由 ERPNext 控制器维护。
 
 映射只接受 `HRP Master Data Domain` 静态策略中登记的目标类型。领域必须启用，且其策略版本和

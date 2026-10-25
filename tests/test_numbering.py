@@ -3,7 +3,7 @@ from __future__ import annotations
 import json
 import unittest
 
-from ione_hrp.common.numbering import (
+from medops.common.numbering import (
 	MAX_DIMENSIONS,
 	NumberingContractError,
 	build_number_allocation,

@@ -1,14 +1,14 @@
-# AGENTS.md — ione_hrp single-app repository rules
+# AGENTS.md — medops single-app repository rules
 
 ## Mission
-Build a production-grade Hospital Resource Planning platform as one Frappe application (`ione_hrp`) with multiple Frappe modules. Target the pinned GitHub `develop` commits recorded in `resolved_versions.lock.json`.
+Build a production-grade Hospital Resource Planning platform as one Frappe application (`medops`) with multiple Frappe modules. Target the pinned GitHub `develop` commits recorded in `resolved_versions.lock.json`.
 
 ## Source and dependency rules
-- One custom app only: `ione_hrp`. Do not create additional `ione_hrp_*` apps without an approved ADR.
+- One custom app only: `medops`. Do not create additional `medops_*` apps without an approved ADR.
 - Never edit or fork product features into `frappe`, `erpnext`, or `hrms`.
 - The floating `develop` branches are used only during the explicit baseline-refresh workflow. Normal work uses locked commit SHAs.
 - Keep `pyproject.toml`, `modules.txt`, `architecture/module_registry.yaml`, module directories and Module Def records consistent.
-- New business areas are created as modules inside `ione_hrp`, not as new apps.
+- New business areas are created as modules inside `medops`, not as new apps.
 
 ## Frappe integrity rules
 - Prefer standard configuration, fixtures, Custom Fields, `extend_doctype_class`, `doc_events`, and typed domain services, in that order.
@@ -20,7 +20,7 @@ Build a production-grade Hospital Resource Planning platform as one Frappe appli
 - Do not call `frappe.db.commit()` from document hooks or domain services.
 
 ## Module structure
-Each module lives at `ione_hrp/<module_package>/` and may contain:
+Each module lives at `medops/<module_package>/` and may contain:
 - `doctype/`
 - `report/`
 - `page/`
@@ -29,7 +29,7 @@ Each module lives at `ione_hrp/<module_package>/` and may contain:
 - `api/`
 - `tests/`
 
-Shared code belongs in `ione_hrp/common`, `ione_hrp/services`, or `ione_hrp/integrations`; do not create circular imports between modules.
+Shared code belongs in `medops/common`, `medops/services`, or `medops/integrations`; do not create circular imports between modules.
 
 ## Security and audit
 - Every write API requires authentication, role/data-scope checks, idempotency where retried, transaction boundaries, correlation IDs and audit evidence.

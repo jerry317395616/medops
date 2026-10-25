@@ -2,12 +2,12 @@
 
 ## 目标
 
-COD-014 为 `ione_hrp` 提供统一、确定性、可审计的合成测试数据入口。工厂服务于集成测试、
+COD-014 为 `medops` 提供统一、确定性、可审计的合成测试数据入口。工厂服务于集成测试、
 开发验证和后续性能场景，不复制生产数据，不接收任意 DocType/字段，也不建立可在 Desk
 中编辑的生产模型。
 
-机器权威是 `ione_hrp/config/test_data_scenarios.json`。纯 Python 模型负责严格解析、依赖
-排序、种子规范化和确定性标识；`ione_hrp.services.test_data_factory` 负责环境、权限、
+机器权威是 `medops/config/test_data_scenarios.json`。纯 Python 模型负责严格解析、依赖
+排序、种子规范化和确定性标识；`medops.services.test_data_factory` 负责环境、权限、
 幂等、事务和实际控制器调用。业务模块新增场景时必须把 builder 作为源码实现并登记，
 不得在 JSON 中填写 Python 路径、SQL 或表达式。
 
@@ -55,14 +55,14 @@ COD-014 为 `ione_hrp` 提供统一、确定性、可审计的合成测试数据
 
 ```bash
 bench --site hrp-test.localhost execute \
-  ione_hrp.api.v1.test_data.get_test_data_factory_contract
+  medops.api.v1.test_data.get_test_data_factory_contract
 ```
 
 生成动作只通过公开服务 facade 执行，并提供唯一幂等键：
 
 ```bash
 bench --site hrp-test.localhost execute \
-  ione_hrp.hrp_foundation.services.generate_test_data \
+  medops.hrp_foundation.services.generate_test_data \
   --kwargs '{
     "scenario_id": "platform-smoke",
     "seed": "COD-014-manual-0001",

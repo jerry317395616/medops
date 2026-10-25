@@ -10,7 +10,7 @@ from pathlib import Path
 from typing import Any, cast
 from unittest.mock import patch
 
-from ione_hrp.common.environment_profiles import load_environment_registry
+from medops.common.environment_profiles import load_environment_registry
 from scripts.environment_manager import (
 	CommandRunner,
 	EnvironmentManagerError,
@@ -25,7 +25,7 @@ from scripts.environment_manager import (
 class FakeBenchRunner(CommandRunner):
 	def __init__(self, target, installed_apps=None):
 		self.target = target
-		self.installed_apps = installed_apps or ["frappe", "erpnext", "hrms", "ione_hrp"]
+		self.installed_apps = installed_apps or ["frappe", "erpnext", "hrms", "medops"]
 		self.scheduler = "disabled"
 		self.commands: list[list[str]] = []
 
@@ -89,19 +89,19 @@ class EnvironmentManagerTest(unittest.TestCase):
 		self.assertNotIn("password", serialized)
 		self.assertNotIn("token", serialized)
 		site_config = cast(dict[str, Any], plan["site_config"])
-		self.assertFalse(site_config["ione_hrp_external_integrations_enabled"])
+		self.assertFalse(site_config["medops_external_integrations_enabled"])
 
 	def test_target_override_requires_explicit_consent(self) -> None:
 		profile = self.registry.get("test")
 		with self.assertRaisesRegex(EnvironmentManagerError, "override requires"):
-			build_target(profile, bench_dir="/tmp/ione-hrp-test")
+			build_target(profile, bench_dir="/tmp/medops-test")
 
 	def test_rejects_production_like_target(self) -> None:
 		profile = self.registry.get("test")
 		with self.assertRaisesRegex(EnvironmentManagerError, "Production-like"):
 			build_target(
 				profile,
-				bench_dir="/srv/ione_hrp/production/frappe-bench",
+				bench_dir="/srv/medops/production/frappe-bench",
 				allow_target_override=True,
 			)
 
@@ -119,9 +119,9 @@ class EnvironmentManagerTest(unittest.TestCase):
 					encoding="utf-8"
 				)
 			)
-			self.assertEqual(site_config["ione_hrp_environment"], "test")
+			self.assertEqual(site_config["medops_environment"], "test")
 
-			site_config["ione_hrp_environment"] = "demo"
+			site_config["medops_environment"] = "demo"
 			(target.bench_dir / "sites" / target.site_name / "site_config.json").write_text(
 				json.dumps(site_config), encoding="utf-8"
 			)
@@ -132,7 +132,7 @@ class EnvironmentManagerTest(unittest.TestCase):
 		with tempfile.TemporaryDirectory() as temp:
 			target = self._target(temp)
 			runner = FakeBenchRunner(target, installed_apps=["frappe", "erpnext", "hrms"])
-			with self.assertRaisesRegex(EnvironmentManagerError, "ione_hrp"):
+			with self.assertRaisesRegex(EnvironmentManagerError, "medops"):
 				configure_environment(self.registry, target, runner=runner)
 			self.assertFalse(any("set-config" in command for command in runner.commands))
 

@@ -12,9 +12,9 @@ ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_LOCK = ROOT / "resolved_versions.lock.json"
 UPSTREAM_APPS = ("frappe", "erpnext", "hrms")
 EXPECTED_REPOSITORIES = {
-	"frappe": "https://github.com/frappe/frappe.git",
-	"erpnext": "https://github.com/frappe/erpnext.git",
-	"hrms": "https://github.com/frappe/hrms.git",
+	"frappe": "https://github.com/jerry317395616/frappe.git",
+	"erpnext": "https://github.com/jerry317395616/erpnext.git",
+	"hrms": "https://github.com/jerry317395616/hrms.git",
 }
 SHA_PATTERN = re.compile(r"^[0-9a-f]{40}$")
 VERSION_PATTERN = re.compile(r'__version__\s*=\s*["\']([^"\']+)')
@@ -50,8 +50,9 @@ def validate_lock(payload: dict[str, Any]) -> list[str]:
 		repository = str(row.get("repository") or "")
 		if normalize_repository(repository) != normalize_repository(EXPECTED_REPOSITORIES[app]):
 			issues.append(f"{app} repository must be {EXPECTED_REPOSITORIES[app]}")
-		if row.get("branch") != "develop":
-			issues.append(f"{app} branch must be develop")
+		branch = str(row.get("branch") or "")
+		if branch != "develop" and not re.fullmatch(r"medops-v17-[0-9]{8}", branch):
+			issues.append(f"{app} branch must be develop or a dated MedOps source branch")
 		commit = str(row.get("commit") or "")
 		if not SHA_PATTERN.fullmatch(commit):
 			issues.append(f"{app} commit must be a lowercase 40-character SHA")
@@ -127,7 +128,6 @@ def compare_bench(
 	bench: Path,
 	*,
 	require_clean: bool = True,
-	require_official_remote: bool = True,
 ) -> dict[str, Any]:
 	states: dict[str, dict[str, Any]] = {}
 	issues: list[str] = []
@@ -149,15 +149,14 @@ def compare_bench(
 			issues.append(f"{app}: version mismatch, expected {expected['version']}, got {state['version']}")
 		if require_clean and state["dirty"]:
 			issues.append(f"{app}: worktree is dirty")
-		if require_official_remote:
-			if not state["repository"]:
-				issues.append(f"{app}: Git remote is unavailable")
-			elif normalize_repository(str(state["repository"])) != normalize_repository(
-				str(expected["repository"])
-			):
-				issues.append(
-					f"{app}: remote mismatch, expected {expected['repository']}, got {state['repository']}"
-				)
+		if not state["repository"]:
+			issues.append(f"{app}: Git remote is unavailable")
+		elif normalize_repository(str(state["repository"])) != normalize_repository(
+			str(expected["repository"])
+		):
+			issues.append(
+				f"{app}: remote mismatch, expected {expected['repository']}, got {state['repository']}"
+			)
 	return {
 		"status": "ok" if not issues else "mismatch",
 		"bench": str(bench.resolve()),
@@ -194,7 +193,7 @@ def compare_remote_heads(lock: dict[str, Any]) -> dict[str, Any]:
 			"matches": matches,
 		}
 		if not matches:
-			issues.append(f"{app}: official develop has advanced to {actual}")
+			issues.append(f"{app}: personal fork develop has advanced to {actual}")
 	return {"status": "ok" if not issues else "advanced", "apps": apps, "issues": issues}
 
 
@@ -208,14 +207,9 @@ def main() -> int:
 		help="Do not reject dirty upstream worktrees.",
 	)
 	parser.add_argument(
-		"--allow-nonofficial-remote",
-		action="store_true",
-		help="Do not require official frappe/* origin URLs.",
-	)
-	parser.add_argument(
 		"--verify-remote-heads",
 		action="store_true",
-		help="Check whether the lock still equals today's official develop heads.",
+		help="Check whether the lock still equals the personal fork develop heads.",
 	)
 	args = parser.parse_args()
 
@@ -231,7 +225,6 @@ def main() -> int:
 				lock,
 				args.bench.resolve(),
 				require_clean=not args.allow_dirty,
-				require_official_remote=not args.allow_nonofficial_remote,
 			)
 			reports["bench"] = bench_report
 			if bench_report["status"] != "ok":

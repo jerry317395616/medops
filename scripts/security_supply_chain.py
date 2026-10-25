@@ -16,7 +16,7 @@ ROOT = Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path:
 	sys.path.insert(0, str(ROOT))
 
-from ione_hrp.common.software_supply_chain import (
+from medops.common.software_supply_chain import (
 	SOFTWARE_SUPPLY_CHAIN_POLICY_PATH,
 	SoftwareSupplyChainContractError,
 	SoftwareSupplyChainPolicy,
@@ -320,7 +320,7 @@ def run_security_pipeline(
 			"-m",
 			"bandit",
 			"-r",
-			"ione_hrp",
+			"medops",
 			"scripts",
 			"--severity-level",
 			policy.gates.bandit_minimum_severity.casefold(),
@@ -417,7 +417,7 @@ def run_security_pipeline(
 
 def build_parser() -> argparse.ArgumentParser:
 	parser = argparse.ArgumentParser(
-		description="Generate and evaluate the governed ione_hrp SBOM and security reports"
+		description="Generate and evaluate the governed medops SBOM and security reports"
 	)
 	parser.add_argument("--policy", type=Path, default=SOFTWARE_SUPPLY_CHAIN_POLICY_PATH)
 	subparsers = parser.add_subparsers(dest="command", required=True)

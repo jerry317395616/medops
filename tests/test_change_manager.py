@@ -10,7 +10,7 @@ import unittest
 from pathlib import Path
 from typing import cast
 
-from ione_hrp.common.change_governance import ChangeGovernanceError
+from medops.common.change_governance import ChangeGovernanceError
 from scripts.change_manager import (
 	ChangeManagerError,
 	build_change_plan,
@@ -40,8 +40,8 @@ class TestChangeManager(unittest.TestCase):
 		self.temporary = tempfile.TemporaryDirectory()
 		self.root = Path(self.temporary.name)
 		for relative in (
-			"ione_hrp/config/change_governance.json",
-			"ione_hrp/modules.txt",
+			"medops/config/change_governance.json",
+			"medops/modules.txt",
 			"backlog/backlog.csv",
 			"pyproject.toml",
 		):
@@ -85,6 +85,16 @@ class TestChangeManager(unittest.TestCase):
 		self.assertTrue(first_assessment["idempotent"])
 		self.assertFalse(first["production_write_enabled"])
 		self.assertFalse(first["http_write_enabled"])
+
+	def test_rename_is_audited_as_deleted_and_added_paths(self) -> None:
+		(self.root / "old-package.txt").write_text("package identity\n", encoding="utf-8")
+		_git(self.root, "add", "old-package.txt")
+		_git(self.root, "commit", "-m", "rename fixture")
+		base = _git(self.root, "rev-parse", "HEAD")
+		_git(self.root, "mv", "old-package.txt", "new-package.txt")
+		changes = {(row.status, row.path) for row in collect_changed_paths(self.root, base)}
+		self.assertIn(("D", "old-package.txt"), changes)
+		self.assertIn(("A", "new-package.txt"), changes)
 
 	def test_check_writes_redacted_append_only_audit(self) -> None:
 		audit_path = self.root / ".git/change-governance-audit.jsonl"
@@ -160,11 +170,11 @@ class TestChangeManager(unittest.TestCase):
 		with self.assertRaisesRegex(ChangeGovernanceError, "immutable"):
 			build_change_plan(self.root, self.base_commit, task_id="COD-008")
 
-	def test_renames_are_rejected_for_audit_clarity(self) -> None:
+	def test_protected_rename_retains_original_path_for_audit(self) -> None:
 		_git(self.root, "mv", "pyproject.toml", "renamed.toml")
-
-		with self.assertRaisesRegex(ChangeManagerError, "Renamed or copied"):
-			collect_changed_paths(self.root, self.base_commit)
+		changes = {(row.status, row.path) for row in collect_changed_paths(self.root, self.base_commit)}
+		self.assertIn(("D", "pyproject.toml"), changes)
+		self.assertIn(("A", "renamed.toml"), changes)
 
 
 if __name__ == "__main__":

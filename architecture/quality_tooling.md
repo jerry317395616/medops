@@ -2,7 +2,7 @@
 
 ## 目标
 
-`ione_hrp` 使用一套固定版本、跨平台、缺失即失败的本地质量工具。COD-004
+`medops` 使用一套固定版本、跨平台、缺失即失败的本地质量工具。COD-004
 只建立工具和可执行门禁，不提前创建 COD-005 的 GitHub Actions 或 Press CI。
 
 ## 固定版本
@@ -63,7 +63,7 @@ Linux/Bench 也可执行：
 ## Python 规则
 
 - Ruff 目标为 Python 3.10，与应用最低运行时一致。
-- 检查 `ione_hrp`、`scripts`、`tests`，排除上游 `apps`、构建产物和依赖目录。
+- 检查 `medops`、`scripts`、`tests`，排除上游 `apps`、构建产物和依赖目录。
 - 使用 F/E/W/I/UP/B/RUF 规则；只保留行宽、Tab 缩进和中文歧义字符三项有
   明确原因的全局忽略。
 - 三个直接执行脚本因启动时注入仓库根目录，仅按文件忽略 E402。

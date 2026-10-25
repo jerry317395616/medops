@@ -1,0 +1,115 @@
+{
+	"app": "medops",
+	"charts": [],
+	"content": "[{\"id\":\"organization-header\",\"type\":\"header\",\"data\":{\"text\":\"组织管理\",\"col\":12}},{\"id\":\"hospital-shortcut\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"医院\",\"col\":3}},{\"id\":\"version-shortcut\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"组织版本\",\"col\":3}},{\"id\":\"unit-shortcut\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"组织层级\",\"col\":3}},{\"id\":\"mapping-shortcut\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"标准映射\",\"col\":3}}]",
+	"creation": "2026-07-30 00:00:00.000000",
+	"custom_blocks": [],
+	"docstatus": 0,
+	"doctype": "Workspace",
+	"for_user": "",
+	"hide_custom": 0,
+	"icon": "organization",
+	"idx": 0,
+	"is_hidden": 0,
+	"label": "组织管理",
+	"links": [
+		{
+			"hidden": 0,
+			"is_query_report": 0,
+			"label": "组织主数据",
+			"link_count": 0,
+			"onboard": 0,
+			"type": "Card Break"
+		},
+		{
+			"dependencies": "",
+			"hidden": 0,
+			"is_query_report": 0,
+			"label": "医院",
+			"link_count": 0,
+			"link_to": "HRP Hospital",
+			"link_type": "DocType",
+			"onboard": 1,
+			"type": "Link"
+		},
+		{
+			"dependencies": "",
+			"hidden": 0,
+			"is_query_report": 0,
+			"label": "组织版本",
+			"link_count": 0,
+			"link_to": "HRP Organization Version",
+			"link_type": "DocType",
+			"onboard": 1,
+			"type": "Link"
+		},
+		{
+			"dependencies": "",
+			"hidden": 0,
+			"is_query_report": 0,
+			"label": "组织层级",
+			"link_count": 0,
+			"link_to": "HRP Organization Unit",
+			"link_type": "DocType",
+			"onboard": 1,
+			"type": "Link"
+		},
+		{
+			"dependencies": "",
+			"hidden": 0,
+			"is_query_report": 0,
+			"label": "标准映射",
+			"link_count": 0,
+			"link_to": "HRP Organization Mapping",
+			"link_type": "DocType",
+			"onboard": 1,
+			"type": "Link"
+		}
+	],
+	"modified": "2026-07-30 00:00:00.000000",
+	"modified_by": "Administrator",
+	"module": "HRP Organization",
+	"name": "HRP Organization",
+	"number_cards": [],
+	"owner": "Administrator",
+	"parent_page": "HRP",
+	"public": 1,
+	"quick_lists": [],
+	"restrict_to_domain": "",
+	"roles": [
+		{
+			"role": "System Manager"
+		},
+		{
+			"role": "HRP System Manager"
+		},
+		{
+			"role": "HRP Data Steward"
+		}
+	],
+	"sequence_id": 4.0,
+	"shortcuts": [
+		{
+			"label": "医院",
+			"link_to": "HRP Hospital",
+			"type": "DocType"
+		},
+		{
+			"label": "组织版本",
+			"link_to": "HRP Organization Version",
+			"type": "DocType"
+		},
+		{
+			"label": "组织层级",
+			"link_to": "HRP Organization Unit",
+			"type": "DocType"
+		},
+		{
+			"label": "标准映射",
+			"link_to": "HRP Organization Mapping",
+			"type": "DocType"
+		}
+	],
+	"title": "组织管理",
+	"type": "Workspace"
+}

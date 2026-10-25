@@ -10,7 +10,7 @@ from pathlib import Path
 from typing import Any, cast
 from unittest.mock import patch
 
-from ione_hrp.common.software_supply_chain import (
+from medops.common.software_supply_chain import (
 	SoftwareSupplyChainContractError,
 	compose_cyclonedx_sbom,
 	evaluate_security_reports,
@@ -33,11 +33,11 @@ NOW = datetime(2026, 7, 30, 0, 0, tzinfo=timezone.utc)
 
 
 def _policy_payload() -> dict:
-	return json.loads((ROOT / "ione_hrp/config/software_supply_chain.json").read_text(encoding="utf-8"))
+	return json.loads((ROOT / "medops/config/software_supply_chain.json").read_text(encoding="utf-8"))
 
 
 def _npm_sbom() -> dict:
-	root_ref = "ione-hrp-quality-tooling@0.1.0"
+	root_ref = "medops-quality-tooling@0.1.0"
 	component_ref = "eslint@10.8.0"
 	return {
 		"$schema": "http://cyclonedx.org/schema/bom-1.5.schema.json",
@@ -53,7 +53,7 @@ def _npm_sbom() -> dict:
 				"type": "library",
 				"name": "local-folder-name",
 				"version": "0.1.0",
-				"purl": "pkg:npm/ione-hrp-quality-tooling@0.1.0",
+				"purl": "pkg:npm/medops-quality-tooling@0.1.0",
 				"properties": [{"name": "cdx:npm:package:private", "value": "true"}],
 			},
 		},
@@ -87,7 +87,7 @@ def _compose(policy=None) -> dict[str, Any]:
 		_npm_sbom(),
 		{"dependencies": []},
 		_version_lock(),
-		{"name": "ione-hrp-quality-tooling"},
+		{"name": "medops-quality-tooling"},
 		source_commit=SOURCE_COMMIT,
 		policy=policy,
 	)
@@ -134,7 +134,7 @@ class SoftwareSupplyChainPolicyTest(unittest.TestCase):
 		policy = load_software_supply_chain_policy()
 		self.assertEqual(policy.schema_version, 1)
 		self.assertEqual(policy.sbom.spec_version, "1.7")
-		self.assertEqual(policy.sbom.required_components, ("ione_hrp", "frappe", "erpnext", "hrms"))
+		self.assertEqual(policy.sbom.required_components, ("medops", "frappe", "erpnext", "hrms"))
 		self.assertFalse(policy.execution.http_write_enabled)
 		self.assertFalse(policy.execution.site_execution_enabled)
 		self.assertFalse(policy.execution.production_execution_enabled)
@@ -188,12 +188,12 @@ class SoftwareBillOfMaterialsTest(unittest.TestCase):
 		status = validate_cyclonedx_sbom(first, self.policy)
 		self.assertEqual(status["component_count"], 6)
 		self.assertEqual(status["spec_version"], "1.7")
-		self.assertEqual(first["metadata"]["component"]["name"], "ione_hrp")
+		self.assertEqual(first["metadata"]["component"]["name"], "medops")
 		components = {component["name"]: component for component in first["components"]}
-		self.assertEqual(set(("ione_hrp", "frappe", "erpnext", "hrms")) - set(components), {"ione_hrp"})
-		self.assertEqual(components["ione-hrp-quality-tooling"]["scope"], "excluded")
+		self.assertEqual(set(("medops", "frappe", "erpnext", "hrms")) - set(components), {"medops"})
+		self.assertEqual(components["medops-quality-tooling"]["scope"], "excluded")
 		self.assertEqual(components["eslint"]["scope"], "excluded")
-		self.assertIn("pkg:github/frappe/frappe@", components["frappe"]["purl"])
+		self.assertIn("pkg:github/jerry317395616/frappe@", components["frappe"]["purl"])
 		serialized = json.dumps(first, ensure_ascii=False)
 		self.assertNotIn("local-folder-name", serialized)
 		self.assertNotRegex(serialized, r"[A-Za-z]:\\\\")
@@ -206,7 +206,7 @@ class SoftwareBillOfMaterialsTest(unittest.TestCase):
 				_npm_sbom(),
 				{"dependencies": []},
 				_version_lock(),
-				{"name": "ione-hrp-quality-tooling"},
+				{"name": "medops-quality-tooling"},
 				source_commit="main",
 				policy=self.policy,
 			)
@@ -217,7 +217,7 @@ class SoftwareBillOfMaterialsTest(unittest.TestCase):
 				_npm_sbom(),
 				{"dependencies": []},
 				bad_lock,
-				{"name": "ione-hrp-quality-tooling"},
+				{"name": "medops-quality-tooling"},
 				source_commit=SOURCE_COMMIT,
 				policy=self.policy,
 			)
@@ -276,7 +276,7 @@ class SecurityReportEvaluationTest(unittest.TestCase):
 							"issue_severity": "HIGH",
 							"issue_confidence": "HIGH",
 							"test_id": "B999",
-							"filename": "ione_hrp/example.py",
+							"filename": "medops/example.py",
 						}
 					],
 				}

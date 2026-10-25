@@ -1,5 +1,5 @@
-app: ione_hrp
-title: 美妍伊人医院 HRP
+app: medops
+title: 医衡 MedOps
 module_count: 36
 modules:
 - sequence: 10

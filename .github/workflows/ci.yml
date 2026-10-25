@@ -63,7 +63,7 @@ jobs:
           "$RUNNER_TEMP/k6-v${K6_VERSION}-linux-amd64/k6" version \
             | grep --fixed-strings "v${K6_VERSION}"
           "$RUNNER_TEMP/k6-v${K6_VERSION}-linux-amd64/k6" inspect \
-            ione_hrp/load_tests/performance_baseline.js
+            medops/load_tests/performance_baseline.js
       - name: Validate governed Git change
         env:
           CHANGE_BASE: ${{ github.event.pull_request.base.sha || github.event.before || '' }}
@@ -147,7 +147,7 @@ jobs:
         with:
           name: security-evidence-${{ github.run_id }}
           path: |
-            .artifacts/security/ione_hrp.cdx.json
+            .artifacts/security/medops.cdx.json
             .artifacts/security/security-summary.json
             .artifacts/security/SHA256SUMS
           if-no-files-found: error
@@ -191,7 +191,8 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install --yes mariadb-client libmariadb-dev pkg-config redis-server
-      - name: Build locked Bench and run ione_hrp tests
+          uv tool install git+https://github.com/jerry317395616/bench@f21f11793872705560e710b2bda69934c9c34011
+      - name: Build locked Bench and run medops tests
         env:
           ADMIN_PASSWORD: ci_admin_password
           BENCH_DIR: ${{ runner.temp }}/frappe-bench

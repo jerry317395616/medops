@@ -2,7 +2,7 @@
 
 ## 边界
 
-COD-016 只在 `ione_hrp` 内建立软件供应链契约。安全扫描和 SBOM 生成由站点外的
+COD-016 只在 `medops` 内建立软件供应链契约。安全扫描和 SBOM 生成由站点外的
 CI 或发布进程执行，不在 Frappe Web、worker、scheduler 或 Press 生产 Site 中运行。
 
 不新增 DocType、数据库表、Fixture、Patch、Workspace 或第二个自研 App，也不修改
@@ -12,7 +12,7 @@ Frappe、ERPNext、Frappe HR 源码。
 
 | 来源 | 责任 |
 | --- | --- |
-| `ione_hrp/config/software_supply_chain.json` | SBOM、执行边界、工具、门禁和例外 |
+| `medops/config/software_supply_chain.json` | SBOM、执行边界、工具、门禁和例外 |
 | `version_lock.json` | 三个上游仓库、版本和锁定提交 |
 | `pyproject.toml` | Python 运行时与开发工具依赖 |
 | `package-lock.json` | Node 开发依赖图 |
@@ -26,7 +26,7 @@ Frappe、ERPNext、Frappe HR 源码。
 
 最终制品是 CycloneDX JSON 1.7：
 
-- 根组件：`ione_hrp` 当前应用版本和本次源码提交；
+- 根组件：`medops` 当前应用版本和本次源码提交；
 - 必需组件：锁定的 `frappe`、`erpnext`、`hrms`；
 - Python 组件：由 pip-audit 解析项目元数据；
 - Node 组件：由 npm 原生 `npm sbom` 生成的开发依赖图；
@@ -66,7 +66,7 @@ CI 固定 npm 11.17.0。Gitleaks、Grype 和 CycloneDX CLI 同时固定版本、
 `PLT-019`：
 
 ```text
-GET /api/method/ione_hrp.api.v1.security.get_software_supply_chain_contract
+GET /api/method/medops.api.v1.security.get_software_supply_chain_contract
 ```
 
 仅 `System Manager` 或 `HRP System Manager` 可读取。服务返回策略 SHA、SBOM

@@ -14,13 +14,13 @@ REPOSITORY_ROOT = Path(__file__).resolve().parents[1]
 if str(REPOSITORY_ROOT) not in sys.path:
 	sys.path.insert(0, str(REPOSITORY_ROOT))
 
-from ione_hrp.common.audit_context import (
+from medops.common.audit_context import (
 	AuditContextError,
 )
-from ione_hrp.common.audit_context import (
+from medops.common.audit_context import (
 	normalize_correlation_id as normalize_shared_correlation_id,
 )
-from ione_hrp.common.change_governance import (
+from medops.common.change_governance import (
 	ChangedPath,
 	ChangeGovernanceError,
 	GovernanceReport,
@@ -71,7 +71,9 @@ def resolve_base_commit(root: Path, base_ref: str) -> str:
 
 
 def collect_changed_paths(root: Path, base_commit: str) -> tuple[ChangedPath, ...]:
-	output = _run_git(root, ["diff", "--name-status", "--find-renames", base_commit, "--"])
+	# Audit both the removed and added paths so a package rename cannot hide
+	# protected source paths behind Git's similarity heuristic.
+	output = _run_git(root, ["diff", "--name-status", "--no-renames", base_commit, "--"])
 	changes: dict[str, ChangedPath] = {}
 	for line in output.splitlines():
 		parts = line.split("\t")
@@ -164,7 +166,7 @@ def _default_audit_path(root: Path) -> Path:
 	git_dir = Path(raw_git_dir)
 	if not git_dir.is_absolute():
 		git_dir = root / git_dir
-	return git_dir.resolve() / "ione_hrp-change-governance-audit.jsonl"
+	return git_dir.resolve() / "medops-change-governance-audit.jsonl"
 
 
 def append_audit_event(
@@ -232,7 +234,7 @@ def validate_with_audit(
 
 
 def main() -> int:
-	parser = argparse.ArgumentParser(description="Validate I-ONE HRP ADR and change governance.")
+	parser = argparse.ArgumentParser(description="Validate MedOps ADR and change governance.")
 	subparsers = parser.add_subparsers(dest="command", required=True)
 	subparsers.add_parser("validate", help="Validate all committed ADR and change records.")
 	for command in ("plan", "check"):

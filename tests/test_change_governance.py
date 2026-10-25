@@ -6,7 +6,7 @@ import unittest
 from dataclasses import replace
 from pathlib import Path
 
-from ione_hrp.common.change_governance import (
+from medops.common.change_governance import (
 	ChangedPath,
 	ChangeGovernanceError,
 	GovernanceReport,
@@ -43,9 +43,9 @@ class TestChangeGovernance(unittest.TestCase):
 	def test_current_repository_is_complete_and_deterministic(self) -> None:
 		repeated = inspect_change_governance(ROOT)
 
-		self.assertEqual(len(self.report.tasks), 116)
-		self.assertEqual(len(self.report.changes), 26)
-		self.assertEqual(len(self.report.decisions), 20)
+		self.assertEqual(len(self.report.tasks), 117)
+		self.assertEqual(len(self.report.changes), 27)
+		self.assertEqual(len(self.report.decisions), 21)
 		self.assertEqual(self.report.sha256, repeated.sha256)
 		self.assertRegex(self.report.sha256, r"^[0-9a-f]{64}$")
 
@@ -60,7 +60,7 @@ class TestChangeGovernance(unittest.TestCase):
 		self.assertIn("ADR-0004", serialized)
 
 	def test_policy_rejects_unknown_fields_and_invalid_risk_order(self) -> None:
-		payload = json.loads((ROOT / "ione_hrp/config/change_governance.json").read_text(encoding="utf-8"))
+		payload = json.loads((ROOT / "medops/config/change_governance.json").read_text(encoding="utf-8"))
 		with tempfile.TemporaryDirectory() as directory:
 			path = Path(directory) / "policy.json"
 			payload["unexpected"] = True
@@ -112,7 +112,7 @@ class TestChangeGovernance(unittest.TestCase):
 		payload = json.loads(path.read_text(encoding="utf-8"))
 		modules = frozenset(
 			line.strip()
-			for line in (ROOT / "ione_hrp/modules.txt").read_text(encoding="utf-8").splitlines()
+			for line in (ROOT / "medops/modules.txt").read_text(encoding="utf-8").splitlines()
 			if line.strip()
 		)
 		payload["affected_modules"] = ["HRP Not Registered"]
@@ -260,7 +260,7 @@ class TestChangeGovernance(unittest.TestCase):
 			)
 
 	def test_proposed_can_be_accepted_and_accepted_can_be_superseded(self) -> None:
-		accepted = self.report.decision_by_id["ADR-0001"]
+		accepted = replace(self.report.decision_by_id["ADR-0001"], status="Accepted", superseded_by=None)
 		successor = replace(
 			self.report.decision_by_id["ADR-0002"],
 			supersedes=("ADR-0001",),

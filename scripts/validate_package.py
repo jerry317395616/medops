@@ -13,13 +13,13 @@ ROOT = Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path:
 	sys.path.insert(0, str(ROOT))
 
-from ione_hrp.services.module_registry import (
+from medops.services.module_registry import (
 	load_module_registry,
 	validate_module_source_tree,
 )
 
 APP = ROOT
-PKG = ROOT / "ione_hrp"
+PKG = ROOT / "medops"
 
 
 def fail(message: str) -> None:
@@ -28,7 +28,7 @@ def fail(message: str) -> None:
 
 def main() -> None:
 	pyproject = tomllib.loads((APP / "pyproject.toml").read_text(encoding="utf-8"))
-	if pyproject["project"]["name"] != "ione_hrp":
+	if pyproject["project"]["name"] != "medops":
 		fail("pyproject project name mismatch")
 	load_lock(ROOT / "resolved_versions.lock.json")
 	manifest = json.loads((ROOT / "DELIVERY_MANIFEST.json").read_text(encoding="utf-8"))
@@ -51,7 +51,7 @@ def main() -> None:
 	expected_doctypes = counts.get("design_doctypes")
 	if len(rows) != expected_doctypes:
 		fail(f"expected {expected_doctypes} design DocTypes, got {len(rows)}")
-	if {row["app"] for row in rows} != {"ione_hrp"}:
+	if {row["app"] for row in rows} != {"medops"}:
 		fail("doctype catalog contains non-single-app values")
 
 	with (ROOT / "design" / "field_catalog.csv").open(encoding="utf-8-sig", newline="") as handle:

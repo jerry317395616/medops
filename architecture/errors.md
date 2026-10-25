@@ -2,9 +2,9 @@
 
 ## 目标和边界
 
-`ione_hrp/config/error_catalog.json` 是应用错误码、类别、HTTP 状态、公开消息、
+`medops/config/error_catalog.json` 是应用错误码、类别、HTTP 状态、公开消息、
 重试语义和日志级别的唯一机器权威。错误码属于代码/API 契约，不使用可在生产
-Site 修改的 DocType。所有模块通过 `ione_hrp.services.errors` 公共门面抛出
+Site 修改的 DocType。所有模块通过 `medops.services.errors` 公共门面抛出
 受控错误，禁止直接调用 `frappe.throw` 或 `frappe.only_for`。
 
 该决策由
@@ -17,7 +17,7 @@ Site 修改的 DocType。所有模块通过 `ione_hrp.services.errors` 公共门
 - symbolic key 只供 Python 调用，客户端只依赖稳定 code。
 - 类别与 HTTP 状态由解析器固定映射，重试只允许 429、502、503、504。
 - 公开英文消息必须是无占位符、无 HTML 的静态句子，中文使用
-  `ione_hrp/translations/zh.csv`。
+  `medops/translations/zh.csv`。
 
 当前基础类别为认证、授权、校验、未找到、冲突、策略限制、依赖故障、限流和
 内部错误。业务模块后续需要新增错误时，必须在目录末尾追加并同步翻译、API
@@ -59,7 +59,7 @@ Site 修改的 DocType。所有模块通过 `ione_hrp.services.errors` 公共门
 
 ## 权限和写入
 
-`GET /api/method/ione_hrp.api.v1.errors.get_error_catalog` 只允许
+`GET /api/method/medops.api.v1.errors.get_error_catalog` 只允许
 `System Manager` 或 `HRP System Manager`，返回可公开的稳定目录、数量与
 确定性 SHA。不存在 HTTP 新增、修改、删除或重编号接口。目录查询只读，不创建
 Version、Comment、Error Log 或业务记录。
@@ -71,7 +71,7 @@ Version、Comment、Error Log 或业务记录。
 ## 开发用法
 
 ```python
-from ione_hrp.services.errors import raise_ione_error
+from medops.services.errors import raise_ione_error
 
 if invalid_input:
     raise_ione_error("INVALID_REQUEST")
@@ -94,6 +94,6 @@ python -m unittest tests.test_error_catalog
 python scripts/quality.py
 ```
 
-锁定 Bench 运行全部 `ione_hrp` 测试，覆盖真实 HTTP 状态、响应头、中文翻译、
+锁定 Bench 运行全部 `medops` 测试，覆盖真实 HTTP 状态、响应头、中文翻译、
 角色权限、审计脱敏和只读幂等。本能力无数据库迁移。回滚时整体恢复旧调用与
 目录，但已经对外发布的 code 不复用；生产 Site 无数据需要回退。

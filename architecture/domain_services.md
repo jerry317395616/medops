@@ -2,15 +2,15 @@
 
 ## 目标
 
-`ione_hrp.services.domain_service.DomainService` 是自研业务命令的统一执行边界。它在调用
+`medops.services.domain_service.DomainService` 是自研业务命令的统一执行边界。它在调用
 领域逻辑前完成权限、输入和幂等校验，在同一数据库事务内完成领域写入、响应快照和审计，
 并把异常转换为稳定的 `IONE-CORE-xxxx` 错误。业务模块不得复制这套执行流程，也不得在
 服务中直接提交事务。
 
-纯 Python 契约位于 `ione_hrp.common.domain_service`，不依赖 Frappe，负责服务定义、
+纯 Python 契约位于 `medops.common.domain_service`，不依赖 Frappe，负责服务定义、
 确定性 JSON、指纹、幂等键和执行结果模型。Frappe 模板方法位于
-`ione_hrp.services.domain_service`，持久化实现位于
-`ione_hrp.services.idempotency`。
+`medops.services.domain_service`，持久化实现位于
+`medops.services.idempotency`。
 
 ## 服务定义
 
@@ -91,7 +91,7 @@ Frappe 请求事务一起提交。任何受控或未知异常都回滚到该 sav
 `HRP Foundation` 的模块启停服务是首个实现：
 
 ```python
-from ione_hrp.hrp_foundation.services import set_module_enabled
+from medops.hrp_foundation.services import set_module_enabled
 
 result = set_module_enabled(
     "HRP Budget",

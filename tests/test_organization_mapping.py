@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import unittest
 
-from ione_hrp.common.organization_mapping import (
+from medops.common.organization_mapping import (
 	OrganizationMappingContractError,
 	build_organization_mapping_resolve,
 	build_organization_mapping_upsert,

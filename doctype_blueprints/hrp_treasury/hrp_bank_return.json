@@ -181,7 +181,7 @@
   "links": [],
   "actions": [],
   "x_hrp": {
-    "app": "ione_hrp",
+    "app": "medops",
     "retention_years": 10,
     "data_classification": "敏感",
     "key_indexes": [
