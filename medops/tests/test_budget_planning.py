@@ -281,6 +281,17 @@ class TestBudgetPlanningServices(IntegrationTestCase):
 		with self.assertRaises(IoneApplicationError):
 			doc.save(ignore_permissions=True)
 
+	def test_master_writes_fence_the_native_company_row(self):
+		# setUp has performed actual dimension/value/fund writes without commit.
+		# A native rename on the second connection must wait for this fence.
+		primary = frappe.local.db
+		try:
+			with self.secondary_connection():
+				with self.assertRaises(frappe.QueryTimeoutError):
+					frappe.db.sql("SELECT name FROM `tabCompany` WHERE name=%s FOR UPDATE NOWAIT", (COMPANY,))
+		finally:
+			frappe.local.db = primary
+
 	def test_exact_money_round_trip_and_no_erp_posting(self):
 		frappe.db.set_default("currency_precision", "9")
 		before = {dt: frappe.db.count(dt) for dt in ("Budget", "GL Entry", "Stock Ledger Entry")}
@@ -387,6 +398,7 @@ class TestBudgetPlanningServices(IntegrationTestCase):
 					idempotency_key=plan_key,
 				)
 				frappe.local.db.commit()
+			frappe.local.db = primary
 			self.assertEqual(
 				frappe.db.count(LINE, {"account": account.name}),
 				0,
