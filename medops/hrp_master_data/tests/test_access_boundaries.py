@@ -499,7 +499,12 @@ class TestMasterDataAccess(IntegrationTestCase):
 		original_get_list = frappe.get_list
 
 		def scoped_targets(doctype, *args, **kwargs):
-			if doctype == "Item":
+			if (
+				doctype == "Item"
+				and kwargs.get("fields") == ["name"]
+				and kwargs.get("order_by") == "name asc"
+				and kwargs.get("limit_page_length") == 200
+			):
 				return [frappe._dict(name=TEST_ITEM)]
 			return original_get_list(doctype, *args, **kwargs)
 

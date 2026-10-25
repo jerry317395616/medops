@@ -442,7 +442,8 @@ class TestNumbering(IntegrationTestCase):
 			reservation.delete(ignore_permissions=True)
 
 		frappe.set_user(TEST_AUDITOR)
-		self.assertEqual(number_reservation_query(TEST_AUDITOR), "")
+		self.assertIn(TEST_HOSPITAL, number_reservation_query(TEST_AUDITOR))
+		self.assertIn(reservation.name, frappe.get_list("HRP Number Reservation", pluck="name"))
 		self.assertTrue(can_read_number_reservation(reservation, TEST_AUDITOR, "read"))
 		frappe.set_user(TEST_PLAIN_USER)
 		with self.assertRaises(IoneApplicationError) as denied:
