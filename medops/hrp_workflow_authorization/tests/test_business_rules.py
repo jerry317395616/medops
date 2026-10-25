@@ -16,8 +16,10 @@ from medops.hrp_workflow_authorization.services.business_rules import (
 	RecordBusinessRuleSnapshot,
 	UpsertBusinessRule,
 	enforce_business_rules,
+	evaluate_document,
 	get_log,
 	list_logs,
+	source_document,
 )
 from medops.hrp_workflow_authorization.tests.test_approval_matrix import (
 	TEST_COMPANY,
@@ -239,6 +241,29 @@ class TestBusinessRules(IntegrationTestCase):
 		self.assertTrue(result["allowed"])
 		self.assertEqual(result["outcome"], "Warned")
 		self.assertEqual(frappe.db.count(LOG), 0)
+
+	def test_current_policy_is_read_after_an_earlier_transaction_snapshot(self):
+		upsert()
+		doc = source()
+		frappe.local.db.commit()
+		self.assertEqual(frappe.db.get_value(RULE, "COD029-RULE", "revision"), 1)
+		primary = frappe.local.db
+		try:
+			with self.secondary_connection():
+				upsert(
+					policy(assertion_json={"field": "amount", "op": "lt", "value": 0}),
+					revision=1,
+					label="new-policy-after-snapshot",
+				)
+				frappe.local.db.commit()
+		finally:
+			frappe.local.db = primary
+		decision, _, _ = evaluate_document(
+			source_document(SOURCE, doc.name, lock=True), "validate", lock=True
+		)
+		self.assertEqual(decision["outcome"], "Blocked")
+		self.assertEqual(decision["rules"][0]["revision"], 2)
+		self.assertFalse(evaluate(doc)["allowed"])
 
 	def test_when_false_is_not_an_authorization(self):
 		upsert(policy(when_json={"field": "status", "op": "eq", "value": "Approved"}))

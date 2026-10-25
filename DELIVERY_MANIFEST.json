@@ -11,7 +11,7 @@
 		"doctype_blueprints": 400,
 		"starter_doctypes": 26,
 		"repository_contract_tests": 310,
-		"frappe_integration_tests": 253,
+		"frappe_integration_tests": 256,
 		"environment_profiles": 3,
 		"fixture_rules": 3,
 		"fixture_files": 3,

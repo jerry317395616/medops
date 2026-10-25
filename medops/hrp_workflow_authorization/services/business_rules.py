@@ -103,13 +103,13 @@ def _ancestors(context: Any) -> tuple[str, ...]:
 def _rules(source: Document, action: str, context: Any) -> list[Document]:
 	ancestors = _ancestors(context)
 	rows = frappe.db.sql(
-		"""SELECT name FROM `tabHRP Business Rule`
+		"""SELECT * FROM `tabHRP Business Rule`
 		WHERE target_doctype=%(doctype)s AND target_action=%(action)s
 		AND company=%(company)s AND hospital=%(hospital)s AND enabled=1
 		AND valid_from<=%(date)s AND (valid_to IS NULL OR valid_to>=%(date)s)
 		AND (organization_unit IS NULL OR organization_unit='' OR organization_unit=%(unit)s
 		OR (include_descendants=1 AND organization_unit IN %(ancestors)s))
-		ORDER BY priority DESC, name ASC LIMIT 65""",
+		ORDER BY priority DESC, name ASC LIMIT 65 LOCK IN SHARE MODE""",
 		{
 			"doctype": source.doctype,
 			"action": action,
@@ -123,7 +123,9 @@ def _rules(source: Document, action: str, context: Any) -> list[Document]:
 	)
 	if len(rows) > MAX_RULES:
 		raise_ione_error("CONFIGURATION_INVALID")
-	return [frappe.get_doc(RULE, row.name) for row in rows]
+	# A shared hospital fence cannot refresh an existing REPEATABLE READ snapshot.
+	# Use the full current-read rows; a second get_doc() would read the old snapshot again.
+	return [frappe.get_doc({"doctype": RULE, **dict(row)}) for row in rows]
 
 
 def _normalized_value(value: object, contract: dict[str, Any]) -> object:
