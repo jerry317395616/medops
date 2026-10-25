@@ -1,6 +1,6 @@
 {
 	"schema_version": 1,
-	"status": "IN_PROGRESS_COD_031",
+	"status": "RELEASE_CANDIDATE_COD_031",
 	"task_id": "COD-031",
 	"recorded_on": "2026-10-25",
 	"runtime_namespace": "medops",
@@ -10,7 +10,7 @@
 	"checks": {
 		"pure_tests_last_passed": 331,
 		"new_frappe_tests_defined": 18,
-		"isolated_domain_suite": "0ce114c:17 budget+20business rules+5governance passed",
+		"isolated_domain_suite": "18 budget service/HTTP tests passed atda7490a, including native short fiscal year and binary-float rejection; previous20rules+5governance passed",
 		"full_integration": {
 			"commit": "0ce114cef008935a945c6736923cdc4aafd76a28",
 			"fresh_site": "cod031-0ce114c.localhost",
@@ -18,7 +18,13 @@
 			"repeat_migrations": 2,
 			"budget_dual_process_races": 5
 		},
-		"api_and_ui": "Actual browser created version08, saved100000.01 in12periods, reloaded exact total, froze08 and cloned10. Master maintenance/export verification and protected promotion remain pending."
+		"api_and_ui": "Browser passed create08,12period exact100000.01 save/reload,freeze08,clone10,funding-source maintenance and actual CSV download with12rows totaling100000.01.",
+		"protected_ci": {
+			"last_green_commit": "e5bb13598eee3d8ac195e588eb90d14823b23e83",
+			"run": 40225809699,
+			"final_candidate": "pending"
+		},
+		"secret_scanning": "Exact API-route false positives removed from unreleased feature history; complete backup retained; fresh full history117commits and current tree zero findings; no scanner exceptions added."
 	},
 	"prior_base": {
 		"commit": "72af62556e2ec42b899748742de7a9c9d2ede0d2",
