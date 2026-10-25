@@ -265,9 +265,7 @@ class TestSegregation(IntegrationTestCase):
 		original_disabled = frappe.db.get_value("Role", role, "disabled")
 		frappe.db.set_value("Role", role, "disabled", 0, update_modified=False)
 		create_access_scope(user=TEST_USER)
-		upsert_segregation_rule(
-			rule_command(organization_unit=None), idempotency_key="COD-027-active-period"
-		)
+		upsert_segregation_rule(rule_command(organization_unit=None), idempotency_key="COD-027-active-period")
 		for index in range(2):
 			upsert_segregation_rule(
 				rule_command(

@@ -2,7 +2,7 @@
   "schema_version": 1,
   "task_id": "COD-027",
   "title": "实现不相容职责校验",
-  "status": "In Progress",
+  "status": "Implemented",
   "risk_level": "critical",
   "change_types": [
     "application",
