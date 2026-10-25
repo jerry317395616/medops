@@ -45,7 +45,8 @@
 		"scripts/repository_contract.py",
 		"tests/**",
 		"medops/tests/**",
-		"medops/extensions/**"
+		"medops/extensions/**",
+		"medops/translations/**"
 	],
 	"permissions_impact": "真实来源、组织、字段与导出权限；历史需要完整事件授权；未自动扩权。",
 	"migration_impact": "新增登记和只追加质量事件；明确采集起点并保守建立既有问题基线，不虚构历史。",

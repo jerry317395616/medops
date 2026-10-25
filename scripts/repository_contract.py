@@ -32,6 +32,7 @@ from medops.common.change_governance import (
 	ChangeGovernanceError,
 	inspect_change_governance,
 )
+from medops.common.core_reports import QUALITY_EVENT, REFERENCE, REPORTS
 from medops.common.data_quality import (
 	DATA_QUALITY_ISSUE_DOCTYPE,
 	DATA_QUALITY_RULE_DOCTYPE,
@@ -5203,6 +5204,80 @@ def validate_core_data_access_contract(root: Path) -> list[str]:
 	return violations
 
 
+def validate_core_reports_contract(root: Path) -> list[str]:
+	violations: list[str] = []
+	for code, (name, _, module, source) in REPORTS.items():
+		package = module.lower().replace(" ", "_")
+		slug = name.lower().replace(" ", "_")
+		folder = root / "medops" / package / "report" / slug
+		path = folder / f"{slug}.json"
+		if not path.is_file():
+			violations.append(f"core report metadata missing: {code}")
+			continue
+		report = json.loads(path.read_text(encoding="utf-8"))
+		if any(
+			report.get(key) != value
+			for key, value in {
+				"name": name,
+				"module": module,
+				"ref_doctype": source,
+				"report_type": "Script Report",
+				"is_standard": "Yes",
+			}.items()
+		) or report.get("prepared_report"):
+			violations.append(f"core report must execute live reviewed source: {code}")
+		if not (folder / f"{slug}.py").is_file() or not (folder / f"{slug}.js").is_file():
+			violations.append(f"core report controller or filters missing: {code}")
+	for name, package in ((REFERENCE, "hrp_foundation"), (QUALITY_EVENT, "hrp_master_data")):
+		slug = name.lower().replace(" ", "_")
+		path = root / "medops" / package / "doctype" / slug / f"{slug}.json"
+		if not path.is_file():
+			violations.append(f"core report owned model missing: {name}")
+			continue
+		metadata = json.loads(path.read_text(encoding="utf-8"))
+		if metadata.get("allow_rename") or any(
+			row.get(action)
+			for row in metadata.get("permissions", [])
+			for action in ("write", "create", "delete", "submit", "cancel", "amend")
+		):
+			violations.append(f"core report model must reject native mutation: {name}")
+	hooks = root / "medops/hooks.py"
+	if hooks.is_file():
+		assignments = {}
+		for node in ast.parse(hooks.read_text(encoding="utf-8")).body:
+			if (
+				isinstance(node, ast.Assign)
+				and len(node.targets) == 1
+				and isinstance(node.targets[0], ast.Name)
+			):
+				if node.targets[0].id in {
+					"extend_doctype_class",
+					"doc_events",
+					"override_whitelisted_methods",
+				}:
+					assignments[node.targets[0].id] = ast.literal_eval(node.value)
+		if "medops.extensions.core_report.CoreReportAccessMixin" not in assignments.get(
+			"extend_doctype_class", {}
+		).get("Report", []):
+			violations.append("core report live cache guard is missing")
+		if (
+			assignments.get("doc_events", {}).get("Report", {}).get("validate")
+			!= "medops.services.core_reports.protect_fresh_reports"
+		):
+			violations.append("core report save guard is missing")
+		if (
+			assignments.get("override_whitelisted_methods", {}).get("frappe.desk.query_report.export_query")
+			!= "medops.services.core_reports.export_query"
+		):
+			violations.append("core report background export guard is missing")
+	else:
+		violations.append("core report security hooks missing")
+	install = root / "medops/setup/install.py"
+	if not install.is_file() or install.read_text(encoding="utf-8").count("ensure_core_reports()") != 2:
+		violations.append("core report baseline must run on installation and migration")
+	return violations
+
+
 def collect_violations(root: Path) -> list[str]:
 	root = root.resolve()
 	violations: list[str] = []
@@ -5261,6 +5336,7 @@ def collect_violations(root: Path) -> list[str]:
 	violations.extend(validate_sla_contract(root))
 	violations.extend(validate_business_rule_contract(root))
 	violations.extend(validate_core_data_access_contract(root))
+	violations.extend(validate_core_reports_contract(root))
 	return violations
 
 

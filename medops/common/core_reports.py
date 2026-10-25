@@ -248,12 +248,17 @@ def quality_trend(
 		current += counts["baseline_open"] + counts["opened"] + counts["reopened"] - counts["resolved"]
 		if current < 0:
 			raise ValueError("inconsistent quality history")
+		coverage = "Unavailable"
+		if available:
+			coverage = "Recorded"
+			if day == epoch.date() and epoch.time() != datetime.min.time():
+				coverage = "Partial"
+			if day == observed_until:
+				coverage = "Recording"
 		rows.append(
 			{
 				"date": day.isoformat(),
-				"coverage": ("Recording" if day == observed_until else "Recorded")
-				if available
-				else "Unavailable",
+				"coverage": coverage,
 				**{key: value if available else None for key, value in counts.items()},
 				"open_at_end": current if available else None,
 			}

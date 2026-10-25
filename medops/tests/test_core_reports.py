@@ -188,6 +188,29 @@ class TestCoreReports(IntegrationTestCase):
 				idempotency_key=key("stale"),
 			)
 
+	def test_later_batch_conflict_rolls_back_earlier_revision_and_idempotency(self):
+		register(TEST_ITEM, SECOND)
+		first, second = sorted((TEST_ITEM, SECOND))
+		before = frappe.db.count("HRP Service Idempotency")
+		with self.assertRaises(IoneApplicationError):
+			register_references(
+				context(),
+				[
+					{
+						"target_name": first,
+						"valid_from": "2026-01-01",
+						"enabled": False,
+						"expected_revision": 1,
+					},
+					{"target_name": second, "valid_from": "2026-01-01", "expected_revision": 0},
+				],
+				idempotency_key=key("late-conflict"),
+			)
+		rows = visible_references(context())
+		self.assertEqual(len(rows), 2)
+		self.assertTrue(all(row.enabled and row.revision == 1 for row in rows))
+		self.assertEqual(frappe.db.count("HRP Service Idempotency"), before)
+
 	def test_direct_registration_and_event_mutation_are_rejected(self):
 		row = register(TEST_ITEM)["items"][0]
 		doc = frappe.get_doc(REFERENCE, row["name"])
@@ -262,6 +285,27 @@ class TestCoreReports(IntegrationTestCase):
 		frappe.db.set_value("HRP Access Scope", scope.name, "enabled", 0)
 		frappe.set_user(ACTOR)
 		self.assertEqual(report("RPT-004", context())[1], [])
+
+	def test_background_email_export_rechecks_revoked_export_without_http_marker(self):
+		from frappe.desk.query_report import run_export_query_job
+
+		register(TEST_ITEM, SECOND)
+		scope = grant_scope()
+		share_item()
+		share_item(target=SECOND)
+		frappe.get_doc("User", ACTOR).add_roles("Stock User")
+		frappe.db.set_value("HRP Access Scope Member", scope.members[0].name, "allow_export", 0)
+		frappe.set_user(ACTOR)
+		self.assertEqual(len(report("RPT-004", context())[1]), 2)
+		params = frappe._dict(report_name=REPORTS["RPT-004"][0], filters=context(), file_format_type="CSV")
+		with patch("frappe.desk.utils.send_report_email") as send:
+			run_export_query_job("cod030-fixture@example.invalid", params, {})
+			send.assert_called_once()
+			content = send.call_args.args[3]
+			if isinstance(content, bytes):
+				content = content.decode("utf-8-sig")
+			self.assertNotIn(TEST_ITEM, content)
+			self.assertNotIn(SECOND, content)
 
 	def test_history_tracks_real_transitions_and_unknown_days(self):
 		_, command, issue = create_quality()

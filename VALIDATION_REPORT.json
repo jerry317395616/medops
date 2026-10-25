@@ -1,50 +1,33 @@
 {
 	"schema_version": 1,
-	"status": "LOCAL_VALIDATED_COD_201",
-	"task_id": "COD-201",
+	"status": "IN_PROGRESS_COD_030",
+	"task_id": "COD-030",
 	"recorded_on": "2026-10-25",
 	"runtime_namespace": "medops",
 	"architecture_decisions": [
-		"ADR-0026"
+		"ADR-0027"
 	],
-	"candidate_code_commit": "761be858004b26257bea8496a6203fa7dbe8b505",
+	"candidate_code_commit": "c1de4d4a304a91c9407cd953b79ed61879161135",
 	"checks": {
-		"local_quality": "passed",
-		"unit_tests_passed": 314,
-		"integration_tests_defined": 267,
-		"integration_discovery_note": "266 class methods execute in the full Frappe suite; the existing module-level delegation contract remains separately defined.",
-		"isolated_full_suite": {
-			"commit": "761be858004b26257bea8496a6203fa7dbe8b505",
-			"passed": 266,
-			"site": "cod201-761be85.localhost"
-		},
-		"focused_tests_passed": 80,
-		"new_access_tests": 13,
-		"concurrency_regressions": [
-			"same actor same key",
-			"configuration guard",
-			"current policy snapshot",
-			"different actors same key"
-		],
-		"personal_fork_upstream_lock": "matched",
+		"unit_tests_last_passed": 320,
+		"integration_tests_defined": 292,
+		"isolated_focused_tests_passed": 80,
+		"new_report_tests_last_passed": 24,
 		"repeated_migration": "passed",
-		"runtime_code_required_ci": 40203164348
+		"latest_changes_require_revalidation": true,
+		"isolated_full_suite": "pending",
+		"concurrent_registration_and_quality_history": "pending"
 	},
 	"release_evidence": {
-		"required_ci": "https://github.com/jerry317395616/medops/pull/41/checks",
-		"required_context": "Required",
+		"required_ci": "https://github.com/jerry317395616/medops/pull/42/checks",
 		"ci_must_pass_before_merge": true,
-		"final_metadata_head_requires_current_ci": true,
-		"isolated_acceptance": "/home/zyd/frappe/medical-validation/evidence/cod201-761be85-full-result.json",
-		"focused_regression": "/home/zyd/frappe/medical-validation/evidence/cod201-761be85-focus-result.json",
-		"deployment_evidence": "/home/zyd/frappe/medical-deployment-evidence/cod201-promotion/result.json",
 		"deployment_occurs_only_after_protected_merge": true
 	},
 	"prior_base": {
-		"commit": "a45823aca275780acc9901eb8b5f993b8ffc5324",
-		"pull_request": 40,
-		"ci_run": 40192225361,
-		"frappe_tests_passed": 253,
+		"commit": "bb3296b0521c10e358c1706ba4d90f54585ed77a",
+		"pull_request": 41,
+		"ci_run": 40204550823,
+		"frappe_tests_passed": 266,
 		"isolated_medical_development_promotion": "verified"
 	},
 	"not_run": [

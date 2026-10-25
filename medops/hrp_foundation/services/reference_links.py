@@ -131,7 +131,7 @@ class RegisterReferences(DomainService[dict[str, Any]]):
 			)
 			values = {**context, **row, "target_doctype": domain.target_doctype}
 			identity = reference_identity(values)
-			exists = frappe.db.exists(REFERENCE, identity)
+			exists = frappe.db.get_value(REFERENCE, identity, "name", for_update=True)
 			if bool(exists) != bool(row["expected_revision"]):
 				raise_ione_error("CONFLICT")
 			with reference_write():

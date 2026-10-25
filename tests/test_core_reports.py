@@ -63,6 +63,14 @@ class TestCoreReportContracts(unittest.TestCase):
 		self.assertEqual(rows[1]["open_at_end"], 1)
 		self.assertEqual(rows[1]["coverage"], "Recording")
 		self.assertIsNone(rows[2]["open_at_end"])
+		partial = quality_trend(
+			[],
+			start=date(2026, 1, 2),
+			end=date(2026, 1, 3),
+			epoch=datetime(2026, 1, 2, 12),
+			observed_until=date(2026, 1, 3),
+		)
+		self.assertEqual(partial[0]["coverage"], "Partial")
 		with self.assertRaises(ValueError):
 			quality_trend(
 				[{"day": "2026-01-02", "resolved": 2}],
