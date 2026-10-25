@@ -11,185 +11,143 @@
   "issingle": 0,
   "track_changes": 0,
   "allow_rename": 0,
-  "editable_grid": 1,
+  "editable_grid": 0,
   "sort_field": "modified",
   "sort_order": "DESC",
   "index_web_pages_for_search": 0,
-  "description": "全面预算领域的HRP预算提交明细对象；用于支撑业务闭环、权限、审计与对账。",
+  "description": "冻结编制的完整粒度精确申报快照；封存不等于财务批准，禁止普通修改。",
   "fields": [
     {
-      "fieldname": "sequence_no",
-      "label": "序号",
-      "fieldtype": "Int",
-      "default": "1",
-      "in_list_view": 1,
-      "description": "序号"
-    },
-    {
-      "fieldname": "reference_doctype",
-      "label": "引用类型",
-      "fieldtype": "Link",
-      "options": "DocType",
-      "description": "引用类型"
-    },
-    {
-      "fieldname": "reference_name",
-      "label": "引用单据",
-      "fieldtype": "Dynamic Link",
-      "options": "reference_doctype",
-      "search_index": 1,
-      "description": "引用单据"
-    },
-    {
-      "fieldname": "description",
-      "label": "说明",
-      "fieldtype": "Small Text",
-      "description": "说明"
-    },
-    {
-      "fieldname": "quantity",
-      "label": "数量",
-      "fieldtype": "Float",
-      "precision": "6",
-      "description": "数量"
-    },
-    {
-      "fieldname": "rate",
-      "label": "单价",
-      "fieldtype": "Currency",
-      "options": "currency",
-      "precision": "6",
-      "description": "单价"
-    },
-    {
-      "fieldname": "amount",
-      "label": "金额",
-      "fieldtype": "Currency",
-      "options": "currency",
+      "fieldname": "fact_key",
+      "label": "原始事实身份",
+      "fieldtype": "Data",
       "read_only": 1,
-      "in_list_view": 1,
-      "precision": "2",
-      "description": "金额"
+      "reqd": 1
     },
     {
-      "fieldname": "dimension_json",
-      "label": "核算维度",
-      "fieldtype": "Code",
-      "options": "JSON",
-      "description": "核算维度"
-    },
-    {
-      "fieldname": "budget_version",
-      "label": "预算版本",
+      "fieldname": "origin_plan",
+      "label": "原始计划",
       "fieldtype": "Link",
-      "options": "HRP Budget Version",
-      "search_index": 1,
-      "description": "预算版本"
+      "read_only": 1,
+      "reqd": 1,
+      "options": "HRP Budget Plan"
+    },
+    {
+      "fieldname": "origin_line_key",
+      "label": "原始粒度身份",
+      "fieldtype": "Data",
+      "read_only": 1,
+      "reqd": 1
+    },
+    {
+      "fieldname": "origin_version",
+      "label": "原冻结版本",
+      "fieldtype": "Link",
+      "read_only": 1,
+      "reqd": 1,
+      "options": "HRP Budget Version"
+    },
+    {
+      "fieldname": "origin_version_digest",
+      "label": "原冻结版本摘要",
+      "fieldtype": "Data",
+      "read_only": 1,
+      "reqd": 1,
+      "permlevel": 1,
+      "hidden": 1
+    },
+    {
+      "fieldname": "origin_plan_digest",
+      "label": "原计划摘要",
+      "fieldtype": "Data",
+      "read_only": 1,
+      "reqd": 1
+    },
+    {
+      "fieldname": "organization_unit",
+      "label": "原始科室",
+      "fieldtype": "Link",
+      "read_only": 1,
+      "reqd": 1,
+      "options": "HRP Organization Unit"
+    },
+    {
+      "fieldname": "cost_center",
+      "label": "原始成本中心",
+      "fieldtype": "Link",
+      "read_only": 1,
+      "reqd": 1,
+      "options": "Cost Center"
     },
     {
       "fieldname": "budget_subject",
       "label": "预算科目",
       "fieldtype": "Link",
-      "options": "HRP Dimension Value",
-      "search_index": 1,
-      "description": "预算科目"
+      "read_only": 1,
+      "reqd": 1,
+      "options": "HRP Dimension Value"
     },
     {
       "fieldname": "funding_source",
       "label": "资金来源",
       "fieldtype": "Link",
-      "options": "HRP Funding Source",
-      "search_index": 1,
-      "description": "资金来源"
-    },
-    {
-      "fieldname": "approved_amount",
-      "label": "批准金额",
-      "fieldtype": "Currency",
-      "options": "currency",
-      "precision": "2",
-      "description": "批准金额"
-    },
-    {
-      "fieldname": "reserved_amount",
-      "label": "预占金额",
-      "fieldtype": "Currency",
-      "options": "currency",
       "read_only": 1,
-      "precision": "2",
-      "description": "预占金额"
+      "reqd": 1,
+      "options": "HRP Funding Source"
     },
     {
-      "fieldname": "committed_amount",
-      "label": "承诺金额",
-      "fieldtype": "Currency",
-      "options": "currency",
+      "fieldname": "account",
+      "label": "会计科目",
+      "fieldtype": "Link",
       "read_only": 1,
-      "precision": "2",
-      "description": "承诺金额"
+      "reqd": 1,
+      "options": "Account"
     },
     {
-      "fieldname": "actual_amount",
-      "label": "实际金额",
-      "fieldtype": "Currency",
-      "options": "currency",
+      "fieldname": "project",
+      "label": "项目",
+      "fieldtype": "Link",
       "read_only": 1,
-      "precision": "2",
-      "description": "实际金额"
+      "reqd": 0,
+      "options": "Project"
     },
     {
-      "fieldname": "available_amount",
-      "label": "可用金额",
-      "fieldtype": "Currency",
-      "options": "currency",
+      "fieldname": "period_index",
+      "label": "期间序号",
+      "fieldtype": "Int",
       "read_only": 1,
-      "in_list_view": 1,
-      "precision": "2",
-      "description": "可用金额"
-    },
-    {
-      "fieldname": "control_mode",
-      "label": "控制模式",
-      "fieldtype": "Select",
-      "options": "Hard\nSoft\nAlert\nNone",
-      "default": "Hard",
-      "description": "控制模式"
+      "reqd": 1
     },
     {
       "fieldname": "period_start",
       "label": "期间开始",
       "fieldtype": "Date",
-      "description": "期间开始"
+      "read_only": 1,
+      "reqd": 1
     },
     {
       "fieldname": "period_end",
       "label": "期间结束",
       "fieldtype": "Date",
-      "description": "期间结束"
-    }
-  ],
-  "permissions": [
-    {
-      "role": "HRP Finance User",
-      "read": 1,
-      "write": 1,
-      "create": 1,
-      "delete": 0,
-      "submit": 0,
-      "cancel": 0,
-      "amend": 0
+      "read_only": 1,
+      "reqd": 1
     },
     {
-      "role": "HRP Budget Manager",
-      "read": 1,
-      "write": 1,
-      "create": 1,
-      "delete": 0,
-      "submit": 0,
-      "cancel": 0,
-      "amend": 0
+      "fieldname": "amount",
+      "label": "精确金额",
+      "fieldtype": "Data",
+      "read_only": 1,
+      "reqd": 1
+    },
+    {
+      "fieldname": "description",
+      "label": "原始说明",
+      "fieldtype": "Small Text",
+      "read_only": 1,
+      "reqd": 0
     }
   ],
+  "permissions": [],
   "links": [],
   "actions": [],
   "x_hrp": {
@@ -203,5 +161,26 @@
     "standard_references": [],
     "domain_group": "Finance",
     "module_package": "hrp_budget"
-  }
+  },
+  "search_fields": "",
+  "field_order": [
+    "fact_key",
+    "origin_plan",
+    "origin_line_key",
+    "origin_version",
+    "origin_version_digest",
+    "origin_plan_digest",
+    "organization_unit",
+    "cost_center",
+    "budget_subject",
+    "funding_source",
+    "account",
+    "project",
+    "period_index",
+    "period_start",
+    "period_end",
+    "amount",
+    "description"
+  ],
+  "states": []
 }

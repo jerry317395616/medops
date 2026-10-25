@@ -14,12 +14,12 @@
 		"runtime_tests": 312,
 		"evidence": "architecture/releases/COD-031.json"
 	},
-	"current_scope": "Versioned exact approval amount contract and migration compatibility; submission/aggregation/human approval not yet implemented.",
+	"current_scope": "Exact approval amount foundation verified; department sealed snapshots, guarded source service, FIN025-027 and planning-page entry under verification. Human approval and consolidation still incomplete.",
 	"checks": {
 		"new_pure_tests_passed": 13,
-		"pure_tests_expected": 346,
+		"pure_tests_expected": 354,
 		"new_frappe_tests_defined": 9,
-		"frappe_tests_total_expected": 321,
+		"frappe_tests_total_expected": 334,
 		"native_migration_baseline": {
 			"status": "passed",
 			"old_source": "d9cf20c7b56cfc8fdc1e443ea2d3f880959283c2",
@@ -45,9 +45,27 @@
 				"governance5"
 			]
 		},
-		"local_quality": "all passed346 pure, package, lint/format, bandit, checksums, types and frontend; source-order regression included",
-		"pure_tests_passed": 346,
-		"shared_delegate_source_order": "Regression reproduced different v2 decision digests when two principals share the same delegate and role; full provenance now breaks ties deterministically while version1 stays unchanged."
+		"local_quality": "all passed354 pure, package, lint/format, bandit, checksums, types and frontend; department snapshot contract included",
+		"pure_tests_passed": 354,
+		"shared_delegate_source_order": "Regression reproduced different v2 decision digests when two principals share the same delegate and role; full provenance now breaks ties deterministically while version1 stays unchanged.",
+		"department_snapshot": {
+			"pure_tests_passed": 8,
+			"native_tests_defined": 13,
+			"native_status": "12passed at6974133; additional current display-label mask regression pending",
+			"models_added": 2,
+			"public_deployment": "none",
+			"native_passed_commit": "69741331c3ecce40fd6a15ecbb1fe52c994501fe",
+			"native_tests_passed": 12,
+			"repeat_migrations": 2,
+			"schema_migration_commit": "e757a845570c4761fc3918ecee6d5bbe34a60f84"
+		},
+		"exact_foundation_ci": {
+			"head": "5f3e3ed30a2de758f9a6ea93e1c657dfd0f261e0",
+			"quality": "passed",
+			"security": "passed",
+			"integration": "passed",
+			"required": "passed"
+		}
 	},
 	"overall_hospital_production_readiness": "not_established"
 }

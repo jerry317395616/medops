@@ -101,7 +101,10 @@ def plan_permission(doc, user=None, ptype=None, debug=False):
 		doc, user=user, action="export" if export else "read"
 	):
 		return False
-	fields = {field.fieldname for field in doc.meta.fields if int(field.permlevel or 0) == 0}
+	# Follow the public contract even if an administrator later moves a public
+	# field to a higher level. Filtering by its current level would silently omit
+	# the very field that now needs an explicit read grant.
+	fields = set(doc.as_public_dict()) - {"name", "docstatus", "lines"}
 	fields |= {"lines." + field.fieldname for field in frappe.get_meta("HRP Budget Plan Line").fields}
 	if not can_read_named_fields(doc, fields, user=user):
 		return False

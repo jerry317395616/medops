@@ -62,6 +62,8 @@ doc_events = {
 }
 
 permission_query_conditions = {
+	"HRP Budget Submission": "medops.hrp_budget.services.submission_access.submission_query",
+	"HRP Budget Submission Line": "medops.hrp_budget.services.submission_access.submission_line_query",
 	"HRP Business Dimension": "medops.hrp_master_data.services.budget_dimensions.dimension_query",
 	"HRP Dimension Value": "medops.hrp_master_data.services.budget_dimensions.value_query",
 	"HRP Funding Source": "medops.hrp_master_data.services.budget_dimensions.fund_query",
@@ -86,6 +88,8 @@ permission_query_conditions = {
 	"HRP Numbering Scheme": "medops.hrp_foundation.permissions.numbering_scheme_query",
 }
 has_permission = {
+	"HRP Budget Submission": "medops.hrp_budget.services.submission_access.submission_permission",
+	"HRP Budget Submission Line": "medops.hrp_budget.services.submission_access.submission_line_permission",
 	"HRP Business Dimension": "medops.hrp_master_data.services.budget_dimensions.master_permission",
 	"HRP Dimension Value": "medops.hrp_master_data.services.budget_dimensions.master_permission",
 	"HRP Funding Source": "medops.hrp_master_data.services.budget_dimensions.master_permission",

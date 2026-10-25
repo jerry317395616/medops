@@ -1,0 +1,353 @@
+{
+	"doctype": "DocType",
+	"name": "HRP Budget Submission",
+	"module": "HRP Budget",
+	"custom": 0,
+	"engine": "InnoDB",
+	"autoname": "field:identity_key",
+	"title_field": "subject",
+	"is_submittable": 1,
+	"istable": 0,
+	"issingle": 0,
+	"track_changes": 0,
+	"allow_rename": 0,
+	"editable_grid": 0,
+	"search_fields": "subject",
+	"field_order": [
+		"company",
+		"hospital",
+		"organization_version",
+		"organization_unit",
+		"cost_center",
+		"fiscal_year",
+		"currency",
+		"currency_precision",
+		"schema_version",
+		"submission_type",
+		"identity_key",
+		"subject",
+		"status",
+		"posting_date",
+		"applicant",
+		"source_plan",
+		"source_plan_revision",
+		"source_plan_digest",
+		"source_version",
+		"source_version_digest",
+		"total_amount",
+		"lines",
+		"snapshot_digest",
+		"sealed_by",
+		"sealed_at",
+		"revision",
+		"remarks"
+	],
+	"fields": [
+		{
+			"fieldname": "company",
+			"label": "法人",
+			"fieldtype": "Link",
+			"read_only": 1,
+			"reqd": 1,
+			"options": "Company"
+		},
+		{
+			"fieldname": "hospital",
+			"label": "医院",
+			"fieldtype": "Link",
+			"read_only": 1,
+			"reqd": 1,
+			"options": "HRP Hospital"
+		},
+		{
+			"fieldname": "organization_version",
+			"label": "组织快照",
+			"fieldtype": "Link",
+			"read_only": 1,
+			"reqd": 1,
+			"options": "HRP Organization Version"
+		},
+		{
+			"fieldname": "organization_unit",
+			"label": "申报科室",
+			"fieldtype": "Link",
+			"read_only": 1,
+			"reqd": 1,
+			"in_list_view": 1,
+			"options": "HRP Organization Unit"
+		},
+		{
+			"fieldname": "cost_center",
+			"label": "标准成本中心",
+			"fieldtype": "Link",
+			"read_only": 1,
+			"reqd": 1,
+			"options": "Cost Center"
+		},
+		{
+			"fieldname": "fiscal_year",
+			"label": "财政年度",
+			"fieldtype": "Link",
+			"read_only": 1,
+			"reqd": 1,
+			"options": "Fiscal Year"
+		},
+		{
+			"fieldname": "currency",
+			"label": "捕获币种",
+			"fieldtype": "Link",
+			"read_only": 1,
+			"reqd": 1,
+			"options": "Currency"
+		},
+		{
+			"fieldname": "currency_precision",
+			"label": "捕获精度",
+			"fieldtype": "Int",
+			"read_only": 1,
+			"reqd": 0
+		},
+		{
+			"fieldname": "schema_version",
+			"label": "快照版本",
+			"fieldtype": "Int",
+			"read_only": 1,
+			"reqd": 1,
+			"hidden": 1
+		},
+		{
+			"fieldname": "submission_type",
+			"label": "申报类型",
+			"fieldtype": "Select",
+			"read_only": 1,
+			"reqd": 1,
+			"options": "Department"
+		},
+		{
+			"fieldname": "identity_key",
+			"label": "内部身份",
+			"fieldtype": "Data",
+			"read_only": 1,
+			"reqd": 1,
+			"hidden": 1,
+			"unique": 1
+		},
+		{
+			"fieldname": "subject",
+			"label": "申报名称",
+			"fieldtype": "Data",
+			"read_only": 1,
+			"reqd": 1,
+			"in_list_view": 1
+		},
+		{
+			"fieldname": "status",
+			"label": "封存状态",
+			"fieldtype": "Select",
+			"read_only": 1,
+			"reqd": 1,
+			"in_list_view": 1,
+			"options": "Sealed"
+		},
+		{
+			"fieldname": "posting_date",
+			"label": "申报日期",
+			"fieldtype": "Date",
+			"read_only": 1,
+			"reqd": 1
+		},
+		{
+			"fieldname": "applicant",
+			"label": "申报人",
+			"fieldtype": "Link",
+			"read_only": 1,
+			"reqd": 1,
+			"options": "User"
+		},
+		{
+			"fieldname": "source_plan",
+			"label": "原始计划",
+			"fieldtype": "Link",
+			"read_only": 1,
+			"reqd": 1,
+			"options": "HRP Budget Plan"
+		},
+		{
+			"fieldname": "source_plan_revision",
+			"label": "原计划修订",
+			"fieldtype": "Int",
+			"read_only": 1,
+			"reqd": 1
+		},
+		{
+			"fieldname": "source_plan_digest",
+			"label": "原计划摘要",
+			"fieldtype": "Data",
+			"read_only": 1,
+			"reqd": 1
+		},
+		{
+			"fieldname": "source_version",
+			"label": "冻结编制版本",
+			"fieldtype": "Link",
+			"read_only": 1,
+			"reqd": 1,
+			"options": "HRP Budget Version"
+		},
+		{
+			"fieldname": "source_version_digest",
+			"label": "冻结版本摘要",
+			"fieldtype": "Data",
+			"read_only": 1,
+			"reqd": 1,
+			"permlevel": 1,
+			"hidden": 1
+		},
+		{
+			"fieldname": "total_amount",
+			"label": "精确申报金额",
+			"fieldtype": "Data",
+			"read_only": 1,
+			"reqd": 1
+		},
+		{
+			"fieldname": "lines",
+			"label": "封存明细",
+			"fieldtype": "Table",
+			"read_only": 1,
+			"reqd": 1,
+			"options": "HRP Budget Submission Line"
+		},
+		{
+			"fieldname": "snapshot_digest",
+			"label": "申报事实摘要",
+			"fieldtype": "Data",
+			"read_only": 1,
+			"reqd": 1
+		},
+		{
+			"fieldname": "sealed_by",
+			"label": "封存人",
+			"fieldtype": "Link",
+			"read_only": 1,
+			"reqd": 1,
+			"options": "User"
+		},
+		{
+			"fieldname": "sealed_at",
+			"label": "封存时间",
+			"fieldtype": "Datetime",
+			"read_only": 1,
+			"reqd": 1
+		},
+		{
+			"fieldname": "revision",
+			"label": "记录修订",
+			"fieldtype": "Int",
+			"read_only": 1,
+			"reqd": 1
+		},
+		{
+			"fieldname": "remarks",
+			"label": "原计划备注",
+			"fieldtype": "Small Text",
+			"read_only": 1,
+			"reqd": 0
+		}
+	],
+	"permissions": [
+		{
+			"role": "System Manager",
+			"read": 1,
+			"report": 1,
+			"export": 1,
+			"print": 1,
+			"create": 0,
+			"write": 0,
+			"delete": 0,
+			"submit": 0,
+			"cancel": 0,
+			"amend": 0
+		},
+		{
+			"role": "HRP System Manager",
+			"read": 1,
+			"report": 1,
+			"export": 1,
+			"print": 1,
+			"create": 0,
+			"write": 0,
+			"delete": 0,
+			"submit": 0,
+			"cancel": 0,
+			"amend": 0
+		},
+		{
+			"role": "HRP Budget User",
+			"read": 1,
+			"report": 1,
+			"export": 1,
+			"print": 1,
+			"create": 0,
+			"write": 0,
+			"delete": 0,
+			"submit": 0,
+			"cancel": 0,
+			"amend": 0
+		},
+		{
+			"role": "HRP Budget Manager",
+			"read": 1,
+			"report": 1,
+			"export": 1,
+			"print": 1,
+			"create": 0,
+			"write": 0,
+			"delete": 0,
+			"submit": 0,
+			"cancel": 0,
+			"amend": 0
+		},
+		{
+			"role": "HRP Finance User",
+			"read": 1,
+			"report": 1,
+			"export": 1,
+			"print": 1,
+			"create": 0,
+			"write": 0,
+			"delete": 0,
+			"submit": 0,
+			"cancel": 0,
+			"amend": 0
+		},
+		{
+			"role": "HRP Auditor",
+			"read": 1,
+			"report": 1,
+			"export": 1,
+			"print": 1,
+			"create": 0,
+			"write": 0,
+			"delete": 0,
+			"submit": 0,
+			"cancel": 0,
+			"amend": 0
+		},
+		{
+			"role": "System Manager",
+			"permlevel": 1,
+			"read": 1
+		},
+		{
+			"role": "HRP System Manager",
+			"permlevel": 1,
+			"read": 1
+		}
+	],
+	"sort_field": "modified",
+	"sort_order": "DESC",
+	"actions": [],
+	"links": [],
+	"states": []
+}

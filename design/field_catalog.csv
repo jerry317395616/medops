@@ -1163,69 +1163,6 @@ Alert
 None",0,0,0,0,0,,Hard,,控制模式,Finance
 medops,HRP Budget,HRP Budget Target,39,period_start,期间开始,Date,,0,0,0,0,0,,,,期间开始,Finance
 medops,HRP Budget,HRP Budget Target,40,period_end,期间结束,Date,,0,0,0,0,0,,,,期间结束,Finance
-medops,HRP Budget,HRP Budget Submission,10,company,法人,Link,Company,1,0,1,0,1,,,,法人,Finance
-medops,HRP Budget,HRP Budget Submission,11,hospital,医院,Link,HRP Hospital,1,0,1,0,0,,,,医院,Finance
-medops,HRP Budget,HRP Budget Submission,12,campus,院区,Link,HRP Campus,0,0,1,0,0,,,,院区,Finance
-medops,HRP Budget,HRP Budget Submission,13,organization_unit,组织单元,Link,HRP Organization Unit,1,0,1,0,1,,,,组织单元,Finance
-medops,HRP Budget,HRP Budget Submission,14,cost_center,成本中心,Link,Cost Center,0,0,1,0,0,,,,成本中心,Finance
-medops,HRP Budget,HRP Budget Submission,15,fiscal_year,财政年度,Link,Fiscal Year,0,0,1,0,0,,,,财政年度,Finance
-medops,HRP Budget,HRP Budget Submission,16,currency,币种,Link,Currency,0,0,0,0,0,,CNY,,币种,Finance
-medops,HRP Budget,HRP Budget Submission,17,status,业务状态,Select,"Draft
-Under Review
-Approved
-Rejected
-In Progress
-Completed
-Cancelled
-Closed",0,0,1,0,1,,Draft,,业务状态,Finance
-medops,HRP Budget,HRP Budget Submission,18,workflow_state,工作流状态,Link,Workflow State,0,0,1,1,0,,,,工作流状态,Finance
-medops,HRP Budget,HRP Budget Submission,19,posting_date,业务日期,Date,,1,0,1,0,1,,,,业务日期,Finance
-medops,HRP Budget,HRP Budget Submission,20,applicant,申请人,Link,User,1,0,1,0,0,,,,申请人,Finance
-medops,HRP Budget,HRP Budget Submission,21,employee,员工,Link,Employee,0,0,1,0,0,,,,员工,Finance
-medops,HRP Budget,HRP Budget Submission,22,subject,主题,Data,,1,0,0,0,1,,,,主题,Finance
-medops,HRP Budget,HRP Budget Submission,23,total_amount,总金额,Currency,currency,0,0,0,0,1,2,,,总金额,Finance
-medops,HRP Budget,HRP Budget Submission,24,external_id,外部ID,Data,,0,0,1,0,0,,,,外部ID,Finance
-medops,HRP Budget,HRP Budget Submission,25,source_doctype,来源类型,Link,DocType,0,0,0,0,0,,,,来源类型,Finance
-medops,HRP Budget,HRP Budget Submission,26,source_name,来源单据,Dynamic Link,source_doctype,0,0,1,0,0,,,,来源单据,Finance
-medops,HRP Budget,HRP Budget Submission,27,submitted_at,提交时间,Datetime,,0,0,0,1,0,,,,提交时间,Finance
-medops,HRP Budget,HRP Budget Submission,28,approved_at,批准时间,Datetime,,0,0,0,1,0,,,,批准时间,Finance
-medops,HRP Budget,HRP Budget Submission,29,remarks,备注,Small Text,,0,0,0,0,0,,,,备注,Finance
-medops,HRP Budget,HRP Budget Submission,30,budget_version,预算版本,Link,HRP Budget Version,0,0,1,0,0,,,,预算版本,Finance
-medops,HRP Budget,HRP Budget Submission,31,budget_subject,预算科目,Link,HRP Dimension Value,0,0,1,0,0,,,,预算科目,Finance
-medops,HRP Budget,HRP Budget Submission,32,funding_source,资金来源,Link,HRP Funding Source,0,0,1,0,0,,,,资金来源,Finance
-medops,HRP Budget,HRP Budget Submission,33,approved_amount,批准金额,Currency,currency,0,0,0,0,0,2,,,批准金额,Finance
-medops,HRP Budget,HRP Budget Submission,34,reserved_amount,预占金额,Currency,currency,0,0,0,1,0,2,,,预占金额,Finance
-medops,HRP Budget,HRP Budget Submission,35,committed_amount,承诺金额,Currency,currency,0,0,0,1,0,2,,,承诺金额,Finance
-medops,HRP Budget,HRP Budget Submission,36,actual_amount,实际金额,Currency,currency,0,0,0,1,0,2,,,实际金额,Finance
-medops,HRP Budget,HRP Budget Submission,37,available_amount,可用金额,Currency,currency,0,0,0,1,1,2,,,可用金额,Finance
-medops,HRP Budget,HRP Budget Submission,38,control_mode,控制模式,Select,"Hard
-Soft
-Alert
-None",0,0,0,0,0,,Hard,,控制模式,Finance
-medops,HRP Budget,HRP Budget Submission,39,period_start,期间开始,Date,,0,0,0,0,0,,,,期间开始,Finance
-medops,HRP Budget,HRP Budget Submission,40,period_end,期间结束,Date,,0,0,0,0,0,,,,期间结束,Finance
-medops,HRP Budget,HRP Budget Submission Line,10,sequence_no,序号,Int,,0,0,0,0,1,,1,,序号,Finance
-medops,HRP Budget,HRP Budget Submission Line,11,reference_doctype,引用类型,Link,DocType,0,0,0,0,0,,,,引用类型,Finance
-medops,HRP Budget,HRP Budget Submission Line,12,reference_name,引用单据,Dynamic Link,reference_doctype,0,0,1,0,0,,,,引用单据,Finance
-medops,HRP Budget,HRP Budget Submission Line,13,description,说明,Small Text,,0,0,0,0,0,,,,说明,Finance
-medops,HRP Budget,HRP Budget Submission Line,14,quantity,数量,Float,,0,0,0,0,0,6,,,数量,Finance
-medops,HRP Budget,HRP Budget Submission Line,15,rate,单价,Currency,currency,0,0,0,0,0,6,,,单价,Finance
-medops,HRP Budget,HRP Budget Submission Line,16,amount,金额,Currency,currency,0,0,0,1,1,2,,,金额,Finance
-medops,HRP Budget,HRP Budget Submission Line,17,dimension_json,核算维度,Code,JSON,0,0,0,0,0,,,,核算维度,Finance
-medops,HRP Budget,HRP Budget Submission Line,18,budget_version,预算版本,Link,HRP Budget Version,0,0,1,0,0,,,,预算版本,Finance
-medops,HRP Budget,HRP Budget Submission Line,19,budget_subject,预算科目,Link,HRP Dimension Value,0,0,1,0,0,,,,预算科目,Finance
-medops,HRP Budget,HRP Budget Submission Line,20,funding_source,资金来源,Link,HRP Funding Source,0,0,1,0,0,,,,资金来源,Finance
-medops,HRP Budget,HRP Budget Submission Line,21,approved_amount,批准金额,Currency,currency,0,0,0,0,0,2,,,批准金额,Finance
-medops,HRP Budget,HRP Budget Submission Line,22,reserved_amount,预占金额,Currency,currency,0,0,0,1,0,2,,,预占金额,Finance
-medops,HRP Budget,HRP Budget Submission Line,23,committed_amount,承诺金额,Currency,currency,0,0,0,1,0,2,,,承诺金额,Finance
-medops,HRP Budget,HRP Budget Submission Line,24,actual_amount,实际金额,Currency,currency,0,0,0,1,0,2,,,实际金额,Finance
-medops,HRP Budget,HRP Budget Submission Line,25,available_amount,可用金额,Currency,currency,0,0,0,1,1,2,,,可用金额,Finance
-medops,HRP Budget,HRP Budget Submission Line,26,control_mode,控制模式,Select,"Hard
-Soft
-Alert
-None",0,0,0,0,0,,Hard,,控制模式,Finance
-medops,HRP Budget,HRP Budget Submission Line,27,period_start,期间开始,Date,,0,0,0,0,0,,,,期间开始,Finance
-medops,HRP Budget,HRP Budget Submission Line,28,period_end,期间结束,Date,,0,0,0,0,0,,,,期间结束,Finance
 medops,HRP Budget,HRP Budget Review,10,company,法人,Link,Company,1,0,1,0,1,,,,法人,Finance
 medops,HRP Budget,HRP Budget Review,11,hospital,医院,Link,HRP Hospital,1,0,1,0,0,,,,医院,Finance
 medops,HRP Budget,HRP Budget Review,12,campus,院区,Link,HRP Campus,0,0,1,0,0,,,,院区,Finance
@@ -13665,3 +13602,47 @@ medops,HRP Budget,HRP Budget Plan Line,70,period_start,期间开始,Date,,1,0,0,
 medops,HRP Budget,HRP Budget Plan Line,80,period_end,期间结束,Date,,1,0,0,1,0,,,,期间结束,Finance
 medops,HRP Budget,HRP Budget Plan Line,90,amount,预算金额,Data,,1,0,0,1,1,,,,预算金额,Finance
 medops,HRP Budget,HRP Budget Plan Line,100,description,说明,Small Text,,0,0,0,1,0,,,,说明,Finance
+medops,HRP Budget,HRP Budget Submission,10,company,法人,Link,Company,1,0,0,1,0,,,,法人,Finance
+medops,HRP Budget,HRP Budget Submission,20,hospital,医院,Link,HRP Hospital,1,0,0,1,0,,,,医院,Finance
+medops,HRP Budget,HRP Budget Submission,30,organization_version,组织快照,Link,HRP Organization Version,1,0,0,1,0,,,,组织快照,Finance
+medops,HRP Budget,HRP Budget Submission,40,organization_unit,申报科室,Link,HRP Organization Unit,1,0,0,1,1,,,,申报科室,Finance
+medops,HRP Budget,HRP Budget Submission,50,cost_center,标准成本中心,Link,Cost Center,1,0,0,1,0,,,,标准成本中心,Finance
+medops,HRP Budget,HRP Budget Submission,60,fiscal_year,财政年度,Link,Fiscal Year,1,0,0,1,0,,,,财政年度,Finance
+medops,HRP Budget,HRP Budget Submission,70,currency,捕获币种,Link,Currency,1,0,0,1,0,,,,捕获币种,Finance
+medops,HRP Budget,HRP Budget Submission,80,currency_precision,捕获精度,Int,,0,0,0,1,0,,,,捕获精度,Finance
+medops,HRP Budget,HRP Budget Submission,90,schema_version,快照版本,Int,,1,0,0,1,0,,,,快照版本,Finance
+medops,HRP Budget,HRP Budget Submission,100,submission_type,申报类型,Select,Department,1,0,0,1,0,,,,申报类型,Finance
+medops,HRP Budget,HRP Budget Submission,110,identity_key,内部身份,Data,,1,1,0,1,0,,,,内部身份,Finance
+medops,HRP Budget,HRP Budget Submission,120,subject,申报名称,Data,,1,0,0,1,1,,,,申报名称,Finance
+medops,HRP Budget,HRP Budget Submission,130,status,封存状态,Select,Sealed,1,0,0,1,1,,,,封存状态,Finance
+medops,HRP Budget,HRP Budget Submission,140,posting_date,申报日期,Date,,1,0,0,1,0,,,,申报日期,Finance
+medops,HRP Budget,HRP Budget Submission,150,applicant,申报人,Link,User,1,0,0,1,0,,,,申报人,Finance
+medops,HRP Budget,HRP Budget Submission,160,source_plan,原始计划,Link,HRP Budget Plan,1,0,0,1,0,,,,原始计划,Finance
+medops,HRP Budget,HRP Budget Submission,170,source_plan_revision,原计划修订,Int,,1,0,0,1,0,,,,原计划修订,Finance
+medops,HRP Budget,HRP Budget Submission,180,source_plan_digest,原计划摘要,Data,,1,0,0,1,0,,,,原计划摘要,Finance
+medops,HRP Budget,HRP Budget Submission,190,source_version,冻结编制版本,Link,HRP Budget Version,1,0,0,1,0,,,,冻结编制版本,Finance
+medops,HRP Budget,HRP Budget Submission,200,source_version_digest,冻结版本摘要,Data,,1,0,0,1,0,,,,冻结版本摘要,Finance
+medops,HRP Budget,HRP Budget Submission,210,total_amount,精确申报金额,Data,,1,0,0,1,0,,,,精确申报金额,Finance
+medops,HRP Budget,HRP Budget Submission,220,lines,封存明细,Table,HRP Budget Submission Line,1,0,0,1,0,,,,封存明细,Finance
+medops,HRP Budget,HRP Budget Submission,230,snapshot_digest,申报事实摘要,Data,,1,0,0,1,0,,,,申报事实摘要,Finance
+medops,HRP Budget,HRP Budget Submission,240,sealed_by,封存人,Link,User,1,0,0,1,0,,,,封存人,Finance
+medops,HRP Budget,HRP Budget Submission,250,sealed_at,封存时间,Datetime,,1,0,0,1,0,,,,封存时间,Finance
+medops,HRP Budget,HRP Budget Submission,260,revision,记录修订,Int,,1,0,0,1,0,,,,记录修订,Finance
+medops,HRP Budget,HRP Budget Submission,270,remarks,原计划备注,Small Text,,0,0,0,1,0,,,,原计划备注,Finance
+medops,HRP Budget,HRP Budget Submission Line,10,fact_key,原始事实身份,Data,,1,0,0,1,0,,,,原始事实身份,Finance
+medops,HRP Budget,HRP Budget Submission Line,20,origin_plan,原始计划,Link,HRP Budget Plan,1,0,0,1,0,,,,原始计划,Finance
+medops,HRP Budget,HRP Budget Submission Line,30,origin_line_key,原始粒度身份,Data,,1,0,0,1,0,,,,原始粒度身份,Finance
+medops,HRP Budget,HRP Budget Submission Line,40,origin_version,原冻结版本,Link,HRP Budget Version,1,0,0,1,0,,,,原冻结版本,Finance
+medops,HRP Budget,HRP Budget Submission Line,50,origin_version_digest,原冻结版本摘要,Data,,1,0,0,1,0,,,,原冻结版本摘要,Finance
+medops,HRP Budget,HRP Budget Submission Line,60,origin_plan_digest,原计划摘要,Data,,1,0,0,1,0,,,,原计划摘要,Finance
+medops,HRP Budget,HRP Budget Submission Line,70,organization_unit,原始科室,Link,HRP Organization Unit,1,0,0,1,0,,,,原始科室,Finance
+medops,HRP Budget,HRP Budget Submission Line,80,cost_center,原始成本中心,Link,Cost Center,1,0,0,1,0,,,,原始成本中心,Finance
+medops,HRP Budget,HRP Budget Submission Line,90,budget_subject,预算科目,Link,HRP Dimension Value,1,0,0,1,0,,,,预算科目,Finance
+medops,HRP Budget,HRP Budget Submission Line,100,funding_source,资金来源,Link,HRP Funding Source,1,0,0,1,0,,,,资金来源,Finance
+medops,HRP Budget,HRP Budget Submission Line,110,account,会计科目,Link,Account,1,0,0,1,0,,,,会计科目,Finance
+medops,HRP Budget,HRP Budget Submission Line,120,project,项目,Link,Project,0,0,0,1,0,,,,项目,Finance
+medops,HRP Budget,HRP Budget Submission Line,130,period_index,期间序号,Int,,1,0,0,1,0,,,,期间序号,Finance
+medops,HRP Budget,HRP Budget Submission Line,140,period_start,期间开始,Date,,1,0,0,1,0,,,,期间开始,Finance
+medops,HRP Budget,HRP Budget Submission Line,150,period_end,期间结束,Date,,1,0,0,1,0,,,,期间结束,Finance
+medops,HRP Budget,HRP Budget Submission Line,160,amount,精确金额,Data,,1,0,0,1,0,,,,精确金额,Finance
+medops,HRP Budget,HRP Budget Submission Line,170,description,原始说明,Small Text,,0,0,0,1,0,,,,原始说明,Finance
