@@ -96,6 +96,10 @@ def ensure_rule_fixtures() -> None:
 
 def reset_rules() -> None:
 	frappe.set_user("Administrator")
+	# IntegrationTestCase rolls back at class end; restore metadata explicitly between methods.
+	frappe.db.set_value("DocField", {"parent": SOURCE, "fieldname": "amount"}, {"permlevel": 0, "mask": 0})
+	frappe.db.delete("DocPerm", {"parent": SOURCE, "role": "HRP User", "permlevel": 1})
+	frappe.clear_cache(doctype=SOURCE)
 	frappe.db.delete(LOG)
 	frappe.db.delete(RULE)
 	frappe.db.delete(CHILD)
@@ -395,7 +399,10 @@ class TestBusinessRules(IntegrationTestCase):
 		frappe.clear_cache(doctype=SOURCE)
 		upsert(policy(assertion_json={"field": "restricted_amount", "op": "gt", "value": 0}))
 		other = source()
-		owned = source(owner=TEST_USER)
+		frappe.set_user(TEST_USER)
+		owned = source()
+		self.assertEqual(owned.owner, TEST_USER)
+		frappe.set_user("Administrator")
 		grant_source_read()
 		frappe.set_user(TEST_USER)
 		with self.assertRaises(IoneApplicationError):
