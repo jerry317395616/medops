@@ -2,7 +2,7 @@
 	"schema_version": 1,
 	"task_id": "COD-201",
 	"title": "补齐核心主数据访问边界",
-	"status": "In Progress",
+	"status": "Implemented",
 	"risk_level": "critical",
 	"change_types": [
 		"application",

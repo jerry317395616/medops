@@ -76,6 +76,13 @@ ERPNext 标准 `Department`/`Cost Center`。`CORE-014` 负责幂等修订并校�
 必须继续调用对应标准控制器。完整规则见 `architecture/master_data_change_requests.md` 与
 `architecture/adr/ADR-0014-governed-master-data-change-proposals.md`。
 
+主数据访问同时检查业务角色、当前法人/医院/科室范围、真实 ERPNext 目标读取及字段权限。
+全局主数据域只允许系统管理角色维护；普通账号须显式配置范围与必要的标准目标读取或共享。
+“主数据中心”通过“主数据受控查询”进入申请、映射、质量规则与问题，支持过滤和可见记录分页；
+四种模型的通用 SQL 列表仅 Administrator 可用。历史质量结论保留不可缩减的字段读取约束，
+旧幂等键只允许原主体在当前仍获授权时重试。迁移、授权配置和回退见
+[核心主数据访问说明](architecture/core_data_access.md) 与 ADR-0026。
+
 ## 外部编码映射
 
 `HRP External Code Mapping` 在外部系统编码与受控 ERPNext 标准主数据之间提供一对一双向解析。
