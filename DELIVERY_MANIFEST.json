@@ -159,6 +159,9 @@
 		"architecture/adr/ADR-0024-database-conflict-job-boundaries.md",
 		"architecture/business_rules.md",
 		"architecture/adr/ADR-0025-declarative-business-rule-evidence.md",
-		"backlog/COD-029.md"
+		"backlog/COD-029.md",
+		"medops/common/business_rules.py",
+		"medops/api/v1/core/rules.py",
+		"medops/setup/business_rules.py"
 	]
 }

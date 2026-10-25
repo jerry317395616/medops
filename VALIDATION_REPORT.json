@@ -1,43 +1,45 @@
 {
 	"schema_version": 1,
-	"status": "LOCAL_VALIDATED_COD_028",
-	"task_id": "COD-028",
+	"status": "LOCAL_VALIDATED_COD_029",
+	"task_id": "COD-029",
 	"recorded_on": "2026-10-25",
 	"runtime_namespace": "medops",
 	"architecture_decisions": [
-		"ADR-0023",
-		"ADR-0024"
+		"ADR-0025"
 	],
-	"candidate_code_commit": "bb3667427d1cb561ab9917e23bf5b02d51758499",
+	"candidate_code_commit": "948765e0ce0a66d586b5c1eecfb6ec5b4c7dad94",
 	"checks": {
 		"local_quality": "passed",
-		"unit_tests_passed": 301,
-		"integration_tests_defined": 232,
-		"isolated_full_suite_before_last_fixes": {
-			"commit": "413bf74bc7716bddbbb656bbedd5ddffa62f2190",
-			"passed": 228
+		"unit_tests_passed": 310,
+		"integration_tests_defined": 254,
+		"isolated_full_suite": {
+			"commit": "948765e0ce0a66d586b5c1eecfb6ec5b4c7dad94",
+			"passed": 253,
+			"site": "cod029-948765e.localhost"
 		},
-		"latest_sla_regression_tests_passed": 20,
-		"concurrent_jobs": 2,
-		"database_conflicts_retried": 1,
-		"cycles_after_concurrency": 1,
-		"todos_after_concurrency": 1,
-		"automatic_shares": 0,
+		"business_rule_tests_passed_in_full_suite": 22,
+		"concurrent_same_key_processes": 2,
+		"evidence_after_concurrency": 1,
+		"idempotency_replays": 1,
+		"configuration_edit_waits_for_business_guard": true,
+		"current_policy_after_old_snapshot_and_outer_retry": "passed",
 		"personal_fork_upstream_lock": "matched",
 		"repeated_migration": "passed"
 	},
 	"release_evidence": {
-		"required_ci": "https://github.com/jerry317395616/medops/pull/39/checks",
+		"required_ci": "https://github.com/jerry317395616/medops/pull/40/checks",
 		"required_context": "Required",
 		"ci_must_pass_before_merge": true,
-		"deployment_evidence": "/home/zyd/frappe/medical-deployment-evidence/cod028-promotion/result.json",
+		"isolated_acceptance": "/home/zyd/frappe/medical-validation/evidence/cod029-release-acceptance-result.json",
+		"latest_regression": "/home/zyd/frappe/medical-validation/evidence/cod029-release-acceptance-result.json",
+		"deployment_evidence": "/home/zyd/frappe/medical-deployment-evidence/cod029-promotion/result.json",
 		"deployment_occurs_only_after_protected_merge": true
 	},
 	"prior_base": {
-		"commit": "e11776c0b3bf4f3dc1f83aaf3b6a90eaf1a00912",
-		"pull_request": 38,
-		"ci_run": 40176335121,
-		"frappe_tests_passed": 209,
+		"commit": "71a73e842d3c0c27acc0f4f7ed168e0264767ccb",
+		"pull_request": 39,
+		"ci_run": 40184012818,
+		"frappe_tests_passed": 231,
 		"isolated_medical_development_promotion": "verified"
 	},
 	"not_run": [
