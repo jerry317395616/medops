@@ -1,145 +1,219 @@
 {
-  "doctype": "DocType",
-  "name": "HRP Rule Execution Log",
-  "module": "HRP Workflow Authorization",
-  "custom": 0,
-  "engine": "InnoDB",
-  "autoname": "format:CORE-.YYYY.-.#####",
-  "title_field": "subject",
-  "is_submittable": 0,
-  "istable": 0,
-  "issingle": 0,
-  "track_changes": 0,
-  "allow_rename": 0,
-  "editable_grid": 0,
-  "sort_field": "modified",
-  "sort_order": "DESC",
-  "index_web_pages_for_search": 0,
-  "description": "流程与授权领域的HRP规则执行日志对象；用于支撑业务闭环、权限、审计与对账。",
-  "fields": [
-    {
-      "fieldname": "event_time",
-      "label": "发生时间",
-      "fieldtype": "Datetime",
-      "reqd": 1,
-      "search_index": 1,
-      "in_list_view": 1,
-      "description": "发生时间"
-    },
-    {
-      "fieldname": "status",
-      "label": "状态",
-      "fieldtype": "Select",
-      "options": "Pending\nProcessing\nSuccess\nFailed\nIgnored",
-      "reqd": 1,
-      "search_index": 1,
-      "in_list_view": 1,
-      "description": "状态"
-    },
-    {
-      "fieldname": "correlation_id",
-      "label": "关联ID",
-      "fieldtype": "Data",
-      "search_index": 1,
-      "in_list_view": 1,
-      "description": "关联ID"
-    },
-    {
-      "fieldname": "idempotency_key",
-      "label": "幂等键",
-      "fieldtype": "Data",
-      "search_index": 1,
-      "description": "幂等键"
-    },
-    {
-      "fieldname": "reference_doctype",
-      "label": "引用类型",
-      "fieldtype": "Link",
-      "options": "DocType",
-      "description": "引用类型"
-    },
-    {
-      "fieldname": "reference_name",
-      "label": "引用单据",
-      "fieldtype": "Dynamic Link",
-      "options": "reference_doctype",
-      "search_index": 1,
-      "description": "引用单据"
-    },
-    {
-      "fieldname": "payload_hash",
-      "label": "报文哈希",
-      "fieldtype": "Data",
-      "description": "报文哈希"
-    },
-    {
-      "fieldname": "payload",
-      "label": "报文",
-      "fieldtype": "Long Text",
-      "description": "报文"
-    },
-    {
-      "fieldname": "error_code",
-      "label": "错误码",
-      "fieldtype": "Data",
-      "description": "错误码"
-    },
-    {
-      "fieldname": "error_message",
-      "label": "错误信息",
-      "fieldtype": "Long Text",
-      "description": "错误信息"
-    },
-    {
-      "fieldname": "retry_count",
-      "label": "重试次数",
-      "fieldtype": "Int",
-      "default": "0",
-      "description": "重试次数"
-    },
-    {
-      "fieldname": "next_retry_at",
-      "label": "下次重试",
-      "fieldtype": "Datetime",
-      "description": "下次重试"
-    }
-  ],
-  "permissions": [
-    {
-      "role": "HRP System Manager",
-      "read": 1,
-      "write": 0,
-      "create": 0,
-      "delete": 0,
-      "submit": 0,
-      "cancel": 0,
-      "amend": 0
-    },
-    {
-      "role": "HRP Data Steward",
-      "read": 1,
-      "write": 0,
-      "create": 0,
-      "delete": 0,
-      "submit": 0,
-      "cancel": 0,
-      "amend": 0
-    }
-  ],
-  "links": [],
-  "actions": [],
-  "x_hrp": {
-    "app": "medops",
-    "retention_years": 10,
-    "data_classification": "内部",
-    "key_indexes": [
-      "company",
-      "organization_unit",
-      "status",
-      "posting_date"
-    ],
-    "standard_references": [],
-    "domain_group": "Core",
-    "module_package": "hrp_workflow_authorization"
-  }
+	"doctype": "DocType",
+	"name": "HRP Rule Execution Log",
+	"module": "HRP Workflow Authorization",
+	"custom": 0,
+	"engine": "InnoDB",
+	"autoname": "hash",
+	"title_field": "reference_name",
+	"is_submittable": 0,
+	"istable": 0,
+	"issingle": 0,
+	"track_changes": 0,
+	"allow_rename": 0,
+	"sort_field": "evaluated_at",
+	"sort_order": "DESC",
+	"index_web_pages_for_search": 0,
+	"description": "仅追加的历史验证证据，不代表当前业务授权；不保存源业务原文。",
+	"field_order": [
+		"event_key",
+		"evaluated_at",
+		"purpose",
+		"reference_doctype",
+		"reference_name",
+		"source_modified",
+		"target_action",
+		"company",
+		"hospital",
+		"organization_unit",
+		"actor",
+		"outcome",
+		"decision_digest",
+		"rule_set_digest",
+		"source_digest",
+		"field_refs_json",
+		"rule_results_json",
+		"correlation_id",
+		"request_id"
+	],
+	"fields": [
+		{
+			"fieldname": "event_key",
+			"label": "记录唯一键",
+			"fieldtype": "Data",
+			"description": "记录唯一键",
+			"reqd": 1,
+			"unique": 1
+		},
+		{
+			"fieldname": "evaluated_at",
+			"label": "验证时间",
+			"fieldtype": "Datetime",
+			"description": "验证时间",
+			"reqd": 1
+		},
+		{
+			"fieldname": "purpose",
+			"label": "记录用途",
+			"fieldtype": "Select",
+			"description": "记录用途",
+			"reqd": 1,
+			"options": "Snapshot\nGuard"
+		},
+		{
+			"fieldname": "reference_doctype",
+			"label": "源单据类型",
+			"fieldtype": "Link",
+			"description": "源单据类型",
+			"reqd": 1,
+			"options": "DocType"
+		},
+		{
+			"fieldname": "reference_name",
+			"label": "源单据",
+			"fieldtype": "Dynamic Link",
+			"description": "源单据",
+			"reqd": 1,
+			"in_list_view": 1,
+			"options": "reference_doctype"
+		},
+		{
+			"fieldname": "source_modified",
+			"label": "源单据版本时间",
+			"fieldtype": "Datetime",
+			"description": "源单据版本时间",
+			"reqd": 1
+		},
+		{
+			"fieldname": "target_action",
+			"label": "受控动作",
+			"fieldtype": "Select",
+			"description": "受控动作",
+			"reqd": 1,
+			"options": "validate\namend\napprove\ncancel\ncreate\npay\npost\nreconcile\nrelease\nreview\nsubmit"
+		},
+		{
+			"fieldname": "company",
+			"label": "法人",
+			"fieldtype": "Link",
+			"description": "法人",
+			"reqd": 1,
+			"search_index": 1,
+			"options": "Company"
+		},
+		{
+			"fieldname": "hospital",
+			"label": "医院",
+			"fieldtype": "Link",
+			"description": "医院",
+			"reqd": 1,
+			"search_index": 1,
+			"options": "HRP Hospital"
+		},
+		{
+			"fieldname": "organization_unit",
+			"label": "组织单元",
+			"fieldtype": "Link",
+			"description": "组织单元",
+			"search_index": 1,
+			"options": "HRP Organization Unit"
+		},
+		{
+			"fieldname": "actor",
+			"label": "执行人",
+			"fieldtype": "Link",
+			"description": "执行人",
+			"reqd": 1,
+			"options": "User"
+		},
+		{
+			"fieldname": "outcome",
+			"label": "历史验证结果",
+			"fieldtype": "Select",
+			"description": "历史验证结果",
+			"reqd": 1,
+			"in_list_view": 1,
+			"options": "Passed\nBlocked\nWarned\nUnconfigured"
+		},
+		{
+			"fieldname": "decision_digest",
+			"label": "验证摘要",
+			"fieldtype": "Data",
+			"description": "验证摘要",
+			"reqd": 1
+		},
+		{
+			"fieldname": "rule_set_digest",
+			"label": "策略集摘要",
+			"fieldtype": "Data",
+			"description": "策略集摘要",
+			"reqd": 1
+		},
+		{
+			"fieldname": "source_digest",
+			"label": "源数据摘要",
+			"fieldtype": "Data",
+			"description": "源数据摘要",
+			"reqd": 1
+		},
+		{
+			"fieldname": "field_refs_json",
+			"label": "已校验字段引用",
+			"fieldtype": "Code",
+			"description": "已校验字段引用",
+			"reqd": 1,
+			"options": "JSON"
+		},
+		{
+			"fieldname": "rule_results_json",
+			"label": "规则结果",
+			"fieldtype": "Code",
+			"description": "规则结果",
+			"reqd": 1,
+			"options": "JSON"
+		},
+		{
+			"fieldname": "correlation_id",
+			"label": "关联标识",
+			"fieldtype": "Data",
+			"description": "关联标识",
+			"reqd": 1
+		},
+		{
+			"fieldname": "request_id",
+			"label": "请求标识",
+			"fieldtype": "Data",
+			"description": "请求标识",
+			"reqd": 1
+		}
+	],
+	"permissions": [
+		{
+			"role": "System Manager",
+			"read": 1,
+			"report": 1
+		},
+		{
+			"role": "HRP System Manager",
+			"read": 1,
+			"report": 1
+		}
+	],
+	"actions": [],
+	"links": [],
+	"states": [],
+	"x_hrp": {
+		"app": "medops",
+		"retention_years": 10,
+		"data_classification": "内部",
+		"key_indexes": [
+			"company",
+			"organization_unit",
+			"status",
+			"posting_date"
+		],
+		"standard_references": [],
+		"domain_group": "Core",
+		"module_package": "hrp_workflow_authorization"
+	}
 }

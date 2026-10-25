@@ -1,0 +1,215 @@
+{
+	"doctype": "DocType",
+	"name": "HRP Business Rule",
+	"module": "HRP Workflow Authorization",
+	"custom": 0,
+	"engine": "InnoDB",
+	"autoname": "field:code",
+	"title_field": "display_name",
+	"is_submittable": 0,
+	"istable": 0,
+	"issingle": 0,
+	"track_changes": 1,
+	"allow_rename": 0,
+	"sort_field": "modified",
+	"sort_order": "DESC",
+	"index_web_pages_for_search": 0,
+	"description": "声明式、有界、按真实单据上下文执行的业务校验规则。",
+	"field_order": [
+		"code",
+		"display_name",
+		"target_doctype",
+		"target_action",
+		"company",
+		"hospital",
+		"organization_unit",
+		"include_descendants",
+		"enabled",
+		"priority",
+		"valid_from",
+		"valid_to",
+		"severity",
+		"when_json",
+		"assertion_json",
+		"field_contract_json",
+		"revision",
+		"policy_digest",
+		"remarks"
+	],
+	"fields": [
+		{
+			"fieldname": "code",
+			"label": "规则编码",
+			"fieldtype": "Data",
+			"description": "规则编码",
+			"reqd": 1,
+			"unique": 1,
+			"in_list_view": 1
+		},
+		{
+			"fieldname": "display_name",
+			"label": "规则名称",
+			"fieldtype": "Data",
+			"description": "规则名称",
+			"reqd": 1,
+			"in_list_view": 1
+		},
+		{
+			"fieldname": "target_doctype",
+			"label": "适用单据类型",
+			"fieldtype": "Link",
+			"description": "适用单据类型",
+			"reqd": 1,
+			"search_index": 1,
+			"options": "DocType"
+		},
+		{
+			"fieldname": "target_action",
+			"label": "受控动作",
+			"fieldtype": "Select",
+			"description": "受控动作",
+			"reqd": 1,
+			"options": "validate\namend\napprove\ncancel\ncreate\npay\npost\nreconcile\nrelease\nreview\nsubmit"
+		},
+		{
+			"fieldname": "company",
+			"label": "法人",
+			"fieldtype": "Link",
+			"description": "法人",
+			"reqd": 1,
+			"search_index": 1,
+			"options": "Company"
+		},
+		{
+			"fieldname": "hospital",
+			"label": "医院",
+			"fieldtype": "Link",
+			"description": "医院",
+			"reqd": 1,
+			"search_index": 1,
+			"options": "HRP Hospital"
+		},
+		{
+			"fieldname": "organization_unit",
+			"label": "组织单元",
+			"fieldtype": "Link",
+			"description": "组织单元",
+			"search_index": 1,
+			"options": "HRP Organization Unit"
+		},
+		{
+			"fieldname": "include_descendants",
+			"label": "包含下级组织",
+			"fieldtype": "Check",
+			"description": "包含下级组织",
+			"default": "0"
+		},
+		{
+			"fieldname": "enabled",
+			"label": "启用",
+			"fieldtype": "Check",
+			"description": "启用",
+			"default": "1"
+		},
+		{
+			"fieldname": "priority",
+			"label": "执行顺序",
+			"fieldtype": "Int",
+			"description": "执行顺序",
+			"default": "0"
+		},
+		{
+			"fieldname": "valid_from",
+			"label": "有效期开始",
+			"fieldtype": "Date",
+			"description": "有效期开始",
+			"reqd": 1
+		},
+		{
+			"fieldname": "valid_to",
+			"label": "有效期结束",
+			"fieldtype": "Date",
+			"description": "有效期结束"
+		},
+		{
+			"fieldname": "severity",
+			"label": "不通过处理",
+			"fieldtype": "Select",
+			"description": "不通过处理",
+			"reqd": 1,
+			"default": "Block",
+			"options": "Block\nWarn"
+		},
+		{
+			"fieldname": "when_json",
+			"label": "适用条件",
+			"fieldtype": "Code",
+			"description": "适用条件",
+			"options": "JSON"
+		},
+		{
+			"fieldname": "assertion_json",
+			"label": "业务约束",
+			"fieldtype": "Code",
+			"description": "业务约束",
+			"reqd": 1,
+			"options": "JSON"
+		},
+		{
+			"fieldname": "field_contract_json",
+			"label": "字段契约快照",
+			"fieldtype": "Code",
+			"description": "字段契约快照",
+			"reqd": 1,
+			"read_only": 1,
+			"options": "JSON"
+		},
+		{
+			"fieldname": "revision",
+			"label": "规则版本",
+			"fieldtype": "Int",
+			"description": "规则版本",
+			"reqd": 1,
+			"read_only": 1,
+			"default": "1"
+		},
+		{
+			"fieldname": "policy_digest",
+			"label": "规则摘要",
+			"fieldtype": "Data",
+			"description": "规则摘要",
+			"reqd": 1,
+			"read_only": 1
+		},
+		{
+			"fieldname": "remarks",
+			"label": "备注",
+			"fieldtype": "Small Text",
+			"description": "备注"
+		}
+	],
+	"permissions": [
+		{
+			"role": "System Manager",
+			"read": 1,
+			"report": 1,
+			"create": 1,
+			"write": 1
+		},
+		{
+			"role": "HRP System Manager",
+			"read": 1,
+			"report": 1,
+			"create": 1,
+			"write": 1
+		},
+		{
+			"role": "HRP Auditor",
+			"read": 1,
+			"report": 1
+		}
+	],
+	"actions": [],
+	"links": [],
+	"states": []
+}

@@ -5103,6 +5103,34 @@ def validate_sla_contract(root: Path) -> list[str]:
 	return violations
 
 
+def validate_business_rule_contract(root: Path) -> list[str]:
+	violations: list[str] = []
+	module = root / "medops/hrp_workflow_authorization"
+	for slug in ("hrp_business_rule", "hrp_rule_execution_log"):
+		runtime = json.loads((module / "doctype" / slug / f"{slug}.json").read_text(encoding="utf-8"))
+		blueprint = json.loads(
+			(root / "doctype_blueprints/hrp_workflow_authorization" / f"{slug}.json").read_text(
+				encoding="utf-8"
+			)
+		)
+		if runtime["fields"] != blueprint["fields"] or runtime["permissions"] != blueprint["permissions"]:
+			violations.append(f"business rule blueprint differs from runtime: {slug}")
+		if runtime["is_submittable"] or runtime["allow_rename"]:
+			violations.append(f"business rule lifecycle metadata is unsafe: {slug}")
+		if slug == "hrp_rule_execution_log":
+			fields = {f["fieldname"]: f for f in runtime["fields"]}
+			if (
+				{"payload", "error_message", "observed_value"}.intersection(fields)
+				or not fields["event_key"].get("unique")
+				or runtime["track_changes"]
+			):
+				violations.append("rule evidence must be unique, append-only and free of raw source payload")
+	bridge = (root / "medops/hrp_master_data/services/master_data.py").read_text(encoding="utf-8")
+	if 'enforce_business_rules(request, "submit", required=False)' not in bridge:
+		violations.append("master data submission must invoke the governed rule guard")
+	return violations
+
+
 def collect_violations(root: Path) -> list[str]:
 	root = root.resolve()
 	violations: list[str] = []
@@ -5159,6 +5187,7 @@ def collect_violations(root: Path) -> list[str]:
 	violations.extend(validate_delegation_contract(root))
 	violations.extend(validate_segregation_contract(root))
 	violations.extend(validate_sla_contract(root))
+	violations.extend(validate_business_rule_contract(root))
 	return violations
 
 

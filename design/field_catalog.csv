@@ -1119,45 +1119,69 @@ medops,HRP Workflow Authorization,HRP SLA Escalation,42,retry_count,连续错误
 medops,HRP Workflow Authorization,HRP SLA Escalation,43,revision,处理版本,Int,,1,0,0,0,0,,1,,处理版本,Core
 medops,HRP Workflow Authorization,HRP SLA Escalation,44,disposition_reason,人工处置原因,Small Text,,0,0,0,0,0,,,,人工处置原因,Core
 medops,HRP Workflow Authorization,HRP SLA Escalation,45,disposition_by,人工处置人,Link,User,0,0,0,0,0,,,,人工处置人,Core
-medops,HRP Workflow Authorization,HRP Business Rule,10,company,法人,Link,Company,1,0,1,0,1,,,,法人,Core
-medops,HRP Workflow Authorization,HRP Business Rule,11,hospital,医院,Link,HRP Hospital,1,0,1,0,0,,,,医院,Core
-medops,HRP Workflow Authorization,HRP Business Rule,12,campus,院区,Link,HRP Campus,0,0,1,0,0,,,,院区,Core
-medops,HRP Workflow Authorization,HRP Business Rule,13,organization_unit,组织单元,Link,HRP Organization Unit,1,0,1,0,1,,,,组织单元,Core
-medops,HRP Workflow Authorization,HRP Business Rule,14,cost_center,成本中心,Link,Cost Center,0,0,1,0,0,,,,成本中心,Core
-medops,HRP Workflow Authorization,HRP Business Rule,15,fiscal_year,财政年度,Link,Fiscal Year,0,0,1,0,0,,,,财政年度,Core
-medops,HRP Workflow Authorization,HRP Business Rule,16,currency,币种,Link,Currency,0,0,0,0,0,,CNY,,币种,Core
-medops,HRP Workflow Authorization,HRP Business Rule,17,status,业务状态,Select,"Draft
-Under Review
-Approved
-Rejected
-In Progress
-Completed
-Cancelled
-Closed",0,0,1,0,1,,Draft,,业务状态,Core
-medops,HRP Workflow Authorization,HRP Business Rule,18,workflow_state,工作流状态,Link,Workflow State,0,0,1,1,0,,,,工作流状态,Core
-medops,HRP Workflow Authorization,HRP Business Rule,19,code,编码,Data,,1,1,1,0,1,,,,编码,Core
-medops,HRP Workflow Authorization,HRP Business Rule,20,display_name,名称,Data,,1,0,0,0,1,,,,名称,Core
-medops,HRP Workflow Authorization,HRP Business Rule,21,enabled,启用,Check,,0,0,1,0,0,,1,,启用,Core
-medops,HRP Workflow Authorization,HRP Business Rule,22,valid_from,有效期开始,Date,,0,0,0,0,0,,,,有效期开始,Core
-medops,HRP Workflow Authorization,HRP Business Rule,23,valid_to,有效期结束,Date,,0,0,0,0,0,,,,有效期结束,Core
-medops,HRP Workflow Authorization,HRP Business Rule,24,owner_department,责任部门,Link,Department,0,0,0,0,0,,,,责任部门,Core
-medops,HRP Workflow Authorization,HRP Business Rule,25,remarks,备注,Small Text,,0,0,0,0,0,,,,备注,Core
-medops,HRP Workflow Authorization,HRP Rule Execution Log,10,event_time,发生时间,Datetime,,1,0,1,0,1,,,,发生时间,Core
-medops,HRP Workflow Authorization,HRP Rule Execution Log,11,status,状态,Select,"Pending
-Processing
-Success
-Failed
-Ignored",1,0,1,0,1,,,,状态,Core
-medops,HRP Workflow Authorization,HRP Rule Execution Log,12,correlation_id,关联ID,Data,,0,0,1,0,1,,,,关联ID,Core
-medops,HRP Workflow Authorization,HRP Rule Execution Log,13,idempotency_key,幂等键,Data,,0,0,1,0,0,,,,幂等键,Core
-medops,HRP Workflow Authorization,HRP Rule Execution Log,14,reference_doctype,引用类型,Link,DocType,0,0,0,0,0,,,,引用类型,Core
-medops,HRP Workflow Authorization,HRP Rule Execution Log,15,reference_name,引用单据,Dynamic Link,reference_doctype,0,0,1,0,0,,,,引用单据,Core
-medops,HRP Workflow Authorization,HRP Rule Execution Log,16,payload_hash,报文哈希,Data,,0,0,0,0,0,,,,报文哈希,Core
-medops,HRP Workflow Authorization,HRP Rule Execution Log,17,payload,报文,Long Text,,0,0,0,0,0,,,,报文,Core
-medops,HRP Workflow Authorization,HRP Rule Execution Log,18,error_code,错误码,Data,,0,0,0,0,0,,,,错误码,Core
-medops,HRP Workflow Authorization,HRP Rule Execution Log,19,error_message,错误信息,Long Text,,0,0,0,0,0,,,,错误信息,Core
-medops,HRP Workflow Authorization,HRP Rule Execution Log,20,retry_count,重试次数,Int,,0,0,0,0,0,,0,,重试次数,Core
-medops,HRP Workflow Authorization,HRP Rule Execution Log,21,next_retry_at,下次重试,Datetime,,0,0,0,0,0,,,,下次重试,Core
+medops,HRP Workflow Authorization,HRP Business Rule,10,code,规则编码,Data,,1,1,0,0,1,,,,规则编码,Core
+medops,HRP Workflow Authorization,HRP Business Rule,11,display_name,规则名称,Data,,1,0,0,0,1,,,,规则名称,Core
+medops,HRP Workflow Authorization,HRP Business Rule,12,target_doctype,适用单据类型,Link,DocType,1,0,1,0,0,,,,适用单据类型,Core
+medops,HRP Workflow Authorization,HRP Business Rule,13,target_action,受控动作,Select,"validate
+amend
+approve
+cancel
+create
+pay
+post
+reconcile
+release
+review
+submit",1,0,0,0,0,,,,受控动作,Core
+medops,HRP Workflow Authorization,HRP Business Rule,14,company,法人,Link,Company,1,0,1,0,0,,,,法人,Core
+medops,HRP Workflow Authorization,HRP Business Rule,15,hospital,医院,Link,HRP Hospital,1,0,1,0,0,,,,医院,Core
+medops,HRP Workflow Authorization,HRP Business Rule,16,organization_unit,组织单元,Link,HRP Organization Unit,0,0,1,0,0,,,,组织单元,Core
+medops,HRP Workflow Authorization,HRP Business Rule,17,include_descendants,包含下级组织,Check,,0,0,0,0,0,,0,,包含下级组织,Core
+medops,HRP Workflow Authorization,HRP Business Rule,18,enabled,启用,Check,,0,0,0,0,0,,1,,启用,Core
+medops,HRP Workflow Authorization,HRP Business Rule,19,priority,执行顺序,Int,,0,0,0,0,0,,0,,执行顺序,Core
+medops,HRP Workflow Authorization,HRP Business Rule,20,valid_from,有效期开始,Date,,1,0,0,0,0,,,,有效期开始,Core
+medops,HRP Workflow Authorization,HRP Business Rule,21,valid_to,有效期结束,Date,,0,0,0,0,0,,,,有效期结束,Core
+medops,HRP Workflow Authorization,HRP Business Rule,22,severity,不通过处理,Select,"Block
+Warn",1,0,0,0,0,,Block,,不通过处理,Core
+medops,HRP Workflow Authorization,HRP Business Rule,23,when_json,适用条件,Code,JSON,0,0,0,0,0,,,,适用条件,Core
+medops,HRP Workflow Authorization,HRP Business Rule,24,assertion_json,业务约束,Code,JSON,1,0,0,0,0,,,,业务约束,Core
+medops,HRP Workflow Authorization,HRP Business Rule,25,field_contract_json,字段契约快照,Code,JSON,1,0,0,1,0,,,,字段契约快照,Core
+medops,HRP Workflow Authorization,HRP Business Rule,26,revision,规则版本,Int,,1,0,0,1,0,,1,,规则版本,Core
+medops,HRP Workflow Authorization,HRP Business Rule,27,policy_digest,规则摘要,Data,,1,0,0,1,0,,,,规则摘要,Core
+medops,HRP Workflow Authorization,HRP Business Rule,28,remarks,备注,Small Text,,0,0,0,0,0,,,,备注,Core
+medops,HRP Workflow Authorization,HRP Rule Execution Log,10,event_key,记录唯一键,Data,,1,1,0,0,0,,,,记录唯一键,Core
+medops,HRP Workflow Authorization,HRP Rule Execution Log,11,evaluated_at,验证时间,Datetime,,1,0,0,0,0,,,,验证时间,Core
+medops,HRP Workflow Authorization,HRP Rule Execution Log,12,purpose,记录用途,Select,"Snapshot
+Guard",1,0,0,0,0,,,,记录用途,Core
+medops,HRP Workflow Authorization,HRP Rule Execution Log,13,reference_doctype,源单据类型,Link,DocType,1,0,0,0,0,,,,源单据类型,Core
+medops,HRP Workflow Authorization,HRP Rule Execution Log,14,reference_name,源单据,Dynamic Link,reference_doctype,1,0,0,0,1,,,,源单据,Core
+medops,HRP Workflow Authorization,HRP Rule Execution Log,15,source_modified,源单据版本时间,Datetime,,1,0,0,0,0,,,,源单据版本时间,Core
+medops,HRP Workflow Authorization,HRP Rule Execution Log,16,target_action,受控动作,Select,"validate
+amend
+approve
+cancel
+create
+pay
+post
+reconcile
+release
+review
+submit",1,0,0,0,0,,,,受控动作,Core
+medops,HRP Workflow Authorization,HRP Rule Execution Log,17,company,法人,Link,Company,1,0,1,0,0,,,,法人,Core
+medops,HRP Workflow Authorization,HRP Rule Execution Log,18,hospital,医院,Link,HRP Hospital,1,0,1,0,0,,,,医院,Core
+medops,HRP Workflow Authorization,HRP Rule Execution Log,19,organization_unit,组织单元,Link,HRP Organization Unit,0,0,1,0,0,,,,组织单元,Core
+medops,HRP Workflow Authorization,HRP Rule Execution Log,20,actor,执行人,Link,User,1,0,0,0,0,,,,执行人,Core
+medops,HRP Workflow Authorization,HRP Rule Execution Log,21,outcome,历史验证结果,Select,"Passed
+Blocked
+Warned
+Unconfigured",1,0,0,0,1,,,,历史验证结果,Core
+medops,HRP Workflow Authorization,HRP Rule Execution Log,22,decision_digest,验证摘要,Data,,1,0,0,0,0,,,,验证摘要,Core
+medops,HRP Workflow Authorization,HRP Rule Execution Log,23,rule_set_digest,策略集摘要,Data,,1,0,0,0,0,,,,策略集摘要,Core
+medops,HRP Workflow Authorization,HRP Rule Execution Log,24,source_digest,源数据摘要,Data,,1,0,0,0,0,,,,源数据摘要,Core
+medops,HRP Workflow Authorization,HRP Rule Execution Log,25,field_refs_json,已校验字段引用,Code,JSON,1,0,0,0,0,,,,已校验字段引用,Core
+medops,HRP Workflow Authorization,HRP Rule Execution Log,26,rule_results_json,规则结果,Code,JSON,1,0,0,0,0,,,,规则结果,Core
+medops,HRP Workflow Authorization,HRP Rule Execution Log,27,correlation_id,关联标识,Data,,1,0,0,0,0,,,,关联标识,Core
+medops,HRP Workflow Authorization,HRP Rule Execution Log,28,request_id,请求标识,Data,,1,0,0,0,0,,,,请求标识,Core
 medops,HRP Budget,HRP Budget Scenario,10,company,法人,Link,Company,1,0,1,0,1,,,,法人,Finance
 medops,HRP Budget,HRP Budget Scenario,11,hospital,医院,Link,HRP Hospital,1,0,1,0,0,,,,医院,Finance
 medops,HRP Budget,HRP Budget Scenario,12,campus,院区,Link,HRP Campus,0,0,1,0,0,,,,院区,Finance

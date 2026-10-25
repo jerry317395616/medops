@@ -50,6 +50,7 @@ doc_events = {
 }
 
 permission_query_conditions = {
+	"HRP Rule Execution Log": "medops.hrp_workflow_authorization.services.business_rules.log_query",
 	"HRP Approval Matrix": "medops.hrp_workflow_authorization.permissions.approval_matrix_query",
 	"HRP Delegation": "medops.hrp_workflow_authorization.permissions.delegation_query",
 	"HRP Segregation Rule": "medops.hrp_workflow_authorization.permissions.segregation_rule_query",
@@ -65,6 +66,7 @@ permission_query_conditions = {
 	"HRP Numbering Scheme": "medops.hrp_foundation.permissions.numbering_scheme_query",
 }
 has_permission = {
+	"HRP Rule Execution Log": "medops.hrp_workflow_authorization.services.business_rules.log_permission",
 	"HRP Approval Matrix": "medops.hrp_workflow_authorization.permissions.can_read_approval_matrix",
 	"HRP Delegation": "medops.hrp_workflow_authorization.permissions.can_read_delegation",
 	"HRP Segregation Rule": "medops.hrp_workflow_authorization.permissions.can_read_segregation_rule",
