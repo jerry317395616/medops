@@ -43,9 +43,9 @@ class TestChangeGovernance(unittest.TestCase):
 	def test_current_repository_is_complete_and_deterministic(self) -> None:
 		repeated = inspect_change_governance(ROOT)
 
-		self.assertEqual(len(self.report.tasks), 117)
-		self.assertEqual(len(self.report.changes), 30)
-		self.assertEqual(len(self.report.decisions), 25)
+		self.assertEqual(len(self.report.tasks), 118)
+		self.assertEqual(len(self.report.changes), 31)
+		self.assertEqual(len(self.report.decisions), 26)
 		self.assertEqual(self.report.sha256, repeated.sha256)
 		self.assertRegex(self.report.sha256, r"^[0-9a-f]{64}$")
 

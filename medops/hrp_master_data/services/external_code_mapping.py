@@ -20,6 +20,7 @@ from medops.hrp_master_data.doctype.hrp_external_code_mapping.hrp_external_code_
 from medops.hrp_master_data.doctype.hrp_master_data_domain.hrp_master_data_domain import (
 	HRPMasterDataDomain,
 )
+from medops.hrp_master_data.services.access import require_document_read, require_scope, require_target_read
 from medops.services.audit_context import emit_audit_event
 from medops.services.domain_service import DomainService
 from medops.services.errors import raise_ione_error
@@ -246,12 +247,28 @@ class UpsertExternalCodeMappingService(DomainService[ExternalCodeMappingUpsert])
 		required_roles=EXTERNAL_CODE_MAPPING_WRITE_ROLES,
 	)
 
+	def authorize_result(self, result: dict[str, object]) -> None:
+		require_document_read(_mapping_doc(str(result["name"])))
+
 	def request_payload(self, command: ExternalCodeMappingUpsert) -> dict[str, object]:
 		return command.as_request_payload()
 
 	def validate(self, command: ExternalCodeMappingUpsert) -> None:
+		require_scope(
+			"HRP External Code Mapping",
+			company=command.company,
+			hospital=command.hospital,
+			organization_unit=command.organization_unit,
+			action="write" if command.mapping_name else "create",
+		)
 		if not frappe.db.exists("Company", command.company):
 			raise_ione_error("RESOURCE_NOT_FOUND")
+		if command.mapping_name:
+			require_document_read(_mapping_doc(command.mapping_name))
+		domain, _ = _operational_domain(command.master_data_domain, lock=False)
+		require_target_read(
+			domain.target_doctype, command.internal_name, fields={"disabled"}, company=command.company
+		)
 		if command.mapping_name and not frappe.db.exists(
 			"HRP External Code Mapping",
 			command.mapping_name,
@@ -260,6 +277,13 @@ class UpsertExternalCodeMappingService(DomainService[ExternalCodeMappingUpsert])
 
 	def perform(self, command: ExternalCodeMappingUpsert) -> dict[str, object]:
 		domain, policy = _operational_domain(command.master_data_domain, lock=True)
+		require_target_read(
+			policy.target_doctype,
+			command.internal_name,
+			fields={"disabled"},
+			company=command.company,
+			lock=True,
+		)
 		_assert_hospital_scope(
 			company=command.company,
 			hospital=command.hospital,
@@ -424,6 +448,14 @@ class ResolveExternalCodeMappingService(DomainService[ExternalCodeMappingResolve
 	def request_payload(self, command: ExternalCodeMappingResolve) -> dict[str, object]:
 		return command.as_request_payload()
 
+	def validate(self, command: ExternalCodeMappingResolve) -> None:
+		require_scope(
+			"HRP External Code Mapping",
+			company=command.company,
+			hospital=command.hospital,
+			organization_unit=command.organization_unit,
+		)
+
 	def perform(self, command: ExternalCodeMappingResolve) -> dict[str, object]:
 		domain, policy = _operational_domain(command.master_data_domain, lock=False)
 		_assert_hospital_scope(
@@ -439,6 +471,7 @@ class ResolveExternalCodeMappingService(DomainService[ExternalCodeMappingResolve
 		)
 		if mapping.target_doctype != domain.target_doctype:
 			raise_ione_error("CONFIGURATION_INVALID")
+		require_document_read(mapping)
 		_assert_internal_target(
 			policy,
 			internal_name=mapping.internal_name,
@@ -466,6 +499,18 @@ class ResolveInternalCodeMappingService(DomainService[InternalCodeMappingResolve
 	def request_payload(self, command: InternalCodeMappingResolve) -> dict[str, object]:
 		return command.as_request_payload()
 
+	def validate(self, command: InternalCodeMappingResolve) -> None:
+		require_scope(
+			"HRP External Code Mapping",
+			company=command.company,
+			hospital=command.hospital,
+			organization_unit=command.organization_unit,
+		)
+		domain, _ = _operational_domain(command.master_data_domain, lock=False)
+		require_target_read(
+			domain.target_doctype, command.internal_name, fields={"disabled"}, company=command.company
+		)
+
 	def perform(self, command: InternalCodeMappingResolve) -> dict[str, object]:
 		domain, policy = _operational_domain(command.master_data_domain, lock=False)
 		_assert_hospital_scope(
@@ -485,6 +530,7 @@ class ResolveInternalCodeMappingService(DomainService[InternalCodeMappingResolve
 			key_value=command.target_key,
 			effective_on=command.effective_on,
 		)
+		require_document_read(mapping)
 		if mapping.target_doctype != domain.target_doctype:
 			raise_ione_error("CONFIGURATION_INVALID")
 		emit_audit_event(

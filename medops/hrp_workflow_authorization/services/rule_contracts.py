@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+from collections.abc import Collection
 from typing import Any
 
 import frappe
@@ -134,6 +135,38 @@ def require_field_read(
 ) -> None:
 	if not can_read_fields(source, contracts, user=user):
 		raise_ione_error("PERMISSION_DENIED")
+
+
+def can_read_named_fields(source: Document, fields: Collection[str], *, user: str | None = None) -> bool:
+	"""Check named fields without imposing business-rule scalar type restrictions."""
+	contracts: dict[str, dict[str, Any]] = {}
+	for path in fields:
+		parts = path.split(".")
+		meta = frappe.get_meta(source.doctype)
+		if len(parts) > 2:
+			return False
+		for index, fieldname in enumerate(parts):
+			field = meta.get_field(fieldname)
+			if not field:
+				if len(parts) == 1 and fieldname in {
+					"name",
+					"owner",
+					"creation",
+					"modified",
+					"modified_by",
+					"docstatus",
+				}:
+					continue
+				return False
+			contracts[f"{path}:{index}"] = {
+				"permlevel": int(field.permlevel or 0),
+				"masked": int(field.get("mask") or 0),
+			}
+			if index < len(parts) - 1:
+				if field.fieldtype not in {"Table", "Table MultiSelect"}:
+					return False
+				meta = frappe.get_meta(field.options)
+	return can_read_fields(source, contracts, user=user)
 
 
 def load_contracts(value: str) -> dict[str, dict[str, Any]]:

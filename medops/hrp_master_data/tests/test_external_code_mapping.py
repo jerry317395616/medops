@@ -198,6 +198,13 @@ def create_mapping_context(*, suffix: str) -> None:
 		if target_doctype != "Item" or not bool(enabled):
 			raise AssertionError("COD-020 Item master-data domain must be operational")
 
+	from medops.tests.scope_fixtures import grant_test_scope, share_test_records
+
+	grant_test_scope(
+		code="COD021-TEST-SCOPE", company=TEST_COMPANY, hospital=TEST_HOSPITAL, users=(TEST_INTEGRATION_USER,)
+	)
+	share_test_records("Item", (TEST_ITEM, TEST_OTHER_ITEM), (TEST_INTEGRATION_USER,))
+
 
 def mapping_command(
 	*,
@@ -276,12 +283,12 @@ class TestExternalCodeMapping(IntegrationTestCase):
 		)
 		workspace = frappe.get_doc("Workspace", "HRP Master Data")
 		self.assertIn(
-			"HRP External Code Mapping",
+			"hrp-master-data-access",
 			{shortcut.link_to for shortcut in workspace.shortcuts},
 		)
 		sidebars = get_sidebar_items()
 		default_workspace_map = build_default_workspace_map(sidebars)
-		self.assertEqual(default_workspace_map["HRP External Code Mapping"], "HRP")
+		self.assertEqual(default_workspace_map["hrp-master-data-access"], "HRP")
 
 		direct = frappe.get_doc(
 			{
@@ -491,12 +498,15 @@ class TestExternalCodeMapping(IntegrationTestCase):
 		self.assertNotIn(sentinel, record.request_fingerprint)
 
 		frappe.set_user(TEST_INTEGRATION_USER)
-		self.assertEqual(external_code_mapping_query(), "")
+		self.assertEqual(external_code_mapping_query(), "1=0")
 		mapping = frappe.get_doc("HRP External Code Mapping", created["name"])
 		self.assertTrue(can_read_external_code_mapping(mapping, ptype="read"))
+		self.assertEqual(frappe.get_list("HRP External Code Mapping", pluck="name"), [])
+		from medops.api.v1.master_data_access import list_records
+
 		self.assertIn(
 			created["name"],
-			frappe.get_list("HRP External Code Mapping", pluck="name"),
+			[row["name"] for row in cast(list[dict[str, object]], list_records(entity="mappings")["items"])],
 		)
 		frappe.set_user(TEST_PLAIN_USER)
 		self.assertEqual(external_code_mapping_query(), "1=0")

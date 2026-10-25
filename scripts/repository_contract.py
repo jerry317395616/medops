@@ -2761,8 +2761,11 @@ def validate_master_data_governance_contract(root: Path) -> list[str]:
 
 	workspace = json.loads(workspace_path.read_text(encoding="utf-8"))
 	actual_links = {link.get("link_to") for link in workspace.get("links", []) if link.get("link_to")}
-	if not {MASTER_DATA_DOMAIN_DOCTYPE, MASTER_DATA_REQUEST_DOCTYPE}.issubset(actual_links):
-		violations.append("master data workspace must expose domains and requests")
+	if (
+		not {MASTER_DATA_DOMAIN_DOCTYPE, "hrp-master-data-access"}.issubset(actual_links)
+		or MASTER_DATA_REQUEST_DOCTYPE in actual_links
+	):
+		violations.append("master data workspace must expose domains and the controlled query page")
 
 	with (root / "design" / "doctype_catalog.csv").open(
 		encoding="utf-8-sig",
@@ -2803,7 +2806,11 @@ def validate_master_data_governance_contract(root: Path) -> list[str]:
 		if set(path_contract) != {method}:
 			violations.append(f"{endpoint} must expose only {method.upper()}")
 		expected_role = (
-			admin_role if endpoint.endswith(("domain", "review_master_data_request")) else requester_role
+			"System Manager or HRP System Manager"
+			if endpoint.endswith("domain")
+			else admin_role
+			if endpoint.endswith("review_master_data_request")
+			else requester_role
 		)
 		if operation.get("x-required-role") != expected_role:
 			violations.append(f"{endpoint} has the wrong master data role contract")
@@ -3042,12 +3049,12 @@ def validate_external_code_mapping_contract(root: Path) -> list[str]:
 
 	workspace = json.loads(workspace_path.read_text(encoding="utf-8"))
 	root_workspace = json.loads(root_workspace_path.read_text(encoding="utf-8"))
-	if EXTERNAL_CODE_MAPPING_DOCTYPE not in {link.get("link_to") for link in workspace.get("links", [])}:
-		violations.append("master data workspace must expose external code mappings")
-	if EXTERNAL_CODE_MAPPING_DOCTYPE not in {
+	if "hrp-master-data-access" not in {link.get("link_to") for link in workspace.get("links", [])}:
+		violations.append("master data workspace must expose controlled mapping queries")
+	if "hrp-master-data-access" not in {
 		item.get("link_to") for item in root_workspace.get("sidebar_items", [])
 	}:
-		violations.append("HRP sidebar must expose external code mappings")
+		violations.append("HRP sidebar must expose controlled mapping queries")
 
 	with (root / "design" / "doctype_catalog.csv").open(
 		encoding="utf-8-sig",
@@ -3228,6 +3235,7 @@ def validate_data_quality_contract(root: Path) -> list[str]:
 			"failure_code",
 			"failure_message",
 			"observed_value_digest",
+			"evaluation_read_fields",
 			"rule_revision",
 			"rule_digest",
 			"first_detected_at",
@@ -3344,7 +3352,7 @@ def validate_data_quality_contract(root: Path) -> list[str]:
 			violations.append(f"data quality permission contract is missing: {token}")
 	for name in doctypes:
 		for token in (
-			f'"{name}": "medops.hrp_master_data.permissions.data_quality_query"',
+			f'"{name}": "medops.hrp_master_data.permissions.{"data_quality_rule_query" if name == DATA_QUALITY_RULE_DOCTYPE else "data_quality_issue_query"}"',
 			f'"{name}": "medops.hrp_master_data.permissions.can_read_data_quality"',
 		):
 			if token not in hooks_text:
@@ -3376,10 +3384,10 @@ def validate_data_quality_contract(root: Path) -> list[str]:
 	root_workspace = json.loads(root_workspace_path.read_text(encoding="utf-8"))
 	workspace_links = {link.get("link_to") for link in workspace.get("links", [])}
 	root_links = {item.get("link_to") for item in root_workspace.get("sidebar_items", [])}
-	if not set(doctypes).issubset(workspace_links):
-		violations.append("master data workspace must expose data quality rules and issues")
-	if not set(doctypes).issubset(root_links):
-		violations.append("HRP sidebar must expose data quality rules and issues")
+	if "hrp-master-data-access" not in workspace_links or set(doctypes).intersection(workspace_links):
+		violations.append("master data workspace must expose only controlled data quality queries")
+	if "hrp-master-data-access" not in root_links or set(doctypes).intersection(root_links):
+		violations.append("HRP sidebar must expose only controlled data quality queries")
 
 	with (root / "design" / "doctype_catalog.csv").open(
 		encoding="utf-8-sig",
@@ -5131,6 +5139,70 @@ def validate_business_rule_contract(root: Path) -> list[str]:
 	return violations
 
 
+def validate_core_data_access_contract(root: Path) -> list[str]:
+	violations = []
+	issue = json.loads(
+		(
+			root / "medops/hrp_master_data/doctype/hrp_data_quality_issue/hrp_data_quality_issue.json"
+		).read_text(encoding="utf-8")
+	)
+	field = next((row for row in issue["fields"] if row["fieldname"] == "evaluation_read_fields"), {})
+	if field.get("fieldtype") != "Code" or not all(
+		field.get(key) == 1 for key in ("read_only", "hidden", "no_copy")
+	):
+		violations.append("quality history must retain its internal read-only field-access contract")
+	contracts = {
+		"medops/hrp_master_data/services/access.py": (
+			"scoped_list_query",
+			"ContextVar",
+			"target_readable",
+			"evaluation_fields",
+			"public_fields_readable",
+			"master_data_visible",
+		),
+		"medops/services/data_access.py": (
+			"has_scoped_permission",
+			"can_read_named_fields",
+			"public_fields_readable",
+		),
+		"medops/services/idempotency.py": ("record.owner != frappe.session.user",),
+		"medops/services/domain_service.py": (
+			"self.authorize_result(dict(reservation.replayed_result or {}))",
+			"self.authorize_result(result)",
+		),
+		"medops/setup/master_data_access.py": (
+			"for_update=True",
+			"master_data_migration",
+			"evaluation_read_fields",
+		),
+		"medops/api/v1/master_data_access.py": (
+			"require_authenticated_user()",
+			"get_scoped_documents",
+			"next_offset",
+			"maximum=140",
+		),
+	}
+	for path, required in contracts.items():
+		text = (root / path).read_text(encoding="utf-8")
+		for token in required:
+			if token not in text:
+				violations.append(f"core access contract missing {token} in {path}")
+		if path.endswith("master_data_access.py") and "frappe.db.commit" in text:
+			violations.append(f"core access contract must not commit: {path}")
+	for path in (
+		"architecture/adr/ADR-0026-core-data-access-boundaries.md",
+		"architecture/core_data_access.md",
+		"medops/hrp_master_data/tests/test_access_boundaries.py",
+		"medops/hrp_master_data/page/hrp_master_data_access/hrp_master_data_access.js",
+	):
+		if not (root / path).is_file():
+			violations.append(f"core access evidence or safe entry missing: {path}")
+	install = (root / "medops/setup/install.py").read_text(encoding="utf-8")
+	if install.count("ensure_master_data_access_contracts()") != 2:
+		violations.append("core access migration must run after installation and migration")
+	return violations
+
+
 def collect_violations(root: Path) -> list[str]:
 	root = root.resolve()
 	violations: list[str] = []
@@ -5188,6 +5260,7 @@ def collect_violations(root: Path) -> list[str]:
 	violations.extend(validate_segregation_contract(root))
 	violations.extend(validate_sla_contract(root))
 	violations.extend(validate_business_rule_contract(root))
+	violations.extend(validate_core_data_access_contract(root))
 	return violations
 
 

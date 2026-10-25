@@ -28,6 +28,12 @@ from medops.hrp_master_data.doctype.hrp_master_data_domain.hrp_master_data_domai
 from medops.hrp_master_data.doctype.hrp_master_data_request.hrp_master_data_request import (
 	HRPMasterDataRequest,
 )
+from medops.hrp_master_data.services.access import (
+	GLOBAL_DOMAIN_ADMIN_ROLES,
+	require_document_read,
+	require_scope,
+	require_target_read,
+)
 from medops.hrp_workflow_authorization.services.business_rules import enforce_business_rules, lock_rule_scope
 from medops.services.audit_context import emit_audit_event, service_audit_scope
 from medops.services.domain_service import DomainService
@@ -187,6 +193,13 @@ def _normalized_change_rows(
 	snapshot: dict[str, object] | None = None
 	baseline_modified_at: str | None = None
 	if command.target_name:
+		require_target_read(
+			policy.target_doctype,
+			command.target_name,
+			fields={change.field_name for change in command.changes},
+			company=command.company,
+			lock=True,
+		)
 		snapshot = _target_snapshot(policy, command.target_name)
 		baseline_modified_at = str(snapshot["modified"])
 		if policy.company_field and snapshot.get(policy.company_field) != command.company:
@@ -274,7 +287,7 @@ class UpsertMasterDataDomainService(DomainService[MasterDataDomainUpsert]):
 		name="hrp_master_data.domain.upsert",
 		version=1,
 		kind="command",
-		required_roles=MASTER_DATA_ADMIN_ROLES,
+		required_roles=GLOBAL_DOMAIN_ADMIN_ROLES,
 	)
 
 	def request_payload(self, command: MasterDataDomainUpsert) -> dict[str, object]:
@@ -387,19 +400,36 @@ class SaveMasterDataRequestService(DomainService[MasterDataRequestUpsert]):
 		required_roles=MASTER_DATA_REQUESTER_ROLES,
 	)
 
+	def authorize_result(self, result: dict[str, object]) -> None:
+		require_document_read(_get_request(str(result["name"])))
+
 	def request_payload(self, command: MasterDataRequestUpsert) -> dict[str, object]:
 		return command.as_request_payload()
 
 	def validate(self, command: MasterDataRequestUpsert) -> None:
+		require_scope(
+			"HRP Master Data Request",
+			company=command.company,
+			hospital=command.hospital,
+			organization_unit=command.organization_unit,
+			action="write" if command.request_name else "create",
+		)
 		if not frappe.db.exists("HRP Master Data Domain", command.master_data_domain):
 			raise_ione_error("RESOURCE_NOT_FOUND")
 		if not frappe.db.exists("Company", command.company):
 			raise_ione_error("RESOURCE_NOT_FOUND")
+		if command.target_name:
+			domain = _get_domain(command.master_data_domain)
+			require_target_read(
+				domain.target_doctype,
+				command.target_name,
+				fields={change.field_name for change in command.changes},
+				company=command.company,
+			)
 		if command.request_name:
 			request = _get_request(command.request_name)
 			_assert_request_owner(request)
-			if request.docstatus != 0 or request.request_status != "Draft":
-				raise_ione_error("INVALID_STATE_TRANSITION")
+			require_document_read(request)
 
 	def perform(self, command: MasterDataRequestUpsert) -> dict[str, object]:
 		domain = _get_domain(command.master_data_domain)
@@ -573,12 +603,23 @@ class SubmitMasterDataRequestService(DomainService[MasterDataRequestSubmit]):
 		required_roles=MASTER_DATA_REQUESTER_ROLES,
 	)
 
+	def authorize_result(self, result: dict[str, object]) -> None:
+		require_document_read(_get_request(str(result["name"])))
+
 	def request_payload(self, command: MasterDataRequestSubmit) -> dict[str, object]:
 		return command.as_request_payload()
 
 	def validate(self, command: MasterDataRequestSubmit) -> None:
 		request = _get_request(command.request_name)
 		_assert_request_owner(request)
+		require_document_read(request)
+		require_scope(
+			request.doctype,
+			company=request.company,
+			hospital=request.hospital,
+			organization_unit=request.organization_unit,
+			action="submit",
+		)
 
 	def perform(self, command: MasterDataRequestSubmit) -> dict[str, object]:
 		current_revision = HRPMasterDataRequest.lock_revision(
@@ -651,13 +692,22 @@ class ReviewMasterDataRequestService(DomainService[MasterDataRequestReview]):
 		required_roles=MASTER_DATA_REVIEWER_ROLES,
 	)
 
+	def authorize_result(self, result: dict[str, object]) -> None:
+		require_document_read(_get_request(str(result["name"])))
+
 	def request_payload(self, command: MasterDataRequestReview) -> dict[str, object]:
 		return command.as_request_payload()
 
 	def validate(self, command: MasterDataRequestReview) -> None:
 		request = _get_request(command.request_name)
-		if request.docstatus != 1 or request.request_status != "Pending Review":
-			raise_ione_error("INVALID_STATE_TRANSITION")
+		require_document_read(request)
+		require_scope(
+			request.doctype,
+			company=request.company,
+			hospital=request.hospital,
+			organization_unit=request.organization_unit,
+			action="write",
+		)
 		if request.requested_by == frappe.session.user:
 			raise_ione_error("OPERATION_NOT_ALLOWED")
 
@@ -724,6 +774,7 @@ def get_master_data_request(
 			raise_ione_error("INVALID_REQUEST")
 		request = _get_request(request_name)
 		_assert_request_owner(request)
+		require_document_read(request)
 		emit_audit_event(
 			"master_data_request_read",
 			logger_name="medops.master_data",

@@ -307,7 +307,16 @@ def create_domain(*, suffix: str = "base") -> dict[str, object]:
 
 
 def create_context(*, suffix: str) -> tuple[dict[str, object], str]:
+	from medops.tests.scope_fixtures import grant_test_scope, share_test_records
+
 	version = create_version(suffix=f"cod020-{suffix}")
+	grant_test_scope(
+		code="COD020-TEST-SCOPE",
+		company=TEST_COMPANY,
+		hospital=TEST_HOSPITAL,
+		users=(TEST_REQUESTER, TEST_REVIEWER),
+	)
+	share_test_records("Item", (TEST_ITEM,), (TEST_REQUESTER, TEST_REVIEWER))
 	version_name = cast(str, version["name"])
 	return version, unit_name(version_name, "OUTPATIENT")
 
@@ -380,7 +389,7 @@ class TestMasterDataGovernance(IntegrationTestCase):
 		)
 		default_workspace_map = build_default_workspace_map(sidebars)
 		self.assertEqual(default_workspace_map["HRP Organization"], "HRP")
-		self.assertEqual(default_workspace_map["HRP Master Data Request"], "HRP")
+		self.assertEqual(default_workspace_map["hrp-master-data-access"], "HRP")
 
 		direct = frappe.get_doc(
 			{
@@ -486,7 +495,13 @@ class TestMasterDataGovernance(IntegrationTestCase):
 			filters={"master_data_domain": TEST_DOMAIN},
 			pluck="name",
 		)
-		self.assertEqual(visible_names, [own_request["name"]])
+		self.assertEqual(visible_names, [])
+		from medops.api.v1.master_data_access import list_records
+
+		self.assertEqual(
+			[row["name"] for row in cast(list[dict[str, object]], list_records(entity="requests")["items"])],
+			[own_request["name"]],
+		)
 		self.assertTrue(
 			frappe.has_permission(
 				"HRP Master Data Request",

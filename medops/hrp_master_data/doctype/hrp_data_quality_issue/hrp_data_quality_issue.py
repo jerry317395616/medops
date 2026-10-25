@@ -5,7 +5,8 @@ from typing import TYPE_CHECKING, Literal
 from frappe.model.document import Document
 
 from medops.common.data_quality import ISSUE_STATUSES, SEVERITIES, issue_key_for
-from medops.common.domain_service import normalize_sha256
+from medops.common.domain_service import canonical_json, normalize_sha256
+from medops.common.master_data_security import evaluation_fields
 from medops.common.organization import (
 	OrganizationContractError,
 	normalize_code,
@@ -24,6 +25,7 @@ class HRPDataQualityIssue(Document):
 		from frappe.types import DF
 
 		company: DF.Link
+		evaluation_read_fields: DF.Code | None
 		failure_code: DF.Data | None
 		failure_message: DF.Data | None
 		first_detected_at: DF.Datetime
@@ -110,6 +112,19 @@ class HRPDataQualityIssue(Document):
 			raise_ione_error("CONFIGURATION_INVALID")
 
 		before = self.get_doc_before_save()
+		try:
+			fields = evaluation_fields(self.get("evaluation_read_fields"), self.target_doctype)
+			if (
+				before
+				and before.get("evaluation_read_fields")
+				and not set(evaluation_fields(before.evaluation_read_fields, self.target_doctype)).issubset(
+					fields
+				)
+			):
+				raise_ione_error("OPERATION_NOT_ALLOWED")
+			self.evaluation_read_fields = canonical_json(fields)
+		except ValueError as exc:
+			raise_ione_error("INVALID_REQUEST", cause=exc)
 		if before is not None:
 			for fieldname in (
 				"quality_rule",
