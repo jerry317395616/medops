@@ -9,7 +9,7 @@
 	],
 	"checks": {
 		"pure_tests_last_passed": 331,
-		"new_frappe_tests_defined": 18,
+		"new_frappe_tests_defined": 19,
 		"isolated_domain_suite": "18 budget service/HTTP tests passed atda7490a, including native short fiscal year and binary-float rejection; previous20rules+5governance passed",
 		"full_integration": {
 			"commit": "0ce114cef008935a945c6736923cdc4aafd76a28",
@@ -24,7 +24,8 @@
 			"run": 40225809699,
 			"final_candidate": "pending"
 		},
-		"secret_scanning": "Exact API-route false positives removed from unreleased feature history; complete backup retained; fresh full history117commits and current tree zero findings; no scanner exceptions added."
+		"secret_scanning": "Exact API-route false positives removed from unreleased feature history; complete backup retained; fresh full history117commits and current tree zero findings; no scanner exceptions added.",
+		"reference_rename_snapshot": "Real two-connection regression added; reproducing native old-snapshot reference race before fix."
 	},
 	"prior_base": {
 		"commit": "72af62556e2ec42b899748742de7a9c9d2ede0d2",

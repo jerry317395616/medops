@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from dataclasses import replace
 from typing import Any
+from uuid import uuid4
 
 import frappe
 from frappe.tests import IntegrationTestCase
@@ -20,6 +21,7 @@ from medops.common.budget_planning import (
 	build_version,
 )
 from medops.common.business_rules import rule_payload
+from medops.common.domain_service import idempotency_record_name
 from medops.common.error_catalog import IoneApplicationError
 from medops.common.organization import (
 	build_hierarchy_replace,
@@ -331,6 +333,88 @@ class TestBudgetPlanningServices(IntegrationTestCase):
 				idempotency_key=key("short-year-outside"),
 			)
 		self.assertEqual(frappe.db.count(PLAN, {"budget_version": version["name"]}), 0)
+
+	def test_native_rename_sees_a_budget_reference_committed_after_old_snapshot(self):
+		# Both connections use real domain writes. Native rename loads its source
+		# before the guard, so a normal EXISTS query can retain an old snapshot.
+		token = uuid4().hex[:12]
+		version_key, plan_key = key("mvcc-version-" + token), key("mvcc-plan-" + token)
+		primary = frappe.local.db
+		isolation = str(frappe.db.sql("SELECT @@tx_isolation")[0][0])
+		restore = {
+			"REPEATABLE-READ": "SET SESSION TRANSACTION ISOLATION LEVEL REPEATABLE READ",
+			"READ-COMMITTED": "SET SESSION TRANSACTION ISOLATION LEVEL READ COMMITTED",
+			"SERIALIZABLE": "SET SESSION TRANSACTION ISOLATION LEVEL SERIALIZABLE",
+			"READ-UNCOMMITTED": "SET SESSION TRANSACTION ISOLATION LEVEL READ UNCOMMITTED",
+		}[isolation]
+		account, version, saved = None, None, None
+		try:
+			base = frappe.get_doc(
+				"Account",
+				plan_command("unused", self.unit, self.value["name"], self.fund["name"]).lines[0].account,
+			)
+			account = frappe.get_doc(
+				{
+					"doctype": "Account",
+					"account_name": "COD031-MVCC-" + token,
+					"company": COMPANY,
+					"parent_account": base.parent_account,
+					"is_group": 0,
+					"account_currency": base.account_currency,
+					"root_type": base.root_type,
+					"report_type": "Profit and Loss",
+				}
+			).insert(ignore_permissions=True)
+			version = save_budget_version(
+				build_version(
+					{
+						"company": COMPANY,
+						"hospital": HOSPITAL,
+						"organization_version": self.org,
+						"fiscal_year": YEAR,
+						"subject": "Synthetic old-snapshot reference fence",
+					}
+				),
+				idempotency_key=version_key,
+			)
+			frappe.db.sql("SET SESSION TRANSACTION ISOLATION LEVEL REPEATABLE READ")
+			frappe.local.db.commit()
+			self.assertEqual(frappe.db.count(LINE, {"account": account.name}), 0)
+			command = plan_command(version["name"], self.unit, self.value["name"], self.fund["name"])
+			with self.secondary_connection():
+				saved = save_budget_plan(
+					replace(command, lines=(replace(command.lines[0], account=account.name),)),
+					idempotency_key=plan_key,
+				)
+				frappe.local.db.commit()
+			self.assertEqual(
+				frappe.db.count(LINE, {"account": account.name}),
+				0,
+				"Primary must still have the old snapshot",
+			)
+			with self.assertRaises(IoneApplicationError):
+				frappe.rename_doc("Account", account.name, "COD031-Renamed-" + token + " - C031")
+		finally:
+			frappe.local.db = primary
+			primary.rollback()
+			frappe.set_user("Administrator")
+			if saved:
+				frappe.db.delete(LINE, {"parenttype": PLAN, "parent": saved["name"]})
+				frappe.db.delete(PLAN, {"name": saved["name"]})
+			if version:
+				frappe.db.delete(VERSION, {"name": version["name"]})
+			for service, request_key in (
+				("hrp_budget.version.save", version_key),
+				("hrp_budget.plan.save", plan_key),
+			):
+				frappe.db.delete(
+					"HRP Service Idempotency", {"name": idempotency_record_name(service, request_key)}
+				)
+			if account and frappe.db.exists("Account", account.name):
+				frappe.delete_doc("Account", account.name, ignore_permissions=True)
+			frappe.db.sql(restore)
+			primary.commit()
+			primary.savepoint("cod031_case")
 
 	def test_freeze_clone_and_old_financial_inputs_are_immutable(self):
 		version, command, result = self.new_plan("0.30")
