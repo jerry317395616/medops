@@ -275,7 +275,7 @@ class TestBusinessRules(IntegrationTestCase):
 			frappe.local.db = primary
 		with self.assertRaises(IoneApplicationError) as raised:
 			upsert(policy(code=new_code), label="stale-create-after-snapshot")
-		self.assertEqual(raised.exception.code, "IONE-CORE-0004")
+		self.assertEqual(raised.exception.code, "IONE-CORE-0005")
 
 	def test_when_false_is_not_an_authorization(self):
 		upsert(policy(when_json={"field": "status", "op": "eq", "value": "Approved"}))
