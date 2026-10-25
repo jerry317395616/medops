@@ -107,6 +107,7 @@ class RegisterReferences(DomainService[dict[str, Any]]):
 				REFERENCE, "read", doc=frappe.get_doc(REFERENCE, identity)
 			):
 				raise_ione_error("PERMISSION_DENIED")
+		command["entries"].sort(key=lambda row: row["target_name"])
 
 	def authorize_result(self, result):
 		for row in cast(list[dict[str, Any]], result["items"]):

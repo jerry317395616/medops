@@ -8,7 +8,6 @@
 	"is_standard": "Yes",
 	"disabled": 0,
 	"prepared_report": 0,
-	"disable_prepared_report": 1,
 	"add_total_row": 0,
 	"columns": [],
 	"filters": [],

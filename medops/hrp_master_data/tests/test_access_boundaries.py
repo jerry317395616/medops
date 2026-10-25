@@ -95,6 +95,8 @@ def reset_access_state() -> tuple[dict[str, Any], str]:
 	frappe.set_user("Administrator")
 	reset_data_quality_state()
 	reset_master_data_state()
+	if frappe.db.table_exists("HRP Reference Link"):
+		frappe.db.delete("HRP Reference Link", {"hospital": ("in", [TEST_HOSPITAL, OTHER_HOSPITAL])})
 	frappe.db.delete("HRP Access Scope Member", {"parent": ("like", "COD201-%")})
 	frappe.db.delete("HRP Access Scope", {"code": ("like", "COD201-%")})
 	frappe.db.delete("HRP Number Reservation", {"scheme_code": "COD201-NUM"})

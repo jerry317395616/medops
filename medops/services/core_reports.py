@@ -565,6 +565,56 @@ HANDLERS = {
 	"RPT-007": delegation,
 	"RPT-008": segregation,
 }
+
+
+def protect_fresh_reports(doc, method=None):
+	"""Prepared report reuse bypasses live source checks; core reports cannot enable it."""
+	del method
+	if core_report_code(doc=doc):
+		if doc.prepared_report:
+			raise_ione_error("OPERATION_NOT_ALLOWED")
+		if doc.get("json"):
+			try:
+				saved = frappe.parse_json(doc.json)
+			except (ValueError, TypeError) as exc:
+				raise_ione_error("INVALID_REQUEST", cause=exc)
+			if isinstance(saved, dict):
+				reject_added_sources(saved.get("columns"))
+
+
+def core_report_code(name=None, *, doc=None):
+	known = {entry[0]: code for code, entry in REPORTS.items()}
+	seen = set()
+	for _ in range(100):
+		if doc is None:
+			if not isinstance(name, str) or not frappe.db.exists("Report", name):
+				return None
+			doc = frappe.get_doc("Report", name)
+		if doc.name in known:
+			return known[doc.name]
+		if doc.report_type != "Custom Report":
+			return None
+		if doc.name in seen:
+			raise_ione_error("CONFIGURATION_INVALID")
+		seen.add(doc.name)
+		name = doc.reference_report
+		doc = None
+	raise_ione_error("CONFIGURATION_INVALID")
+
+
+def reject_added_sources(columns):
+	if not columns:
+		return
+	try:
+		columns = frappe.parse_json(columns)
+	except (ValueError, TypeError) as exc:
+		raise_ione_error("INVALID_REQUEST", cause=exc)
+	if not isinstance(columns, list) or any(
+		not isinstance(row, dict) or row.get("link_field") for row in columns
+	):
+		raise_ione_error("INVALID_REQUEST")
+
+
 FILTERS = {
 	"RPT-001": {"company", "hospital", "from_version", "to_version"},
 	"RPT-002": {"company", "hospital", "organization_unit", "organization_version"},
@@ -606,8 +656,14 @@ def execute_core_report(code: str, filters=None, *, export: bool | None = None):
 			raise_ione_error("INVALID_REQUEST", cause=exc)
 		if set(data) - FILTERS[code] - {EXPORT_MARKER}:
 			raise_ione_error("INVALID_REQUEST")
+		requested_export = bool(data.pop(EXPORT_MARKER, False))
 		if export is None:
-			export = bool(data.pop(EXPORT_MARKER, False)) or not getattr(frappe.local, "request", None)
+			export = requested_export or not (
+				getattr(frappe.local, "request", None)
+				and frappe.form_dict.get("cmd") == "frappe.desk.query_report.run"
+			)
+		else:
+			export = export or requested_export
 		if (
 			not frappe.get_doc("Report", REPORTS[code][0]).is_permitted()
 			or not frappe.has_permission(REPORTS[code][3], "report")
@@ -626,7 +682,8 @@ def export_query() -> None:
 	from frappe.desk.query_report import export_query as original
 
 	name = frappe.form_dict.get("report_name")
-	if name in {entry[0] for entry in REPORTS.values()}:
+	if core_report_code(name):
+		reject_added_sources(frappe.form_dict.get("custom_columns"))
 		try:
 			filters = report_filters(frappe.parse_json(frappe.form_dict.get("filters")) or {}, internal=True)
 		except (ValueError, TypeError) as exc:

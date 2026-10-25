@@ -137,7 +137,10 @@ class TestCoreReports(IntegrationTestCase):
 			doc = frappe.get_doc("Report", name)
 			self.assertEqual(doc.report_type, "Script Report")
 			self.assertFalse(doc.prepared_report)
-			self.assertTrue(doc.disable_prepared_report)
+			doc.prepared_report = 1
+			with patch.dict(frappe.conf, {"developer_mode": 1}):
+				with self.assertRaises(IoneApplicationError):
+					doc.save(ignore_permissions=True)
 		self.assertTrue(capture_epoch())
 		before = frappe.db.count(QUALITY_EVENT)
 		self.assertEqual(ensure_core_reports()["baselines"], 0)
@@ -352,7 +355,7 @@ class TestCoreReports(IntegrationTestCase):
 			{
 				"code": f"COD030-UNIT-{i}",
 				"display_name": f"测试科室{i}",
-				"unit_type": "Department",
+				"unit_type": "CLINICAL_DEPARTMENT",
 				"parent_code": OTHER_HOSPITAL,
 				"is_group": False,
 				"enabled": True,
@@ -388,9 +391,12 @@ class TestCoreReports(IntegrationTestCase):
 			create_version,
 			ensure_company_fixture,
 			mapping_command,
+			reset_mapping_test_state,
 		)
 
 		ensure_company_fixture()
+
+		reset_mapping_test_state()
 		version = create_version(suffix="cod030")
 		mapping = upsert_organization_mapping(
 			mapping_command(str(version["name"]), "OUTPATIENT"), idempotency_key=key("org-map")
@@ -487,7 +493,9 @@ class TestCoreReports(IntegrationTestCase):
 
 		ensure_sla_fixtures()
 		reset_sla()
-		UpsertPolicy().execute(policy(), idempotency_key=key("sla-policy"))
+		UpsertPolicy().execute(
+			{"policy": policy(), "expected_revision": 0}, idempotency_key=key("sla-policy")
+		)
 		create_source()
 		data = workbench()
 		self.assertTrue(data["counts_are_preview_only"])
@@ -545,6 +553,8 @@ class TestCoreWorkbenchAPI(FrappeAPITestCase):
 		for method in ("overview", "report", "population"):
 			response = self.get(self.method(API + method))
 			self.assertEqual(response.status_code, 401, response.get_data(as_text=True))
+		self.TEST_CLIENT.set_cookie(key="sid", value=self.sid)
+		self.assertEqual(self.get(self.method(API + "overview"), {"user": "Administrator"}).status_code, 400)
 
 	def test_register_requires_key_and_lists_actual_scope(self):
 		payload = {"scope": context(), "entries": [{"target_name": TEST_ITEM, "valid_from": "2026-01-01"}]}
@@ -573,3 +583,67 @@ class TestCoreWorkbenchAPI(FrappeAPITestCase):
 			{"report_name": REPORTS["RPT-004"][0], "filters": json.dumps(context())},
 		)
 		self.assertEqual(response.status_code, 200, response.get_data(as_text=True))
+
+	def test_actual_csv_alias_and_background_export_keep_current_checks(self):
+		for target in (TEST_ITEM, SECOND):
+			response = self.post(
+				self.method(API + "register_population"),
+				{"scope": context(), "entries": [{"target_name": target, "valid_from": "2026-01-01"}]},
+				headers={"Idempotency-Key": key("csv-" + target)},
+			)
+			self.assertEqual(response.status_code, 200, response.get_data(as_text=True))
+		params = {
+			"report_name": REPORTS["RPT-004"][0].lower(),
+			"filters": json.dumps(context()),
+			"file_format_type": "CSV",
+			"export_in_background": 0,
+		}
+		response = self.post(self.method("frappe.desk.query_report.export_query"), params)
+		self.assertEqual(response.status_code, 200, response.get_data(as_text=True))
+		self.assertIn(TEST_ITEM, response.get_data(as_text=True))
+		self.assertIn(SECOND, response.get_data(as_text=True))
+		with patch("frappe.desk.query_report.frappe.enqueue") as enqueue:
+			response = self.post(
+				self.method("frappe.desk.query_report.export_query"), {**params, "export_in_background": 1}
+			)
+			self.assertEqual(response.status_code, 200, response.get_data(as_text=True))
+			self.assertTrue(enqueue.call_args.kwargs["form_params"]["filters"]["_medops_export"])
+
+	def test_legacy_custom_prepared_cache_is_disabled_without_changing_saved_config(self):
+		name = "COD030 CUSTOM " + frappe.generate_hash(length=8)
+		frappe.get_doc(
+			{
+				"doctype": "Report",
+				"report_name": name,
+				"name": name,
+				"report_type": "Custom Report",
+				"is_standard": "No",
+				"module": "HRP Foundation",
+				"ref_doctype": REFERENCE,
+				"reference_report": REPORTS["RPT-004"][0],
+				"json": "{}",
+			}
+		).insert(ignore_permissions=True)
+		frappe.db.set_value("Report", name, "prepared_report", 1)
+		frappe.local.db.commit()
+		response = self.get(
+			self.method("frappe.desk.query_report.run"),
+			{"report_name": name, "filters": json.dumps(context())},
+		)
+		self.assertEqual(response.status_code, 200, response.get_data(as_text=True))
+		self.assertFalse(response.get_json()["message"].get("prepared_report"))
+		self.assertIn("result", response.get_json()["message"])
+		self.assertEqual(frappe.db.get_value("Report", name, "prepared_report"), 1)
+
+	def test_custom_link_columns_cannot_add_unreviewed_sources(self):
+		response = self.get(
+			self.method("frappe.desk.query_report.run"),
+			{
+				"report_name": REPORTS["RPT-004"][0],
+				"filters": json.dumps(context()),
+				"custom_columns": json.dumps(
+					[{"fieldname": "item_name", "doctype": "Item", "link_field": "target_name"}]
+				),
+			},
+		)
+		self.assertEqual(response.status_code, 400, response.get_data(as_text=True))

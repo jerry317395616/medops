@@ -143,6 +143,11 @@ frappe.pages["hrp-core-workbench"].on_page_load = (wrapper) => {
 						expected_revision: row?.revision || 0,
 					},
 				];
+				const payload = JSON.stringify({ scope, entries });
+				if (dialog.registration_payload !== payload) {
+					dialog.registration_key = "population-" + crypto.randomUUID();
+					dialog.registration_payload = payload;
+				}
 				await frappe.call({
 					method: "medops.api.v1.core_workbench.register_population",
 					args: { scope, entries },

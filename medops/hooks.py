@@ -34,8 +34,9 @@ before_job = ["medops.services.audit_context.start_job_audit_context"]
 after_job = ["medops.services.audit_context.finish_job_audit_context"]
 
 # Add standard DocType extensions here. Prefer extend_doctype_class over overrides.
-extend_doctype_class = {}
+extend_doctype_class = {"Report": ["medops.extensions.core_report.CoreReportAccessMixin"]}
 doc_events = {
+	"Report": {"validate": "medops.services.core_reports.protect_fresh_reports"},
 	"HRP Data Quality Issue": {"on_update": "medops.hrp_master_data.services.quality_history.append_event"},
 	"*": {
 		"on_update": "medops.hrp_workflow_authorization.services.sla.sync_source",
