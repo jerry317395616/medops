@@ -20,9 +20,32 @@
 		"pure_tests_expected": 345,
 		"new_frappe_tests_defined": 9,
 		"frappe_tests_total_expected": 321,
-		"native_migration_baseline": "Captured from old d9 validation app before installing new schema; new migration/replay verification pending.",
-		"native_tests": "pending",
-		"local_quality": "passed: repository/package, lint/format, bandit,345pure,checksums,types,frontend",
+		"native_migration_baseline": {
+			"status": "passed",
+			"old_source": "d9cf20c7b56cfc8fdc1e443ea2d3f880959283c2",
+			"upgraded_source": "e74fce16146731211b37244ad59dd7c99c3881bb",
+			"sites_repeated_migrations": 2,
+			"migrations_each": 2,
+			"canonical_request": "unchanged",
+			"policy_digest_and_revision": "unchanged",
+			"decision": "unchanged",
+			"pre_migration_durable_receipt": "replayed unchanged",
+			"legacy_column_defaults": "version1 precision2"
+		},
+		"native_tests": {
+			"exact_amount_tests": 9,
+			"exact_test_commit": "e006a4911e12915b073fcf25fe787d23ebf57a64",
+			"prior_regressions": 41,
+			"prior_regression_commit": "e74fce16146731211b37244ad59dd7c99c3881bb",
+			"runtime_code_identical_between_commits": true,
+			"components": [
+				"approval matrix9",
+				"delegation7",
+				"budget planning20",
+				"governance5"
+			]
+		},
+		"local_quality": "all passed345 pure, package, lint/format, bandit, checksums, types and frontend at e006a49",
 		"pure_tests_passed": 345
 	},
 	"overall_hospital_production_readiness": "not_established"
