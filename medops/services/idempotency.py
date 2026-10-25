@@ -95,7 +95,8 @@ def _assert_record_matches(
 			cause=DomainServiceContractError("idempotency service version is invalid"),
 		)
 	if (
-		record.service_name != definition.name
+		record.owner != frappe.session.user
+		or record.service_name != definition.name
 		or service_version != definition.version
 		or record.idempotency_key_hash != key_hash
 		or record.request_fingerprint != request_fingerprint

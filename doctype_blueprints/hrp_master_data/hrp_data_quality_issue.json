@@ -17,31 +17,212 @@
   "index_web_pages_for_search": 0,
   "description": "质量规则对标准主数据的脱敏问题记录；由评估服务发现、解决和重新打开。",
   "fields": [
-    {"fieldname": "quality_rule", "label": "质量规则", "fieldtype": "Link", "options": "HRP Data Quality Rule", "reqd": 1, "search_index": 1, "in_list_view": 1},
-    {"fieldname": "master_data_domain", "label": "主数据域", "fieldtype": "Link", "options": "HRP Master Data Domain", "reqd": 1, "search_index": 1},
-    {"fieldname": "target_doctype", "label": "标准主数据类型", "fieldtype": "Link", "options": "DocType", "reqd": 1, "read_only": 1},
-    {"fieldname": "target_name", "label": "主数据记录", "fieldtype": "Dynamic Link", "options": "target_doctype", "reqd": 1, "search_index": 1, "in_list_view": 1},
-    {"fieldname": "company", "label": "法人", "fieldtype": "Link", "options": "Company", "reqd": 1, "search_index": 1, "in_list_view": 1},
-    {"fieldname": "hospital", "label": "医院", "fieldtype": "Link", "options": "HRP Hospital", "reqd": 1, "search_index": 1},
-    {"fieldname": "organization_unit", "label": "组织单元", "fieldtype": "Link", "options": "HRP Organization Unit", "search_index": 1},
-    {"fieldname": "issue_key", "label": "问题唯一键", "fieldtype": "Data", "reqd": 1, "unique": 1, "read_only": 1, "hidden": 1, "no_copy": 1},
-    {"fieldname": "issue_status", "label": "问题状态", "fieldtype": "Select", "options": "Open\nResolved", "default": "Open", "reqd": 1, "read_only": 1, "search_index": 1, "in_list_view": 1},
-    {"fieldname": "severity", "label": "严重程度", "fieldtype": "Select", "options": "Critical\nMajor\nMinor", "reqd": 1, "read_only": 1, "search_index": 1, "in_list_view": 1},
-    {"fieldname": "failure_code", "label": "失败代码", "fieldtype": "Data", "read_only": 1, "search_index": 1},
-    {"fieldname": "failure_message", "label": "失败说明", "fieldtype": "Data", "read_only": 1},
-    {"fieldname": "observed_value_digest", "label": "观察值摘要", "fieldtype": "Data", "reqd": 1, "read_only": 1, "hidden": 1, "no_copy": 1},
-    {"fieldname": "rule_revision", "label": "规则修订号", "fieldtype": "Int", "reqd": 1, "read_only": 1},
-    {"fieldname": "rule_digest", "label": "规则摘要", "fieldtype": "Data", "reqd": 1, "read_only": 1, "hidden": 1, "no_copy": 1},
-    {"fieldname": "first_detected_at", "label": "首次发现时间", "fieldtype": "Datetime", "reqd": 1, "read_only": 1, "in_list_view": 1},
-    {"fieldname": "last_evaluated_at", "label": "最近评估时间", "fieldtype": "Datetime", "reqd": 1, "read_only": 1},
-    {"fieldname": "resolved_at", "label": "解决时间", "fieldtype": "Datetime", "read_only": 1},
-    {"fieldname": "occurrence_count", "label": "发现次数", "fieldtype": "Int", "default": "1", "reqd": 1, "read_only": 1},
-    {"fieldname": "revision", "label": "修订号", "fieldtype": "Int", "reqd": 1, "read_only": 1, "no_copy": 1}
+    {
+      "fieldname": "quality_rule",
+      "label": "质量规则",
+      "fieldtype": "Link",
+      "options": "HRP Data Quality Rule",
+      "reqd": 1,
+      "search_index": 1,
+      "in_list_view": 1
+    },
+    {
+      "fieldname": "master_data_domain",
+      "label": "主数据域",
+      "fieldtype": "Link",
+      "options": "HRP Master Data Domain",
+      "reqd": 1,
+      "search_index": 1
+    },
+    {
+      "fieldname": "target_doctype",
+      "label": "标准主数据类型",
+      "fieldtype": "Link",
+      "options": "DocType",
+      "reqd": 1,
+      "read_only": 1
+    },
+    {
+      "fieldname": "target_name",
+      "label": "主数据记录",
+      "fieldtype": "Dynamic Link",
+      "options": "target_doctype",
+      "reqd": 1,
+      "search_index": 1,
+      "in_list_view": 1
+    },
+    {
+      "fieldname": "company",
+      "label": "法人",
+      "fieldtype": "Link",
+      "options": "Company",
+      "reqd": 1,
+      "search_index": 1,
+      "in_list_view": 1
+    },
+    {
+      "fieldname": "hospital",
+      "label": "医院",
+      "fieldtype": "Link",
+      "options": "HRP Hospital",
+      "reqd": 1,
+      "search_index": 1
+    },
+    {
+      "fieldname": "organization_unit",
+      "label": "组织单元",
+      "fieldtype": "Link",
+      "options": "HRP Organization Unit",
+      "search_index": 1
+    },
+    {
+      "fieldname": "issue_key",
+      "label": "问题唯一键",
+      "fieldtype": "Data",
+      "reqd": 1,
+      "unique": 1,
+      "read_only": 1,
+      "hidden": 1,
+      "no_copy": 1
+    },
+    {
+      "fieldname": "issue_status",
+      "label": "问题状态",
+      "fieldtype": "Select",
+      "options": "Open\nResolved",
+      "default": "Open",
+      "reqd": 1,
+      "read_only": 1,
+      "search_index": 1,
+      "in_list_view": 1
+    },
+    {
+      "fieldname": "severity",
+      "label": "严重程度",
+      "fieldtype": "Select",
+      "options": "Critical\nMajor\nMinor",
+      "reqd": 1,
+      "read_only": 1,
+      "search_index": 1,
+      "in_list_view": 1
+    },
+    {
+      "fieldname": "failure_code",
+      "label": "失败代码",
+      "fieldtype": "Data",
+      "read_only": 1,
+      "search_index": 1
+    },
+    {
+      "fieldname": "failure_message",
+      "label": "失败说明",
+      "fieldtype": "Data",
+      "read_only": 1
+    },
+    {
+      "fieldname": "observed_value_digest",
+      "label": "观察值摘要",
+      "fieldtype": "Data",
+      "reqd": 1,
+      "read_only": 1,
+      "hidden": 1,
+      "no_copy": 1
+    },
+    {
+      "fieldname": "rule_revision",
+      "label": "规则修订号",
+      "fieldtype": "Int",
+      "reqd": 1,
+      "read_only": 1
+    },
+    {
+      "fieldname": "rule_digest",
+      "label": "规则摘要",
+      "fieldtype": "Data",
+      "reqd": 1,
+      "read_only": 1,
+      "hidden": 1,
+      "no_copy": 1
+    },
+    {
+      "fieldname": "first_detected_at",
+      "label": "首次发现时间",
+      "fieldtype": "Datetime",
+      "reqd": 1,
+      "read_only": 1,
+      "in_list_view": 1
+    },
+    {
+      "fieldname": "last_evaluated_at",
+      "label": "最近评估时间",
+      "fieldtype": "Datetime",
+      "reqd": 1,
+      "read_only": 1
+    },
+    {
+      "fieldname": "resolved_at",
+      "label": "解决时间",
+      "fieldtype": "Datetime",
+      "read_only": 1
+    },
+    {
+      "fieldname": "occurrence_count",
+      "label": "发现次数",
+      "fieldtype": "Int",
+      "default": "1",
+      "reqd": 1,
+      "read_only": 1
+    },
+    {
+      "fieldname": "revision",
+      "label": "修订号",
+      "fieldtype": "Int",
+      "reqd": 1,
+      "read_only": 1,
+      "no_copy": 1
+    },
+    {
+      "fieldname": "evaluation_read_fields",
+      "label": "评估读取字段约束",
+      "fieldtype": "Code",
+      "options": "JSON",
+      "read_only": 1,
+      "hidden": 1,
+      "no_copy": 1,
+      "description": "质量结论历史涉及的字段名集合；只扩展，不保存字段值。"
+    }
   ],
   "permissions": [
-    {"role": "System Manager", "read": 1, "write": 0, "create": 0, "delete": 0, "submit": 0, "cancel": 0, "amend": 0},
-    {"role": "HRP System Manager", "read": 1, "write": 0, "create": 0, "delete": 0, "submit": 0, "cancel": 0, "amend": 0},
-    {"role": "HRP Data Steward", "read": 1, "write": 0, "create": 0, "delete": 0, "submit": 0, "cancel": 0, "amend": 0}
+    {
+      "role": "System Manager",
+      "read": 1,
+      "write": 0,
+      "create": 0,
+      "delete": 0,
+      "submit": 0,
+      "cancel": 0,
+      "amend": 0
+    },
+    {
+      "role": "HRP System Manager",
+      "read": 1,
+      "write": 0,
+      "create": 0,
+      "delete": 0,
+      "submit": 0,
+      "cancel": 0,
+      "amend": 0
+    },
+    {
+      "role": "HRP Data Steward",
+      "read": 1,
+      "write": 0,
+      "create": 0,
+      "delete": 0,
+      "submit": 0,
+      "cancel": 0,
+      "amend": 0
+    }
   ],
   "links": [],
   "actions": [],
@@ -49,8 +230,16 @@
     "app": "medops",
     "retention_years": 10,
     "data_classification": "内部",
-    "key_indexes": ["issue_key", "issue_status", "severity", "last_evaluated_at"],
-    "standard_references": ["Company", "DocType"],
+    "key_indexes": [
+      "issue_key",
+      "issue_status",
+      "severity",
+      "last_evaluated_at"
+    ],
+    "standard_references": [
+      "Company",
+      "DocType"
+    ],
     "domain_group": "Core",
     "module_package": "hrp_master_data"
   }

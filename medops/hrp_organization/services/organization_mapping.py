@@ -14,7 +14,9 @@ from medops.hrp_organization.doctype.hrp_organization_mapping.hrp_organization_m
 	HRPOrganizationMapping,
 )
 from medops.hrp_organization.services.organization import ORGANIZATION_ADMIN_ROLES
+from medops.hrp_workflow_authorization.services.rule_contracts import can_read_named_fields
 from medops.services.audit_context import emit_audit_event
+from medops.services.data_access import public_fields_readable, require_scope, require_scoped_read
 from medops.services.domain_service import DomainService
 from medops.services.errors import raise_ione_error
 
@@ -247,8 +249,40 @@ class UpsertOrganizationMappingService(DomainService[OrganizationMappingUpsert])
 		required_roles=ORGANIZATION_ADMIN_ROLES,
 	)
 
+	def authorize_result(self, result: dict[str, object]) -> None:
+		doc = _mapping_doc(str(result["name"]))
+		require_scoped_read(doc)
+		if not public_fields_readable(doc):
+			raise_ione_error("PERMISSION_DENIED")
+
 	def request_payload(self, command: OrganizationMappingUpsert) -> dict[str, object]:
 		return command.as_request_payload()
+
+	def validate(self, command: OrganizationMappingUpsert) -> None:
+		unit = frappe.get_doc("HRP Organization Unit", command.organization_unit)
+		require_scoped_read(unit)
+		if command.expected_revision:
+			name = frappe.db.get_value("HRP Organization Mapping", {"organization_unit": unit.name}, "name")
+			if name:
+				existing = _mapping_doc(name)
+				require_scoped_read(existing)
+				if not public_fields_readable(existing):
+					raise_ione_error("PERMISSION_DENIED")
+		require_scope(
+			"HRP Organization Mapping",
+			company=unit.company,
+			hospital=unit.hospital,
+			organization_unit=unit.name,
+			action="write" if command.expected_revision else "create",
+		)
+		for field, doctype in STANDARD_TARGETS.items():
+			name = getattr(command, field)
+			if name:
+				target = frappe.get_doc(doctype, name)
+				if not frappe.has_permission(doctype, ptype="read", doc=target) or not can_read_named_fields(
+					target, {"company", "disabled"}
+				):
+					raise_ione_error("PERMISSION_DENIED")
 
 	def perform(self, command: OrganizationMappingUpsert) -> dict[str, object]:
 		unit = _lock_unit(command)
@@ -423,6 +457,9 @@ class ResolveOrganizationMappingService(DomainService[OrganizationMappingResolve
 	def perform(self, command: OrganizationMappingResolve) -> dict[str, object]:
 		organization_unit = _resolve_unit(command)
 		doc = _mapping_doc(organization_unit)
+		require_scoped_read(doc)
+		if not public_fields_readable(doc):
+			raise_ione_error("PERMISSION_DENIED")
 		if not bool(doc.enabled):
 			raise_ione_error("INVALID_STATE_TRANSITION")
 		target_count = 0
@@ -430,6 +467,11 @@ class ResolveOrganizationMappingService(DomainService[OrganizationMappingResolve
 			target_name = doc.get(fieldname)
 			if not target_name:
 				continue
+			target = frappe.get_doc(STANDARD_TARGETS[fieldname], str(target_name))
+			if not frappe.has_permission(
+				target.doctype, ptype="read", doc=target
+			) or not can_read_named_fields(target, {"company", "disabled"}):
+				raise_ione_error("PERMISSION_DENIED")
 			target_count += 1
 			_lock_standard_target(
 				fieldname=fieldname,

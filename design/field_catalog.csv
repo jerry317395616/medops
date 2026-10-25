@@ -13747,3 +13747,4 @@ medops,HRP Service,HRP Service Knowledge Link,36,output_payload,输出,Long Text
 medops,HRP Service,HRP Service Knowledge Link,37,token_usage,Token用量,Int,,0,0,0,0,0,,,,Token用量,Portal
 medops,HRP Service,HRP Service Knowledge Link,38,human_confirmation_required,需要人工确认,Check,,0,0,0,0,0,,1,,需要人工确认,Portal
 medops,HRP Service,HRP Service Knowledge Link,39,confirmed_by,确认人,Link,User,0,0,0,0,0,,,,确认人,Portal
+medops,HRP Master Data,HRP Data Quality Issue,30,evaluation_read_fields,评估读取字段约束,Code,JSON,0,0,0,1,0,,,,质量结论历史涉及的字段名集合；只扩展，不保存字段值。,Core

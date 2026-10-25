@@ -216,7 +216,7 @@
   description: 创建或修订主数据域
   request_schema: code,display_name,target_doctype,enabled,expected_revision,remarks
   response_schema: schema_version,code,display_name,target_doctype,enabled,allow_create,allow_update,allow_disable,allowed_fields,policy_version,policy_digest,revision,remarks,changed,changed_fields,correlation_id,request_id,idempotency_replayed
-  required_role: System Manager or HRP System Manager or HRP Data Steward
+  required_role: System Manager or HRP System Manager
   idempotency: Required for write
   async: 'No'
   transaction_boundary: Single DB transaction
@@ -1661,6 +1661,20 @@
   idempotency: Not required (read-only)
   transaction_boundary: Read-only
   audit: Redacted policy digest counts and outcome
+  version: v1
+  domain_group: Core
+  async: 'No'
+- api_code: CORE-044
+  app: medops
+  method: GET
+  path: /api/method/medops.api.v1.master_data_access.list_records
+  description: 按当前组织范围及源字段权限查询主数据记录
+  request_schema: entity,company,hospital,organization_unit,status,from_date,to_date,offset,limit
+  response_schema: items,next_offset,limit
+  required_role: Authenticated role with current scope and native source field read permissions
+  idempotency: Not required (read-only)
+  transaction_boundary: Read-only
+  audit: Redacted entity and returned count only
   version: v1
   domain_group: Core
   async: 'No'

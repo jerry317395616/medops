@@ -133,6 +133,14 @@ def ensure_numbering_fixtures() -> None:
 			user.insert(ignore_permissions=True)
 		if role and role not in frappe.get_roles(email):
 			user.add_roles(role)
+	from medops.tests.scope_fixtures import grant_test_scope
+
+	grant_test_scope(
+		code="COD023-TEST-SCOPE",
+		company=TEST_COMPANY,
+		hospital=TEST_HOSPITAL,
+		users=(TEST_HRP_USER, TEST_AUDITOR),
+	)
 	frappe.local.db.commit()
 
 

@@ -4997,7 +4997,7 @@ paths:
         '500':
           description: Persisted master data configuration is invalid
           content: *id001
-      x-required-role: System Manager or HRP System Manager or HRP Data Steward
+      x-required-role: System Manager or HRP System Manager
       x-transaction-boundary: Single DB transaction
       x-idempotency: Required for write
   /api/method/medops.api.v1.master_data.save_master_data_request:
@@ -6159,6 +6159,88 @@ paths:
         schema:
           type: string
           maxLength: 140
+  /api/method/medops.api.v1.master_data_access.list_records:
+    get:
+      operationId: core_044
+      summary: 按当前组织范围及源字段权限查询主数据记录
+      tags:
+      - medops
+      security:
+      - tokenAuth: []
+      parameters:
+      - in: query
+        name: entity
+        required: true
+        schema:
+          type: string
+          enum:
+          - requests
+          - mappings
+          - rules
+          - issues
+      - in: query
+        name: company
+        required: false
+        schema:
+          type: string
+      - in: query
+        name: hospital
+        required: false
+        schema:
+          type: string
+      - in: query
+        name: organization_unit
+        required: false
+        schema:
+          type: string
+      - in: query
+        name: status
+        required: false
+        schema:
+          type: string
+      - in: query
+        name: from_date
+        required: false
+        schema:
+          type: string
+          format: date
+      - in: query
+        name: to_date
+        required: false
+        schema:
+          type: string
+          format: date
+      - in: query
+        name: offset
+        required: false
+        schema:
+          type: integer
+          minimum: 0
+          maximum: 5000
+      - in: query
+        name: limit
+        required: false
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 50
+      responses:
+        '200':
+          description: Only visible records, with pagination after permission filtering
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FrappeResponse'
+        '400':
+          description: Invalid input or scoped candidate scan exceeds 5000; narrow filters
+        '401':
+          description: Authentication required
+        '403':
+          description: Native entity read permission denied
+      x-api-code: CORE-044
+      x-required-role: Authenticated role with current scope and native source field read permissions
+      x-transaction-boundary: Read-only
+      x-idempotency: Not required (read-only)
 components:
   headers:
     CorrelationId:

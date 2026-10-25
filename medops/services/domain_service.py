@@ -36,6 +36,10 @@ class DomainService(ABC, Generic[CommandT]):
 	def validate(self, command: CommandT) -> None:
 		del command
 
+	def authorize_result(self, result: dict[str, object]) -> None:
+		"""Recheck live result visibility inside the transaction, including replay."""
+		del result
+
 	@abstractmethod
 	def request_payload(self, command: CommandT) -> dict[str, object]:
 		"""Return the deterministic request used only to calculate a fingerprint."""
@@ -76,6 +80,7 @@ class DomainService(ABC, Generic[CommandT]):
 						context=context,
 					)
 					if reservation.replayed:
+						self.authorize_result(dict(reservation.replayed_result or {}))
 						emit_audit_event(
 							"domain_service_replayed",
 							logger_name="medops.domain_service",
@@ -92,6 +97,7 @@ class DomainService(ABC, Generic[CommandT]):
 						)
 
 				result, _ = canonical_json_object(self.perform(command))
+				self.authorize_result(result)
 				if reservation is not None:
 					complete_idempotency(
 						reservation,

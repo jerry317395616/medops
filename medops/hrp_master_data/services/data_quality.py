@@ -19,14 +19,25 @@ from medops.common.data_quality import (
 	observed_value_digest,
 	validate_rule_for_policy,
 )
-from medops.common.domain_service import DomainServiceDefinition, DomainServiceExecution
+from medops.common.domain_service import (
+	DomainServiceDefinition,
+	DomainServiceExecution,
+	idempotency_record_name,
+)
 from medops.common.error_catalog import IoneApplicationError
 from medops.common.master_data import MasterDataFieldPolicy, MasterDataTargetPolicy
+from medops.common.master_data_security import merge_evaluation_fields
 from medops.hrp_master_data.doctype.hrp_data_quality_issue.hrp_data_quality_issue import (
 	HRPDataQualityIssue,
 )
 from medops.hrp_master_data.doctype.hrp_data_quality_rule.hrp_data_quality_rule import (
 	HRPDataQualityRule,
+)
+from medops.hrp_master_data.services.access import (
+	get_scoped_documents,
+	require_document_read,
+	require_scope,
+	require_target_read,
 )
 from medops.hrp_master_data.services.external_code_mapping import (
 	assert_master_data_hospital_scope,
@@ -114,8 +125,23 @@ class UpsertDataQualityRuleService(DomainService[DataQualityRuleUpsert]):
 		required_roles=DATA_QUALITY_WRITE_ROLES,
 	)
 
+	def authorize_result(self, result: dict[str, object]) -> None:
+		require_document_read(_rule_doc(str(result["name"])))
+
 	def request_payload(self, command: DataQualityRuleUpsert) -> dict[str, object]:
 		return command.as_request_payload()
+
+	def authorize(self, command: DataQualityRuleUpsert) -> None:
+		super().authorize(command)
+		require_scope(
+			DATA_QUALITY_RULE_DOCTYPE,
+			company=command.company,
+			hospital=command.hospital,
+			organization_unit=command.organization_unit,
+			action="write" if command.rule_name else "create",
+		)
+		if command.rule_name:
+			require_document_read(_rule_doc(command.rule_name))
 
 	def validate(self, command: DataQualityRuleUpsert) -> None:
 		if not frappe.db.exists("Company", command.company):
@@ -298,12 +324,36 @@ class EvaluateDataQualityService(DomainService[DataQualityEvaluate]):
 		required_roles=DATA_QUALITY_WRITE_ROLES,
 	)
 
+	def authorize_result(self, result: dict[str, object]) -> None:
+		issue = result.get("issue")
+		if isinstance(issue, dict):
+			require_document_read(_issue_doc(str(issue["name"])))
+
 	def request_payload(self, command: DataQualityEvaluate) -> dict[str, object]:
 		return command.as_request_payload()
 
 	def validate(self, command: DataQualityEvaluate) -> None:
 		if not frappe.db.exists(DATA_QUALITY_RULE_DOCTYPE, command.rule_name):
 			raise_ione_error("RESOURCE_NOT_FOUND")
+		rule = _rule_doc(command.rule_name)
+		require_document_read(rule)
+		for action in ("create", "write"):
+			require_scope(
+				DATA_QUALITY_ISSUE_DOCTYPE,
+				company=rule.company,
+				hospital=rule.hospital,
+				organization_unit=rule.organization_unit,
+				action=action,
+			)
+		require_target_read(
+			rule.target_doctype, command.target_name, fields={rule.target_field}, company=rule.company
+		)
+		key = issue_key_for(
+			rule_name=rule.name, target_doctype=rule.target_doctype, target_name=command.target_name
+		)
+		name = frappe.db.get_value(DATA_QUALITY_ISSUE_DOCTYPE, {"issue_key": key}, "name")
+		if name:
+			require_document_read(_issue_doc(name))
 
 	def perform(self, command: DataQualityEvaluate) -> dict[str, object]:
 		current_revision = HRPDataQualityRule.lock_revision(
@@ -333,6 +383,13 @@ class EvaluateDataQualityService(DomainService[DataQualityEvaluate]):
 			raise_ione_error("CONFIGURATION_INVALID", cause=exc)
 		if rule.rule_digest != rule_command.rule_digest or int(rule.revision) != current_revision:
 			raise_ione_error("CONFIGURATION_INVALID")
+		require_target_read(
+			rule.target_doctype,
+			command.target_name,
+			fields={rule.target_field},
+			company=rule.company,
+			lock=True,
+		)
 		value = _target_value(
 			policy,
 			field,
@@ -376,13 +433,14 @@ class EvaluateDataQualityService(DomainService[DataQualityEvaluate]):
 			}
 
 		if issue is not None and outcome.passed and issue.issue_status == "Resolved":
-			return {
-				"schema_version": 1,
-				"passed": True,
-				"failure_code": None,
-				"issue": issue.as_public_dict(),
-				"changed": False,
-			}
+			if issue.rule_digest == rule.rule_digest and issue.get("evaluation_read_fields"):
+				return {
+					"schema_version": 1,
+					"passed": True,
+					"failure_code": None,
+					"issue": issue.as_public_dict(),
+					"changed": False,
+				}
 
 		if issue is None:
 			issue = cast(
@@ -410,6 +468,9 @@ class EvaluateDataQualityService(DomainService[DataQualityEvaluate]):
 						"resolved_at": None,
 						"occurrence_count": 1,
 						"revision": 1,
+						"evaluation_read_fields": merge_evaluation_fields(
+							None, rule.target_doctype, rule.target_field
+						),
 					}
 				),
 			)
@@ -419,6 +480,9 @@ class EvaluateDataQualityService(DomainService[DataQualityEvaluate]):
 			except frappe.DuplicateEntryError as exc:
 				raise_ione_error("CONFLICT", cause=exc)
 		else:
+			issue.evaluation_read_fields = merge_evaluation_fields(
+				issue.get("evaluation_read_fields"), rule.target_doctype, rule.target_field, legacy=True
+			)
 			issue.issue_status = "Resolved" if outcome.passed else "Open"
 			issue.severity = rule.severity
 			issue.failure_code = outcome.failure_code
@@ -433,6 +497,7 @@ class EvaluateDataQualityService(DomainService[DataQualityEvaluate]):
 			issue.flags.data_quality_service_write = True
 			issue.flags.locked_revision = issue_revision
 			issue.save(ignore_permissions=True)
+		require_document_read(issue)
 
 		emit_audit_event(
 			"data_quality_issue_resolved" if outcome.passed else "data_quality_issue_detected",
@@ -477,6 +542,7 @@ def get_data_quality_issue(
 		if not isinstance(issue_name, str) or not issue_name.strip():
 			raise_ione_error("INVALID_REQUEST")
 		issue = _issue_doc(issue_name)
+		require_document_read(issue)
 		emit_audit_event(
 			"data_quality_issue_read",
 			logger_name="medops.data_quality",
@@ -495,7 +561,19 @@ def _scheduled_idempotency_key(
 	effective_on: str,
 ) -> str:
 	digest = sha256(f"{rule_name}\0{rule_revision}\0{target_name}\0{effective_on}".encode()).hexdigest()
-	return f"DQ-{effective_on}-{digest[:32]}"
+	legacy = f"DQ-{effective_on}-{digest[:32]}"
+	# Preserve an existing actor's old retries without disclosing another actor's
+	# persisted result. New keys include the actor even when no legacy record exists,
+	# so simultaneous first runs by different actors cannot compete for a shared key.
+	owner = frappe.db.get_value(
+		"HRP Service Idempotency",
+		idempotency_record_name(EvaluateDataQualityService.definition.name, legacy),
+		"owner",
+	)
+	if owner == frappe.session.user:
+		return legacy
+	actor = sha256(frappe.session.user.encode()).hexdigest()[:16]
+	return f"{legacy}-{actor}"
 
 
 def run_data_quality_rule_batch(
@@ -508,6 +586,7 @@ def run_data_quality_rule_batch(
 	with service_audit_scope():
 		require_roles(DATA_QUALITY_WRITE_ROLES)
 		rule = _rule_doc(rule_name)
+		require_document_read(rule)
 		if int(rule.revision) != int(expected_rule_revision):
 			raise_ione_error("CONFLICT")
 		domain, policy = get_operational_master_data_domain(rule.master_data_domain, lock=False)
@@ -516,7 +595,9 @@ def run_data_quality_rule_batch(
 		filters: dict[str, object] = {"name": (">", after_name)} if after_name else {}
 		if policy.company_field:
 			filters[policy.company_field] = rule.company
-		rows = frappe.get_all(
+		if not frappe.has_permission(policy.target_doctype, ptype="read"):
+			raise_ione_error("PERMISSION_DENIED")
+		rows = frappe.get_list(
 			policy.target_doctype,
 			filters=filters,
 			fields=["name"],
@@ -572,7 +653,7 @@ def run_data_quality_rules() -> dict[str, object]:
 	effective_on = today()
 	with service_audit_scope():
 		require_roles(DATA_QUALITY_WRITE_ROLES)
-		rules = frappe.get_all(
+		rules = get_scoped_documents(
 			DATA_QUALITY_RULE_DOCTYPE,
 			filters={
 				"enabled": 1,
@@ -582,8 +663,6 @@ def run_data_quality_rules() -> dict[str, object]:
 				{"valid_to": ("is", "not set")},
 				{"valid_to": (">=", effective_on)},
 			],
-			fields=["name", "revision", "rule_digest"],
-			order_by="name asc",
 		)
 		for rule in rules:
 			enqueue_with_audit(

@@ -200,6 +200,13 @@ def create_data_quality_context(*, suffix: str) -> None:
 		if domain.target_doctype != "Item" or not bool(domain.enabled):
 			raise AssertionError("Item master-data domain must be operational")
 
+	from medops.tests.scope_fixtures import grant_test_scope, share_test_records
+
+	grant_test_scope(
+		code="COD022-TEST-SCOPE", company=TEST_COMPANY, hospital=TEST_HOSPITAL, users=(TEST_STEWARD,)
+	)
+	share_test_records("Item", (TEST_ITEM,), (TEST_STEWARD,))
+
 
 def rule_command(
 	*,
@@ -284,10 +291,10 @@ class TestDataQuality(IntegrationTestCase):
 			self.assertTrue(expected.issubset(index_names))
 		workspace = frappe.get_doc("Workspace", "HRP Master Data")
 		shortcuts = {shortcut.link_to for shortcut in workspace.shortcuts}
-		self.assertTrue({"HRP Data Quality Rule", "HRP Data Quality Issue"}.issubset(shortcuts))
+		self.assertIn("hrp-master-data-access", shortcuts)
+		self.assertTrue({"HRP Data Quality Rule", "HRP Data Quality Issue"}.isdisjoint(shortcuts))
 		default_workspace_map = build_default_workspace_map(get_sidebar_items())
-		self.assertEqual(default_workspace_map["HRP Data Quality Rule"], "HRP")
-		self.assertEqual(default_workspace_map["HRP Data Quality Issue"], "HRP")
+		self.assertEqual(default_workspace_map["hrp-master-data-access"], "HRP")
 
 		direct = frappe.get_doc(
 			{
@@ -493,10 +500,16 @@ class TestDataQuality(IntegrationTestCase):
 		self.assertNotIn("rule_digest", get_data_quality_issue(issue_name=issue["name"]))
 
 		frappe.set_user(TEST_STEWARD)
-		self.assertEqual(data_quality_query(), "")
+		self.assertEqual(data_quality_query(), "1=0")
 		rule = frappe.get_doc("HRP Data Quality Rule", created["name"])
 		self.assertTrue(can_read_data_quality(rule, ptype="read"))
-		self.assertIn(created["name"], frappe.get_list("HRP Data Quality Rule", pluck="name"))
+		self.assertEqual(frappe.get_list("HRP Data Quality Rule", pluck="name"), [])
+		from medops.api.v1.master_data_access import list_records
+
+		self.assertIn(
+			created["name"],
+			[row["name"] for row in cast(list[dict[str, object]], list_records(entity="rules")["items"])],
+		)
 		frappe.set_user(TEST_PLAIN_USER)
 		self.assertEqual(data_quality_query(), "1=0")
 		self.assertFalse(can_read_data_quality(rule, ptype="read"))
@@ -514,8 +527,8 @@ class TestDataQuality(IntegrationTestCase):
 		created = self._create_rule(suffix="schedule")
 		with (
 			patch(
-				"medops.hrp_master_data.services.data_quality.frappe.get_all",
-				return_value=[frappe._dict(name=created["name"], revision=1)],
+				"medops.hrp_master_data.services.data_quality.get_scoped_documents",
+				return_value=[frappe.get_doc("HRP Data Quality Rule", created["name"])],
 			),
 			patch("medops.hrp_master_data.services.data_quality.enqueue_with_audit") as enqueue,
 		):
@@ -526,7 +539,7 @@ class TestDataQuality(IntegrationTestCase):
 		targets = [frappe._dict(name=f"COD022-BATCH-{index:03}") for index in range(DATA_QUALITY_BATCH_SIZE)]
 		with (
 			patch(
-				"medops.hrp_master_data.services.data_quality.frappe.get_all",
+				"medops.hrp_master_data.services.data_quality.frappe.get_list",
 				return_value=targets,
 			),
 			patch(

@@ -1,0 +1,68 @@
+{
+	"schema_version": 1,
+	"task_id": "COD-201",
+	"title": "补齐核心主数据访问边界",
+	"status": "In Progress",
+	"risk_level": "critical",
+	"change_types": [
+		"application",
+		"architecture",
+		"configuration",
+		"data",
+		"documentation",
+		"security"
+	],
+	"affected_modules": [
+		"HRP Foundation",
+		"HRP Organization",
+		"HRP Master Data",
+		"HRP Workflow Authorization"
+	],
+	"breaking_change": true,
+	"adr_ids": [
+		"ADR-0026"
+	],
+	"path_globs": [
+		"README.md",
+		"DELIVERY_MANIFEST.json",
+		"VALIDATION_REPORT.json",
+		"SHA256SUMS.txt",
+		"api/**",
+		"architecture/core_data_access.md",
+		"architecture/production_readiness.md",
+		"architecture/adr/ADR-0026-core-data-access-boundaries.md",
+		"backlog/**",
+		"changes/COD-201.json",
+		"design/**",
+		"doctype_blueprints/hrp_master_data/hrp_data_quality_issue.json",
+		"medops/common/master_data_security.py",
+		"medops/api/v1/master_data_access.py",
+		"medops/hrp_foundation/**",
+		"medops/hrp_organization/**",
+		"medops/hrp_master_data/**",
+		"medops/hrp_workflow_authorization/services/rule_contracts.py",
+		"medops/services/data_access.py",
+		"medops/services/idempotency.py",
+		"medops/setup/**",
+		"medops/hooks.py",
+		"scripts/repository_contract.py",
+		"tests/**",
+		"medops/services/domain_service.py",
+		"medops/tests/scope_fixtures.py"
+	],
+	"permissions_impact": "角色不替代当前读写范围；主数据还检查真实来源和全部历史字段读取；非超级用户使用安全查询入口；不自动扩权。",
+	"migration_impact": "质量问题新增内部字段约束，保守补全旧记录的字段名集合；不改变业务结论、值和时间。",
+	"rollback_plan": "备份隔离 Site，暂停本项目任务后回退代码，保留授权字段和幂等记录；不可通过回滚重开已知越权。",
+	"security_impact": "范围默认拒绝、原生及字段/遮罩读取、主体绑定的旧键重试与安全查询；不记录来源明细。",
+	"test_plan": [
+		"复现无范围角色的读取与写入并验证修复拒绝",
+		"跨医院、科室、目标原生读取及字段遮罩",
+		"历史规则改版与不可缩减读取约束",
+		"撤权和跨主体幂等重试",
+		"组织全树、编号、调度、HTTP、安全查询和正常业务闭环",
+		"全量质量、重复迁移、受保护 CI 和其他站点基线"
+	],
+	"owner": "MedOps Maintainers",
+	"created_on": "2026-10-25",
+	"updated_on": "2026-10-25"
+}

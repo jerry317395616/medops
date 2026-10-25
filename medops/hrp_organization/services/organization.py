@@ -21,7 +21,9 @@ from medops.hrp_organization.doctype.hrp_hospital.hrp_hospital import HRPHospita
 from medops.hrp_organization.doctype.hrp_organization_version.hrp_organization_version import (
 	HRPOrganizationVersion,
 )
+from medops.hrp_workflow_authorization.services.rule_contracts import can_read_named_fields
 from medops.services.audit_context import emit_audit_event, service_audit_scope
+from medops.services.data_access import public_fields_readable, require_scope, require_scoped_read
 from medops.services.domain_service import DomainService
 from medops.services.errors import raise_ione_error, require_roles
 
@@ -61,10 +63,23 @@ class UpsertHospitalService(DomainService[HospitalUpsert]):
 		required_roles=ORGANIZATION_ADMIN_ROLES,
 	)
 
+	def authorize_result(self, result: dict[str, object]) -> None:
+		doc = frappe.get_doc("HRP Hospital", str(result["name"]))
+		require_scoped_read(doc)
+		if not public_fields_readable(doc):
+			raise_ione_error("PERMISSION_DENIED")
+
 	def request_payload(self, command: HospitalUpsert) -> dict[str, object]:
 		return command.as_request_payload()
 
 	def validate(self, command: HospitalUpsert) -> None:
+		require_scope(
+			"HRP Hospital",
+			company=command.company,
+			hospital=command.code,
+			organization_unit=None,
+			action="write" if command.expected_revision else "create",
+		)
 		if not frappe.db.exists("Company", command.company):
 			raise_ione_error("RESOURCE_NOT_FOUND")
 
@@ -166,12 +181,34 @@ class CreateOrganizationVersionService(DomainService[OrganizationVersionCreate])
 		required_roles=ORGANIZATION_ADMIN_ROLES,
 	)
 
+	def authorize_result(self, result: dict[str, object]) -> None:
+		doc = frappe.get_doc("HRP Organization Version", str(result["name"]))
+		require_scoped_read(doc)
+		if not public_fields_readable(doc):
+			raise_ione_error("PERMISSION_DENIED")
+
 	def request_payload(self, command: OrganizationVersionCreate) -> dict[str, object]:
 		return command.as_request_payload()
 
 	def validate(self, command: OrganizationVersionCreate) -> None:
 		if not frappe.db.exists("HRP Hospital", command.hospital):
 			raise_ione_error("RESOURCE_NOT_FOUND")
+		hospital = frappe.get_doc("HRP Hospital", command.hospital)
+		require_scoped_read(hospital)
+		require_scope(
+			"HRP Organization Version",
+			company=hospital.company,
+			hospital=hospital.name,
+			organization_unit=None,
+			action="create",
+		)
+		require_scope(
+			"HRP Organization Unit",
+			company=hospital.company,
+			hospital=hospital.name,
+			organization_unit=None,
+			action="create",
+		)
 
 	def perform(self, command: OrganizationVersionCreate) -> dict[str, object]:
 		rows = frappe.db.sql(
@@ -324,12 +361,35 @@ class ReplaceOrganizationHierarchyService(DomainService[HierarchyReplace]):
 		required_roles=ORGANIZATION_ADMIN_ROLES,
 	)
 
+	def authorize_result(self, result: dict[str, object]) -> None:
+		doc = frappe.get_doc("HRP Organization Version", str(result["name"]))
+		require_scoped_read(doc)
+		if not public_fields_readable(doc):
+			raise_ione_error("PERMISSION_DENIED")
+
 	def request_payload(self, command: HierarchyReplace) -> dict[str, object]:
 		return command.as_request_payload()
 
 	def validate(self, command: HierarchyReplace) -> None:
 		if not frappe.db.exists("HRP Organization Version", command.organization_version):
 			raise_ione_error("RESOURCE_NOT_FOUND")
+		version = _get_version(command.organization_version)
+		require_scoped_read(version)
+		require_scope(
+			version.doctype,
+			company=version.company,
+			hospital=version.hospital,
+			organization_unit=None,
+			action="write",
+		)
+		for action in ("create", "write"):
+			require_scope(
+				"HRP Organization Unit",
+				company=version.company,
+				hospital=version.hospital,
+				organization_unit=None,
+				action=action,
+			)
 
 	def perform(self, command: HierarchyReplace) -> dict[str, object]:
 		current_revision = HRPOrganizationVersion.lock_revision(
@@ -436,12 +496,27 @@ class PublishOrganizationVersionService(DomainService[OrganizationVersionPublish
 		required_roles=ORGANIZATION_ADMIN_ROLES,
 	)
 
+	def authorize_result(self, result: dict[str, object]) -> None:
+		doc = frappe.get_doc("HRP Organization Version", str(result["name"]))
+		require_scoped_read(doc)
+		if not public_fields_readable(doc):
+			raise_ione_error("PERMISSION_DENIED")
+
 	def request_payload(self, command: OrganizationVersionPublish) -> dict[str, object]:
 		return command.as_request_payload()
 
 	def validate(self, command: OrganizationVersionPublish) -> None:
 		if not frappe.db.exists("HRP Organization Version", command.organization_version):
 			raise_ione_error("RESOURCE_NOT_FOUND")
+		version = _get_version(command.organization_version)
+		require_scoped_read(version)
+		require_scope(
+			version.doctype,
+			company=version.company,
+			hospital=version.hospital,
+			organization_unit=None,
+			action="submit",
+		)
 
 	def perform(self, command: OrganizationVersionPublish) -> dict[str, object]:
 		current_revision = HRPOrganizationVersion.lock_revision(
@@ -520,7 +595,7 @@ def _resolve_version(
 
 
 def _public_nodes(organization_version: str) -> list[dict[str, object]]:
-	rows = frappe.get_all(
+	rows = frappe.get_list(
 		"HRP Organization Unit",
 		filters={"organization_version": organization_version},
 		fields=[
@@ -544,6 +619,9 @@ def _public_nodes(organization_version: str) -> list[dict[str, object]]:
 	stack: list[int] = []
 	result: list[dict[str, object]] = []
 	for row in rows:
+		doc = frappe.get_doc("HRP Organization Unit", row.name)
+		if not can_read_named_fields(doc, {key for key in row if key != "name"}):
+			raise_ione_error("PERMISSION_DENIED")
 		left = int(row.lft or 0)
 		right = int(row.rgt or 0)
 		while stack and left > stack[-1]:
@@ -580,9 +658,14 @@ def get_organization_hierarchy(
 			hospital=hospital,
 			effective_on=effective_on,
 		)
+		require_scoped_read(version)
+		if not public_fields_readable(version):
+			raise_ione_error("PERMISSION_DENIED")
 		nodes = _public_nodes(version.name)
 		if len(nodes) != int(version.node_count or 0):
-			raise_ione_error("CONFIGURATION_INVALID")
+			raise_ione_error(
+				"CONFIGURATION_INVALID" if frappe.session.user == "Administrator" else "PERMISSION_DENIED"
+			)
 		emit_audit_event(
 			"organization_hierarchy_read",
 			logger_name="medops.organization",

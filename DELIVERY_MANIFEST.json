@@ -7,16 +7,16 @@
 		"custom_apps": 1,
 		"modules": 36,
 		"design_doctypes": 400,
-		"design_fields": 10074,
+		"design_fields": 10075,
 		"doctype_blueprints": 400,
 		"starter_doctypes": 26,
-		"repository_contract_tests": 310,
-		"frappe_integration_tests": 254,
+		"repository_contract_tests": 314,
+		"frappe_integration_tests": 267,
 		"environment_profiles": 3,
 		"fixture_rules": 3,
 		"fixture_files": 3,
-		"architecture_decisions": 25,
-		"change_records": 30,
+		"architecture_decisions": 26,
+		"change_records": 31,
 		"change_risk_rules": 5,
 		"error_definitions": 12,
 		"error_translations": 28
@@ -162,6 +162,13 @@
 		"backlog/COD-029.md",
 		"medops/common/business_rules.py",
 		"medops/api/v1/core/rules.py",
-		"medops/setup/business_rules.py"
+		"medops/setup/business_rules.py",
+		"architecture/core_data_access.md",
+		"architecture/adr/ADR-0026-core-data-access-boundaries.md",
+		"backlog/COD-201.md",
+		"medops/common/master_data_security.py",
+		"medops/services/data_access.py",
+		"medops/api/v1/master_data_access.py",
+		"medops/setup/master_data_access.py"
 	]
 }

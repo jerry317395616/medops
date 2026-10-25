@@ -9,6 +9,7 @@ from medops.setup.approval_matrix import ensure_approval_matrix_governance
 from medops.setup.business_rules import ensure_business_rule_governance
 from medops.setup.delegation import ensure_delegation_governance
 from medops.setup.master_data import ensure_master_data_governance
+from medops.setup.master_data_access import ensure_master_data_access_contracts
 from medops.setup.modules import sync_module_defs, sync_module_settings
 from medops.setup.numbering import ensure_numbering_governance
 from medops.setup.organization import ensure_organization_hierarchy
@@ -48,6 +49,7 @@ def after_install() -> None:
 	sync_module_settings()
 	ensure_organization_hierarchy()
 	ensure_master_data_governance()
+	ensure_master_data_access_contracts()
 	ensure_numbering_governance()
 	ensure_access_scope_governance()
 	ensure_approval_matrix_governance()
@@ -66,6 +68,7 @@ def after_migrate() -> None:
 	sync_module_settings()
 	ensure_organization_hierarchy()
 	ensure_master_data_governance()
+	ensure_master_data_access_contracts()
 	ensure_numbering_governance()
 	ensure_access_scope_governance()
 	ensure_approval_matrix_governance()

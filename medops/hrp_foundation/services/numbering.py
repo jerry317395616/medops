@@ -23,6 +23,7 @@ from medops.hrp_foundation.doctype.hrp_numbering_scheme.hrp_numbering_scheme imp
 	HRPNumberingScheme,
 )
 from medops.services.audit_context import emit_audit_event, ensure_audit_context
+from medops.services.data_access import public_fields_readable, require_scope, require_scoped_read
 from medops.services.domain_service import DomainService
 from medops.services.errors import raise_ione_error, require_roles
 
@@ -197,10 +198,23 @@ class UpsertNumberingSchemeService(DomainService[NumberingSchemeUpsert]):
 		required_roles=NUMBERING_ADMIN_ROLES,
 	)
 
+	def authorize_result(self, result: dict[str, object]) -> None:
+		doc = frappe.get_doc("HRP Numbering Scheme", str(result["name"]))
+		require_scoped_read(doc)
+		if not public_fields_readable(doc):
+			raise_ione_error("PERMISSION_DENIED")
+
 	def request_payload(self, command: NumberingSchemeUpsert) -> dict[str, object]:
 		return command.as_request_payload()
 
 	def validate(self, command: NumberingSchemeUpsert) -> None:
+		require_scope(
+			"HRP Numbering Scheme",
+			company=command.company,
+			hospital=command.hospital,
+			organization_unit=command.organization_unit,
+			action="write" if command.expected_revision else "create",
+		)
 		if not frappe.db.exists("Company", command.company):
 			raise_ione_error("RESOURCE_NOT_FOUND")
 		if command.scheme_name and not frappe.db.exists("HRP Numbering Scheme", command.scheme_name):
@@ -334,8 +348,27 @@ class AllocateNumberService(DomainService[NumberAllocation]):
 		required_roles=NUMBERING_ALLOCATION_ROLES,
 	)
 
+	def authorize_result(self, result: dict[str, object]) -> None:
+		doc = frappe.get_doc("HRP Number Reservation", str(result["name"]))
+		require_scoped_read(doc)
+		if not public_fields_readable(doc):
+			raise_ione_error("PERMISSION_DENIED")
+
 	def request_payload(self, command: NumberAllocation) -> dict[str, object]:
 		return command.as_request_payload()
+
+	def validate(self, command: NumberAllocation) -> None:
+		scheme = _scheme_doc(command.scheme)
+		require_scoped_read(scheme)
+		if not public_fields_readable(scheme):
+			raise_ione_error("PERMISSION_DENIED")
+		require_scope(
+			"HRP Number Reservation",
+			company=scheme.company,
+			hospital=scheme.hospital,
+			organization_unit=scheme.organization_unit,
+			action="create",
+		)
 
 	def perform(self, command: NumberAllocation) -> dict[str, object]:
 		scheme = _operational_scheme(command.scheme, business_date=command.business_date)
@@ -456,6 +489,10 @@ def get_number_reservation(
 		HRPNumberReservation,
 		frappe.get_doc("HRP Number Reservation", reservation_token),
 	)
+	if not frappe.has_permission(
+		"HRP Number Reservation", ptype="read", doc=reservation
+	) or not public_fields_readable(reservation):
+		raise_ione_error("PERMISSION_DENIED")
 	if not NUMBERING_ADMIN_ROLES.intersection(frappe.get_roles()) and (
 		"HRP Auditor" not in frappe.get_roles() and reservation.allocated_by != frappe.session.user
 	):

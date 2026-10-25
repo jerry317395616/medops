@@ -25,7 +25,8 @@
 		"last_evaluated_at",
 		"resolved_at",
 		"occurrence_count",
-		"revision"
+		"revision",
+		"evaluation_read_fields"
 	],
 	"fields": [
 		{
@@ -124,7 +125,12 @@
 			"read_only": 1,
 			"search_index": 1
 		},
-		{ "fieldname": "failure_message", "fieldtype": "Data", "label": "失败说明", "read_only": 1 },
+		{
+			"fieldname": "failure_message",
+			"fieldtype": "Data",
+			"label": "失败说明",
+			"read_only": 1
+		},
 		{
 			"fieldname": "observed_value_digest",
 			"fieldtype": "Data",
@@ -134,7 +140,13 @@
 			"read_only": 1,
 			"reqd": 1
 		},
-		{ "fieldname": "rule_revision", "fieldtype": "Int", "label": "规则修订号", "read_only": 1, "reqd": 1 },
+		{
+			"fieldname": "rule_revision",
+			"fieldtype": "Int",
+			"label": "规则修订号",
+			"read_only": 1,
+			"reqd": 1
+		},
 		{
 			"fieldname": "rule_digest",
 			"fieldtype": "Data",
@@ -159,7 +171,12 @@
 			"read_only": 1,
 			"reqd": 1
 		},
-		{ "fieldname": "resolved_at", "fieldtype": "Datetime", "label": "解决时间", "read_only": 1 },
+		{
+			"fieldname": "resolved_at",
+			"fieldtype": "Datetime",
+			"label": "解决时间",
+			"read_only": 1
+		},
 		{
 			"default": "1",
 			"fieldname": "occurrence_count",
@@ -175,6 +192,16 @@
 			"no_copy": 1,
 			"read_only": 1,
 			"reqd": 1
+		},
+		{
+			"fieldname": "evaluation_read_fields",
+			"label": "评估读取字段约束",
+			"fieldtype": "Code",
+			"options": "JSON",
+			"read_only": 1,
+			"hidden": 1,
+			"no_copy": 1,
+			"description": "质量结论历史涉及的字段名集合；只扩展，不保存字段值。"
 		}
 	],
 	"index_web_pages_for_search": 0,
@@ -185,9 +212,18 @@
 	"name": "HRP Data Quality Issue",
 	"owner": "Administrator",
 	"permissions": [
-		{ "read": 1, "role": "System Manager" },
-		{ "read": 1, "role": "HRP System Manager" },
-		{ "read": 1, "role": "HRP Data Steward" }
+		{
+			"read": 1,
+			"role": "System Manager"
+		},
+		{
+			"read": 1,
+			"role": "HRP System Manager"
+		},
+		{
+			"read": 1,
+			"role": "HRP Data Steward"
+		}
 	],
 	"search_fields": "quality_rule,target_name,failure_code,company,hospital",
 	"sort_field": "last_evaluated_at",
