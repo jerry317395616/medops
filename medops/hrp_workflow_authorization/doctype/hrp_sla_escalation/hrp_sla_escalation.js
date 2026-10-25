@@ -11,7 +11,9 @@ frappe.ui.form.on("HRP SLA Escalation", {
 			});
 			await frm.reload_doc();
 		};
-		frm.add_custom_button(__("确认响应"), () => act("acknowledge"));
+		if (frm.doc.status === "Open" && !frm.doc.responded_at) {
+			frm.add_custom_button(__("确认响应"), () => act("acknowledge"));
+		}
 		frm.add_custom_button(__("立即检查"), () => act("process"));
 		frm.add_custom_button(__("停止计时"), () =>
 			frappe.prompt(

@@ -316,16 +316,12 @@
 		{
 			"role": "System Manager",
 			"read": 1,
-			"report": 1,
-			"write": 1,
-			"create": 1
+			"report": 1
 		},
 		{
 			"role": "HRP System Manager",
 			"read": 1,
-			"report": 1,
-			"write": 1,
-			"create": 1
+			"report": 1
 		}
 	],
 	"actions": [],

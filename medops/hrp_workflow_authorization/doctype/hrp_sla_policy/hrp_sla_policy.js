@@ -3,6 +3,7 @@ frappe.ui.form.on("HRP SLA Policy", {
 		frm.disable_save();
 		if (!["System Manager", "HRP System Manager"].some((r) => frappe.user_roles.includes(r))) return;
 		frm.add_custom_button(__("保存服务时限策略"), async () => {
+			const wasNew = frm.is_new();
 			const fields = [
 				"code",
 				"display_name",
@@ -37,8 +38,12 @@ frappe.ui.form.on("HRP SLA Policy", {
 				headers: { "Idempotency-Key": `sla-policy-${frappe.utils.get_random(16)}` },
 				freeze: true,
 			});
-			await frappe.set_route("Form", "HRP SLA Policy", response.message.name);
-			await frm.reload_doc();
+			frm.doc.__unsaved = 0;
+			if (wasNew) {
+				frappe.set_route("Form", "HRP SLA Policy", response.message.name);
+			} else {
+				await frm.reload_doc();
+			}
 		});
 	},
 });
