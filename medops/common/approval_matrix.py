@@ -583,6 +583,11 @@ def active_steps(
 	return tuple(step for step in definition.steps if amount >= step.threshold_amount)
 
 
+def _approver_source_key(approver: ResolvedApprover, *, exact: bool) -> tuple[str, ...]:
+	key = (approver["source_type"], approver["source_value"])
+	return (*key, approver.get("delegated_from", ""), approver.get("delegation", "")) if exact else key
+
+
 def build_approval_decision(
 	*,
 	evaluation: ApprovalEvaluation,
@@ -625,9 +630,8 @@ def build_approval_decision(
 			if existing is None:
 				step["approvers"].append(approver.copy() if evaluation.schema_version == 2 else approver)
 				continue
-			if (approver["source_type"], approver["source_value"]) < (
-				existing["source_type"],
-				existing["source_value"],
+			if _approver_source_key(approver, exact=evaluation.schema_version == 2) < _approver_source_key(
+				existing, exact=evaluation.schema_version == 2
 			):
 				if evaluation.schema_version == 2:
 					step["approvers"][step["approvers"].index(existing)] = approver.copy()

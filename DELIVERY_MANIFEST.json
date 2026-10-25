@@ -10,7 +10,7 @@
 		"design_fields": 10024,
 		"doctype_blueprints": 401,
 		"starter_doctypes": 34,
-		"repository_contract_tests": 345,
+		"repository_contract_tests": 346,
 		"frappe_integration_tests": 321,
 		"environment_profiles": 3,
 		"fixture_rules": 3,

@@ -16,8 +16,8 @@
 	},
 	"current_scope": "Versioned exact approval amount contract and migration compatibility; submission/aggregation/human approval not yet implemented.",
 	"checks": {
-		"new_pure_tests_passed": 12,
-		"pure_tests_expected": 345,
+		"new_pure_tests_passed": 13,
+		"pure_tests_expected": 346,
 		"new_frappe_tests_defined": 9,
 		"frappe_tests_total_expected": 321,
 		"native_migration_baseline": {
@@ -45,8 +45,9 @@
 				"governance5"
 			]
 		},
-		"local_quality": "all passed345 pure, package, lint/format, bandit, checksums, types and frontend at e006a49",
-		"pure_tests_passed": 345
+		"local_quality": "all passed346 pure, package, lint/format, bandit, checksums, types and frontend; source-order regression included",
+		"pure_tests_passed": 346,
+		"shared_delegate_source_order": "Regression reproduced different v2 decision digests when two principals share the same delegate and role; full provenance now breaks ties deterministically while version1 stays unchanged."
 	},
 	"overall_hospital_production_readiness": "not_established"
 }

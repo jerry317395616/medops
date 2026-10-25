@@ -18,6 +18,7 @@ from medops.common.approval_matrix import (
 	build_approval_matrix_definition,
 	build_approval_matrix_steps,
 )
+from medops.common.delegation import DelegationGrant, apply_delegation_grants
 
 GOLDEN = json.loads(
 	(Path(__file__).parent / "fixtures/approval_v1_contract.json").read_text(encoding="utf-8")
@@ -296,6 +297,34 @@ class TestExactApprovalContract(unittest.TestCase):
 		self.assertEqual(policy(*rows("1.2300")).policy_digest, policy(*rows("1.23")).policy_digest)
 		self.assertNotEqual(
 			policy(*rows("1.23"), precision=2).policy_digest, policy(*rows("1.23"), precision=9).policy_digest
+		)
+
+	def test_shared_delegate_keeps_every_principal_and_has_order_independent_digest(self):
+		definition = policy()
+		step = definition.steps[0]
+		original: list[tuple[ApprovalMatrixStep, list[ResolvedApprover]]] = [
+			(
+				step,
+				[
+					{"user": user, "source_type": "Role", "source_value": "HRP User"}
+					for user in ("a@example.com", "b@example.com")
+				],
+			)
+		]
+		grants = tuple(
+			DelegationGrant(
+				name=f"D-{index}", from_user=user, to_user="delegate@example.com", step_sequence=1
+			)
+			for index, user in enumerate(("a@example.com", "b@example.com"))
+		)
+		resolved = apply_delegation_grants(original, grants)
+		first = decide(definition, query(), resolved)
+		second = decide(definition, query(), [(step, list(reversed(resolved[0][1])))])
+		self.assertEqual(first["decision_digest"], second["decision_digest"])
+		self.assertEqual(first["delegations"], ["D-0", "D-1"])
+		self.assertEqual(
+			[source.get("delegated_from") for source in first["steps"][0].get("source_assignments", [])],
+			["a@example.com", "b@example.com"],
 		)
 
 
