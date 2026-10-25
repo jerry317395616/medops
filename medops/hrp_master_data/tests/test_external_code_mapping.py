@@ -70,6 +70,9 @@ MAPPING_SERVICE_NAMES = (
 
 
 def ensure_external_code_mapping_fixtures() -> None:
+	# Company creates a transit warehouse; do not depend on another test module's fixtures.
+	if not frappe.db.exists("Warehouse Type", "Transit"):
+		frappe.get_doc({"doctype": "Warehouse Type", "name": "Transit"}).insert(ignore_permissions=True)
 	for company, abbr in (
 		(TEST_COMPANY, TEST_COMPANY_ABBR),
 		(TEST_OTHER_COMPANY, TEST_OTHER_COMPANY_ABBR),

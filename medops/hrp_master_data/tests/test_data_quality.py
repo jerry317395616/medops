@@ -76,6 +76,9 @@ def data_quality_domain() -> str:
 
 
 def ensure_data_quality_fixtures() -> None:
+	# Company creates a transit warehouse; do not depend on another test module's fixtures.
+	if not frappe.db.exists("Warehouse Type", "Transit"):
+		frappe.get_doc({"doctype": "Warehouse Type", "name": "Transit"}).insert(ignore_permissions=True)
 	if not frappe.db.exists("Company", TEST_COMPANY):
 		frappe.get_doc(
 			{
