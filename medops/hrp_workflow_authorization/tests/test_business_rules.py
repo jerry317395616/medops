@@ -264,6 +264,18 @@ class TestBusinessRules(IntegrationTestCase):
 		self.assertEqual(decision["outcome"], "Blocked")
 		self.assertEqual(decision["rules"][0]["revision"], 2)
 		self.assertFalse(evaluate(doc)["allowed"])
+		frappe.local.db.commit()
+		new_code = "COD029-CREATED-AFTER-SNAPSHOT"
+		self.assertFalse(frappe.db.exists(RULE, new_code))
+		try:
+			with self.secondary_connection():
+				upsert(policy(code=new_code), label="create-after-snapshot")
+				frappe.local.db.commit()
+		finally:
+			frappe.local.db = primary
+		with self.assertRaises(IoneApplicationError) as raised:
+			upsert(policy(code=new_code), label="stale-create-after-snapshot")
+		self.assertEqual(raised.exception.code, "IONE-CORE-0004")
 
 	def test_when_false_is_not_an_authorization(self):
 		upsert(policy(when_json={"field": "status", "op": "eq", "value": "Approved"}))

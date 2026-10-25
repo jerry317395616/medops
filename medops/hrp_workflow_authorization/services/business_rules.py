@@ -348,7 +348,7 @@ class UpsertBusinessRule(DomainService[dict[str, Any]]):
 		p = rule_payload(command["policy"])
 		probe = frappe.get_doc({"doctype": RULE, **p})
 		lock_rule_scope(probe, exclusive=True)
-		exists = frappe.db.exists(RULE, p["code"])
+		exists = frappe.db.get_value(RULE, p["code"], "name", for_update=True)
 		if exists:
 			doc = frappe.get_doc(RULE, p["code"], for_update=True)
 			if int(doc.revision) != command["expected_revision"]:
