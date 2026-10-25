@@ -2,7 +2,7 @@
 	"schema_version": 1,
 	"status": "RELEASE_CANDIDATE_COD_031",
 	"task_id": "COD-031",
-	"recorded_on": "2026-10-25",
+	"recorded_on": "2026-10-26",
 	"runtime_namespace": "medops",
 	"architecture_decisions": [
 		"ADR-0028"
@@ -10,13 +10,14 @@
 	"checks": {
 		"pure_tests_last_passed": 331,
 		"new_frappe_tests_defined": 20,
-		"isolated_domain_suite": "18 budget service/HTTP tests passed atda7490a, including native short fiscal year and binary-float rejection; previous20rules+5governance passed",
+		"isolated_domain_suite": "c70e338:20 budget service/HTTP tests passed; final312 full and protected checks pending",
 		"full_integration": {
-			"commit": "0ce114cef008935a945c6736923cdc4aafd76a28",
-			"fresh_site": "cod031-0ce114c.localhost",
-			"passed": 309,
+			"commit": "9c098b8484346cb00c8232c858dfaf6c132b6f67",
+			"fresh_site": "cod031-9c098b8.localhost",
+			"passed": 310,
 			"repeat_migrations": 2,
-			"budget_dual_process_races": 5
+			"budget_dual_process_races": 5,
+			"final_312": "pending"
 		},
 		"api_and_ui": "Browser passed create08,12period exact100000.01 save/reload,freeze08,clone10,funding-source maintenance and actual CSV download with12rows totaling100000.01.",
 		"protected_ci": {
@@ -25,7 +26,7 @@
 			"final_candidate": "pending"
 		},
 		"secret_scanning": "Exact API-route false positives removed from unreleased feature history; complete backup retained; fresh full history117commits and current tree zero findings; no scanner exceptions added.",
-		"reference_rename_snapshot": "Unfixed1c75de5 reproduced stale reference lookup reaching native database conflict under privileged rename; source/current-reference fences and controlled409 boundary added; fixed20-test run pending."
+		"reference_rename_snapshot": "c70e338:20 budget tests passed. Old1c75de5 reached native DB conflict after missing new reference; source fences/current reads now return controlled409 and a fresh retry denies referenced rename."
 	},
 	"prior_base": {
 		"commit": "72af62556e2ec42b899748742de7a9c9d2ede0d2",
