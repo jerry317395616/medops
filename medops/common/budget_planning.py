@@ -96,7 +96,9 @@ def choice(value: object, choices: tuple[str, ...], *, label: str) -> str:
 
 
 def decimal_amount(value: object, precision: int | None = None) -> str:
-	if isinstance(value, bool) or not isinstance(value, (str, int, float, Decimal)):
+	# JSON fractional numbers may already have lost digits in Frappe's float
+	# decoder. Only exact input types can become authoritative planning money.
+	if isinstance(value, bool) or not isinstance(value, (str, int, Decimal)):
 		raise BudgetPlanningError("decimal amount required")
 	if len(str(value)) > 64:
 		raise BudgetPlanningError("amount exceeds bounds")

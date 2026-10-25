@@ -572,7 +572,7 @@ class TestBudgetPlanningAPI(FrappeAPITestCase):
 			)
 
 	def test_http_unknown_fields_and_structured_filter_operators_are_rejected(self):
-		_, payload = self.create_version()
+		version, payload = self.create_version()
 		for extra in ({"workflow_state": "Approved"}, {"currency_precision": 9}, {"unknown": []}):
 			response = self.write("save_version", {**payload, **extra}, label="bad")
 			self.assertEqual(response.status_code, 400)
@@ -589,6 +589,19 @@ class TestBudgetPlanningAPI(FrappeAPITestCase):
 		self.assertEqual(response.status_code, 400)
 		response = self.post(self.method(METHOD_PREFIX + "save_version"), {"payload": payload})
 		self.assertEqual(response.status_code, 400)
+		line = plan_command(version["name"], self.unit, self.value["name"], self.fund["name"]).lines[0]
+		for amount in (0.1, 999999999999.0):
+			response = self.write(
+				"save_plan",
+				{
+					"budget_version": version["name"],
+					"organization_unit": self.unit,
+					"subject": "Reject decoded binary money",
+					"lines": [{**line.as_request_payload(), "amount": amount}],
+				},
+				label="float-money",
+			)
+			self.assertEqual(response.status_code, 400, response.get_data(as_text=True))
 
 	def test_http_scope_revocation_covers_read_list_search_export_and_replay(self):
 		version, _ = self.create_version()

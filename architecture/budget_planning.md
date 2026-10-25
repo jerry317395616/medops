@@ -18,7 +18,7 @@ POST methods FIN-014 through FIN-019 require an `Idempotency-Key` header and str
 
 ## Money, integrity and bounded work
 
-Authoritative amounts are canonical decimal strings stored in Data columns and calculated with Decimal, avoiding the pinned Frappe Currency-to-float persistence path. No precision is silently rounded. Only the two reviewed budget amount fields become numeric business-rule sources. Equal period allocation conserves the exact total and assigns remainder minor units to earlier periods. Native budget calendar/account rules are reused without saving native Budgets.
+Authoritative amounts are canonical decimal strings stored in Data columns and calculated with Decimal, avoiding the pinned Frappe Currency-to-float persistence path. Fractional API amounts must be strings: already-decoded binary floats are rejected because their original decimal digits cannot be recovered. Exact bounded integers and internal Decimal values are also supported. No precision is silently rounded. Only the two reviewed budget amount fields become numeric business-rule sources. Equal period allocation conserves the exact total and assigns remainder minor units to earlier periods. Native budget calendar/account rules are reused without saving native Budgets.
 
 Plan grain is version, organization snapshot/unit, budget subject, funding source, account, optional project and fiscal period. Native cost center mapping is captured and cannot silently change on revision or cloning. Referenced native Company, Currency, Fiscal Year, Cost Center, Account and Project renames/merges are blocked pending a reviewed data migration. Service guards prohibit direct document mutation, submission, deletion or cancellation of controlled planning records.
 

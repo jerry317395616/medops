@@ -40,9 +40,23 @@ class BudgetPlanningContractTest(unittest.TestCase):
 		self.assertEqual(amount_total(["0.1", "0.2"], 2), "0.30")
 		self.assertEqual(decimal_amount("1.23000", 2), "1.23")
 		self.assertEqual(decimal_amount("0", 0), "0")
+		self.assertEqual(decimal_amount(1, 2), "1.00")
+		self.assertEqual(decimal_amount(Decimal("1.23"), 2), "1.23")
 
 	def test_non_finite_negative_overflow_and_overprecision_are_rejected(self):
-		for value in (True, None, "NaN", "Infinity", "-0.01", "1000000000000", "0.0000000001", "1,000.00"):
+		for value in (
+			True,
+			None,
+			0.1,
+			1.0,
+			999999999999.123456789,
+			"NaN",
+			"Infinity",
+			"-0.01",
+			"1000000000000",
+			"0.0000000001",
+			"1,000.00",
+		):
 			with self.assertRaises(ValueError):
 				decimal_amount(value)
 		with self.assertRaises(BudgetPlanningError):
