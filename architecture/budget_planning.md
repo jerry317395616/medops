@@ -2,7 +2,7 @@
 
 ## Delivered boundary
 
-The HRP Budget module implements compilation versions and department plans. Three typed master-data prerequisites supply business dimensions, dimension values and funding sources. This slice is under validation; hospital production readiness is not established.
+The HRP Budget module implements compilation versions and department plans. Three typed master-data prerequisites supply business dimensions, dimension values and funding sources. This slice is deployed and verified in the isolated medical development/test sites; hospital production readiness is not established. See [COD-031 release evidence](releases/COD-031.json).
 
 Use `/desk/hrp-budget-planning` from the HRP workspace. Select a company and hospital, maintain budget classifications as a data steward, then create a version as a budget manager. Choose a published organization snapshot and an ERPNext Fiscal Year. Create department plans, enter classification/fund/account/project/period amounts, or use exact period allocation. A version retains the native fiscal dates, company currency and currency precision captured at creation.
 
@@ -26,6 +26,6 @@ Limits: 5,000 rows per plan, 1,000 plans per version, 50,000 rows per freeze/clo
 
 ## Upgrade and acceptance
 
-Migrate creates six existing blueprint models as real DocTypes, adds explicit role definitions and eleven indexes/unique constraints, and refreshes the app-owned HRP workspace. It creates no budget or financial seeds. Run migration twice in the private validation bench before release. Verify decimal persistence, idempotent retries, rollback of denied writes, native reference protections, scope/source/field/export revocation, actual HTTP contracts, freeze/save concurrency and browser operation. Full-suite, protected CI and hospital acceptance remain separate release gates.
+Migrate creates six existing blueprint models as real DocTypes, adds explicit role definitions and eleven indexes/unique constraints, and refreshes the app-owned HRP workspace. It creates no budget or financial seeds. Run migration twice in the private validation bench before release. Verify decimal persistence, idempotent retries, rollback of denied writes, native reference protections, scope/source/field/export revocation, actual HTTP contracts, freeze/save concurrency and browser operation. The final candidate passed331 pure tests,312 Frappe tests and five dual-process races, protected CI, backups and isolated deployment. Hospital acceptance remains a separate gate. Has Role also stores Page/Workspace/Report permissions: compare actual User/Role Profile rows against the backup, and verify the exact expected metadata additions separately. Preserve existing other-site service states/PIDs and HTTP results; newly inventoried never-started inactive units are metadata, while any new active process requires investigation.
 
 Back up database/files before deployment. Roll back application code under maintenance while preserving all new tables, exact amounts, revisions, snapshots and audit evidence. Never delete planning data to roll back a release or disable source checks. A frozen version is compilation history; do not reinterpret it as financial approval during a rollback or later migration.

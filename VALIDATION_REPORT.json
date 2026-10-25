@@ -1,39 +1,46 @@
 {
 	"schema_version": 1,
-	"status": "RELEASE_CANDIDATE_COD_031",
+	"status": "VERIFIED_DEVELOPMENT_RELEASE_COD_031",
 	"task_id": "COD-031",
-	"recorded_on": "2026-10-26",
+	"recorded_on": "2026-10-25",
 	"runtime_namespace": "medops",
 	"architecture_decisions": [
 		"ADR-0028"
 	],
+	"release_evidence": "architecture/releases/COD-031.json",
+	"merge_commit": "c65a66a6c7375de663ac7a1db34df7c88b157930",
 	"checks": {
-		"pure_tests_last_passed": 331,
-		"new_frappe_tests_defined": 20,
-		"isolated_domain_suite": "c70e338:20 budget service/HTTP tests passed; final312 full and protected checks pending",
-		"full_integration": {
-			"commit": "02399a3af86b3e095639d3a6a587817fccec4fd0",
-			"fresh_site": "cod031-02399a3.localhost",
-			"passed": 312,
-			"repeat_migrations": 2,
-			"budget_dual_process_races": 5,
-			"final_permission_order": "pending"
-		},
-		"api_and_ui": "Browser passed create08,12period exact100000.01 save/reload,freeze08,clone10,funding-source maintenance and actual CSV download with12rows totaling100000.01.",
+		"pure_tests": 331,
+		"full_frappe_tests": 312,
+		"budget_tests_included": 20,
+		"dual_process_races": 5,
+		"repeated_migrations_per_site": 2,
 		"protected_ci": {
-			"last_green_commit": "e5bb13598eee3d8ac195e588eb90d14823b23e83",
-			"run": 40225809699,
-			"final_candidate": "pending"
+			"run": 40233150012,
+			"candidate": "d9cf20c7b56cfc8fdc1e443ea2d3f880959283c2",
+			"all_required_passed": true
 		},
-		"secret_scanning": "Exact API-route false positives removed from unreleased feature history; complete backup retained; fresh full history117commits and current tree zero findings; no scanner exceptions added.",
-		"reference_rename_snapshot": "c70e338:20 budget tests passed. Old1c75de5 reached native DB conflict after missing new reference; source fences/current reads now return controlled409 and a fresh retry denies referenced rename.",
-		"native_rename_permission_order": "Native legacy RPC invokes before_rename before framework permission validation; hook now checks native write first. Earlier78/617 regression fixture retained Accounts User and was not an unauthorized baseline. Corrected fixture explicitly revokes that role and asserts write denial before exercising the RPC; repeat verification pending."
+		"browser": {
+			"runtime_commit": "0ce114cef008935a945c6736923cdc4aafd76a28",
+			"workflow": [
+				"create and save plan",
+				"exact12period allocation",
+				"freeze compilation",
+				"clone draft",
+				"maintain funding source",
+				"download CSV"
+			],
+			"amount": "100000.01",
+			"csv_rows": 12,
+			"note": "Subsequent native source fences and float rejection are covered by final312 HTTP/service tests. Browser evidence records its actual earlier runtime."
+		},
+		"deployment": "backed_up_migrated_and_verified",
+		"user_and_role_profile_assignments": "unchanged full-row hashes against exact reconstructed backup",
+		"expected_permission_metadata_additions_per_site": 11,
+		"other_running_sites": "existing PIDs/states and HTTP unchanged",
+		"public_https_login_and_ping": 200,
+		"error_logs": "not increased"
 	},
-	"prior_base": {
-		"commit": "72af62556e2ec42b899748742de7a9c9d2ede0d2",
-		"pull_request": 42,
-		"ci_run": 40214581558,
-		"promotion": "verified"
-	},
-	"overall_hospital_production_readiness": "not_established"
+	"overall_hospital_production_readiness": "not_established",
+	"next_task": "COD-032"
 }

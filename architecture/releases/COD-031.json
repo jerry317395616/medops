@@ -1,0 +1,91 @@
+{
+	"schema_version": 1,
+	"task_id": "COD-031",
+	"status": "verified_development_release",
+	"recorded_on_utc": "2026-10-25",
+	"application": "medops",
+	"name": "医衡 MedOps 医院运营与资源管理",
+	"merge_commit": "c65a66a6c7375de663ac7a1db34df7c88b157930",
+	"validated_candidate": "d9cf20c7b56cfc8fdc1e443ea2d3f880959283c2",
+	"merged_tree_identical_to_validated_candidate": true,
+	"pull_request": "https://github.com/jerry317395616/medops/pull/43",
+	"ci": "https://github.com/jerry317395616/medops/actions/runs/40233150012",
+	"ci_required_jobs": [
+		"Quality",
+		"Security",
+		"Integration",
+		"Required"
+	],
+	"tests": {
+		"pure": 331,
+		"frappe": 312,
+		"budget_included": 20,
+		"real_dual_process_races": 5,
+		"fresh_site_migrations": 2
+	},
+	"browser": {
+		"runtime_commit": "0ce114cef008935a945c6736923cdc4aafd76a28",
+		"workflow": [
+			"create and save plan",
+			"exact12period allocation",
+			"freeze compilation",
+			"clone draft",
+			"maintain funding source",
+			"download CSV"
+		],
+		"amount": "100000.01",
+		"csv_rows": 12,
+		"note": "Subsequent native source fences and float rejection are covered by final312 HTTP/service tests. Browser evidence records its actual earlier runtime."
+	},
+	"deployment": {
+		"scope": [
+			"medical-dev.localhost",
+			"test-medops.localhost"
+		],
+		"database_and_files_backup": true,
+		"migrations_per_site": 2,
+		"new_models": 6,
+		"financial_and_budget_seeds": 0,
+		"guest_budget_apis": {
+			"count": 11,
+			"status": 401
+		},
+		"authenticated_budget_page_and_lists": 200,
+		"public_https_login_and_ping": 200,
+		"existing_running_other_service_pids_and_states_unchanged": true,
+		"other_http_unchanged": true,
+		"error_logs_not_increased": true
+	},
+	"permissions": {
+		"user_and_role_profile_full_rows_unchanged": true,
+		"user_and_role_profile_rows": {
+			"medical-dev.localhost": 67,
+			"test-medops.localhost": 76
+		},
+		"metadata_additions_per_site": {
+			"Page:hrp-budget-planning": 7,
+			"Workspace:HRP": 4
+		},
+		"verification": "Complete Has Role table reconstructed from backup and matched pre-release hash; user/profile full rows unchanged; exact metadata additions only. All other audited migration business hashes unchanged."
+	},
+	"delivered": [
+		"six controlled planning and classification models",
+		"eleven authenticated facade APIs",
+		"budget planning page and HRP workspace link",
+		"exact decimal money and fiscal periods",
+		"scope/source/field/export permissions, idempotency and revision fences",
+		"freeze/clone/withdraw and native reference rename protection"
+	],
+	"rollback": {
+		"previous_commit": "72af62556e2ec42b899748742de7a9c9d2ede0d2",
+		"database_and_files_backup_retained_on_server": true,
+		"procedure": "Maintenance and pause only medical tasks; restore reviewed code while preserving all new models, exact amounts, revisions and immutable compilation facts. Never drop planning tables or bypass checks."
+	},
+	"next_task": "COD-032",
+	"pending": [
+		"budget submission, aggregation and persisted human approval",
+		"immutable budget ledger and execution COD033-035",
+		"hospital capacity, interfaces, UAT, recovery and full HRP production gates"
+	],
+	"overall_hospital_production_readiness": "not_established"
+}
