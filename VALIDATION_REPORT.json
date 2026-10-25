@@ -1,61 +1,30 @@
 {
 	"schema_version": 1,
-	"status": "LOCAL_VALIDATED_COD_030",
-	"task_id": "COD-030",
+	"status": "IN_PROGRESS_COD_031",
+	"task_id": "COD-031",
 	"recorded_on": "2026-10-25",
 	"runtime_namespace": "medops",
 	"architecture_decisions": [
-		"ADR-0027"
+		"ADR-0028"
 	],
-	"candidate_code_commit": "828dab0640b1ece63f838f046030ae1ac36ee72a",
 	"checks": {
-		"local_quality": "passed",
-		"unit_tests_passed": 321,
-		"integration_tests_defined": 292,
-		"isolated_full_suite": {
-			"commit": "828dab0640b1ece63f838f046030ae1ac36ee72a",
-			"passed": 292,
-			"new_report_tests": 26,
-			"site": "cod030-828dab0.localhost"
+		"pure_tests_last_passed": 331,
+		"new_frappe_tests_defined": 17,
+		"isolated_domain_suite": "0ce114c:17 budget+20business rules+5governance passed",
+		"full_integration": {
+			"commit": "0ce114cef008935a945c6736923cdc4aafd76a28",
+			"fresh_site": "cod031-0ce114c.localhost",
+			"passed": 309,
+			"repeat_migrations": 2,
+			"budget_dual_process_races": 5
 		},
-		"prior_focused_tests_passed": 80,
-		"repeated_migration": "passed",
-		"concurrency_regressions": [
-			"registration same key single result",
-			"registration distinct keys single row plus conflict",
-			"quality same key single event",
-			"quality distinct keys no lost issue revision or event"
-		],
-		"browser_checks": [
-			"actual workbench four sections and eight report buttons",
-			"registration dialog",
-			"two real synthetic duplicate-value rows"
-		],
-		"personal_fork_upstream_lock": "matched",
-		"runtime_code_required_ci": 40212830609
-	},
-	"release_evidence": {
-		"required_ci": "https://github.com/jerry317395616/medops/pull/42/checks",
-		"required_context": "Required",
-		"ci_must_pass_before_merge": true,
-		"final_metadata_head_requires_current_ci": true,
-		"isolated_acceptance": "/home/zyd/frappe/medical-validation/evidence/cod030-828dab0-full-result.json",
-		"deployment_evidence": "/home/zyd/frappe/medical-deployment-evidence/cod030-promotion/result.json",
-		"deployment_occurs_only_after_protected_merge": true
+		"api_and_ui": "Actual browser created version08, saved100000.01 in12periods, reloaded exact total, froze08 and cloned10. Master maintenance/export verification and protected promotion remain pending."
 	},
 	"prior_base": {
-		"commit": "bb3296b0521c10e358c1706ba4d90f54585ed77a",
-		"pull_request": 41,
-		"ci_run": 40204550823,
-		"frappe_tests_passed": 266,
-		"isolated_medical_development_promotion": "verified"
+		"commit": "72af62556e2ec42b899748742de7a9c9d2ede0d2",
+		"pull_request": 42,
+		"ci_run": 40214581558,
+		"promotion": "verified"
 	},
-	"not_run": [
-		"complete upstream application test suites",
-		"hospital-specific UAT",
-		"agreed hospital capacity benchmark",
-		"real HIS financial and materials interfaces",
-		"hospital HA and disaster-recovery acceptance"
-	],
 	"overall_hospital_production_readiness": "not_established"
 }

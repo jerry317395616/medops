@@ -36,6 +36,16 @@ after_job = ["medops.services.audit_context.finish_job_audit_context"]
 # Add standard DocType extensions here. Prefer extend_doctype_class over overrides.
 extend_doctype_class = {"Report": ["medops.extensions.core_report.CoreReportAccessMixin"]}
 doc_events = {
+	"Company": {"before_rename": "medops.hrp_budget.services.reference_integrity.protect_reference_rename"},
+	"Currency": {"before_rename": "medops.hrp_budget.services.reference_integrity.protect_reference_rename"},
+	"Fiscal Year": {
+		"before_rename": "medops.hrp_budget.services.reference_integrity.protect_reference_rename"
+	},
+	"Cost Center": {
+		"before_rename": "medops.hrp_budget.services.reference_integrity.protect_reference_rename"
+	},
+	"Account": {"before_rename": "medops.hrp_budget.services.reference_integrity.protect_reference_rename"},
+	"Project": {"before_rename": "medops.hrp_budget.services.reference_integrity.protect_reference_rename"},
 	"Report": {"validate": "medops.services.core_reports.protect_fresh_reports"},
 	"HRP Data Quality Issue": {"on_update": "medops.hrp_master_data.services.quality_history.append_event"},
 	"*": {
@@ -52,6 +62,12 @@ doc_events = {
 }
 
 permission_query_conditions = {
+	"HRP Business Dimension": "medops.hrp_master_data.services.budget_dimensions.dimension_query",
+	"HRP Dimension Value": "medops.hrp_master_data.services.budget_dimensions.value_query",
+	"HRP Funding Source": "medops.hrp_master_data.services.budget_dimensions.fund_query",
+	"HRP Budget Version": "medops.hrp_budget.services.planning_access.version_query",
+	"HRP Budget Plan": "medops.hrp_budget.services.planning_access.plan_query",
+	"HRP Budget Plan Line": "medops.hrp_budget.services.planning_access.line_query",
 	"HRP Reference Link": "medops.hrp_foundation.services.reference_links.reference_query",
 	"HRP Data Quality Event": "medops.services.core_report_access.history_query",
 	"HRP Rule Execution Log": "medops.hrp_workflow_authorization.services.business_rules.log_query",
@@ -70,6 +86,12 @@ permission_query_conditions = {
 	"HRP Numbering Scheme": "medops.hrp_foundation.permissions.numbering_scheme_query",
 }
 has_permission = {
+	"HRP Business Dimension": "medops.hrp_master_data.services.budget_dimensions.master_permission",
+	"HRP Dimension Value": "medops.hrp_master_data.services.budget_dimensions.master_permission",
+	"HRP Funding Source": "medops.hrp_master_data.services.budget_dimensions.master_permission",
+	"HRP Budget Version": "medops.hrp_budget.services.planning_access.version_permission",
+	"HRP Budget Plan": "medops.hrp_budget.services.planning_access.plan_permission",
+	"HRP Budget Plan Line": "medops.hrp_budget.services.planning_access.line_permission",
 	"HRP Reference Link": "medops.hrp_foundation.services.reference_links.reference_permission",
 	"HRP Data Quality Event": "medops.services.core_report_access.history_permission",
 	"HRP Rule Execution Log": "medops.hrp_workflow_authorization.services.business_rules.log_permission",
@@ -104,5 +126,6 @@ export_python_type_annotations = True
 require_type_annotated_api_methods = True
 
 override_whitelisted_methods = {
-	"frappe.desk.query_report.export_query": "medops.services.core_reports.export_query"
+	"frappe.desk.query_report.export_query": "medops.services.core_reports.export_query",
+	"frappe.desk.search.get_link_title": "medops.hrp_budget.services.link_titles.get_link_title",
 }

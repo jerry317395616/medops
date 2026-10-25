@@ -6393,6 +6393,517 @@ paths:
         required: false
         schema:
           type: string
+  /api/method/medops.api.v1.finance.planning.save_version:
+    post:
+      operationId: fin_014
+      summary: 保存预算编制版本
+      tags:
+      - medops
+      security:
+      - tokenAuth: []
+      responses:
+        '200':
+          description: Current authorized result
+        '400':
+          description: Invalid bounded command
+        '401':
+          description: Authentication required
+        '403':
+          description: Current role, scope, source or field permission required
+        '404':
+          description: Reference unavailable
+        '409':
+          description: Revision, identity, state or idempotency conflict
+      x-api-code: FIN-014
+      x-required-role: Budget manager plus current scope and native source field permissions
+      x-idempotency: Required for write
+      x-transaction-boundary: Single DB transaction
+      parameters:
+      - name: Idempotency-Key
+        in: header
+        required: true
+        schema:
+          type: string
+          minLength: 1
+          maxLength: 140
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required:
+              - payload
+              properties:
+                payload:
+                  type: object
+                  description: Strict typed command; amounts use decimal strings and
+                    writes use expected_revision.
+  /api/method/medops.api.v1.finance.planning.save_plan:
+    post:
+      operationId: fin_015
+      summary: 保存科室预算计划
+      tags:
+      - medops
+      security:
+      - tokenAuth: []
+      responses:
+        '200':
+          description: Current authorized result
+        '400':
+          description: Invalid bounded command
+        '401':
+          description: Authentication required
+        '403':
+          description: Current role, scope, source or field permission required
+        '404':
+          description: Reference unavailable
+        '409':
+          description: Revision, identity, state or idempotency conflict
+      x-api-code: FIN-015
+      x-required-role: Budget writer plus current scope and native source field permissions
+      x-idempotency: Required for write
+      x-transaction-boundary: Single DB transaction
+      parameters:
+      - name: Idempotency-Key
+        in: header
+        required: true
+        schema:
+          type: string
+          minLength: 1
+          maxLength: 140
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required:
+              - payload
+              properties:
+                payload:
+                  type: object
+                  description: Strict typed command; amounts use decimal strings and
+                    writes use expected_revision.
+  /api/method/medops.api.v1.finance.planning.freeze_version:
+    post:
+      operationId: fin_016
+      summary: 冻结完整编制事实（不授予财务审批）
+      tags:
+      - medops
+      security:
+      - tokenAuth: []
+      responses:
+        '200':
+          description: Current authorized result
+        '400':
+          description: Invalid bounded command
+        '401':
+          description: Authentication required
+        '403':
+          description: Current role, scope, source or field permission required
+        '404':
+          description: Reference unavailable
+        '409':
+          description: Revision, identity, state or idempotency conflict
+      x-api-code: FIN-016
+      x-required-role: Budget manager plus current scope and native source field permissions
+      x-idempotency: Required for write
+      x-transaction-boundary: Single DB transaction
+      parameters:
+      - name: Idempotency-Key
+        in: header
+        required: true
+        schema:
+          type: string
+          minLength: 1
+          maxLength: 140
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required:
+              - payload
+              properties:
+                payload:
+                  type: object
+                  description: Strict typed command; amounts use decimal strings and
+                    writes use expected_revision.
+  /api/method/medops.api.v1.finance.planning.clone_version:
+    post:
+      operationId: fin_017
+      summary: 复制冻结版本为新的编制草稿
+      tags:
+      - medops
+      security:
+      - tokenAuth: []
+      responses:
+        '200':
+          description: Current authorized result
+        '400':
+          description: Invalid bounded command
+        '401':
+          description: Authentication required
+        '403':
+          description: Current role, scope, source or field permission required
+        '404':
+          description: Reference unavailable
+        '409':
+          description: Revision, identity, state or idempotency conflict
+      x-api-code: FIN-017
+      x-required-role: Budget manager plus current scope and native source field permissions
+      x-idempotency: Required for write
+      x-transaction-boundary: Single DB transaction
+      parameters:
+      - name: Idempotency-Key
+        in: header
+        required: true
+        schema:
+          type: string
+          minLength: 1
+          maxLength: 140
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required:
+              - payload
+              properties:
+                payload:
+                  type: object
+                  description: Strict typed command; amounts use decimal strings and
+                    writes use expected_revision.
+  /api/method/medops.api.v1.finance.planning.withdraw_plan:
+    post:
+      operationId: fin_018
+      summary: 保留明细并撤回科室计划
+      tags:
+      - medops
+      security:
+      - tokenAuth: []
+      responses:
+        '200':
+          description: Current authorized result
+        '400':
+          description: Invalid bounded command
+        '401':
+          description: Authentication required
+        '403':
+          description: Current role, scope, source or field permission required
+        '404':
+          description: Reference unavailable
+        '409':
+          description: Revision, identity, state or idempotency conflict
+      x-api-code: FIN-018
+      x-required-role: Budget writer plus current scope and native source field permissions
+      x-idempotency: Required for write
+      x-transaction-boundary: Single DB transaction
+      parameters:
+      - name: Idempotency-Key
+        in: header
+        required: true
+        schema:
+          type: string
+          minLength: 1
+          maxLength: 140
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required:
+              - payload
+              properties:
+                payload:
+                  type: object
+                  description: Strict typed command; amounts use decimal strings and
+                    writes use expected_revision.
+  /api/method/medops.api.v1.finance.planning.upsert_master:
+    post:
+      operationId: fin_019
+      summary: 维护预算科目与资金来源
+      tags:
+      - medops
+      security:
+      - tokenAuth: []
+      responses:
+        '200':
+          description: Current authorized result
+        '400':
+          description: Invalid bounded command
+        '401':
+          description: Authentication required
+        '403':
+          description: Current role, scope, source or field permission required
+        '404':
+          description: Reference unavailable
+        '409':
+          description: Revision, identity, state or idempotency conflict
+      x-api-code: FIN-019
+      x-required-role: Data steward plus current scope and native source field permissions
+      x-idempotency: Required for write
+      x-transaction-boundary: Single DB transaction
+      parameters:
+      - name: Idempotency-Key
+        in: header
+        required: true
+        schema:
+          type: string
+          minLength: 1
+          maxLength: 140
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required:
+              - payload
+              - kind
+              properties:
+                payload:
+                  type: object
+                  description: Strict typed command; amounts use decimal strings and
+                    writes use expected_revision.
+                kind:
+                  type: string
+                  enum:
+                  - dimension
+                  - value
+                  - fund
+  /api/method/medops.api.v1.finance.planning.get_record:
+    get:
+      operationId: fin_020
+      summary: 按当前来源和字段权限读取预算记录
+      tags:
+      - medops
+      security:
+      - tokenAuth: []
+      responses:
+        '200':
+          description: Current authorized result
+        '400':
+          description: Invalid bounded command
+        '401':
+          description: Authentication required
+        '403':
+          description: Current role, scope, source or field permission required
+        '404':
+          description: Reference unavailable
+        '409':
+          description: Revision, identity, state or idempotency conflict
+      x-api-code: FIN-020
+      x-required-role: Budget reader or Data steward plus current scope and native
+        source field permissions
+      x-idempotency: Not required (read-only)
+      x-transaction-boundary: Read-only
+      parameters:
+      - name: kind
+        in: query
+        required: true
+        schema:
+          type: string
+      - name: name
+        in: query
+        required: true
+        schema:
+          type: string
+  /api/method/medops.api.v1.finance.planning.list_records:
+    get:
+      operationId: fin_021
+      summary: 按当前权限分页查询预算及分类
+      tags:
+      - medops
+      security:
+      - tokenAuth: []
+      responses:
+        '200':
+          description: Current authorized result
+        '400':
+          description: Invalid bounded command
+        '401':
+          description: Authentication required
+        '403':
+          description: Current role, scope, source or field permission required
+        '404':
+          description: Reference unavailable
+        '409':
+          description: Revision, identity, state or idempotency conflict
+      x-api-code: FIN-021
+      x-required-role: Budget reader or Data steward plus current scope and native
+        source field permissions
+      x-idempotency: Not required (read-only)
+      x-transaction-boundary: Read-only
+      parameters:
+      - name: kind
+        in: query
+        required: true
+        schema:
+          type: string
+      - name: filters
+        in: query
+        required: false
+        schema:
+          type: string
+      - name: offset
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 0
+          maximum: 5000
+      - name: limit
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 0
+          maximum: 100
+      - name: search
+        in: query
+        required: false
+        schema:
+          type: string
+  /api/method/medops.api.v1.finance.planning.spread:
+    get:
+      operationId: fin_022
+      summary: 按原生财政期间精确均分金额
+      tags:
+      - medops
+      security:
+      - tokenAuth: []
+      responses:
+        '200':
+          description: Current authorized result
+        '400':
+          description: Invalid bounded command
+        '401':
+          description: Authentication required
+        '403':
+          description: Current role, scope, source or field permission required
+        '404':
+          description: Reference unavailable
+        '409':
+          description: Revision, identity, state or idempotency conflict
+      x-api-code: FIN-022
+      x-required-role: Budget reader plus current scope and native source field permissions
+      x-idempotency: Not required (read-only)
+      x-transaction-boundary: Read-only
+      parameters:
+      - name: version
+        in: query
+        required: true
+        schema:
+          type: string
+      - name: amount
+        in: query
+        required: true
+        schema:
+          type: string
+  /api/method/medops.api.v1.finance.planning.search:
+    get:
+      operationId: fin_023
+      summary: 受控预算链接检索
+      tags:
+      - medops
+      security:
+      - tokenAuth: []
+      responses:
+        '200':
+          description: Current authorized result
+        '400':
+          description: Invalid bounded command
+        '401':
+          description: Authentication required
+        '403':
+          description: Current role, scope, source or field permission required
+        '404':
+          description: Reference unavailable
+        '409':
+          description: Revision, identity, state or idempotency conflict
+      x-api-code: FIN-023
+      x-required-role: Budget reader or Data steward plus current scope and native
+        source field permissions
+      x-idempotency: Not required (read-only)
+      x-transaction-boundary: Read-only
+      parameters:
+      - name: doctype
+        in: query
+        required: true
+        schema:
+          type: string
+      - name: txt
+        in: query
+        required: false
+        schema:
+          type: string
+      - name: searchfield
+        in: query
+        required: false
+        schema:
+          type: string
+      - name: start
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 0
+          maximum: 5000
+      - name: page_len
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 0
+          maximum: 100
+      - name: filters
+        in: query
+        required: false
+        schema:
+          type: string
+  /api/method/medops.api.v1.finance.planning.export_plan:
+    get:
+      operationId: fin_024
+      summary: 按当前导出与来源权限读取计划明细
+      tags:
+      - medops
+      security:
+      - tokenAuth: []
+      responses:
+        '200':
+          description: Current authorized result
+        '400':
+          description: Invalid bounded command
+        '401':
+          description: Authentication required
+        '403':
+          description: Current role, scope, source or field permission required
+        '404':
+          description: Reference unavailable
+        '409':
+          description: Revision, identity, state or idempotency conflict
+      x-api-code: FIN-024
+      x-required-role: Budget reader with native export and current scope plus current
+        scope and native source field permissions
+      x-idempotency: Not required (read-only)
+      x-transaction-boundary: Read-only
+      parameters:
+      - name: name
+        in: query
+        required: true
+        schema:
+          type: string
 components:
   headers:
     CorrelationId:

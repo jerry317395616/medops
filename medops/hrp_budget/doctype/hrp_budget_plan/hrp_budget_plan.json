@@ -1,0 +1,292 @@
+{
+	"doctype": "DocType",
+	"name": "HRP Budget Plan",
+	"module": "HRP Budget",
+	"custom": 0,
+	"engine": "InnoDB",
+	"autoname": "field:identity_key",
+	"title_field": "subject",
+	"is_submittable": 1,
+	"istable": 0,
+	"issingle": 0,
+	"track_changes": 0,
+	"allow_rename": 0,
+	"editable_grid": 0,
+	"search_fields": "subject",
+	"field_order": [
+		"company",
+		"hospital",
+		"budget_version",
+		"organization_version",
+		"organization_unit",
+		"cost_center",
+		"identity_key",
+		"fiscal_year",
+		"currency",
+		"currency_precision",
+		"subject",
+		"status",
+		"applicant",
+		"posting_date",
+		"total_amount",
+		"lines",
+		"revision",
+		"source_plan",
+		"remarks"
+	],
+	"fields": [
+		{
+			"fieldname": "company",
+			"label": "法人",
+			"fieldtype": "Link",
+			"read_only": 1,
+			"reqd": 1,
+			"options": "Company"
+		},
+		{
+			"fieldname": "hospital",
+			"label": "医院",
+			"fieldtype": "Link",
+			"read_only": 1,
+			"reqd": 1,
+			"options": "HRP Hospital"
+		},
+		{
+			"fieldname": "budget_version",
+			"label": "预算版本",
+			"fieldtype": "Link",
+			"read_only": 1,
+			"reqd": 1,
+			"search_index": 1,
+			"options": "HRP Budget Version"
+		},
+		{
+			"fieldname": "organization_version",
+			"label": "组织快照",
+			"fieldtype": "Link",
+			"read_only": 1,
+			"reqd": 1,
+			"options": "HRP Organization Version"
+		},
+		{
+			"fieldname": "organization_unit",
+			"label": "编制科室",
+			"fieldtype": "Link",
+			"read_only": 1,
+			"reqd": 1,
+			"search_index": 1,
+			"in_list_view": 1,
+			"options": "HRP Organization Unit"
+		},
+		{
+			"fieldname": "cost_center",
+			"label": "标准成本中心",
+			"fieldtype": "Link",
+			"read_only": 1,
+			"reqd": 1,
+			"options": "Cost Center"
+		},
+		{
+			"fieldname": "identity_key",
+			"label": "内部身份",
+			"fieldtype": "Data",
+			"read_only": 1,
+			"reqd": 1,
+			"unique": 1,
+			"hidden": 1
+		},
+		{
+			"fieldname": "fiscal_year",
+			"label": "财政年度",
+			"fieldtype": "Link",
+			"read_only": 1,
+			"reqd": 1,
+			"options": "Fiscal Year"
+		},
+		{
+			"fieldname": "currency",
+			"label": "记账币种",
+			"fieldtype": "Link",
+			"read_only": 1,
+			"reqd": 1,
+			"options": "Currency"
+		},
+		{
+			"fieldname": "currency_precision",
+			"label": "金额精度",
+			"fieldtype": "Int",
+			"read_only": 1,
+			"reqd": 1
+		},
+		{
+			"fieldname": "subject",
+			"label": "计划名称",
+			"fieldtype": "Data",
+			"read_only": 1,
+			"reqd": 1,
+			"in_list_view": 1
+		},
+		{
+			"fieldname": "status",
+			"label": "编制状态",
+			"fieldtype": "Select",
+			"read_only": 1,
+			"reqd": 1,
+			"default": "Draft",
+			"in_list_view": 1,
+			"options": "Draft\nWithdrawn"
+		},
+		{
+			"fieldname": "applicant",
+			"label": "编制人",
+			"fieldtype": "Link",
+			"read_only": 1,
+			"reqd": 1,
+			"options": "User"
+		},
+		{
+			"fieldname": "posting_date",
+			"label": "编制日期",
+			"fieldtype": "Date",
+			"read_only": 1,
+			"reqd": 1
+		},
+		{
+			"fieldname": "total_amount",
+			"label": "预算合计",
+			"fieldtype": "Data",
+			"read_only": 1,
+			"reqd": 1,
+			"length": 32
+		},
+		{
+			"fieldname": "lines",
+			"label": "预算明细",
+			"fieldtype": "Table",
+			"read_only": 1,
+			"reqd": 1,
+			"options": "HRP Budget Plan Line"
+		},
+		{
+			"fieldname": "revision",
+			"label": "修订",
+			"fieldtype": "Int",
+			"read_only": 1,
+			"reqd": 1,
+			"default": "1"
+		},
+		{
+			"fieldname": "source_plan",
+			"label": "来源计划",
+			"fieldtype": "Link",
+			"read_only": 1,
+			"reqd": 0,
+			"hidden": 1,
+			"permlevel": 1,
+			"options": "HRP Budget Plan"
+		},
+		{
+			"fieldname": "remarks",
+			"label": "说明",
+			"fieldtype": "Small Text",
+			"read_only": 1,
+			"reqd": 0
+		}
+	],
+	"permissions": [
+		{
+			"role": "System Manager",
+			"read": 1,
+			"report": 1,
+			"export": 1,
+			"print": 1,
+			"create": 0,
+			"write": 0,
+			"delete": 0,
+			"submit": 0,
+			"cancel": 0,
+			"amend": 0
+		},
+		{
+			"role": "HRP System Manager",
+			"read": 1,
+			"report": 1,
+			"export": 1,
+			"print": 1,
+			"create": 0,
+			"write": 0,
+			"delete": 0,
+			"submit": 0,
+			"cancel": 0,
+			"amend": 0
+		},
+		{
+			"role": "HRP Budget User",
+			"read": 1,
+			"report": 1,
+			"export": 1,
+			"print": 1,
+			"create": 0,
+			"write": 0,
+			"delete": 0,
+			"submit": 0,
+			"cancel": 0,
+			"amend": 0
+		},
+		{
+			"role": "HRP Budget Manager",
+			"read": 1,
+			"report": 1,
+			"export": 1,
+			"print": 1,
+			"create": 0,
+			"write": 0,
+			"delete": 0,
+			"submit": 0,
+			"cancel": 0,
+			"amend": 0
+		},
+		{
+			"role": "HRP Finance User",
+			"read": 1,
+			"report": 1,
+			"export": 1,
+			"print": 1,
+			"create": 0,
+			"write": 0,
+			"delete": 0,
+			"submit": 0,
+			"cancel": 0,
+			"amend": 0
+		},
+		{
+			"role": "HRP Auditor",
+			"read": 1,
+			"report": 1,
+			"export": 1,
+			"print": 1,
+			"create": 0,
+			"write": 0,
+			"delete": 0,
+			"submit": 0,
+			"cancel": 0,
+			"amend": 0
+		},
+		{
+			"role": "System Manager",
+			"permlevel": 1,
+			"read": 1
+		},
+		{
+			"role": "HRP System Manager",
+			"permlevel": 1,
+			"read": 1
+		}
+	],
+	"sort_field": "modified",
+	"sort_order": "DESC",
+	"actions": [],
+	"links": [],
+	"states": [],
+	"show_title_field_in_link": 1
+}

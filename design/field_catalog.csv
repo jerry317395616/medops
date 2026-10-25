@@ -776,29 +776,6 @@ medops,HRP Master Data,HRP Dictionary Value,26,source_name,来源单据,Dynamic 
 medops,HRP Master Data,HRP Dictionary Value,27,submitted_at,提交时间,Datetime,,0,0,0,1,0,,,,提交时间,Core
 medops,HRP Master Data,HRP Dictionary Value,28,approved_at,批准时间,Datetime,,0,0,0,1,0,,,,批准时间,Core
 medops,HRP Master Data,HRP Dictionary Value,29,remarks,备注,Small Text,,0,0,0,0,0,,,,备注,Core
-medops,HRP Master Data,HRP Funding Source,10,company,法人,Link,Company,1,0,1,0,1,,,,法人,Core
-medops,HRP Master Data,HRP Funding Source,11,hospital,医院,Link,HRP Hospital,1,0,1,0,0,,,,医院,Core
-medops,HRP Master Data,HRP Funding Source,12,campus,院区,Link,HRP Campus,0,0,1,0,0,,,,院区,Core
-medops,HRP Master Data,HRP Funding Source,13,organization_unit,组织单元,Link,HRP Organization Unit,1,0,1,0,1,,,,组织单元,Core
-medops,HRP Master Data,HRP Funding Source,14,cost_center,成本中心,Link,Cost Center,0,0,1,0,0,,,,成本中心,Core
-medops,HRP Master Data,HRP Funding Source,15,fiscal_year,财政年度,Link,Fiscal Year,0,0,1,0,0,,,,财政年度,Core
-medops,HRP Master Data,HRP Funding Source,16,currency,币种,Link,Currency,0,0,0,0,0,,CNY,,币种,Core
-medops,HRP Master Data,HRP Funding Source,17,status,业务状态,Select,"Draft
-Under Review
-Approved
-Rejected
-In Progress
-Completed
-Cancelled
-Closed",0,0,1,0,1,,Draft,,业务状态,Core
-medops,HRP Master Data,HRP Funding Source,18,workflow_state,工作流状态,Link,Workflow State,0,0,1,1,0,,,,工作流状态,Core
-medops,HRP Master Data,HRP Funding Source,19,code,编码,Data,,1,1,1,0,1,,,,编码,Core
-medops,HRP Master Data,HRP Funding Source,20,display_name,名称,Data,,1,0,0,0,1,,,,名称,Core
-medops,HRP Master Data,HRP Funding Source,21,enabled,启用,Check,,0,0,1,0,0,,1,,启用,Core
-medops,HRP Master Data,HRP Funding Source,22,valid_from,有效期开始,Date,,0,0,0,0,0,,,,有效期开始,Core
-medops,HRP Master Data,HRP Funding Source,23,valid_to,有效期结束,Date,,0,0,0,0,0,,,,有效期结束,Core
-medops,HRP Master Data,HRP Funding Source,24,owner_department,责任部门,Link,Department,0,0,0,0,0,,,,责任部门,Core
-medops,HRP Master Data,HRP Funding Source,25,remarks,备注,Small Text,,0,0,0,0,0,,,,备注,Core
 medops,HRP Master Data,HRP Expense Category,10,company,法人,Link,Company,1,0,1,0,1,,,,法人,Core
 medops,HRP Master Data,HRP Expense Category,11,hospital,医院,Link,HRP Hospital,1,0,1,0,0,,,,医院,Core
 medops,HRP Master Data,HRP Expense Category,12,campus,院区,Link,HRP Campus,0,0,1,0,0,,,,院区,Core
@@ -822,60 +799,6 @@ medops,HRP Master Data,HRP Expense Category,22,valid_from,有效期开始,Date,,
 medops,HRP Master Data,HRP Expense Category,23,valid_to,有效期结束,Date,,0,0,0,0,0,,,,有效期结束,Core
 medops,HRP Master Data,HRP Expense Category,24,owner_department,责任部门,Link,Department,0,0,0,0,0,,,,责任部门,Core
 medops,HRP Master Data,HRP Expense Category,25,remarks,备注,Small Text,,0,0,0,0,0,,,,备注,Core
-medops,HRP Master Data,HRP Business Dimension,10,company,法人,Link,Company,1,0,1,0,1,,,,法人,Core
-medops,HRP Master Data,HRP Business Dimension,11,hospital,医院,Link,HRP Hospital,1,0,1,0,0,,,,医院,Core
-medops,HRP Master Data,HRP Business Dimension,12,campus,院区,Link,HRP Campus,0,0,1,0,0,,,,院区,Core
-medops,HRP Master Data,HRP Business Dimension,13,organization_unit,组织单元,Link,HRP Organization Unit,1,0,1,0,1,,,,组织单元,Core
-medops,HRP Master Data,HRP Business Dimension,14,cost_center,成本中心,Link,Cost Center,0,0,1,0,0,,,,成本中心,Core
-medops,HRP Master Data,HRP Business Dimension,15,fiscal_year,财政年度,Link,Fiscal Year,0,0,1,0,0,,,,财政年度,Core
-medops,HRP Master Data,HRP Business Dimension,16,currency,币种,Link,Currency,0,0,0,0,0,,CNY,,币种,Core
-medops,HRP Master Data,HRP Business Dimension,17,status,业务状态,Select,"Draft
-Under Review
-Approved
-Rejected
-In Progress
-Completed
-Cancelled
-Closed",0,0,1,0,1,,Draft,,业务状态,Core
-medops,HRP Master Data,HRP Business Dimension,18,workflow_state,工作流状态,Link,Workflow State,0,0,1,1,0,,,,工作流状态,Core
-medops,HRP Master Data,HRP Business Dimension,19,posting_date,业务日期,Date,,1,0,1,0,1,,,,业务日期,Core
-medops,HRP Master Data,HRP Business Dimension,20,applicant,申请人,Link,User,1,0,1,0,0,,,,申请人,Core
-medops,HRP Master Data,HRP Business Dimension,21,employee,员工,Link,Employee,0,0,1,0,0,,,,员工,Core
-medops,HRP Master Data,HRP Business Dimension,22,subject,主题,Data,,1,0,0,0,1,,,,主题,Core
-medops,HRP Master Data,HRP Business Dimension,23,total_amount,总金额,Currency,currency,0,0,0,0,1,2,,,总金额,Core
-medops,HRP Master Data,HRP Business Dimension,24,external_id,外部ID,Data,,0,0,1,0,0,,,,外部ID,Core
-medops,HRP Master Data,HRP Business Dimension,25,source_doctype,来源类型,Link,DocType,0,0,0,0,0,,,,来源类型,Core
-medops,HRP Master Data,HRP Business Dimension,26,source_name,来源单据,Dynamic Link,source_doctype,0,0,1,0,0,,,,来源单据,Core
-medops,HRP Master Data,HRP Business Dimension,27,submitted_at,提交时间,Datetime,,0,0,0,1,0,,,,提交时间,Core
-medops,HRP Master Data,HRP Business Dimension,28,approved_at,批准时间,Datetime,,0,0,0,1,0,,,,批准时间,Core
-medops,HRP Master Data,HRP Business Dimension,29,remarks,备注,Small Text,,0,0,0,0,0,,,,备注,Core
-medops,HRP Master Data,HRP Dimension Value,10,company,法人,Link,Company,1,0,1,0,1,,,,法人,Core
-medops,HRP Master Data,HRP Dimension Value,11,hospital,医院,Link,HRP Hospital,1,0,1,0,0,,,,医院,Core
-medops,HRP Master Data,HRP Dimension Value,12,campus,院区,Link,HRP Campus,0,0,1,0,0,,,,院区,Core
-medops,HRP Master Data,HRP Dimension Value,13,organization_unit,组织单元,Link,HRP Organization Unit,1,0,1,0,1,,,,组织单元,Core
-medops,HRP Master Data,HRP Dimension Value,14,cost_center,成本中心,Link,Cost Center,0,0,1,0,0,,,,成本中心,Core
-medops,HRP Master Data,HRP Dimension Value,15,fiscal_year,财政年度,Link,Fiscal Year,0,0,1,0,0,,,,财政年度,Core
-medops,HRP Master Data,HRP Dimension Value,16,currency,币种,Link,Currency,0,0,0,0,0,,CNY,,币种,Core
-medops,HRP Master Data,HRP Dimension Value,17,status,业务状态,Select,"Draft
-Under Review
-Approved
-Rejected
-In Progress
-Completed
-Cancelled
-Closed",0,0,1,0,1,,Draft,,业务状态,Core
-medops,HRP Master Data,HRP Dimension Value,18,workflow_state,工作流状态,Link,Workflow State,0,0,1,1,0,,,,工作流状态,Core
-medops,HRP Master Data,HRP Dimension Value,19,posting_date,业务日期,Date,,1,0,1,0,1,,,,业务日期,Core
-medops,HRP Master Data,HRP Dimension Value,20,applicant,申请人,Link,User,1,0,1,0,0,,,,申请人,Core
-medops,HRP Master Data,HRP Dimension Value,21,employee,员工,Link,Employee,0,0,1,0,0,,,,员工,Core
-medops,HRP Master Data,HRP Dimension Value,22,subject,主题,Data,,1,0,0,0,1,,,,主题,Core
-medops,HRP Master Data,HRP Dimension Value,23,total_amount,总金额,Currency,currency,0,0,0,0,1,2,,,总金额,Core
-medops,HRP Master Data,HRP Dimension Value,24,external_id,外部ID,Data,,0,0,1,0,0,,,,外部ID,Core
-medops,HRP Master Data,HRP Dimension Value,25,source_doctype,来源类型,Link,DocType,0,0,0,0,0,,,,来源类型,Core
-medops,HRP Master Data,HRP Dimension Value,26,source_name,来源单据,Dynamic Link,source_doctype,0,0,1,0,0,,,,来源单据,Core
-medops,HRP Master Data,HRP Dimension Value,27,submitted_at,提交时间,Datetime,,0,0,0,1,0,,,,提交时间,Core
-medops,HRP Master Data,HRP Dimension Value,28,approved_at,批准时间,Datetime,,0,0,0,1,0,,,,批准时间,Core
-medops,HRP Master Data,HRP Dimension Value,29,remarks,备注,Small Text,,0,0,0,0,0,,,,备注,Core
 medops,HRP Workflow Authorization,HRP Access Scope,10,code,范围编码,Data,,1,1,1,0,1,,,,范围编码,Core
 medops,HRP Workflow Authorization,HRP Access Scope,11,display_name,范围名称,Data,,1,0,1,0,1,,,,范围名称,Core
 medops,HRP Workflow Authorization,HRP Access Scope,12,scope_level,范围层级,Select,"Company
@@ -1196,110 +1119,6 @@ Alert
 None",0,0,0,0,0,,Hard,,控制模式,Finance
 medops,HRP Budget,HRP Budget Scenario,39,period_start,期间开始,Date,,0,0,0,0,0,,,,期间开始,Finance
 medops,HRP Budget,HRP Budget Scenario,40,period_end,期间结束,Date,,0,0,0,0,0,,,,期间结束,Finance
-medops,HRP Budget,HRP Budget Version,10,company,法人,Link,Company,1,0,1,0,1,,,,法人,Finance
-medops,HRP Budget,HRP Budget Version,11,hospital,医院,Link,HRP Hospital,1,0,1,0,0,,,,医院,Finance
-medops,HRP Budget,HRP Budget Version,12,campus,院区,Link,HRP Campus,0,0,1,0,0,,,,院区,Finance
-medops,HRP Budget,HRP Budget Version,13,organization_unit,组织单元,Link,HRP Organization Unit,1,0,1,0,1,,,,组织单元,Finance
-medops,HRP Budget,HRP Budget Version,14,cost_center,成本中心,Link,Cost Center,0,0,1,0,0,,,,成本中心,Finance
-medops,HRP Budget,HRP Budget Version,15,fiscal_year,财政年度,Link,Fiscal Year,0,0,1,0,0,,,,财政年度,Finance
-medops,HRP Budget,HRP Budget Version,16,currency,币种,Link,Currency,0,0,0,0,0,,CNY,,币种,Finance
-medops,HRP Budget,HRP Budget Version,17,status,业务状态,Select,"Draft
-Under Review
-Approved
-Rejected
-In Progress
-Completed
-Cancelled
-Closed",0,0,1,0,1,,Draft,,业务状态,Finance
-medops,HRP Budget,HRP Budget Version,18,workflow_state,工作流状态,Link,Workflow State,0,0,1,1,0,,,,工作流状态,Finance
-medops,HRP Budget,HRP Budget Version,19,posting_date,业务日期,Date,,1,0,1,0,1,,,,业务日期,Finance
-medops,HRP Budget,HRP Budget Version,20,applicant,申请人,Link,User,1,0,1,0,0,,,,申请人,Finance
-medops,HRP Budget,HRP Budget Version,21,employee,员工,Link,Employee,0,0,1,0,0,,,,员工,Finance
-medops,HRP Budget,HRP Budget Version,22,subject,主题,Data,,1,0,0,0,1,,,,主题,Finance
-medops,HRP Budget,HRP Budget Version,23,total_amount,总金额,Currency,currency,0,0,0,0,1,2,,,总金额,Finance
-medops,HRP Budget,HRP Budget Version,24,external_id,外部ID,Data,,0,0,1,0,0,,,,外部ID,Finance
-medops,HRP Budget,HRP Budget Version,25,source_doctype,来源类型,Link,DocType,0,0,0,0,0,,,,来源类型,Finance
-medops,HRP Budget,HRP Budget Version,26,source_name,来源单据,Dynamic Link,source_doctype,0,0,1,0,0,,,,来源单据,Finance
-medops,HRP Budget,HRP Budget Version,27,submitted_at,提交时间,Datetime,,0,0,0,1,0,,,,提交时间,Finance
-medops,HRP Budget,HRP Budget Version,28,approved_at,批准时间,Datetime,,0,0,0,1,0,,,,批准时间,Finance
-medops,HRP Budget,HRP Budget Version,29,remarks,备注,Small Text,,0,0,0,0,0,,,,备注,Finance
-medops,HRP Budget,HRP Budget Version,30,budget_version,预算版本,Link,HRP Budget Version,0,0,1,0,0,,,,预算版本,Finance
-medops,HRP Budget,HRP Budget Version,31,budget_subject,预算科目,Link,HRP Dimension Value,0,0,1,0,0,,,,预算科目,Finance
-medops,HRP Budget,HRP Budget Version,32,funding_source,资金来源,Link,HRP Funding Source,0,0,1,0,0,,,,资金来源,Finance
-medops,HRP Budget,HRP Budget Version,33,approved_amount,批准金额,Currency,currency,0,0,0,0,0,2,,,批准金额,Finance
-medops,HRP Budget,HRP Budget Version,34,reserved_amount,预占金额,Currency,currency,0,0,0,1,0,2,,,预占金额,Finance
-medops,HRP Budget,HRP Budget Version,35,committed_amount,承诺金额,Currency,currency,0,0,0,1,0,2,,,承诺金额,Finance
-medops,HRP Budget,HRP Budget Version,36,actual_amount,实际金额,Currency,currency,0,0,0,1,0,2,,,实际金额,Finance
-medops,HRP Budget,HRP Budget Version,37,available_amount,可用金额,Currency,currency,0,0,0,1,1,2,,,可用金额,Finance
-medops,HRP Budget,HRP Budget Version,38,control_mode,控制模式,Select,"Hard
-Soft
-Alert
-None",0,0,0,0,0,,Hard,,控制模式,Finance
-medops,HRP Budget,HRP Budget Version,39,period_start,期间开始,Date,,0,0,0,0,0,,,,期间开始,Finance
-medops,HRP Budget,HRP Budget Version,40,period_end,期间结束,Date,,0,0,0,0,0,,,,期间结束,Finance
-medops,HRP Budget,HRP Budget Plan,10,company,法人,Link,Company,1,0,1,0,1,,,,法人,Finance
-medops,HRP Budget,HRP Budget Plan,11,hospital,医院,Link,HRP Hospital,1,0,1,0,0,,,,医院,Finance
-medops,HRP Budget,HRP Budget Plan,12,campus,院区,Link,HRP Campus,0,0,1,0,0,,,,院区,Finance
-medops,HRP Budget,HRP Budget Plan,13,organization_unit,组织单元,Link,HRP Organization Unit,1,0,1,0,1,,,,组织单元,Finance
-medops,HRP Budget,HRP Budget Plan,14,cost_center,成本中心,Link,Cost Center,0,0,1,0,0,,,,成本中心,Finance
-medops,HRP Budget,HRP Budget Plan,15,fiscal_year,财政年度,Link,Fiscal Year,0,0,1,0,0,,,,财政年度,Finance
-medops,HRP Budget,HRP Budget Plan,16,currency,币种,Link,Currency,0,0,0,0,0,,CNY,,币种,Finance
-medops,HRP Budget,HRP Budget Plan,17,status,业务状态,Select,"Draft
-Under Review
-Approved
-Rejected
-In Progress
-Completed
-Cancelled
-Closed",0,0,1,0,1,,Draft,,业务状态,Finance
-medops,HRP Budget,HRP Budget Plan,18,workflow_state,工作流状态,Link,Workflow State,0,0,1,1,0,,,,工作流状态,Finance
-medops,HRP Budget,HRP Budget Plan,19,posting_date,业务日期,Date,,1,0,1,0,1,,,,业务日期,Finance
-medops,HRP Budget,HRP Budget Plan,20,applicant,申请人,Link,User,1,0,1,0,0,,,,申请人,Finance
-medops,HRP Budget,HRP Budget Plan,21,employee,员工,Link,Employee,0,0,1,0,0,,,,员工,Finance
-medops,HRP Budget,HRP Budget Plan,22,subject,主题,Data,,1,0,0,0,1,,,,主题,Finance
-medops,HRP Budget,HRP Budget Plan,23,total_amount,总金额,Currency,currency,0,0,0,0,1,2,,,总金额,Finance
-medops,HRP Budget,HRP Budget Plan,24,external_id,外部ID,Data,,0,0,1,0,0,,,,外部ID,Finance
-medops,HRP Budget,HRP Budget Plan,25,source_doctype,来源类型,Link,DocType,0,0,0,0,0,,,,来源类型,Finance
-medops,HRP Budget,HRP Budget Plan,26,source_name,来源单据,Dynamic Link,source_doctype,0,0,1,0,0,,,,来源单据,Finance
-medops,HRP Budget,HRP Budget Plan,27,submitted_at,提交时间,Datetime,,0,0,0,1,0,,,,提交时间,Finance
-medops,HRP Budget,HRP Budget Plan,28,approved_at,批准时间,Datetime,,0,0,0,1,0,,,,批准时间,Finance
-medops,HRP Budget,HRP Budget Plan,29,remarks,备注,Small Text,,0,0,0,0,0,,,,备注,Finance
-medops,HRP Budget,HRP Budget Plan,30,budget_version,预算版本,Link,HRP Budget Version,0,0,1,0,0,,,,预算版本,Finance
-medops,HRP Budget,HRP Budget Plan,31,budget_subject,预算科目,Link,HRP Dimension Value,0,0,1,0,0,,,,预算科目,Finance
-medops,HRP Budget,HRP Budget Plan,32,funding_source,资金来源,Link,HRP Funding Source,0,0,1,0,0,,,,资金来源,Finance
-medops,HRP Budget,HRP Budget Plan,33,approved_amount,批准金额,Currency,currency,0,0,0,0,0,2,,,批准金额,Finance
-medops,HRP Budget,HRP Budget Plan,34,reserved_amount,预占金额,Currency,currency,0,0,0,1,0,2,,,预占金额,Finance
-medops,HRP Budget,HRP Budget Plan,35,committed_amount,承诺金额,Currency,currency,0,0,0,1,0,2,,,承诺金额,Finance
-medops,HRP Budget,HRP Budget Plan,36,actual_amount,实际金额,Currency,currency,0,0,0,1,0,2,,,实际金额,Finance
-medops,HRP Budget,HRP Budget Plan,37,available_amount,可用金额,Currency,currency,0,0,0,1,1,2,,,可用金额,Finance
-medops,HRP Budget,HRP Budget Plan,38,control_mode,控制模式,Select,"Hard
-Soft
-Alert
-None",0,0,0,0,0,,Hard,,控制模式,Finance
-medops,HRP Budget,HRP Budget Plan,39,period_start,期间开始,Date,,0,0,0,0,0,,,,期间开始,Finance
-medops,HRP Budget,HRP Budget Plan,40,period_end,期间结束,Date,,0,0,0,0,0,,,,期间结束,Finance
-medops,HRP Budget,HRP Budget Plan Line,10,sequence_no,序号,Int,,0,0,0,0,1,,1,,序号,Finance
-medops,HRP Budget,HRP Budget Plan Line,11,reference_doctype,引用类型,Link,DocType,0,0,0,0,0,,,,引用类型,Finance
-medops,HRP Budget,HRP Budget Plan Line,12,reference_name,引用单据,Dynamic Link,reference_doctype,0,0,1,0,0,,,,引用单据,Finance
-medops,HRP Budget,HRP Budget Plan Line,13,description,说明,Small Text,,0,0,0,0,0,,,,说明,Finance
-medops,HRP Budget,HRP Budget Plan Line,14,quantity,数量,Float,,0,0,0,0,0,6,,,数量,Finance
-medops,HRP Budget,HRP Budget Plan Line,15,rate,单价,Currency,currency,0,0,0,0,0,6,,,单价,Finance
-medops,HRP Budget,HRP Budget Plan Line,16,amount,金额,Currency,currency,0,0,0,1,1,2,,,金额,Finance
-medops,HRP Budget,HRP Budget Plan Line,17,dimension_json,核算维度,Code,JSON,0,0,0,0,0,,,,核算维度,Finance
-medops,HRP Budget,HRP Budget Plan Line,18,budget_version,预算版本,Link,HRP Budget Version,0,0,1,0,0,,,,预算版本,Finance
-medops,HRP Budget,HRP Budget Plan Line,19,budget_subject,预算科目,Link,HRP Dimension Value,0,0,1,0,0,,,,预算科目,Finance
-medops,HRP Budget,HRP Budget Plan Line,20,funding_source,资金来源,Link,HRP Funding Source,0,0,1,0,0,,,,资金来源,Finance
-medops,HRP Budget,HRP Budget Plan Line,21,approved_amount,批准金额,Currency,currency,0,0,0,0,0,2,,,批准金额,Finance
-medops,HRP Budget,HRP Budget Plan Line,22,reserved_amount,预占金额,Currency,currency,0,0,0,1,0,2,,,预占金额,Finance
-medops,HRP Budget,HRP Budget Plan Line,23,committed_amount,承诺金额,Currency,currency,0,0,0,1,0,2,,,承诺金额,Finance
-medops,HRP Budget,HRP Budget Plan Line,24,actual_amount,实际金额,Currency,currency,0,0,0,1,0,2,,,实际金额,Finance
-medops,HRP Budget,HRP Budget Plan Line,25,available_amount,可用金额,Currency,currency,0,0,0,1,1,2,,,可用金额,Finance
-medops,HRP Budget,HRP Budget Plan Line,26,control_mode,控制模式,Select,"Hard
-Soft
-Alert
-None",0,0,0,0,0,,Hard,,控制模式,Finance
-medops,HRP Budget,HRP Budget Plan Line,27,period_start,期间开始,Date,,0,0,0,0,0,,,,期间开始,Finance
-medops,HRP Budget,HRP Budget Plan Line,28,period_end,期间结束,Date,,0,0,0,0,0,,,,期间结束,Finance
 medops,HRP Budget,HRP Budget Target,10,company,法人,Link,Company,1,0,1,0,1,,,,法人,Finance
 medops,HRP Budget,HRP Budget Target,11,hospital,医院,Link,HRP Hospital,1,0,1,0,0,,,,医院,Finance
 medops,HRP Budget,HRP Budget Target,12,campus,院区,Link,HRP Campus,0,0,1,0,0,,,,院区,Finance
@@ -13754,3 +13573,92 @@ medops,HRP Master Data,HRP Data Quality Event,90,occurred_at,采集时间,Dateti
 medops,HRP Master Data,HRP Data Quality Event,100,issue_revision,问题修订,Int,,1,0,0,1,0,,,,问题修订,Core
 medops,HRP Master Data,HRP Data Quality Event,110,occurrence_count,发现次数,Int,,1,0,0,1,0,,,,发现次数,Core
 medops,HRP Master Data,HRP Data Quality Event,120,access_fields,历史读取字段,Code,JSON,1,0,0,1,0,,,,历史读取字段,Core
+medops,HRP Master Data,HRP Business Dimension,10,company,法人,Link,Company,1,0,0,1,0,,,,法人,Core
+medops,HRP Master Data,HRP Business Dimension,20,hospital,医院,Link,HRP Hospital,1,0,0,1,0,,,,医院,Core
+medops,HRP Master Data,HRP Business Dimension,30,identity_key,内部身份,Data,,1,1,0,1,0,,,,内部身份,Core
+medops,HRP Master Data,HRP Business Dimension,40,code,编码,Data,,1,0,1,1,0,,,,编码,Core
+medops,HRP Master Data,HRP Business Dimension,50,display_name,名称,Data,,1,0,0,1,1,,,,名称,Core
+medops,HRP Master Data,HRP Business Dimension,60,purpose,用途,Select,"Budget Subject
+Analytical",1,0,0,1,0,,,,用途,Core
+medops,HRP Master Data,HRP Business Dimension,70,enabled,启用,Check,,0,0,0,1,0,,1,,启用,Core
+medops,HRP Master Data,HRP Business Dimension,80,valid_from,生效日期,Date,,1,0,0,1,0,,,,生效日期,Core
+medops,HRP Master Data,HRP Business Dimension,90,valid_to,失效日期,Date,,0,0,0,1,0,,,,失效日期,Core
+medops,HRP Master Data,HRP Business Dimension,100,revision,修订,Int,,1,0,0,1,0,,1,,修订,Core
+medops,HRP Master Data,HRP Business Dimension,110,remarks,说明,Small Text,,0,0,0,1,0,,,,说明,Core
+medops,HRP Master Data,HRP Dimension Value,10,company,法人,Link,Company,1,0,0,1,0,,,,法人,Core
+medops,HRP Master Data,HRP Dimension Value,20,hospital,医院,Link,HRP Hospital,1,0,0,1,0,,,,医院,Core
+medops,HRP Master Data,HRP Dimension Value,30,identity_key,内部身份,Data,,1,1,0,1,0,,,,内部身份,Core
+medops,HRP Master Data,HRP Dimension Value,40,code,编码,Data,,1,0,1,1,0,,,,编码,Core
+medops,HRP Master Data,HRP Dimension Value,50,display_name,名称,Data,,1,0,0,1,1,,,,名称,Core
+medops,HRP Master Data,HRP Dimension Value,60,dimension,业务维度,Link,HRP Business Dimension,1,0,1,1,0,,,,业务维度,Core
+medops,HRP Master Data,HRP Dimension Value,70,enabled,启用,Check,,0,0,0,1,0,,1,,启用,Core
+medops,HRP Master Data,HRP Dimension Value,80,valid_from,生效日期,Date,,1,0,0,1,0,,,,生效日期,Core
+medops,HRP Master Data,HRP Dimension Value,90,valid_to,失效日期,Date,,0,0,0,1,0,,,,失效日期,Core
+medops,HRP Master Data,HRP Dimension Value,100,revision,修订,Int,,1,0,0,1,0,,1,,修订,Core
+medops,HRP Master Data,HRP Dimension Value,110,remarks,说明,Small Text,,0,0,0,1,0,,,,说明,Core
+medops,HRP Master Data,HRP Funding Source,10,company,法人,Link,Company,1,0,0,1,0,,,,法人,Core
+medops,HRP Master Data,HRP Funding Source,20,hospital,医院,Link,HRP Hospital,1,0,0,1,0,,,,医院,Core
+medops,HRP Master Data,HRP Funding Source,30,identity_key,内部身份,Data,,1,1,0,1,0,,,,内部身份,Core
+medops,HRP Master Data,HRP Funding Source,40,code,编码,Data,,1,0,1,1,0,,,,编码,Core
+medops,HRP Master Data,HRP Funding Source,50,display_name,名称,Data,,1,0,0,1,1,,,,名称,Core
+medops,HRP Master Data,HRP Funding Source,60,source_type,资金类型,Select,"Fiscal Appropriation
+Own Revenue
+Grant
+Other",1,0,0,1,0,,,,资金类型,Core
+medops,HRP Master Data,HRP Funding Source,70,enabled,启用,Check,,0,0,0,1,0,,1,,启用,Core
+medops,HRP Master Data,HRP Funding Source,80,valid_from,生效日期,Date,,1,0,0,1,0,,,,生效日期,Core
+medops,HRP Master Data,HRP Funding Source,90,valid_to,失效日期,Date,,0,0,0,1,0,,,,失效日期,Core
+medops,HRP Master Data,HRP Funding Source,100,revision,修订,Int,,1,0,0,1,0,,1,,修订,Core
+medops,HRP Master Data,HRP Funding Source,110,remarks,说明,Small Text,,0,0,0,1,0,,,,说明,Core
+medops,HRP Budget,HRP Budget Version,10,company,法人,Link,Company,1,0,0,1,0,,,,法人,Finance
+medops,HRP Budget,HRP Budget Version,20,hospital,医院,Link,HRP Hospital,1,0,0,1,0,,,,医院,Finance
+medops,HRP Budget,HRP Budget Version,30,organization_version,组织快照,Link,HRP Organization Version,1,0,0,1,0,,,,组织快照,Finance
+medops,HRP Budget,HRP Budget Version,40,fiscal_year,财政年度,Link,Fiscal Year,1,0,0,1,0,,,,财政年度,Finance
+medops,HRP Budget,HRP Budget Version,50,version_number,版本序号,Int,,1,0,0,1,0,,,,版本序号,Finance
+medops,HRP Budget,HRP Budget Version,60,subject,版本名称,Data,,1,0,0,1,1,,,,版本名称,Finance
+medops,HRP Budget,HRP Budget Version,70,currency,记账币种,Link,Currency,1,0,0,1,0,,,,记账币种,Finance
+medops,HRP Budget,HRP Budget Version,80,currency_precision,金额精度,Int,,1,0,0,1,0,,,,金额精度,Finance
+medops,HRP Budget,HRP Budget Version,90,period_start,年度起始日期,Date,,1,0,0,1,0,,,,年度起始日期,Finance
+medops,HRP Budget,HRP Budget Version,100,period_end,年度结束日期,Date,,1,0,0,1,0,,,,年度结束日期,Finance
+medops,HRP Budget,HRP Budget Version,110,distribution_frequency,编制期间,Select,"Monthly
+Quarterly
+Half-Yearly
+Yearly",1,0,0,1,0,,,,编制期间,Finance
+medops,HRP Budget,HRP Budget Version,120,status,版本状态,Select,"Draft
+Frozen",1,0,0,1,1,,Draft,,版本状态,Finance
+medops,HRP Budget,HRP Budget Version,130,revision,修订,Int,,1,0,0,1,0,,1,,修订,Finance
+medops,HRP Budget,HRP Budget Version,140,cloned_from,来源版本,Link,HRP Budget Version,0,0,0,1,0,,,,来源版本,Finance
+medops,HRP Budget,HRP Budget Version,150,frozen_at,冻结时间,Datetime,,0,0,0,1,0,,,,冻结时间,Finance
+medops,HRP Budget,HRP Budget Version,160,frozen_by,冻结人,Link,User,0,0,0,1,0,,,,冻结人,Finance
+medops,HRP Budget,HRP Budget Version,170,snapshot_digest,内部快照摘要,Data,,0,0,0,1,0,,,,内部快照摘要,Finance
+medops,HRP Budget,HRP Budget Version,180,remarks,说明,Small Text,,0,0,0,1,0,,,,说明,Finance
+medops,HRP Budget,HRP Budget Plan,10,company,法人,Link,Company,1,0,0,1,0,,,,法人,Finance
+medops,HRP Budget,HRP Budget Plan,20,hospital,医院,Link,HRP Hospital,1,0,0,1,0,,,,医院,Finance
+medops,HRP Budget,HRP Budget Plan,30,budget_version,预算版本,Link,HRP Budget Version,1,0,1,1,0,,,,预算版本,Finance
+medops,HRP Budget,HRP Budget Plan,40,organization_version,组织快照,Link,HRP Organization Version,1,0,0,1,0,,,,组织快照,Finance
+medops,HRP Budget,HRP Budget Plan,50,organization_unit,编制科室,Link,HRP Organization Unit,1,0,1,1,1,,,,编制科室,Finance
+medops,HRP Budget,HRP Budget Plan,60,cost_center,标准成本中心,Link,Cost Center,1,0,0,1,0,,,,标准成本中心,Finance
+medops,HRP Budget,HRP Budget Plan,70,identity_key,内部身份,Data,,1,1,0,1,0,,,,内部身份,Finance
+medops,HRP Budget,HRP Budget Plan,80,fiscal_year,财政年度,Link,Fiscal Year,1,0,0,1,0,,,,财政年度,Finance
+medops,HRP Budget,HRP Budget Plan,90,currency,记账币种,Link,Currency,1,0,0,1,0,,,,记账币种,Finance
+medops,HRP Budget,HRP Budget Plan,100,currency_precision,金额精度,Int,,1,0,0,1,0,,,,金额精度,Finance
+medops,HRP Budget,HRP Budget Plan,110,subject,计划名称,Data,,1,0,0,1,1,,,,计划名称,Finance
+medops,HRP Budget,HRP Budget Plan,120,status,编制状态,Select,"Draft
+Withdrawn",1,0,0,1,1,,Draft,,编制状态,Finance
+medops,HRP Budget,HRP Budget Plan,130,applicant,编制人,Link,User,1,0,0,1,0,,,,编制人,Finance
+medops,HRP Budget,HRP Budget Plan,140,posting_date,编制日期,Date,,1,0,0,1,0,,,,编制日期,Finance
+medops,HRP Budget,HRP Budget Plan,150,total_amount,预算合计,Data,,1,0,0,1,0,,,,预算合计,Finance
+medops,HRP Budget,HRP Budget Plan,160,lines,预算明细,Table,HRP Budget Plan Line,1,0,0,1,0,,,,预算明细,Finance
+medops,HRP Budget,HRP Budget Plan,170,revision,修订,Int,,1,0,0,1,0,,1,,修订,Finance
+medops,HRP Budget,HRP Budget Plan,180,source_plan,来源计划,Link,HRP Budget Plan,0,0,0,1,0,,,,来源计划,Finance
+medops,HRP Budget,HRP Budget Plan,190,remarks,说明,Small Text,,0,0,0,1,0,,,,说明,Finance
+medops,HRP Budget,HRP Budget Plan Line,10,line_key,内部明细键,Data,,1,0,0,1,0,,,,内部明细键,Finance
+medops,HRP Budget,HRP Budget Plan Line,20,budget_subject,预算科目,Link,HRP Dimension Value,1,0,0,1,1,,,,预算科目,Finance
+medops,HRP Budget,HRP Budget Plan Line,30,funding_source,资金来源,Link,HRP Funding Source,1,0,0,1,1,,,,资金来源,Finance
+medops,HRP Budget,HRP Budget Plan Line,40,account,会计科目,Link,Account,1,0,0,1,1,,,,会计科目,Finance
+medops,HRP Budget,HRP Budget Plan Line,50,project,项目,Link,Project,0,0,0,1,1,,,,项目,Finance
+medops,HRP Budget,HRP Budget Plan Line,60,period_index,期间序号,Int,,1,0,0,1,1,,,,期间序号,Finance
+medops,HRP Budget,HRP Budget Plan Line,70,period_start,期间开始,Date,,1,0,0,1,0,,,,期间开始,Finance
+medops,HRP Budget,HRP Budget Plan Line,80,period_end,期间结束,Date,,1,0,0,1,0,,,,期间结束,Finance
+medops,HRP Budget,HRP Budget Plan Line,90,amount,预算金额,Data,,1,0,0,1,1,,,,预算金额,Finance
+medops,HRP Budget,HRP Budget Plan Line,100,description,说明,Small Text,,0,0,0,1,0,,,,说明,Finance

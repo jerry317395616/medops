@@ -1,0 +1,216 @@
+{
+	"doctype": "DocType",
+	"name": "HRP Business Dimension",
+	"module": "HRP Master Data",
+	"custom": 0,
+	"engine": "InnoDB",
+	"autoname": "field:identity_key",
+	"title_field": "display_name",
+	"is_submittable": 0,
+	"istable": 0,
+	"issingle": 0,
+	"track_changes": 0,
+	"allow_rename": 0,
+	"editable_grid": 0,
+	"search_fields": "code,display_name",
+	"field_order": [
+		"company",
+		"hospital",
+		"identity_key",
+		"code",
+		"display_name",
+		"purpose",
+		"enabled",
+		"valid_from",
+		"valid_to",
+		"revision",
+		"remarks"
+	],
+	"fields": [
+		{
+			"fieldname": "company",
+			"label": "法人",
+			"fieldtype": "Link",
+			"read_only": 1,
+			"reqd": 1,
+			"options": "Company"
+		},
+		{
+			"fieldname": "hospital",
+			"label": "医院",
+			"fieldtype": "Link",
+			"read_only": 1,
+			"reqd": 1,
+			"options": "HRP Hospital"
+		},
+		{
+			"fieldname": "identity_key",
+			"label": "内部身份",
+			"fieldtype": "Data",
+			"read_only": 1,
+			"reqd": 1,
+			"unique": 1,
+			"hidden": 1
+		},
+		{
+			"fieldname": "code",
+			"label": "编码",
+			"fieldtype": "Data",
+			"read_only": 1,
+			"reqd": 1,
+			"search_index": 1
+		},
+		{
+			"fieldname": "display_name",
+			"label": "名称",
+			"fieldtype": "Data",
+			"read_only": 1,
+			"reqd": 1,
+			"in_list_view": 1
+		},
+		{
+			"fieldname": "purpose",
+			"label": "用途",
+			"fieldtype": "Select",
+			"read_only": 1,
+			"reqd": 1,
+			"options": "Budget Subject\nAnalytical"
+		},
+		{
+			"fieldname": "enabled",
+			"label": "启用",
+			"fieldtype": "Check",
+			"read_only": 1,
+			"reqd": 0,
+			"default": "1"
+		},
+		{
+			"fieldname": "valid_from",
+			"label": "生效日期",
+			"fieldtype": "Date",
+			"read_only": 1,
+			"reqd": 1
+		},
+		{
+			"fieldname": "valid_to",
+			"label": "失效日期",
+			"fieldtype": "Date",
+			"read_only": 1,
+			"reqd": 0
+		},
+		{
+			"fieldname": "revision",
+			"label": "修订",
+			"fieldtype": "Int",
+			"read_only": 1,
+			"reqd": 1,
+			"default": "1"
+		},
+		{
+			"fieldname": "remarks",
+			"label": "说明",
+			"fieldtype": "Small Text",
+			"read_only": 1,
+			"reqd": 0
+		}
+	],
+	"permissions": [
+		{
+			"role": "System Manager",
+			"read": 1,
+			"report": 1,
+			"export": 1,
+			"print": 1,
+			"create": 0,
+			"write": 0,
+			"delete": 0,
+			"submit": 0,
+			"cancel": 0,
+			"amend": 0
+		},
+		{
+			"role": "HRP System Manager",
+			"read": 1,
+			"report": 1,
+			"export": 1,
+			"print": 1,
+			"create": 0,
+			"write": 0,
+			"delete": 0,
+			"submit": 0,
+			"cancel": 0,
+			"amend": 0
+		},
+		{
+			"role": "HRP Data Steward",
+			"read": 1,
+			"report": 1,
+			"export": 1,
+			"print": 1,
+			"create": 0,
+			"write": 0,
+			"delete": 0,
+			"submit": 0,
+			"cancel": 0,
+			"amend": 0
+		},
+		{
+			"role": "HRP Budget User",
+			"read": 1,
+			"report": 1,
+			"export": 1,
+			"print": 1,
+			"create": 0,
+			"write": 0,
+			"delete": 0,
+			"submit": 0,
+			"cancel": 0,
+			"amend": 0
+		},
+		{
+			"role": "HRP Budget Manager",
+			"read": 1,
+			"report": 1,
+			"export": 1,
+			"print": 1,
+			"create": 0,
+			"write": 0,
+			"delete": 0,
+			"submit": 0,
+			"cancel": 0,
+			"amend": 0
+		},
+		{
+			"role": "HRP Finance User",
+			"read": 1,
+			"report": 1,
+			"export": 1,
+			"print": 1,
+			"create": 0,
+			"write": 0,
+			"delete": 0,
+			"submit": 0,
+			"cancel": 0,
+			"amend": 0
+		},
+		{
+			"role": "HRP Auditor",
+			"read": 1,
+			"report": 1,
+			"export": 1,
+			"print": 1,
+			"create": 0,
+			"write": 0,
+			"delete": 0,
+			"submit": 0,
+			"cancel": 0,
+			"amend": 0
+		}
+	],
+	"sort_field": "modified",
+	"sort_order": "DESC",
+	"actions": [],
+	"links": [],
+	"states": [],
+	"show_title_field_in_link": 1
+}

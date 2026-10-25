@@ -7,16 +7,16 @@
 		"custom_apps": 1,
 		"modules": 36,
 		"design_doctypes": 401,
-		"design_fields": 10078,
+		"design_fields": 10021,
 		"doctype_blueprints": 401,
-		"starter_doctypes": 28,
-		"repository_contract_tests": 321,
-		"frappe_integration_tests": 292,
+		"starter_doctypes": 34,
+		"repository_contract_tests": 331,
+		"frappe_integration_tests": 309,
 		"environment_profiles": 3,
 		"fixture_rules": 3,
 		"fixture_files": 3,
-		"architecture_decisions": 27,
-		"change_records": 32,
+		"architecture_decisions": 28,
+		"change_records": 33,
 		"change_risk_rules": 5,
 		"error_definitions": 12,
 		"error_translations": 28
@@ -175,6 +175,9 @@
 		"backlog/COD-030.md",
 		"medops/services/core_reports.py",
 		"medops/services/core_workbench.py",
-		"medops/api/v1/core_workbench.py"
+		"medops/api/v1/core_workbench.py",
+		"backlog/COD-031.md",
+		"architecture/budget_planning.md",
+		"medops/api/v1/finance/planning.py"
 	]
 }

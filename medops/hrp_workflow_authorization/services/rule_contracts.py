@@ -7,6 +7,7 @@ from typing import Any
 import frappe
 from frappe.model.document import Document
 
+from medops.common.budget_planning import DECIMAL_DATA_FIELDS
 from medops.common.business_rules import (
 	MAX_FIELD_PATHS,
 	NUMBER_TYPES,
@@ -39,7 +40,9 @@ def _field_contract(doctype: str, fieldname: str, *, allow_table: bool = False) 
 			raise BusinessRuleError("field is unavailable")
 		fieldtype, options = field.fieldtype, field.options or ""
 		level, masked = int(field.permlevel or 0), int(field.get("mask") or 0)
-	if fieldtype in TEXT_TYPES:
+	if (doctype, fieldname) in DECIMAL_DATA_FIELDS and fieldtype == "Data":
+		kind = "number"
+	elif fieldtype in TEXT_TYPES:
 		kind = "text"
 	elif fieldtype in NUMBER_TYPES:
 		kind = "number"

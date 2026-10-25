@@ -1734,3 +1734,161 @@
   version: v1
   domain_group: Core
   async: 'No'
+- api_code: FIN-014
+  app: medops
+  method: POST
+  path: /api/method/medops.api.v1.finance.planning.save_version
+  description: 保存预算编制版本
+  request_schema: payload
+  response_schema: doctype,name,revision,docstatus,idempotency_replayed,correlation_id,request_id
+  required_role: Budget manager plus current scope and native source field permissions
+  idempotency: Required for write
+  transaction_boundary: Single DB transaction
+  audit: Redacted operation, revision and counts; no financial values
+  version: v1
+  domain_group: Finance
+  async: 'No'
+- api_code: FIN-015
+  app: medops
+  method: POST
+  path: /api/method/medops.api.v1.finance.planning.save_plan
+  description: 保存科室预算计划
+  request_schema: payload
+  response_schema: doctype,name,revision,docstatus,idempotency_replayed,correlation_id,request_id
+  required_role: Budget writer plus current scope and native source field permissions
+  idempotency: Required for write
+  transaction_boundary: Single DB transaction
+  audit: Redacted operation, revision and counts; no financial values
+  version: v1
+  domain_group: Finance
+  async: 'No'
+- api_code: FIN-016
+  app: medops
+  method: POST
+  path: /api/method/medops.api.v1.finance.planning.freeze_version
+  description: 冻结完整编制事实（不授予财务审批）
+  request_schema: payload
+  response_schema: doctype,name,revision,docstatus,idempotency_replayed,correlation_id,request_id
+  required_role: Budget manager plus current scope and native source field permissions
+  idempotency: Required for write
+  transaction_boundary: Single DB transaction
+  audit: Redacted operation, revision and counts; no financial values
+  version: v1
+  domain_group: Finance
+  async: 'No'
+- api_code: FIN-017
+  app: medops
+  method: POST
+  path: /api/method/medops.api.v1.finance.planning.clone_version
+  description: 复制冻结版本为新的编制草稿
+  request_schema: payload
+  response_schema: doctype,name,revision,docstatus,idempotency_replayed,correlation_id,request_id
+  required_role: Budget manager plus current scope and native source field permissions
+  idempotency: Required for write
+  transaction_boundary: Single DB transaction
+  audit: Redacted operation, revision and counts; no financial values
+  version: v1
+  domain_group: Finance
+  async: 'No'
+- api_code: FIN-018
+  app: medops
+  method: POST
+  path: /api/method/medops.api.v1.finance.planning.withdraw_plan
+  description: 保留明细并撤回科室计划
+  request_schema: payload
+  response_schema: doctype,name,revision,docstatus,idempotency_replayed,correlation_id,request_id
+  required_role: Budget writer plus current scope and native source field permissions
+  idempotency: Required for write
+  transaction_boundary: Single DB transaction
+  audit: Redacted operation, revision and counts; no financial values
+  version: v1
+  domain_group: Finance
+  async: 'No'
+- api_code: FIN-019
+  app: medops
+  method: POST
+  path: /api/method/medops.api.v1.finance.planning.upsert_master
+  description: 维护预算科目与资金来源
+  request_schema: kind,payload
+  response_schema: doctype,name,revision,idempotency_replayed,correlation_id,request_id
+  required_role: Data steward plus current scope and native source field permissions
+  idempotency: Required for write
+  transaction_boundary: Single DB transaction
+  audit: Redacted operation, revision and counts; no financial values
+  version: v1
+  domain_group: Finance
+  async: 'No'
+- api_code: FIN-020
+  app: medops
+  method: GET
+  path: /api/method/medops.api.v1.finance.planning.get_record
+  description: 按当前来源和字段权限读取预算记录
+  request_schema: kind,name
+  response_schema: typed record
+  required_role: Budget reader or Data steward plus current scope and native source
+    field permissions
+  idempotency: Not required (read-only)
+  transaction_boundary: Read-only
+  audit: Redacted operation, revision and counts; no financial values
+  version: v1
+  domain_group: Finance
+  async: 'No'
+- api_code: FIN-021
+  app: medops
+  method: GET
+  path: /api/method/medops.api.v1.finance.planning.list_records
+  description: 按当前权限分页查询预算及分类
+  request_schema: kind,filters,offset,limit,search
+  response_schema: items,next_offset,limit
+  required_role: Budget reader or Data steward plus current scope and native source
+    field permissions
+  idempotency: Not required (read-only)
+  transaction_boundary: Read-only
+  audit: Redacted operation, revision and counts; no financial values
+  version: v1
+  domain_group: Finance
+  async: 'No'
+- api_code: FIN-022
+  app: medops
+  method: GET
+  path: /api/method/medops.api.v1.finance.planning.spread
+  description: 按原生财政期间精确均分金额
+  request_schema: version,amount
+  response_schema: items
+  required_role: Budget reader plus current scope and native source field permissions
+  idempotency: Not required (read-only)
+  transaction_boundary: Read-only
+  audit: Redacted operation, revision and counts; no financial values
+  version: v1
+  domain_group: Finance
+  async: 'No'
+- api_code: FIN-023
+  app: medops
+  method: GET
+  path: /api/method/medops.api.v1.finance.planning.search
+  description: 受控预算链接检索
+  request_schema: doctype,txt,searchfield,start,page_len,filters
+  response_schema: link results
+  required_role: Budget reader or Data steward plus current scope and native source
+    field permissions
+  idempotency: Not required (read-only)
+  transaction_boundary: Read-only
+  audit: Redacted operation, revision and counts; no financial values
+  version: v1
+  domain_group: Finance
+  async: 'No'
+- api_code: FIN-024
+  app: medops
+  method: GET
+  path: /api/method/medops.api.v1.finance.planning.export_plan
+  description: 按当前导出与来源权限读取计划明细
+  request_schema: name
+  response_schema: name,currency,columns,rows
+  required_role: Budget reader with native export and current scope plus current scope
+    and native source field permissions
+  idempotency: Not required (read-only)
+  transaction_boundary: Read-only
+  audit: Redacted operation, revision and counts; no financial values
+  version: v1
+  domain_group: Finance
+  async: 'No'

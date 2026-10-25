@@ -9,6 +9,10 @@ _ALLOWED_APP_ROLES = {
 	"HRP Department Manager",
 	"HRP Auditor",
 	"HRP Integration User",
+	"HRP Budget User",
+	"HRP Budget Manager",
+	"HRP Finance User",
+	"HRP Data Steward",
 }
 
 
