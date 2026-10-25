@@ -101,6 +101,14 @@ def ensure_exact_fixtures():
 				"currency_precision": 9,
 			}
 		).insert(ignore_permissions=True)
+	# HTTP cases commit on their own connection. Isolate only this synthetic
+	# target's policies before the next class, preserving the legacy proof target.
+	owned = frappe.get_all(
+		"HRP Approval Matrix", filters={"target_doctype": TARGET, "code": ("like", "COD032-%")}, pluck="name"
+	)
+	for name in owned:
+		frappe.db.delete("HRP Approval Matrix Row", {"parent": name, "parenttype": "HRP Approval Matrix"})
+		frappe.db.delete("HRP Approval Matrix", {"name": name, "target_doctype": TARGET})
 	# The test fixture owns this transaction before per-case savepoints begin.
 	frappe.local.db.commit()
 
