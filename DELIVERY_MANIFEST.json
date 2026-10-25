@@ -178,6 +178,7 @@
 		"medops/api/v1/core_workbench.py",
 		"backlog/COD-031.md",
 		"architecture/budget_planning.md",
-		"medops/api/v1/finance/planning.py"
+		"medops/api/v1/finance/planning.py",
+		"architecture/releases/COD-031.json"
 	]
 }

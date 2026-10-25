@@ -2,7 +2,7 @@
 	"schema_version": 1,
 	"task_id": "COD-031",
 	"title": "实现预算版本与计划",
-	"status": "In Progress",
+	"status": "Implemented",
 	"risk_level": "critical",
 	"change_types": [
 		"application",
