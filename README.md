@@ -412,6 +412,8 @@ python scripts/quality.py
 
 ## 持续集成
 
+流程基础已加入服务时限与超时升级：通过受控策略为真实申请建立计时周期，支持暂停恢复、响应确认、超时待办及结束清理。策略和日历按周期冻结，复用 ERPNext 日历及 Frappe 标准待办、站内通知；操作和运行边界见 [服务时限说明](architecture/sla.md)。
+
 Pull Request、`main` 推送和人工运行都会触发 `.github/workflows/ci.yml`：
 
 - `Quality` 执行仓库契约、格式、静态分析、类型、单元和前端质量门禁；
