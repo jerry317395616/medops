@@ -225,7 +225,7 @@
   "track_changes": 1,
   "custom": 0,
   "x_hrp": {
-    "app": "ione_hrp",
+    "app": "medops",
     "retention_years": 10,
     "data_classification": "内部",
     "key_indexes": [

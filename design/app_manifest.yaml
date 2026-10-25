@@ -1,7 +1,7 @@
 generated_at: '2026-07-28'
 apps: 1
 app:
-  name: ione_hrp
+  name: medops
   title_cn: 美妍伊人医院HRP
   depends:
   - frappe

@@ -2,18 +2,18 @@
 
 ## 目标
 
-COD-015 为 `ione_hrp` 建立可重复、资源有界、默认拒绝生产的性能基线。性能预算、场景、
+COD-015 为 `medops` 建立可重复、资源有界、默认拒绝生产的性能基线。性能预算、场景、
 执行档和响应契约全部进入 Git；真实请求由站点外的 k6 `2.1.0` 进程发起，Frappe 只提供受权限保护
 的只读契约。Web 请求、后台任务和调度器均不能启动压测。
 
-机器权威是 `ione_hrp/config/performance_baselines.json`。纯 Python 模型严格解析资源上限、
-场景和阈值，`ione_hrp.services.performance_baseline` 负责角色、环境状态和脱敏审计，
+机器权威是 `medops/config/performance_baselines.json`。纯 Python 模型严格解析资源上限、
+场景和阈值，`medops.services.performance_baseline` 负责角色、环境状态和脱敏审计，
 `scripts/performance_baseline.py` 负责安全目标校验、k6 进程编排及独立结果复核。
 
 ## 初始基线
 
 首个 `platform-module-registry-read` 场景请求
-`ione_hrp.api.v1.modules.list_modules`。它覆盖认证、Frappe 路由、角色会话、MariaDB 查询、
+`medops.api.v1.modules.list_modules`。它覆盖认证、Frappe 路由、角色会话、MariaDB 查询、
 模块注册表合并和 JSON 序列化，但不读取个人信息，也不写数据库。
 
 | 执行档 | 虚拟用户 | 固定请求数 | 最长场景时间 | 允许错误率 | 最低检查率 | p95 | p99 | 最低吞吐 |
@@ -31,7 +31,7 @@ COD-015 为 `ione_hrp` 建立可重复、资源有界、默认拒绝生产的性
 k6 在发送场景请求前先读取：
 
 ```text
-GET /api/method/ione_hrp.api.v1.performance.get_performance_baseline_contract
+GET /api/method/medops.api.v1.performance.get_performance_baseline_contract
 ```
 
 必须同时满足：

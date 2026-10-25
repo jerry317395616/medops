@@ -2,8 +2,8 @@ from __future__ import annotations
 
 import unittest
 
-from ione_hrp.common.approval_matrix import ApprovalMatrixStep, ResolvedApprover, build_approval_matrix_step
-from ione_hrp.common.delegation import (
+from medops.common.approval_matrix import ApprovalMatrixStep, ResolvedApprover, build_approval_matrix_step
+from medops.common.delegation import (
 	DelegationContractError,
 	DelegationGrant,
 	apply_delegation_grants,

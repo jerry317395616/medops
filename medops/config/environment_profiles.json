@@ -1,0 +1,66 @@
+{
+	"schema_version": 1,
+	"required_apps": ["frappe", "erpnext", "hrms", "medops"],
+	"profiles": {
+		"development": {
+			"label": "Development",
+			"bench_dir": "~/.local/share/medops/environments/development/frappe-bench",
+			"site_name": "hrp-dev.localhost",
+			"developer_mode": true,
+			"allow_tests": true,
+			"scheduler_enabled": true,
+			"external_integrations_enabled": false,
+			"email_queue_enabled": false,
+			"synthetic_data_only": true,
+			"public_access": false,
+			"reset_policy": "replaceable",
+			"ports": {
+				"redis_cache": 13100,
+				"redis_queue": 11100,
+				"socketio": 9100,
+				"webserver": 8100,
+				"file_watcher": 6810
+			}
+		},
+		"test": {
+			"label": "Test",
+			"bench_dir": "~/.local/share/medops/environments/test/frappe-bench",
+			"site_name": "hrp-test.localhost",
+			"developer_mode": false,
+			"allow_tests": true,
+			"scheduler_enabled": false,
+			"external_integrations_enabled": false,
+			"email_queue_enabled": false,
+			"synthetic_data_only": true,
+			"public_access": false,
+			"reset_policy": "replaceable",
+			"ports": {
+				"redis_cache": 13200,
+				"redis_queue": 11200,
+				"socketio": 9200,
+				"webserver": 8200,
+				"file_watcher": 6820
+			}
+		},
+		"demo": {
+			"label": "Demo",
+			"bench_dir": "~/.local/share/medops/environments/demo/frappe-bench",
+			"site_name": "hrp-demo.localhost",
+			"developer_mode": false,
+			"allow_tests": false,
+			"scheduler_enabled": false,
+			"external_integrations_enabled": false,
+			"email_queue_enabled": false,
+			"synthetic_data_only": true,
+			"public_access": false,
+			"reset_policy": "replaceable",
+			"ports": {
+				"redis_cache": 13300,
+				"redis_queue": 11300,
+				"socketio": 9300,
+				"webserver": 8300,
+				"file_watcher": 6830
+			}
+		}
+	}
+}

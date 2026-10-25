@@ -1,6 +1,6 @@
 - workflow_name: HRP Master Data Change Workflow
   doctype: HRP Master Data Request
-  app: ione_hrp
+  app: medops
   domain_group: Core
   is_active: 1
   send_email_alert: 1
@@ -78,7 +78,7 @@
   notes: 金额、组织、资金来源和采购方式分支由HRP Approval Matrix动态解析。
 - workflow_name: HRP Budget Plan Workflow
   doctype: HRP Budget Plan
-  app: ione_hrp
+  app: medops
   domain_group: Finance
   is_active: 1
   send_email_alert: 1
@@ -156,7 +156,7 @@
   notes: 金额、组织、资金来源和采购方式分支由HRP Approval Matrix动态解析。
 - workflow_name: HRP Budget Adjustment Workflow
   doctype: HRP Budget Adjustment
-  app: ione_hrp
+  app: medops
   domain_group: Finance
   is_active: 1
   send_email_alert: 1
@@ -234,7 +234,7 @@
   notes: 金额、组织、资金来源和采购方式分支由HRP Approval Matrix动态解析。
 - workflow_name: HRP Expense Preapproval Workflow
   doctype: HRP Expense Preapproval
-  app: ione_hrp
+  app: medops
   domain_group: Finance
   is_active: 1
   send_email_alert: 1
@@ -312,7 +312,7 @@
   notes: 金额、组织、资金来源和采购方式分支由HRP Approval Matrix动态解析。
 - workflow_name: HRP Payment Request Workflow
   doctype: HRP Payment Request
-  app: ione_hrp
+  app: medops
   domain_group: Finance
   is_active: 1
   send_email_alert: 1
@@ -390,7 +390,7 @@
   notes: 金额、组织、资金来源和采购方式分支由HRP Approval Matrix动态解析。
 - workflow_name: HRP Supplier Registration Workflow
   doctype: HRP Supplier Registration
-  app: ione_hrp
+  app: medops
   domain_group: Supply
   is_active: 1
   send_email_alert: 1
@@ -468,7 +468,7 @@
   notes: 金额、组织、资金来源和采购方式分支由HRP Approval Matrix动态解析。
 - workflow_name: HRP Purchase Demand Workflow
   doctype: HRP Purchase Demand
-  app: ione_hrp
+  app: medops
   domain_group: Supply
   is_active: 1
   send_email_alert: 1
@@ -546,7 +546,7 @@
   notes: 金额、组织、资金来源和采购方式分支由HRP Approval Matrix动态解析。
 - workflow_name: HRP Tender Project Workflow
   doctype: HRP Tender Project
-  app: ione_hrp
+  app: medops
   domain_group: Supply
   is_active: 1
   send_email_alert: 1
@@ -624,7 +624,7 @@
   notes: 金额、组织、资金来源和采购方式分支由HRP Approval Matrix动态解析。
 - workflow_name: HRP Award Decision Workflow
   doctype: HRP Award Decision
-  app: ione_hrp
+  app: medops
   domain_group: Supply
   is_active: 1
   send_email_alert: 1
@@ -702,7 +702,7 @@
   notes: 金额、组织、资金来源和采购方式分支由HRP Approval Matrix动态解析。
 - workflow_name: HRP Contract Workflow
   doctype: HRP Contract
-  app: ione_hrp
+  app: medops
   domain_group: Supply
   is_active: 1
   send_email_alert: 1
@@ -780,7 +780,7 @@
   notes: 金额、组织、资金来源和采购方式分支由HRP Approval Matrix动态解析。
 - workflow_name: HRP High Value Usage Workflow
   doctype: HRP High Value Usage
-  app: ione_hrp
+  app: medops
   domain_group: Supply
   is_active: 1
   send_email_alert: 1
@@ -858,7 +858,7 @@
   notes: 金额、组织、资金来源和采购方式分支由HRP Approval Matrix动态解析。
 - workflow_name: HRP Asset Acquisition Workflow
   doctype: HRP Asset Acquisition Request
-  app: ione_hrp
+  app: medops
   domain_group: Asset
   is_active: 1
   send_email_alert: 1
@@ -936,7 +936,7 @@
   notes: 金额、组织、资金来源和采购方式分支由HRP Approval Matrix动态解析。
 - workflow_name: HRP Equipment Maintenance Workflow
   doctype: HRP Corrective Maintenance Order
-  app: ione_hrp
+  app: medops
   domain_group: Asset
   is_active: 1
   send_email_alert: 1
@@ -1014,7 +1014,7 @@
   notes: 金额、组织、资金来源和采购方式分支由HRP Approval Matrix动态解析。
 - workflow_name: HRP Credential Application Workflow
   doctype: HRP Credential Application
-  app: ione_hrp
+  app: medops
   domain_group: People
   is_active: 1
   send_email_alert: 1
@@ -1092,7 +1092,7 @@
   notes: 金额、组织、资金来源和采购方式分支由HRP Approval Matrix动态解析。
 - workflow_name: HRP Performance Plan Workflow
   doctype: HRP Performance Plan
-  app: ione_hrp
+  app: medops
   domain_group: People
   is_active: 1
   send_email_alert: 1
@@ -1170,7 +1170,7 @@
   notes: 金额、组织、资金来源和采购方式分支由HRP Approval Matrix动态解析。
 - workflow_name: HRP Research Project Workflow
   doctype: HRP Research Project
-  app: ione_hrp
+  app: medops
   domain_group: Project
   is_active: 1
   send_email_alert: 1
@@ -1248,7 +1248,7 @@
   notes: 金额、组织、资金来源和采购方式分支由HRP Approval Matrix动态解析。
 - workflow_name: HRP Audit Finding Remediation Workflow
   doctype: HRP Remediation Plan
-  app: ione_hrp
+  app: medops
   domain_group: Governance
   is_active: 1
   send_email_alert: 1
@@ -1326,7 +1326,7 @@
   notes: 金额、组织、资金来源和采购方式分支由HRP Approval Matrix动态解析。
 - workflow_name: HRP Service Submission Workflow
   doctype: HRP Service Submission
-  app: ione_hrp
+  app: medops
   domain_group: Portal
   is_active: 1
   send_email_alert: 1

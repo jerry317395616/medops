@@ -9,12 +9,12 @@ servers:
     host:
       default: hrp.example.com
 paths:
-  /api/method/ione_hrp.api.v1.environment.get_environment_status:
+  /api/method/medops.api.v1.environment.get_environment_status:
     get:
       operationId: platform_010
       summary: 查询当前非生产环境安全配置
       tags:
-      - ione_hrp
+      - medops
       security:
       - tokenAuth: []
       responses:
@@ -35,12 +35,12 @@ paths:
       x-required-role: Authenticated User
       x-transaction-boundary: Read-only
       x-idempotency: Not applicable
-  /api/method/ione_hrp.api.v1.fixtures.get_fixture_governance_status:
+  /api/method/medops.api.v1.fixtures.get_fixture_governance_status:
     get:
       operationId: platform_011
       summary: 查询 Fixtures 导出治理状态
       tags:
-      - ione_hrp
+      - medops
       security:
       - tokenAuth: []
       responses:
@@ -63,12 +63,12 @@ paths:
       x-required-role: System Manager
       x-transaction-boundary: Read-only
       x-idempotency: Not applicable
-  /api/method/ione_hrp.api.v1.change_governance.get_change_governance_status:
+  /api/method/medops.api.v1.change_governance.get_change_governance_status:
     get:
       operationId: platform_012
       summary: 查询 ADR 与变更治理状态
       tags:
-      - ione_hrp
+      - medops
       security:
       - tokenAuth: []
       parameters:
@@ -110,12 +110,12 @@ paths:
       x-required-role: System Manager or HRP System Manager
       x-transaction-boundary: Read-only
       x-idempotency: Read-only deterministic
-  /api/method/ione_hrp.api.v1.errors.get_error_catalog:
+  /api/method/medops.api.v1.errors.get_error_catalog:
     get:
       operationId: platform_013
       summary: 查询统一错误码目录
       tags:
-      - ione_hrp
+      - medops
       security:
       - tokenAuth: []
       responses:
@@ -146,12 +146,12 @@ paths:
       x-required-role: System Manager or HRP System Manager
       x-transaction-boundary: Read-only
       x-idempotency: Read-only deterministic
-  /api/method/ione_hrp.api.v1.audit.get_audit_context:
+  /api/method/medops.api.v1.audit.get_audit_context:
     get:
       operationId: platform_014
       summary: 查询当前请求的审计上下文
       tags:
-      - ione_hrp
+      - medops
       security:
       - tokenAuth: []
       parameters:
@@ -190,12 +190,12 @@ paths:
       x-required-role: Authenticated User
       x-transaction-boundary: Read-only
       x-idempotency: Read-only per request
-  /api/method/ione_hrp.api.v1.ledgers.get_immutable_ledger_contract:
+  /api/method/medops.api.v1.ledgers.get_immutable_ledger_contract:
     get:
       operationId: platform_015
       summary: 查询不可变台账公共契约
       tags:
-      - ione_hrp
+      - medops
       security:
       - tokenAuth: []
       responses:
@@ -226,12 +226,12 @@ paths:
       x-required-role: System Manager or HRP System Manager
       x-transaction-boundary: Read-only
       x-idempotency: Read-only deterministic
-  /api/method/ione_hrp.api.v1.messages.get_transactional_message_contract:
+  /api/method/medops.api.v1.messages.get_transactional_message_contract:
     get:
       operationId: platform_016
       summary: 查询 Outbox / Inbox 事务消息公共契约
       tags:
-      - ione_hrp
+      - medops
       security:
       - tokenAuth: []
       responses:
@@ -262,12 +262,12 @@ paths:
       x-required-role: System Manager or HRP System Manager
       x-transaction-boundary: Read-only
       x-idempotency: Read-only deterministic
-  /api/method/ione_hrp.api.v1.test_data.get_test_data_factory_contract:
+  /api/method/medops.api.v1.test_data.get_test_data_factory_contract:
     get:
       operationId: platform_017
       summary: 查询测试数据工厂公共契约
       tags:
-      - ione_hrp
+      - medops
       security:
       - tokenAuth: []
       responses:
@@ -298,12 +298,12 @@ paths:
       x-required-role: System Manager or HRP System Manager
       x-transaction-boundary: Read-only
       x-idempotency: Read-only deterministic
-  /api/method/ione_hrp.api.v1.performance.get_performance_baseline_contract:
+  /api/method/medops.api.v1.performance.get_performance_baseline_contract:
     get:
       operationId: platform_018
       summary: 查询性能基线与非生产压测许可契约
       tags:
-      - ione_hrp
+      - medops
       security:
       - tokenAuth: []
       responses:
@@ -334,12 +334,12 @@ paths:
       x-required-role: System Manager or HRP System Manager
       x-transaction-boundary: Read-only
       x-idempotency: Read-only deterministic
-  /api/method/ione_hrp.api.v1.security.get_software_supply_chain_contract:
+  /api/method/medops.api.v1.security.get_software_supply_chain_contract:
     get:
       operationId: platform_019
       summary: 查询软件供应链安全与SBOM治理契约
       tags:
-      - ione_hrp
+      - medops
       security:
       - tokenAuth: []
       responses:
@@ -370,12 +370,12 @@ paths:
       x-required-role: System Manager or HRP System Manager
       x-transaction-boundary: Read-only
       x-idempotency: Read-only deterministic
-  /api/method/ione_hrp.api.v1.settings.get_system_settings:
+  /api/method/medops.api.v1.settings.get_system_settings:
     get:
       operationId: platform_020
       summary: 查询HRP系统设置
       tags:
-      - ione_hrp
+      - medops
       security:
       - tokenAuth: []
       responses:
@@ -406,12 +406,12 @@ paths:
       x-required-role: System Manager or HRP System Manager
       x-transaction-boundary: Read-only
       x-idempotency: Read-only deterministic
-  /api/method/ione_hrp.api.v1.settings.update_system_settings:
+  /api/method/medops.api.v1.settings.update_system_settings:
     post:
       operationId: platform_021
       summary: 更新HRP系统设置
       tags:
-      - ione_hrp
+      - medops
       security:
       - tokenAuth: []
       parameters:
@@ -534,12 +534,12 @@ paths:
       x-required-role: System Manager or HRP System Manager
       x-transaction-boundary: Single DB transaction
       x-idempotency: Required for write
-  /api/method/ione_hrp.api.v1.modules.set_module_enabled:
+  /api/method/medops.api.v1.modules.set_module_enabled:
     post:
       operationId: platform_009
       summary: Enable or disable a published HRP module
       tags:
-      - ione_hrp
+      - medops
       security:
       - tokenAuth: []
       parameters:
@@ -642,12 +642,12 @@ paths:
       x-required-role: System Manager or HRP System Manager
       x-transaction-boundary: Single DB transaction owned by the request
       x-idempotency: Required for write; encrypted response snapshot
-  /api/method/ione_hrp.api.v1.core.scope.resolve:
+  /api/method/medops.api.v1.core.scope.resolve:
     post:
       operationId: core_001
       summary: 解析当前用户组织/数据权限
       tags:
-      - ione_hrp
+      - medops
       security:
       - tokenAuth: []
       parameters:
@@ -680,12 +680,12 @@ paths:
               type: object
               description: user,doctype,action
               additionalProperties: true
-  /api/method/ione_hrp.api.v1.core.approval.evaluate:
+  /api/method/medops.api.v1.core.approval.evaluate:
     post:
       operationId: core_002
       summary: 按真实单据上下文确定性解析动态审批链
       tags:
-      - ione_hrp
+      - medops
       security:
       - tokenAuth: []
       parameters:
@@ -744,12 +744,12 @@ paths:
                       type: string
                   - type: string
                     maxLength: 16384
-  /api/method/ione_hrp.api.v1.core.approval.upsert:
+  /api/method/medops.api.v1.core.approval.upsert:
     post:
       operationId: core_028
       summary: 创建或修订受控审批矩阵
       tags:
-      - ione_hrp
+      - medops
       security:
       - tokenAuth: []
       parameters:
@@ -878,12 +878,12 @@ paths:
                         - Any
                       description:
                         type: string
-  /api/method/ione_hrp.api.v1.core.approval.get:
+  /api/method/medops.api.v1.core.approval.get:
     get:
       operationId: core_029
       summary: 查询审批矩阵定义
       tags:
-      - ione_hrp
+      - medops
       security:
       - tokenAuth: []
       parameters:
@@ -912,12 +912,12 @@ paths:
       x-required-role: System Manager or HRP System Manager or HRP Auditor
       x-transaction-boundary: Read-only
       x-idempotency: Read-only deterministic
-  /api/method/ione_hrp_core.api.v1.sod.validate:
+  /api/method/medops_core.api.v1.sod.validate:
     post:
       operationId: core_003
       summary: 校验不相容职责
       tags:
-      - ione_hrp
+      - medops
       security:
       - tokenAuth: []
       parameters:
@@ -957,12 +957,12 @@ paths:
               type: object
               description: user,action,doctype,docname
               additionalProperties: true
-  /api/method/ione_hrp.api.v1.master_data.resolve_external_code_mapping:
+  /api/method/medops.api.v1.master_data.resolve_external_code_mapping:
     get:
       operationId: core_004
       summary: 按外部编码解析内部主数据
       tags:
-      - ione_hrp
+      - medops
       security:
       - tokenAuth: []
       parameters:
@@ -1029,12 +1029,12 @@ paths:
       x-required-role: System Manager or HRP System Manager or HRP Data Steward or HRP Integration User
       x-transaction-boundary: Read-only
       x-idempotency: Read-only deterministic
-  /api/method/ione_hrp_core.api.v1.master.submit_change:
+  /api/method/medops_core.api.v1.master.submit_change:
     post:
       operationId: core_005
       summary: 提交主数据变更
       tags:
-      - ione_hrp
+      - medops
       security:
       - tokenAuth: []
       parameters:
@@ -1074,12 +1074,12 @@ paths:
               type: object
               description: domain,operation,payload
               additionalProperties: true
-  /api/method/ione_hrp.api.v1.core.numbering.next:
+  /api/method/medops.api.v1.core.numbering.next:
     post:
       operationId: core_006
       summary: 取得受控业务编号
       tags:
-      - ione_hrp
+      - medops
       security:
       - tokenAuth: []
       parameters:
@@ -1158,12 +1158,12 @@ paths:
                 date:
                   type: string
                   format: date
-  /api/method/ione_hrp.api.v1.core.numbering.upsert_scheme:
+  /api/method/medops.api.v1.core.numbering.upsert_scheme:
     post:
       operationId: core_026
       summary: 创建或修订受控业务编号方案
       tags:
-      - ione_hrp
+      - medops
       security:
       - tokenAuth: []
       parameters:
@@ -1293,12 +1293,12 @@ paths:
       x-required-role: System Manager or HRP System Manager
       x-transaction-boundary: Single DB transaction
       x-idempotency: Required for write
-  /api/method/ione_hrp.api.v1.core.numbering.get_reservation:
+  /api/method/medops.api.v1.core.numbering.get_reservation:
     get:
       operationId: core_027
       summary: 查询编号预留
       tags:
-      - ione_hrp
+      - medops
       security:
       - tokenAuth: []
       parameters:
@@ -1344,12 +1344,12 @@ paths:
       x-required-role: System Manager or HRP System Manager or HRP User or HRP Auditor or HRP Integration User
       x-transaction-boundary: Read-only
       x-idempotency: Read-only owner scoped
-  /api/method/ione_hrp_core.api.v1.inbox.list:
+  /api/method/medops_core.api.v1.inbox.list:
     get:
       operationId: core_007
       summary: 查询统一待办
       tags:
-      - ione_hrp
+      - medops
       security:
       - tokenAuth: []
       parameters:
@@ -1386,12 +1386,12 @@ paths:
       x-required-role: Authenticated User
       x-transaction-boundary: Single DB transaction
       x-idempotency: Not applicable
-  /api/method/ione_hrp.api.v1.core.delegation.create:
+  /api/method/medops.api.v1.core.delegation.create:
     post:
       operationId: core_008
       summary: 创建受控审批委托
       tags:
-      - ione_hrp
+      - medops
       security:
       - tokenAuth: []
       parameters:
@@ -1456,12 +1456,12 @@ paths:
       x-required-role: System Manager or HRP System Manager or HRP Department Manager
       x-transaction-boundary: Single DB transaction
       x-idempotency: Required for write
-  /api/method/ione_hrp.api.v1.core.delegation.revoke:
+  /api/method/medops.api.v1.core.delegation.revoke:
     post:
       operationId: core_030
       summary: 撤销审批委托
       tags:
-      - ione_hrp
+      - medops
       security:
       - tokenAuth: []
       parameters:
@@ -1507,12 +1507,12 @@ paths:
       x-required-role: System Manager or HRP System Manager or HRP Department Manager
       x-transaction-boundary: Single DB transaction
       x-idempotency: Required for write
-  /api/method/ione_hrp.api.v1.core.delegation.get:
+  /api/method/medops.api.v1.core.delegation.get:
     get:
       operationId: core_031
       summary: 查询审批委托
       tags:
-      - ione_hrp
+      - medops
       security:
       - tokenAuth: []
       parameters:
@@ -1543,12 +1543,12 @@ paths:
       x-required-role: System Manager or HRP System Manager or HRP Department Manager or HRP User or HRP Auditor
       x-transaction-boundary: Read-only
       x-idempotency: Read-only owner scoped
-  /api/method/ione_hrp_finance.api.v1.budget.check:
+  /api/method/medops_finance.api.v1.budget.check:
     post:
       operationId: fin_001
       summary: 预算可用性校验
       tags:
-      - ione_hrp
+      - medops
       security:
       - tokenAuth: []
       parameters:
@@ -1588,12 +1588,12 @@ paths:
               type: object
               description: dimensions,amount,as_of_date
               additionalProperties: true
-  /api/method/ione_hrp_finance.api.v1.budget.reserve:
+  /api/method/medops_finance.api.v1.budget.reserve:
     post:
       operationId: fin_002
       summary: 创建预算预占
       tags:
-      - ione_hrp
+      - medops
       security:
       - tokenAuth: []
       parameters:
@@ -1633,12 +1633,12 @@ paths:
               type: object
               description: source_doctype,source_name,lines
               additionalProperties: true
-  /api/method/ione_hrp_finance.api.v1.budget.release:
+  /api/method/medops_finance.api.v1.budget.release:
     post:
       operationId: fin_003
       summary: 释放预算预占
       tags:
-      - ione_hrp
+      - medops
       security:
       - tokenAuth: []
       parameters:
@@ -1678,12 +1678,12 @@ paths:
               type: object
               description: reservation_name,amount,reason
               additionalProperties: true
-  /api/method/ione_hrp_finance.api.v1.budget.commit:
+  /api/method/medops_finance.api.v1.budget.commit:
     post:
       operationId: fin_004
       summary: 预占转承诺
       tags:
-      - ione_hrp
+      - medops
       security:
       - tokenAuth: []
       parameters:
@@ -1723,12 +1723,12 @@ paths:
               type: object
               description: reservation_name,contract_or_order,amount
               additionalProperties: true
-  /api/method/ione_hrp_finance.api.v1.budget.actualize:
+  /api/method/medops_finance.api.v1.budget.actualize:
     post:
       operationId: fin_005
       summary: 承诺转实际
       tags:
-      - ione_hrp
+      - medops
       security:
       - tokenAuth: []
       parameters:
@@ -1768,12 +1768,12 @@ paths:
               type: object
               description: commitment_name,invoice_or_payment,amount
               additionalProperties: true
-  /api/method/ione_hrp_finance.api.v1.budget.transfer:
+  /api/method/medops_finance.api.v1.budget.transfer:
     post:
       operationId: fin_006
       summary: 执行预算调剂
       tags:
-      - ione_hrp
+      - medops
       security:
       - tokenAuth: []
       parameters:
@@ -1813,12 +1813,12 @@ paths:
               type: object
               description: from_dimensions,to_dimensions,amount,approval
               additionalProperties: true
-  /api/method/ione_hrp_finance.api.v1.expense.validate:
+  /api/method/medops_finance.api.v1.expense.validate:
     post:
       operationId: fin_007
       summary: 校验费用标准和事前申请
       tags:
-      - ione_hrp
+      - medops
       security:
       - tokenAuth: []
       parameters:
@@ -1858,12 +1858,12 @@ paths:
               type: object
               description: employee,expense_lines,preapproval
               additionalProperties: true
-  /api/method/ione_hrp_finance.api.v1.invoice.verify:
+  /api/method/medops_finance.api.v1.invoice.verify:
     post:
       operationId: fin_008
       summary: 发票验真查重
       tags:
-      - ione_hrp
+      - medops
       security:
       - tokenAuth: []
       parameters:
@@ -1903,12 +1903,12 @@ paths:
               type: object
               description: invoice_image,invoice_fields
               additionalProperties: true
-  /api/method/ione_hrp_finance.api.v1.payment.create_batch:
+  /api/method/medops_finance.api.v1.payment.create_batch:
     post:
       operationId: fin_009
       summary: 生成付款批次
       tags:
-      - ione_hrp
+      - medops
       security:
       - tokenAuth: []
       parameters:
@@ -1948,12 +1948,12 @@ paths:
               type: object
               description: approved_requests,bank_account
               additionalProperties: true
-  /api/method/ione_hrp_finance.api.v1.payment.send_bank:
+  /api/method/medops_finance.api.v1.payment.send_bank:
     post:
       operationId: fin_010
       summary: 发送银行付款指令
       tags:
-      - ione_hrp
+      - medops
       security:
       - tokenAuth: []
       parameters:
@@ -1993,12 +1993,12 @@ paths:
               type: object
               description: batch,signature
               additionalProperties: true
-  /api/method/ione_hrp_finance.api.v1.bank.callback:
+  /api/method/medops_finance.api.v1.bank.callback:
     post:
       operationId: fin_011
       summary: 接收银行回执
       tags:
-      - ione_hrp
+      - medops
       security:
       - tokenAuth: []
       parameters:
@@ -2038,12 +2038,12 @@ paths:
               type: object
               description: submission_id,status,reference,signature
               additionalProperties: true
-  /api/method/ione_hrp_finance.api.v1.accounting.generate_voucher:
+  /api/method/medops_finance.api.v1.accounting.generate_voucher:
     post:
       operationId: fin_012
       summary: 根据规则生成ERPNext凭证
       tags:
-      - ione_hrp
+      - medops
       security:
       - tokenAuth: []
       parameters:
@@ -2083,12 +2083,12 @@ paths:
               type: object
               description: source_doctype,source_name,rule_code
               additionalProperties: true
-  /api/method/ione_hrp_finance.api.v1.cost.run:
+  /api/method/medops_finance.api.v1.cost.run:
     post:
       operationId: fin_013
       summary: 启动成本核算
       tags:
-      - ione_hrp
+      - medops
       security:
       - tokenAuth: []
       parameters:
@@ -2128,12 +2128,12 @@ paths:
               type: object
               description: period,scheme,scope
               additionalProperties: true
-  /api/method/ione_hrp_supply.api.v1.supplier.register:
+  /api/method/medops_supply.api.v1.supplier.register:
     post:
       operationId: sup_001
       summary: 供应商门户注册
       tags:
-      - ione_hrp
+      - medops
       security:
       - tokenAuth: []
       parameters:
@@ -2173,12 +2173,12 @@ paths:
               type: object
               description: company_info,contacts,certificates
               additionalProperties: true
-  /api/method/ione_hrp_supply.api.v1.supplier.qualify:
+  /api/method/medops_supply.api.v1.supplier.qualify:
     post:
       operationId: sup_002
       summary: 供应商准入结论
       tags:
-      - ione_hrp
+      - medops
       security:
       - tokenAuth: []
       parameters:
@@ -2218,12 +2218,12 @@ paths:
               type: object
               description: registration,checks,decision
               additionalProperties: true
-  /api/method/ione_hrp_supply.api.v1.supplier.certificate_callback:
+  /api/method/medops_supply.api.v1.supplier.certificate_callback:
     post:
       operationId: sup_003
       summary: 外部证照校验回调
       tags:
-      - ione_hrp
+      - medops
       security:
       - tokenAuth: []
       parameters:
@@ -2263,12 +2263,12 @@ paths:
               type: object
               description: certificate,status,details
               additionalProperties: true
-  /api/method/ione_hrp_supply.api.v1.tender.publish:
+  /api/method/medops_supply.api.v1.tender.publish:
     post:
       operationId: sup_004
       summary: 发布招标项目
       tags:
-      - ione_hrp
+      - medops
       security:
       - tokenAuth: []
       parameters:
@@ -2308,12 +2308,12 @@ paths:
               type: object
               description: tender_project,channels
               additionalProperties: true
-  /api/method/ione_hrp_supply.api.v1.tender.register_bid:
+  /api/method/medops_supply.api.v1.tender.register_bid:
     post:
       operationId: sup_005
       summary: 登记供应商投标
       tags:
-      - ione_hrp
+      - medops
       security:
       - tokenAuth: []
       parameters:
@@ -2353,12 +2353,12 @@ paths:
               type: object
               description: tender_package,supplier,bid_hash
               additionalProperties: true
-  /api/method/ione_hrp_supply.api.v1.tender.submit_score:
+  /api/method/medops_supply.api.v1.tender.submit_score:
     post:
       operationId: sup_006
       summary: 提交专家评分
       tags:
-      - ione_hrp
+      - medops
       security:
       - tokenAuth: []
       parameters:
@@ -2398,12 +2398,12 @@ paths:
               type: object
               description: evaluation,expert,scores,signature
               additionalProperties: true
-  /api/method/ione_hrp_supply.api.v1.award.approve:
+  /api/method/medops_supply.api.v1.award.approve:
     post:
       operationId: sup_007
       summary: 确认定标
       tags:
-      - ione_hrp
+      - medops
       security:
       - tokenAuth: []
       parameters:
@@ -2443,12 +2443,12 @@ paths:
               type: object
               description: award_decision,approval_token
               additionalProperties: true
-  /api/method/ione_hrp_supply.api.v1.purchase.check_price:
+  /api/method/medops_supply.api.v1.purchase.check_price:
     post:
       operationId: sup_008
       summary: 采购价格合规校验
       tags:
-      - ione_hrp
+      - medops
       security:
       - tokenAuth: []
       parameters:
@@ -2488,12 +2488,12 @@ paths:
               type: object
               description: item,supplier,qty,rate,date
               additionalProperties: true
-  /api/method/ione_hrp_supply.api.v1.purchase.create_order:
+  /api/method/medops_supply.api.v1.purchase.create_order:
     post:
       operationId: sup_009
       summary: 从批准需求创建ERPNext采购订单
       tags:
-      - ione_hrp
+      - medops
       security:
       - tokenAuth: []
       parameters:
@@ -2533,12 +2533,12 @@ paths:
               type: object
               description: approved_demands,supplier,terms
               additionalProperties: true
-  /api/method/ione_hrp_supply.api.v1.receipt.accept:
+  /api/method/medops_supply.api.v1.receipt.accept:
     post:
       operationId: sup_010
       summary: 执行到货/质量验收
       tags:
-      - ione_hrp
+      - medops
       security:
       - tokenAuth: []
       parameters:
@@ -2578,12 +2578,12 @@ paths:
               type: object
               description: purchase_receipt,acceptance_lines
               additionalProperties: true
-  /api/method/ione_hrp_supply.api.v1.match.three_way:
+  /api/method/medops_supply.api.v1.match.three_way:
     post:
       operationId: sup_011
       summary: 执行订单-入库-发票三单匹配
       tags:
-      - ione_hrp
+      - medops
       security:
       - tokenAuth: []
       parameters:
@@ -2623,12 +2623,12 @@ paths:
               type: object
               description: purchase_invoice
               additionalProperties: true
-  /api/method/ione_hrp_supply.api.v1.contract.submit:
+  /api/method/medops_supply.api.v1.contract.submit:
     post:
       operationId: sup_012
       summary: 提交合同审批并创建预算承诺
       tags:
-      - ione_hrp
+      - medops
       security:
       - tokenAuth: []
       parameters:
@@ -2668,12 +2668,12 @@ paths:
               type: object
               description: contract,attachments
               additionalProperties: true
-  /api/method/ione_hrp_supply.api.v1.contract.fulfill_obligation:
+  /api/method/medops_supply.api.v1.contract.fulfill_obligation:
     post:
       operationId: sup_013
       summary: 登记合同义务履行
       tags:
-      - ione_hrp
+      - medops
       security:
       - tokenAuth: []
       parameters:
@@ -2713,12 +2713,12 @@ paths:
               type: object
               description: obligation,evidence,actual_date
               additionalProperties: true
-  /api/method/ione_hrp_supply.api.v1.spd.consume:
+  /api/method/medops_supply.api.v1.spd.consume:
     post:
       operationId: sup_014
       summary: 登记科室/患者耗材消耗
       tags:
-      - ione_hrp
+      - medops
       security:
       - tokenAuth: []
       parameters:
@@ -2758,12 +2758,12 @@ paths:
               type: object
               description: cabinet,udi,patient,procedure,qty
               additionalProperties: true
-  /api/method/ione_hrp_asset.api.v1.asset.acquire:
+  /api/method/medops_asset.api.v1.asset.acquire:
     post:
       operationId: ast_001
       summary: 从验收创建资产卡片
       tags:
-      - ione_hrp
+      - medops
       security:
       - tokenAuth: []
       parameters:
@@ -2803,12 +2803,12 @@ paths:
               type: object
               description: acceptance,lines
               additionalProperties: true
-  /api/method/ione_hrp_asset.api.v1.asset.accept:
+  /api/method/medops_asset.api.v1.asset.accept:
     post:
       operationId: ast_002
       summary: 完成资产验收
       tags:
-      - ione_hrp
+      - medops
       security:
       - tokenAuth: []
       parameters:
@@ -2848,12 +2848,12 @@ paths:
               type: object
               description: request,receipt,inspection
               additionalProperties: true
-  /api/method/ione_hrp_asset.api.v1.asset.transfer:
+  /api/method/medops_asset.api.v1.asset.transfer:
     post:
       operationId: ast_003
       summary: 执行资产调拨
       tags:
-      - ione_hrp
+      - medops
       security:
       - tokenAuth: []
       parameters:
@@ -2893,12 +2893,12 @@ paths:
               type: object
               description: asset,from,to,custodian,approval
               additionalProperties: true
-  /api/method/ione_hrp_asset.api.v1.equipment.generate_pm_orders:
+  /api/method/medops_asset.api.v1.equipment.generate_pm_orders:
     post:
       operationId: ast_004
       summary: 生成预防性维护工单
       tags:
-      - ione_hrp
+      - medops
       security:
       - tokenAuth: []
       parameters:
@@ -2938,12 +2938,12 @@ paths:
               type: object
               description: plan,through_date
               additionalProperties: true
-  /api/method/ione_hrp_asset.api.v1.equipment.report_fault:
+  /api/method/medops_asset.api.v1.equipment.report_fault:
     post:
       operationId: ast_005
       summary: 上报设备故障
       tags:
-      - ione_hrp
+      - medops
       security:
       - tokenAuth: []
       parameters:
@@ -2983,12 +2983,12 @@ paths:
               type: object
               description: equipment,severity,symptom,attachments
               additionalProperties: true
-  /api/method/ione_hrp_asset.api.v1.equipment.complete_maintenance:
+  /api/method/medops_asset.api.v1.equipment.complete_maintenance:
     post:
       operationId: ast_006
       summary: 完成维护工单
       tags:
-      - ione_hrp
+      - medops
       security:
       - tokenAuth: []
       parameters:
@@ -3028,12 +3028,12 @@ paths:
               type: object
               description: work_order,labor,parts,result
               additionalProperties: true
-  /api/method/ione_hrp_asset.api.v1.calibration.import_result:
+  /api/method/medops_asset.api.v1.calibration.import_result:
     post:
       operationId: ast_007
       summary: 导入计量校准结果
       tags:
-      - ione_hrp
+      - medops
       security:
       - tokenAuth: []
       parameters:
@@ -3073,12 +3073,12 @@ paths:
               type: object
               description: equipment,certificate,result,valid_until
               additionalProperties: true
-  /api/method/ione_hrp_asset.api.v1.logistics.create_work_order:
+  /api/method/medops_asset.api.v1.logistics.create_work_order:
     post:
       operationId: ast_008
       summary: 由服务申请生成工单
       tags:
-      - ione_hrp
+      - medops
       security:
       - tokenAuth: []
       parameters:
@@ -3118,12 +3118,12 @@ paths:
               type: object
               description: service_request,assignment
               additionalProperties: true
-  /api/method/ione_hrp_people.api.v1.credential.verify:
+  /api/method/medops_people.api.v1.credential.verify:
     post:
       operationId: peo_001
       summary: 验证职业资质
       tags:
-      - ione_hrp
+      - medops
       security:
       - tokenAuth: []
       parameters:
@@ -3163,12 +3163,12 @@ paths:
               type: object
               description: credential,source
               additionalProperties: true
-  /api/method/ione_hrp_people.api.v1.privilege.check:
+  /api/method/medops_people.api.v1.privilege.check:
     post:
       operationId: peo_002
       summary: 校验员工可执行的临床权限
       tags:
-      - ione_hrp
+      - medops
       security:
       - tokenAuth: []
       parameters:
@@ -3208,12 +3208,12 @@ paths:
               type: object
               description: employee,procedure,date
               additionalProperties: true
-  /api/method/ione_hrp_people.api.v1.roster.generate:
+  /api/method/medops_people.api.v1.roster.generate:
     post:
       operationId: peo_003
       summary: 根据模板生成排班
       tags:
-      - ione_hrp
+      - medops
       security:
       - tokenAuth: []
       parameters:
@@ -3253,12 +3253,12 @@ paths:
               type: object
               description: cycle,unit,template
               additionalProperties: true
-  /api/method/ione_hrp_people.api.v1.roster.change:
+  /api/method/medops_people.api.v1.roster.change:
     post:
       operationId: peo_004
       summary: 提交并应用调班
       tags:
-      - ione_hrp
+      - medops
       security:
       - tokenAuth: []
       parameters:
@@ -3298,12 +3298,12 @@ paths:
               type: object
               description: assignment,from_employee,to_employee,reason
               additionalProperties: true
-  /api/method/ione_hrp_people.api.v1.attendance.import:
+  /api/method/medops_people.api.v1.attendance.import:
     post:
       operationId: peo_005
       summary: 导入考勤源数据
       tags:
-      - ione_hrp
+      - medops
       security:
       - tokenAuth: []
       parameters:
@@ -3343,12 +3343,12 @@ paths:
               type: object
               description: source,batch,records
               additionalProperties: true
-  /api/method/ione_hrp_people.api.v1.performance.collect:
+  /api/method/medops_people.api.v1.performance.collect:
     post:
       operationId: peo_006
       summary: 采集绩效指标
       tags:
-      - ione_hrp
+      - medops
       security:
       - tokenAuth: []
       parameters:
@@ -3388,12 +3388,12 @@ paths:
               type: object
               description: cycle,indicator,source_payload
               additionalProperties: true
-  /api/method/ione_hrp_people.api.v1.bonus.calculate:
+  /api/method/medops_people.api.v1.bonus.calculate:
     post:
       operationId: peo_007
       summary: 计算绩效奖金
       tags:
-      - ione_hrp
+      - medops
       security:
       - tokenAuth: []
       parameters:
@@ -3433,12 +3433,12 @@ paths:
               type: object
               description: cycle,unit,scheme
               additionalProperties: true
-  /api/method/ione_hrp_people.api.v1.bonus.publish:
+  /api/method/medops_people.api.v1.bonus.publish:
     post:
       operationId: peo_008
       summary: 发布奖金到HRMS薪资
       tags:
-      - ione_hrp
+      - medops
       security:
       - tokenAuth: []
       parameters:
@@ -3478,12 +3478,12 @@ paths:
               type: object
               description: calculation,payroll_period,approval
               additionalProperties: true
-  /api/method/ione_hrp_project.api.v1.project.propose:
+  /api/method/medops_project.api.v1.project.propose:
     post:
       operationId: prj_001
       summary: 提交项目申报
       tags:
-      - ione_hrp
+      - medops
       security:
       - tokenAuth: []
       parameters:
@@ -3523,12 +3523,12 @@ paths:
               type: object
               description: proposal,documents
               additionalProperties: true
-  /api/method/ione_hrp_project.api.v1.project.stage_gate:
+  /api/method/medops_project.api.v1.project.stage_gate:
     post:
       operationId: prj_002
       summary: 执行项目阶段闸门
       tags:
-      - ione_hrp
+      - medops
       security:
       - tokenAuth: []
       parameters:
@@ -3568,12 +3568,12 @@ paths:
               type: object
               description: project,gate,evidence,decision
               additionalProperties: true
-  /api/method/ione_hrp_project.api.v1.research.import_output:
+  /api/method/medops_project.api.v1.research.import_output:
     post:
       operationId: prj_003
       summary: 导入科研成果
       tags:
-      - ione_hrp
+      - medops
       security:
       - tokenAuth: []
       parameters:
@@ -3613,12 +3613,12 @@ paths:
               type: object
               description: research_project,outputs
               additionalProperties: true
-  /api/method/ione_hrp_project.api.v1.capital.progress:
+  /api/method/medops_project.api.v1.capital.progress:
     post:
       operationId: prj_004
       summary: 登记基建进度与工程量
       tags:
-      - ione_hrp
+      - medops
       security:
       - tokenAuth: []
       parameters:
@@ -3658,12 +3658,12 @@ paths:
               type: object
               description: capital_project,period,progress,quantity
               additionalProperties: true
-  /api/method/ione_hrp_project.api.v1.project.close:
+  /api/method/medops_project.api.v1.project.close:
     post:
       operationId: prj_005
       summary: 项目结题与余额处理
       tags:
-      - ione_hrp
+      - medops
       security:
       - tokenAuth: []
       parameters:
@@ -3703,12 +3703,12 @@ paths:
               type: object
               description: project,acceptance,settlement
               additionalProperties: true
-  /api/method/ione_hrp_governance.api.v1.control.test:
+  /api/method/medops_governance.api.v1.control.test:
     post:
       operationId: gov_001
       summary: 执行控制测试
       tags:
-      - ione_hrp
+      - medops
       security:
       - tokenAuth: []
       parameters:
@@ -3748,12 +3748,12 @@ paths:
               type: object
               description: control,test_plan,sample,evidence
               additionalProperties: true
-  /api/method/ione_hrp_governance.api.v1.risk.recalculate:
+  /api/method/medops_governance.api.v1.risk.recalculate:
     post:
       operationId: gov_002
       summary: 重算风险评分
       tags:
-      - ione_hrp
+      - medops
       security:
       - tokenAuth: []
       parameters:
@@ -3793,12 +3793,12 @@ paths:
               type: object
               description: risk_register,assessment_date
               additionalProperties: true
-  /api/method/ione_hrp_governance.api.v1.audit.create_sample:
+  /api/method/medops_governance.api.v1.audit.create_sample:
     post:
       operationId: gov_003
       summary: 按规则生成审计样本
       tags:
-      - ione_hrp
+      - medops
       security:
       - tokenAuth: []
       parameters:
@@ -3838,12 +3838,12 @@ paths:
               type: object
               description: audit_project,population,method,size
               additionalProperties: true
-  /api/method/ione_hrp_governance.api.v1.finding.issue:
+  /api/method/medops_governance.api.v1.finding.issue:
     post:
       operationId: gov_004
       summary: 下发审计发现
       tags:
-      - ione_hrp
+      - medops
       security:
       - tokenAuth: []
       parameters:
@@ -3883,12 +3883,12 @@ paths:
               type: object
               description: audit_project,finding,owner,due_date
               additionalProperties: true
-  /api/method/ione_hrp_governance.api.v1.remediation.verify:
+  /api/method/medops_governance.api.v1.remediation.verify:
     post:
       operationId: gov_005
       summary: 验证整改
       tags:
-      - ione_hrp
+      - medops
       security:
       - tokenAuth: []
       parameters:
@@ -3928,12 +3928,12 @@ paths:
               type: object
               description: remediation,evidence,decision
               additionalProperties: true
-  /api/method/ione_hrp_platform.api.v1.integration.receive:
+  /api/method/medops_platform.api.v1.integration.receive:
     post:
       operationId: plt_001
       summary: 统一入站接口
       tags:
-      - ione_hrp
+      - medops
       security:
       - tokenAuth: []
       parameters:
@@ -3973,12 +3973,12 @@ paths:
               type: object
               description: interface_code,headers,payload
               additionalProperties: true
-  /api/method/ione_hrp_platform.api.v1.integration.publish:
+  /api/method/medops_platform.api.v1.integration.publish:
     post:
       operationId: plt_002
       summary: 发布领域事件/外发消息
       tags:
-      - ione_hrp
+      - medops
       security:
       - tokenAuth: []
       parameters:
@@ -4018,12 +4018,12 @@ paths:
               type: object
               description: event_type,aggregate,payload
               additionalProperties: true
-  /api/method/ione_hrp_platform.api.v1.integration.retry:
+  /api/method/medops_platform.api.v1.integration.retry:
     post:
       operationId: plt_003
       summary: 重试失败消息
       tags:
-      - ione_hrp
+      - medops
       security:
       - tokenAuth: []
       parameters:
@@ -4063,12 +4063,12 @@ paths:
               type: object
               description: message_id,reason
               additionalProperties: true
-  /api/method/ione_hrp_platform.api.v1.reconciliation.run:
+  /api/method/medops_platform.api.v1.reconciliation.run:
     post:
       operationId: plt_004
       summary: 执行跨系统对账
       tags:
-      - ione_hrp
+      - medops
       security:
       - tokenAuth: []
       parameters:
@@ -4108,12 +4108,12 @@ paths:
               type: object
               description: job,date_range,scope
               additionalProperties: true
-  /api/method/ione_hrp_platform.api.v1.metric.refresh:
+  /api/method/medops_platform.api.v1.metric.refresh:
     post:
       operationId: plt_005
       summary: 刷新指标
       tags:
-      - ione_hrp
+      - medops
       security:
       - tokenAuth: []
       parameters:
@@ -4153,12 +4153,12 @@ paths:
               type: object
               description: metric,date_range,dimensions
               additionalProperties: true
-  /api/method/ione_hrp_platform.api.v1.ai.invoke:
+  /api/method/medops_platform.api.v1.ai.invoke:
     post:
       operationId: plt_006
       summary: 受控调用AI能力
       tags:
-      - ione_hrp
+      - medops
       security:
       - tokenAuth: []
       parameters:
@@ -4198,12 +4198,12 @@ paths:
               type: object
               description: agent,task,context,confirmation_token
               additionalProperties: true
-  /api/method/ione_hrp_portal.api.v1.home.get:
+  /api/method/medops_portal.api.v1.home.get:
     get:
       operationId: por_001
       summary: 获取个性化门户首页
       tags:
-      - ione_hrp
+      - medops
       security:
       - tokenAuth: []
       parameters:
@@ -4240,12 +4240,12 @@ paths:
       x-required-role: Authenticated User
       x-transaction-boundary: Single DB transaction
       x-idempotency: Not applicable
-  /api/method/ione_hrp_portal.api.v1.service.submit:
+  /api/method/medops_portal.api.v1.service.submit:
     post:
       operationId: por_002
       summary: 提交统一服务表单
       tags:
-      - ione_hrp
+      - medops
       security:
       - tokenAuth: []
       parameters:
@@ -4285,12 +4285,12 @@ paths:
               type: object
               description: service_form,payload,attachments
               additionalProperties: true
-  /api/method/ione_hrp.api.v1.organization.upsert_hospital:
+  /api/method/medops.api.v1.organization.upsert_hospital:
     post:
       operationId: core_009
       summary: 创建或更新医院主数据
       tags:
-      - ione_hrp
+      - medops
       security:
       - tokenAuth: []
       parameters:
@@ -4347,12 +4347,12 @@ paths:
       x-required-role: System Manager or HRP System Manager or HRP Data Steward
       x-transaction-boundary: Single DB transaction
       x-idempotency: Required for write
-  /api/method/ione_hrp.api.v1.organization.create_organization_version:
+  /api/method/medops.api.v1.organization.create_organization_version:
     post:
       operationId: core_010
       summary: 创建医院组织版本
       tags:
-      - ione_hrp
+      - medops
       security:
       - tokenAuth: []
       parameters:
@@ -4406,12 +4406,12 @@ paths:
       x-required-role: System Manager or HRP System Manager or HRP Data Steward
       x-transaction-boundary: Single DB transaction
       x-idempotency: Required for write
-  /api/method/ione_hrp.api.v1.organization.replace_organization_hierarchy:
+  /api/method/medops.api.v1.organization.replace_organization_hierarchy:
     post:
       operationId: core_011
       summary: 整体替换组织层级草稿
       tags:
-      - ione_hrp
+      - medops
       security:
       - tokenAuth: []
       parameters:
@@ -4465,12 +4465,12 @@ paths:
       x-required-role: System Manager or HRP System Manager or HRP Data Steward
       x-transaction-boundary: Single DB transaction
       x-idempotency: Required for write
-  /api/method/ione_hrp.api.v1.organization.publish_organization_version:
+  /api/method/medops.api.v1.organization.publish_organization_version:
     post:
       operationId: core_012
       summary: 发布医院组织版本
       tags:
-      - ione_hrp
+      - medops
       security:
       - tokenAuth: []
       parameters:
@@ -4524,12 +4524,12 @@ paths:
       x-required-role: System Manager or HRP System Manager or HRP Data Steward
       x-transaction-boundary: Single DB transaction
       x-idempotency: Required for write
-  /api/method/ione_hrp.api.v1.organization.get_organization_hierarchy:
+  /api/method/medops.api.v1.organization.get_organization_hierarchy:
     get:
       operationId: core_013
       summary: 按版本或生效日期查询组织层级
       tags:
-      - ione_hrp
+      - medops
       security:
       - tokenAuth: []
       parameters:
@@ -4579,12 +4579,12 @@ paths:
       x-required-role: System Manager or HRP System Manager or HRP Data Steward
       x-transaction-boundary: Read-only
       x-idempotency: Read-only deterministic
-  /api/method/ione_hrp.api.v1.organization_mapping.upsert_organization_mapping:
+  /api/method/medops.api.v1.organization_mapping.upsert_organization_mapping:
     post:
       operationId: core_014
       summary: 创建或修订组织标准映射
       tags:
-      - ione_hrp
+      - medops
       security:
       - tokenAuth: []
       parameters:
@@ -4638,12 +4638,12 @@ paths:
       x-required-role: System Manager or HRP System Manager or HRP Data Steward
       x-transaction-boundary: Single DB transaction
       x-idempotency: Required for write
-  /api/method/ione_hrp.api.v1.organization_mapping.resolve_organization_mapping:
+  /api/method/medops.api.v1.organization_mapping.resolve_organization_mapping:
     get:
       operationId: core_015
       summary: 按组织单元或业务日期解析标准映射
       tags:
-      - ione_hrp
+      - medops
       security:
       - tokenAuth: []
       parameters:
@@ -4699,12 +4699,12 @@ paths:
       x-required-role: System Manager or HRP System Manager or HRP Data Steward or HRP Integration User
       x-transaction-boundary: Read-only
       x-idempotency: Read-only deterministic
-  /api/method/ione_hrp.api.v1.master_data.upsert_master_data_domain:
+  /api/method/medops.api.v1.master_data.upsert_master_data_domain:
     post:
       operationId: core_016
       summary: 创建或修订主数据域
       tags:
-      - ione_hrp
+      - medops
       security:
       - tokenAuth: []
       parameters:
@@ -4744,12 +4744,12 @@ paths:
       x-required-role: System Manager or HRP System Manager or HRP Data Steward
       x-transaction-boundary: Single DB transaction
       x-idempotency: Required for write
-  /api/method/ione_hrp.api.v1.master_data.save_master_data_request:
+  /api/method/medops.api.v1.master_data.save_master_data_request:
     post:
       operationId: core_017
       summary: 创建或修订主数据变更申请草稿
       tags:
-      - ione_hrp
+      - medops
       security:
       - tokenAuth: []
       parameters:
@@ -4789,12 +4789,12 @@ paths:
       x-required-role: System Manager or HRP System Manager or HRP Data Steward or HRP User
       x-transaction-boundary: Single DB transaction
       x-idempotency: Required for write
-  /api/method/ione_hrp.api.v1.master_data.submit_master_data_request:
+  /api/method/medops.api.v1.master_data.submit_master_data_request:
     post:
       operationId: core_018
       summary: 提交主数据变更申请
       tags:
-      - ione_hrp
+      - medops
       security:
       - tokenAuth: []
       parameters:
@@ -4834,12 +4834,12 @@ paths:
       x-required-role: System Manager or HRP System Manager or HRP Data Steward or HRP User
       x-transaction-boundary: Single DB transaction
       x-idempotency: Required for write
-  /api/method/ione_hrp.api.v1.master_data.review_master_data_request:
+  /api/method/medops.api.v1.master_data.review_master_data_request:
     post:
       operationId: core_019
       summary: 复核主数据变更申请
       tags:
-      - ione_hrp
+      - medops
       security:
       - tokenAuth: []
       parameters:
@@ -4879,12 +4879,12 @@ paths:
       x-required-role: System Manager or HRP System Manager or HRP Data Steward
       x-transaction-boundary: Single DB transaction
       x-idempotency: Required for write
-  /api/method/ione_hrp.api.v1.master_data.get_master_data_request:
+  /api/method/medops.api.v1.master_data.get_master_data_request:
     get:
       operationId: core_020
       summary: 查询主数据变更申请
       tags:
-      - ione_hrp
+      - medops
       security:
       - tokenAuth: []
       parameters:
@@ -4920,12 +4920,12 @@ paths:
       x-required-role: System Manager or HRP System Manager or HRP Data Steward or HRP User
       x-transaction-boundary: Read-only
       x-idempotency: Read-only deterministic
-  /api/method/ione_hrp.api.v1.master_data.upsert_external_code_mapping:
+  /api/method/medops.api.v1.master_data.upsert_external_code_mapping:
     post:
       operationId: core_021
       summary: 创建或修订外部编码映射
       tags:
-      - ione_hrp
+      - medops
       security:
       - tokenAuth: []
       parameters:
@@ -5027,12 +5027,12 @@ paths:
       x-required-role: System Manager or HRP System Manager or HRP Data Steward
       x-transaction-boundary: Single DB transaction
       x-idempotency: Required for write
-  /api/method/ione_hrp.api.v1.master_data.resolve_internal_code_mapping:
+  /api/method/medops.api.v1.master_data.resolve_internal_code_mapping:
     get:
       operationId: core_022
       summary: 按内部主数据解析外部编码
       tags:
-      - ione_hrp
+      - medops
       security:
       - tokenAuth: []
       parameters:
@@ -5104,12 +5104,12 @@ paths:
       x-required-role: System Manager or HRP System Manager or HRP Data Steward or HRP Integration User
       x-transaction-boundary: Read-only
       x-idempotency: Read-only deterministic
-  /api/method/ione_hrp.api.v1.master_data.upsert_data_quality_rule:
+  /api/method/medops.api.v1.master_data.upsert_data_quality_rule:
     post:
       operationId: core_023
       summary: 创建或修订主数据质量规则
       tags:
-      - ione_hrp
+      - medops
       security:
       - tokenAuth: []
       parameters:
@@ -5227,12 +5227,12 @@ paths:
       x-required-role: System Manager or HRP System Manager or HRP Data Steward
       x-transaction-boundary: Single DB transaction
       x-idempotency: Required for write
-  /api/method/ione_hrp.api.v1.master_data.evaluate_data_quality:
+  /api/method/medops.api.v1.master_data.evaluate_data_quality:
     post:
       operationId: core_024
       summary: 评估一条标准主数据记录
       tags:
-      - ione_hrp
+      - medops
       security:
       - tokenAuth: []
       parameters:
@@ -5291,12 +5291,12 @@ paths:
       x-required-role: System Manager or HRP System Manager or HRP Data Steward
       x-transaction-boundary: Single DB transaction
       x-idempotency: Required for write
-  /api/method/ione_hrp.api.v1.master_data.get_data_quality_issue:
+  /api/method/medops.api.v1.master_data.get_data_quality_issue:
     get:
       operationId: core_025
       summary: 查询主数据质量问题
       tags:
-      - ione_hrp
+      - medops
       security:
       - tokenAuth: []
       parameters:
@@ -5629,7 +5629,7 @@ components:
           const: 1
         app:
           type: string
-          const: ione_hrp
+          const: medops
         sha256:
           type: string
           pattern: ^[0-9a-f]{64}$
@@ -5652,7 +5652,7 @@ components:
               const: '1.7'
             artifact_name:
               type: string
-              const: ione_hrp.cdx.json
+              const: medops.cdx.json
             include_development_dependencies:
               type: boolean
               const: true
@@ -5666,7 +5666,7 @@ components:
               items:
                 type: string
                 enum:
-                - ione_hrp
+                - medops
                 - frappe
                 - erpnext
                 - hrms
@@ -6007,7 +6007,7 @@ components:
           const: 1
         app:
           type: string
-          const: ione_hrp
+          const: medops
         sha256:
           type: string
           pattern: ^[0-9a-f]{64}$
@@ -6167,7 +6167,7 @@ components:
           const: 1
         app:
           type: string
-          const: ione_hrp
+          const: medops
         sha256:
           type: string
           pattern: ^[0-9a-f]{64}$
@@ -6208,7 +6208,7 @@ components:
                 const: GET
               path:
                 type: string
-                pattern: ^/api/method/ione_hrp\.[a-z0-9_.]+$
+                pattern: ^/api/method/medops\.[a-z0-9_.]+$
               response_contract:
                 type: string
                 enum:

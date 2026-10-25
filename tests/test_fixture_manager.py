@@ -7,8 +7,8 @@ import unittest
 from pathlib import Path
 from typing import Any, cast
 
-from ione_hrp.common.constants import APP_NAME
-from ione_hrp.common.fixture_policy import FIXTURE_DIRECTORY, load_fixture_policy
+from medops.common.constants import APP_NAME
+from medops.common.fixture_policy import FIXTURE_DIRECTORY, load_fixture_policy
 from scripts.fixture_manager import (
 	CommandRunner,
 	ExportTarget,
@@ -39,7 +39,7 @@ class FakeExportRunner(CommandRunner):
 			payload = [
 				{
 					"doctype": "Custom Field",
-					"name": f"Company-ione_hrp_{suffix}",
+					"name": f"Company-medops_{suffix}",
 					"module": "HRP Foundation",
 					"modified": f"2026-07-29 00:00:0{self.export_count}",
 				}
@@ -63,10 +63,10 @@ class FixtureManagerTest(unittest.TestCase):
 		config_directory = bench_dir / "sites" / site_name
 		config_directory.mkdir(parents=True)
 		config = {
-			"ione_hrp_environment": environment,
+			"medops_environment": environment,
 			"developer_mode": 1,
 			"allow_tests": 1,
-			"ione_hrp_external_integrations_enabled": 0,
+			"medops_external_integrations_enabled": 0,
 		}
 		(config_directory / "site_config.json").write_text(
 			json.dumps(config),
@@ -93,7 +93,7 @@ class FixtureManagerTest(unittest.TestCase):
 			)
 			validate_development_target(built)
 			config = json.loads(target.site_config_path.read_text(encoding="utf-8"))
-			config["ione_hrp_environment"] = "test"
+			config["medops_environment"] = "test"
 			target.site_config_path.write_text(json.dumps(config), encoding="utf-8")
 			with self.assertRaisesRegex(FixtureManagerError, "not the managed development"):
 				validate_development_target(target)
@@ -152,7 +152,7 @@ class FixtureManagerTest(unittest.TestCase):
 				)
 			audit = target.audit_path.read_text(encoding="utf-8")
 			self.assertIn('"status": "error"', audit)
-			self.assertNotIn("ione_hrp_1", audit)
+			self.assertNotIn("medops_1", audit)
 
 	def test_audit_event_contains_no_path_or_payload(self) -> None:
 		with tempfile.TemporaryDirectory() as directory:

@@ -7,14 +7,14 @@ import unittest
 from pathlib import Path
 from typing import Any
 
-from ione_hrp.common.environment_profiles import (
+from medops.common.environment_profiles import (
 	EnvironmentProfileError,
 	load_environment_registry,
 	parse_environment_registry,
 )
 
 ROOT = Path(__file__).resolve().parents[1]
-PROFILE_PATH = ROOT / "ione_hrp" / "config" / "environment_profiles.json"
+PROFILE_PATH = ROOT / "medops" / "config" / "environment_profiles.json"
 
 
 class EnvironmentProfileTest(unittest.TestCase):
@@ -27,7 +27,7 @@ class EnvironmentProfileTest(unittest.TestCase):
 			[profile.name for profile in registry.profiles],
 			["development", "test", "demo"],
 		)
-		self.assertEqual(registry.required_apps, ("frappe", "erpnext", "hrms", "ione_hrp"))
+		self.assertEqual(registry.required_apps, ("frappe", "erpnext", "hrms", "medops"))
 		self.assertEqual(
 			len({port for profile in registry.profiles for port in profile.ports.values()}),
 			15,

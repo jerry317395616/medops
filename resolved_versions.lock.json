@@ -2,24 +2,24 @@
   "schema_version": 1,
   "resolved_at": "2026-07-29T02:10:04Z",
   "release_family": "v17 develop",
-  "source_policy": "official GitHub develop heads captured together and immutable until an explicit refresh",
+  "source_policy": "Only jerry317395616 GitHub forks; immutable inherited functionality plus dependency-URL-only source patches",
   "apps": {
     "frappe": {
-      "repository": "https://github.com/frappe/frappe.git",
-      "branch": "develop",
-      "commit": "883224ff626c4635a58c47133f1ba6101cdbd938",
+      "repository": "https://github.com/jerry317395616/frappe.git",
+      "branch": "medops-v17-20261025",
+      "commit": "4880ad14d2b067e8db1a8356ef2d325713cc3cf4",
       "version": "17.0.0-dev"
     },
     "erpnext": {
-      "repository": "https://github.com/frappe/erpnext.git",
+      "repository": "https://github.com/jerry317395616/erpnext.git",
       "branch": "develop",
       "commit": "372dff2ffa232f54595f48c2639d828c4a64ddde",
       "version": "17.0.0-dev"
     },
     "hrms": {
-      "repository": "https://github.com/frappe/hrms.git",
-      "branch": "develop",
-      "commit": "2d9e4a0bc7a8d18c42c25cc7ff95eb52b460c6b1",
+      "repository": "https://github.com/jerry317395616/hrms.git",
+      "branch": "medops-v17-20261025",
+      "commit": "370b052071a63d89640c4a706faf61b40561e748",
       "version": "17.0.0-dev"
     }
   },
@@ -29,19 +29,26 @@
     "node": "follow the locked Frappe commit"
   },
   "compatibility_validation": {
-    "status": "passed",
+    "status": "revalidation_required_for_medops",
     "environment": "/home/zyd/validation/cod-002-bench (cod002.localhost)",
     "validated_at": "2026-07-29T02:35:10Z",
     "checks": [
-      "official remote and exact commit verification",
+      "personal fork remote and exact commit verification",
       "clean detached upstream worktrees",
       "fresh Frappe site creation",
       "ERPNext installation",
       "Frappe HR installation",
-      "ione_hrp installation",
+      "medops installation",
       "migration with enforced upstream lock",
       "authenticated version diagnostics",
       "Frappe integration tests"
     ]
+  },
+  "source_owner": "jerry317395616",
+  "source_policy_updated_at": "2026-10-25",
+  "functional_baseline": {
+    "frappe": "883224ff626c4635a58c47133f1ba6101cdbd938",
+    "erpnext": "372dff2ffa232f54595f48c2639d828c4a64ddde",
+    "hrms": "2d9e4a0bc7a8d18c42c25cc7ff95eb52b460c6b1"
   }
 }

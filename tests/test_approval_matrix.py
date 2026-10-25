@@ -3,7 +3,7 @@ from __future__ import annotations
 import unittest
 from decimal import Decimal
 
-from ione_hrp.common.approval_matrix import (
+from medops.common.approval_matrix import (
 	ApprovalMatrixContractError,
 	ApprovalMatrixStep,
 	ResolvedApprover,

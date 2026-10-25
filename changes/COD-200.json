@@ -1,0 +1,55 @@
+{
+  "schema_version": 1,
+  "task_id": "COD-200",
+  "title": "HRP项目更名MedOps与个人fork来源",
+  "status": "Implemented",
+  "risk_level": "critical",
+  "change_types": [
+    "application",
+    "architecture",
+    "configuration",
+    "dependency",
+    "documentation",
+    "governance",
+    "security"
+  ],
+  "affected_modules": [
+    "HRP Foundation"
+  ],
+  "breaking_change": true,
+  "adr_ids": [
+    "ADR-0021"
+  ],
+  "path_globs": [
+    "**",
+    "AGENTS.md",
+    "README.md",
+    "pyproject.toml",
+    "resolved_versions.lock.json",
+    "SHA256SUMS.txt",
+    "DELIVERY_MANIFEST.json",
+    "VALIDATION_REPORT.json",
+    ".github/**",
+    ".githooks/**",
+    ".env.example",
+    ".prettierrc.json",
+    ".prettierignore",
+    ".gitleaksignore",
+    ".npmrc"
+  ],
+  "permissions_impact": "现有权限规则保持；新站安装拒绝与旧应用混用。",
+  "migration_impact": "新应用命名空间只用于全新空站；已有站点不迁移。",
+  "rollback_plan": "停止专用新站进程并保留数据库卷；回退提交或恢复新站备份；不操作其他Bench。",
+  "security_impact": "所有Frappe应用Git来源仅允许jerry317395616 fork，凭据仅保存在部署环境。",
+  "test_plan": [
+    "仓库与包契约",
+    "拒绝官方或其他账号依赖来源",
+    "完整单元与类型前端检查",
+    "独立新站安装与重复迁移",
+    "Frappe集成测试及Guest权限",
+    "原站服务与HTTP基线对比"
+  ],
+  "owner": "MedOps Maintainers",
+  "created_on": "2026-10-25",
+  "updated_on": "2026-10-25"
+}

@@ -14,64 +14,64 @@ REPOSITORY_ROOT = Path(__file__).resolve().parents[1]
 if str(REPOSITORY_ROOT) not in sys.path:
 	sys.path.insert(0, str(REPOSITORY_ROOT))
 
-from ione_hrp.common.access_scope import (
+from medops.common.access_scope import (
 	ACCESS_ACTIONS,
 	ACCESS_SCOPE_DOCTYPE,
 	ACCESS_SCOPE_LEVELS,
 	ACCESS_SCOPE_MEMBER_DOCTYPE,
 	ACCESS_SCOPE_SCHEMA_VERSION,
 )
-from ione_hrp.common.approval_matrix import (
+from medops.common.approval_matrix import (
 	APPROVAL_MATRIX_DOCTYPE,
 	APPROVAL_MATRIX_ROW_DOCTYPE,
 	APPROVAL_MATRIX_SCHEMA_VERSION,
 	APPROVAL_MODES,
 	APPROVER_TYPES,
 )
-from ione_hrp.common.change_governance import (
+from medops.common.change_governance import (
 	ChangeGovernanceError,
 	inspect_change_governance,
 )
-from ione_hrp.common.data_quality import (
+from medops.common.data_quality import (
 	DATA_QUALITY_ISSUE_DOCTYPE,
 	DATA_QUALITY_RULE_DOCTYPE,
 	DATA_QUALITY_SCHEMA_VERSION,
 	NAMED_PATTERNS,
 	RULE_TYPES,
 )
-from ione_hrp.common.delegation import (
+from medops.common.delegation import (
 	DELEGATION_DOCTYPE,
 	DELEGATION_SCHEMA_VERSION,
 	DELEGATION_STATUSES,
 	MAX_DELEGATION_DAYS,
 )
-from ione_hrp.common.environment_profiles import (
+from medops.common.environment_profiles import (
 	EnvironmentProfileError,
 	load_environment_registry,
 )
-from ione_hrp.common.error_catalog import (
+from medops.common.error_catalog import (
 	ErrorCatalogError,
 	load_error_catalog,
 	validate_error_translations,
 )
-from ione_hrp.common.external_code_mapping import (
+from medops.common.external_code_mapping import (
 	EXTERNAL_CODE_MAPPING_DOCTYPE,
 	EXTERNAL_CODE_MAPPING_SCHEMA_VERSION,
 )
-from ione_hrp.common.fixture_policy import (
+from medops.common.fixture_policy import (
 	FixturePolicyError,
 	inspect_fixture_repository,
 	load_fixture_policy,
 )
-from ione_hrp.common.immutable_ledger import BASE_LEDGER_FIELDS
-from ione_hrp.common.master_data import (
+from medops.common.immutable_ledger import BASE_LEDGER_FIELDS
+from medops.common.master_data import (
 	MASTER_DATA_CHANGE_ITEM_DOCTYPE,
 	MASTER_DATA_DOMAIN_DOCTYPE,
 	MASTER_DATA_REQUEST_DOCTYPE,
 	MASTER_DATA_SCHEMA_VERSION,
 	MASTER_DATA_TARGET_POLICIES,
 )
-from ione_hrp.common.numbering import (
+from medops.common.numbering import (
 	MAX_DIMENSIONS,
 	MAX_SEQUENCE_DIGITS,
 	MAX_TEMPLATE_LENGTH,
@@ -81,41 +81,41 @@ from ione_hrp.common.numbering import (
 	NUMBERING_SCHEME_DOCTYPE,
 	RESET_POLICIES,
 )
-from ione_hrp.common.organization import (
+from medops.common.organization import (
 	MAX_HIERARCHY_NODES,
 	ORGANIZATION_SCHEMA_VERSION,
 	UNIT_TYPES,
 )
-from ione_hrp.common.organization_mapping import (
+from medops.common.organization_mapping import (
 	ORGANIZATION_MAPPING_DOCTYPE,
 	ORGANIZATION_MAPPING_SCHEMA_VERSION,
 )
-from ione_hrp.common.performance_baseline import (
+from medops.common.performance_baseline import (
 	PerformanceBaselineContractError,
 	load_performance_baseline_registry,
 )
-from ione_hrp.common.software_supply_chain import (
+from medops.common.software_supply_chain import (
 	SoftwareSupplyChainContractError,
 	load_software_supply_chain_policy,
 )
-from ione_hrp.common.system_settings import (
+from medops.common.system_settings import (
 	LOCKED_RELEASE_CHANNEL,
 	MAX_INTEGRATION_TIMEOUT_SECONDS,
 	MIN_INTEGRATION_TIMEOUT_SECONDS,
 )
-from ione_hrp.common.test_data_factory import (
+from medops.common.test_data_factory import (
 	TestDataFactoryContractError,
 	load_test_data_scenario_registry,
 )
-from ione_hrp.common.transactional_message import BASE_MESSAGE_FIELDS
-from ione_hrp.services.module_registry import validate_module_source_tree
+from medops.common.transactional_message import BASE_MESSAGE_FIELDS
+from medops.services.module_registry import validate_module_source_tree
 
 if __package__:
 	from scripts.version_lock import UPSTREAM_APPS, load_lock
 else:
 	from version_lock import UPSTREAM_APPS, load_lock
 
-APP_NAME = "ione_hrp"
+APP_NAME = "medops"
 UPSTREAM_APPS = frozenset({"frappe", "erpnext", "hrms"})
 REQUIRED_CI_CONTEXT = "Required"
 REQUIRED_CI_JOBS = frozenset({"quality", "security", "integration", "required"})
@@ -343,8 +343,8 @@ def validate_quality_tooling(root: Path) -> list[str]:
 		violations.append("package-lock.json root devDependencies differ from package.json")
 
 	pyright = json.loads((root / "pyrightconfig.json").read_text(encoding="utf-8"))
-	if not {"ione_hrp", "scripts", "tests"}.issubset(set(pyright.get("include", []))):
-		violations.append("Pyright must include ione_hrp, scripts and tests")
+	if not {"medops", "scripts", "tests"}.issubset(set(pyright.get("include", []))):
+		violations.append("Pyright must include medops, scripts and tests")
 	if pyright.get("pythonVersion") != "3.10":
 		violations.append("Pyright pythonVersion must match the Python 3.10 baseline")
 	if pyright.get("typeCheckingMode") not in {"basic", "standard", "strict"}:
@@ -473,7 +473,7 @@ def validate_ci_pipeline(root: Path) -> list[str]:
 		"k6-v${K6_VERSION}-linux-amd64.tar.gz",
 		"sha256sum --check",
 		'" inspect \\',
-		"ione_hrp/load_tests/performance_baseline.js",
+		"medops/load_tests/performance_baseline.js",
 		"python scripts/change_manager.py",
 	):
 		if required_command not in quality_commands:
@@ -529,7 +529,7 @@ def validate_ci_pipeline(root: Path) -> list[str]:
 		"KEEP_TEMPORARY_REDIS=1",
 		"version_lock.py",
 		"migrate --skip-search-index",
-		"run-tests --app ione_hrp",
+		"run-tests --app medops",
 		"SELECT COUNT(*) FROM `tabError Log`",
 		"git -C",
 	):
@@ -610,7 +610,7 @@ def validate_module_boundaries(root: Path) -> list[str]:
 	violations: list[str] = []
 	if not package_root.is_dir():
 		return [f"missing {APP_NAME} package directory"]
-	module_pattern = re.compile(r"^ione_hrp\.(hrp_[a-z0-9_]+)(?:\.(.+))?$")
+	module_pattern = re.compile(r"^medops\.(hrp_[a-z0-9_]+)(?:\.(.+))?$")
 	for source_root in package_root.iterdir():
 		if not source_root.is_dir() or not source_root.name.startswith("hrp_"):
 			continue
@@ -636,7 +636,7 @@ def validate_module_boundaries(root: Path) -> list[str]:
 					continue
 				violations.append(
 					f"{path.relative_to(root)} imports private cross-module path {imported}; "
-					f"use ione_hrp.{target_package}.services"
+					f"use medops.{target_package}.services"
 				)
 	return violations
 
@@ -693,7 +693,7 @@ def find_direct_frappe_throws(root: Path) -> list[str]:
 			if helper_name is not None:
 				violations.append(
 					f"{path.relative_to(root)}:{node.lineno} calls frappe.{helper_name} outside "
-					"ione_hrp.services.errors"
+					"medops.services.errors"
 				)
 	return violations
 
@@ -741,13 +741,13 @@ def validate_error_contract(root: Path) -> list[str]:
 		'"ione_error"',
 		'"X-Ione-Error-Code"',
 		'"X-Ione-Error-ID"',
-		'"ione_hrp.errors"',
+		'"medops.errors"',
 		"http_write_enabled",
 	):
 		if token not in service_text:
 			violations.append(f"error service is missing contract token: {token}")
 
-	error_api = "/api/method/ione_hrp.api.v1.errors.get_error_catalog"
+	error_api = "/api/method/medops.api.v1.errors.get_error_catalog"
 	for catalog_file in catalog_paths:
 		if error_api not in catalog_file.read_text(encoding="utf-8"):
 			violations.append(f"{catalog_file.relative_to(root)} is missing the error catalog endpoint")
@@ -781,7 +781,7 @@ def find_direct_audit_loggers(root: Path) -> list[str]:
 			):
 				violations.append(
 					f"{path.relative_to(root)}:{node.lineno} calls frappe.logger outside "
-					"ione_hrp.services.audit_context"
+					"medops.services.audit_context"
 				)
 	return violations
 
@@ -883,7 +883,7 @@ def validate_audit_context_contract(root: Path) -> list[str]:
 	if '@frappe.whitelist(allow_guest=True, methods=["GET"])' not in api_text:
 		violations.append("audit context endpoint must enter the application layer for uniform guest errors")
 
-	audit_api = "/api/method/ione_hrp.api.v1.audit.get_audit_context"
+	audit_api = "/api/method/medops.api.v1.audit.get_audit_context"
 	for catalog_path in catalog_paths:
 		if audit_api not in catalog_path.read_text(encoding="utf-8"):
 			violations.append(f"{catalog_path.relative_to(root)} is missing the audit context endpoint")
@@ -895,7 +895,7 @@ def validate_audit_context_contract(root: Path) -> list[str]:
 
 	for script_name in ("change_manager.py", "environment_manager.py", "fixture_manager.py"):
 		script_text = (root / "scripts" / script_name).read_text(encoding="utf-8")
-		if "ione_hrp.common.audit_context" not in script_text:
+		if "medops.common.audit_context" not in script_text:
 			violations.append(f"{script_name} must use the shared correlation ID contract")
 		if "CORRELATION_ID_PATTERN" in script_text:
 			violations.append(f"{script_name} must not define a duplicate correlation ID pattern")
@@ -1048,7 +1048,7 @@ def validate_domain_service_contract(root: Path) -> list[str]:
 	elif "idempotency_key" in {argument.arg for argument in module_write_functions[0].args.args}:
 		violations.append("HTTP idempotency keys must be accepted only through the request header")
 
-	module_api = "/api/method/ione_hrp.api.v1.modules.set_module_enabled"
+	module_api = "/api/method/medops.api.v1.modules.set_module_enabled"
 	for catalog_path in catalog_paths:
 		catalog_text = catalog_path.read_text(encoding="utf-8")
 		if module_api not in catalog_text:
@@ -1215,7 +1215,7 @@ def validate_immutable_ledger_contract(root: Path) -> list[str]:
 			):
 				violations.append(f"{blueprint_path.relative_to(root)} contains a ledger write permission")
 
-	ledger_api = "/api/method/ione_hrp.api.v1.ledgers.get_immutable_ledger_contract"
+	ledger_api = "/api/method/medops.api.v1.ledgers.get_immutable_ledger_contract"
 	for catalog_path in catalog_paths:
 		if ledger_api not in catalog_path.read_text(encoding="utf-8"):
 			violations.append(f"{catalog_path.relative_to(root)} is missing the immutable ledger endpoint")
@@ -1366,7 +1366,7 @@ def validate_transactional_message_contract(root: Path) -> list[str]:
 		if imported_roots.intersection(network_roots):
 			violations.append("transactional message base must not import a network client")
 
-	message_api = "/api/method/ione_hrp.api.v1.messages.get_transactional_message_contract"
+	message_api = "/api/method/medops.api.v1.messages.get_transactional_message_contract"
 	for catalog_path in catalog_paths:
 		if message_api not in catalog_path.read_text(encoding="utf-8"):
 			violations.append(
@@ -1475,7 +1475,7 @@ def validate_test_data_factory_contract(root: Path) -> list[str]:
 	if "generate_test_data" in api_text:
 		violations.append("test data generation must not be exposed through HTTP")
 
-	factory_api = "/api/method/ione_hrp.api.v1.test_data.get_test_data_factory_contract"
+	factory_api = "/api/method/medops.api.v1.test_data.get_test_data_factory_contract"
 	for catalog_path in catalog_paths:
 		if factory_api not in catalog_path.read_text(encoding="utf-8"):
 			violations.append(f"{catalog_path.relative_to(root)} is missing the test data factory endpoint")
@@ -1644,7 +1644,7 @@ def validate_performance_baseline_contract(root: Path) -> list[str]:
 		if forbidden in runner_text:
 			violations.append(f"performance runner contains forbidden secret/TLS option: {forbidden}")
 
-	performance_api = "/api/method/ione_hrp.api.v1.performance.get_performance_baseline_contract"
+	performance_api = "/api/method/medops.api.v1.performance.get_performance_baseline_contract"
 	for catalog_path in catalog_paths:
 		if performance_api not in catalog_path.read_text(encoding="utf-8"):
 			violations.append(
@@ -1718,7 +1718,7 @@ def validate_software_supply_chain_contract(root: Path) -> list[str]:
 	if policy.sbom.spec_version != "1.7":
 		violations.append("software bill of materials must use CycloneDX 1.7")
 	if set(policy.sbom.required_components) != {APP_NAME, "frappe", "erpnext", "hrms"}:
-		violations.append("SBOM must include ione_hrp and all three locked upstream applications")
+		violations.append("SBOM must include medops and all three locked upstream applications")
 	for tool_name in ("gitleaks", "grype", "cyclonedx_cli"):
 		tool = policy.tool(tool_name)
 		if not tool.linux_asset or not tool.linux_sha256:
@@ -1797,7 +1797,7 @@ def validate_software_supply_chain_contract(root: Path) -> list[str]:
 
 	expected_fingerprint = (
 		"2403cc6f43ebaaf0a924adaaac42cd5f3b217027:"
-		"ione_hrp/hrp_foundation/tests/test_test_data_factory.py:generic-api-key:90"
+		"medops/hrp_foundation/tests/test_test_data_factory.py:generic-api-key:90"
 	)
 	gitleaks_entries = [
 		line.strip()
@@ -1807,7 +1807,7 @@ def validate_software_supply_chain_contract(root: Path) -> list[str]:
 	if gitleaks_entries != [expected_fingerprint]:
 		violations.append("Gitleaks ignore file must contain only the reviewed exact fingerprint")
 
-	security_api = "/api/method/ione_hrp.api.v1.security.get_software_supply_chain_contract"
+	security_api = "/api/method/medops.api.v1.security.get_software_supply_chain_contract"
 	for catalog_path in catalog_paths:
 		if security_api not in catalog_path.read_text(encoding="utf-8"):
 			violations.append(
@@ -2001,8 +2001,8 @@ def validate_system_settings_contract(root: Path) -> list[str]:
 	):
 		violations.append("HRP workspace must include the Chinese system settings link")
 
-	get_api = "/api/method/ione_hrp.api.v1.settings.get_system_settings"
-	post_api = "/api/method/ione_hrp.api.v1.settings.update_system_settings"
+	get_api = "/api/method/medops.api.v1.settings.get_system_settings"
+	post_api = "/api/method/medops.api.v1.settings.update_system_settings"
 	for catalog_path in catalog_paths:
 		catalog_text = catalog_path.read_text(encoding="utf-8")
 		for endpoint in (get_api, post_api):
@@ -2238,11 +2238,11 @@ def validate_organization_hierarchy_contract(root: Path) -> list[str]:
 		violations.append("system settings blueprint must retain the Chinese default hospital label")
 
 	endpoints = {
-		"/api/method/ione_hrp.api.v1.organization.upsert_hospital": "post",
-		"/api/method/ione_hrp.api.v1.organization.create_organization_version": "post",
-		"/api/method/ione_hrp.api.v1.organization.replace_organization_hierarchy": "post",
-		"/api/method/ione_hrp.api.v1.organization.publish_organization_version": "post",
-		"/api/method/ione_hrp.api.v1.organization.get_organization_hierarchy": "get",
+		"/api/method/medops.api.v1.organization.upsert_hospital": "post",
+		"/api/method/medops.api.v1.organization.create_organization_version": "post",
+		"/api/method/medops.api.v1.organization.replace_organization_hierarchy": "post",
+		"/api/method/medops.api.v1.organization.publish_organization_version": "post",
+		"/api/method/medops.api.v1.organization.get_organization_hierarchy": "get",
 	}
 	for catalog_path in catalog_paths:
 		catalog_text = catalog_path.read_text(encoding="utf-8")
@@ -2472,8 +2472,8 @@ def validate_organization_mapping_contract(root: Path) -> list[str]:
 		violations.append("organization mapping field catalog must match runtime metadata")
 
 	endpoints = {
-		"/api/method/ione_hrp.api.v1.organization_mapping.upsert_organization_mapping": "post",
-		"/api/method/ione_hrp.api.v1.organization_mapping.resolve_organization_mapping": "get",
+		"/api/method/medops.api.v1.organization_mapping.upsert_organization_mapping": "post",
+		"/api/method/medops.api.v1.organization_mapping.resolve_organization_mapping": "get",
 	}
 	for catalog_path in catalog_paths:
 		catalog_text = catalog_path.read_text(encoding="utf-8")
@@ -2721,8 +2721,8 @@ def validate_master_data_governance_contract(root: Path) -> list[str]:
 		if token not in permission_text:
 			violations.append(f"master data Desk permission contract is missing: {token}")
 	for token in (
-		'"HRP Master Data Request": "ione_hrp.hrp_master_data.permissions.master_data_request_query"',
-		'"HRP Master Data Request": "ione_hrp.hrp_master_data.permissions.can_read_master_data_request"',
+		'"HRP Master Data Request": "medops.hrp_master_data.permissions.master_data_request_query"',
+		'"HRP Master Data Request": "medops.hrp_master_data.permissions.can_read_master_data_request"',
 	):
 		if token not in hooks_text:
 			violations.append(f"master data permission hook is missing: {token}")
@@ -2774,11 +2774,11 @@ def validate_master_data_governance_contract(root: Path) -> list[str]:
 			violations.append(f"{name} field catalog must match runtime metadata")
 
 	endpoints = {
-		"/api/method/ione_hrp.api.v1.master_data.upsert_master_data_domain": "post",
-		"/api/method/ione_hrp.api.v1.master_data.save_master_data_request": "post",
-		"/api/method/ione_hrp.api.v1.master_data.submit_master_data_request": "post",
-		"/api/method/ione_hrp.api.v1.master_data.review_master_data_request": "post",
-		"/api/method/ione_hrp.api.v1.master_data.get_master_data_request": "get",
+		"/api/method/medops.api.v1.master_data.upsert_master_data_domain": "post",
+		"/api/method/medops.api.v1.master_data.save_master_data_request": "post",
+		"/api/method/medops.api.v1.master_data.submit_master_data_request": "post",
+		"/api/method/medops.api.v1.master_data.review_master_data_request": "post",
+		"/api/method/medops.api.v1.master_data.get_master_data_request": "get",
 	}
 	for catalog_path in catalog_paths:
 		catalog_text = catalog_path.read_text(encoding="utf-8")
@@ -2949,7 +2949,7 @@ def validate_external_code_mapping_contract(root: Path) -> list[str]:
 		"class InternalCodeMappingResolve",
 		"def source_key_for",
 		"def target_key_for",
-		"ione-hrp-external-code-mapping-v1",
+		"medops-external-code-mapping-v1",
 		"effective_on",
 	):
 		if token not in common_text:
@@ -3007,8 +3007,8 @@ def validate_external_code_mapping_contract(root: Path) -> list[str]:
 		if token not in permission_text:
 			violations.append(f"external code mapping permission contract is missing: {token}")
 	for token in (
-		'"HRP External Code Mapping": "ione_hrp.hrp_master_data.permissions.external_code_mapping_query"',
-		'"HRP External Code Mapping": "ione_hrp.hrp_master_data.permissions.can_read_external_code_mapping"',
+		'"HRP External Code Mapping": "medops.hrp_master_data.permissions.external_code_mapping_query"',
+		'"HRP External Code Mapping": "medops.hrp_master_data.permissions.can_read_external_code_mapping"',
 	):
 		if token not in hooks_text:
 			violations.append(f"external code mapping permission hook is missing: {token}")
@@ -3066,9 +3066,9 @@ def validate_external_code_mapping_contract(root: Path) -> list[str]:
 			violations.append(f"external code mapping {key_field} catalog contract is invalid")
 
 	endpoints = {
-		"/api/method/ione_hrp.api.v1.master_data.resolve_external_code_mapping": "get",
-		"/api/method/ione_hrp.api.v1.master_data.upsert_external_code_mapping": "post",
-		"/api/method/ione_hrp.api.v1.master_data.resolve_internal_code_mapping": "get",
+		"/api/method/medops.api.v1.master_data.resolve_external_code_mapping": "get",
+		"/api/method/medops.api.v1.master_data.upsert_external_code_mapping": "post",
+		"/api/method/medops.api.v1.master_data.resolve_internal_code_mapping": "get",
 	}
 	for catalog_path in catalog_paths:
 		catalog_text = catalog_path.read_text(encoding="utf-8")
@@ -3337,12 +3337,12 @@ def validate_data_quality_contract(root: Path) -> list[str]:
 			violations.append(f"data quality permission contract is missing: {token}")
 	for name in doctypes:
 		for token in (
-			f'"{name}": "ione_hrp.hrp_master_data.permissions.data_quality_query"',
-			f'"{name}": "ione_hrp.hrp_master_data.permissions.can_read_data_quality"',
+			f'"{name}": "medops.hrp_master_data.permissions.data_quality_query"',
+			f'"{name}": "medops.hrp_master_data.permissions.can_read_data_quality"',
 		):
 			if token not in hooks_text:
 				violations.append(f"data quality permission hook is missing: {token}")
-	if "ione_hrp.hrp_master_data.services.data_quality.run_data_quality_rules" not in hooks_text:
+	if "medops.hrp_master_data.services.data_quality.run_data_quality_rules" not in hooks_text:
 		violations.append("daily data quality scheduler hook is missing")
 
 	api_text = api_path.read_text(encoding="utf-8")
@@ -3394,9 +3394,9 @@ def validate_data_quality_contract(root: Path) -> list[str]:
 			violations.append(f"{name} field catalog must match runtime metadata")
 
 	endpoints = {
-		"/api/method/ione_hrp.api.v1.master_data.upsert_data_quality_rule": "post",
-		"/api/method/ione_hrp.api.v1.master_data.evaluate_data_quality": "post",
-		"/api/method/ione_hrp.api.v1.master_data.get_data_quality_issue": "get",
+		"/api/method/medops.api.v1.master_data.upsert_data_quality_rule": "post",
+		"/api/method/medops.api.v1.master_data.evaluate_data_quality": "post",
+		"/api/method/medops.api.v1.master_data.get_data_quality_issue": "get",
 	}
 	for catalog_path in catalog_paths:
 		catalog_text = catalog_path.read_text(encoding="utf-8")
@@ -3674,8 +3674,8 @@ def validate_numbering_contract(root: Path) -> list[str]:
 		(NUMBER_RESERVATION_DOCTYPE, "number_reservation_query", "can_read_number_reservation"),
 	):
 		for token in (
-			f'"{name}": "ione_hrp.hrp_foundation.permissions.{query}"',
-			f'"{name}": "ione_hrp.hrp_foundation.permissions.{permission}"',
+			f'"{name}": "medops.hrp_foundation.permissions.{query}"',
+			f'"{name}": "medops.hrp_foundation.permissions.{permission}"',
 		):
 			if token not in hooks_text:
 				violations.append(f"numbering permission hook is missing: {token}")
@@ -3734,17 +3734,17 @@ def validate_numbering_contract(root: Path) -> list[str]:
 			violations.append(f"{name} field catalog must match runtime metadata")
 
 	endpoints = {
-		"/api/method/ione_hrp.api.v1.core.numbering.next": (
+		"/api/method/medops.api.v1.core.numbering.next": (
 			"post",
 			"System Manager or HRP System Manager or HRP User or HRP Integration User",
 			"Required for write",
 		),
-		"/api/method/ione_hrp.api.v1.core.numbering.upsert_scheme": (
+		"/api/method/medops.api.v1.core.numbering.upsert_scheme": (
 			"post",
 			"System Manager or HRP System Manager",
 			"Required for write",
 		),
-		"/api/method/ione_hrp.api.v1.core.numbering.get_reservation": (
+		"/api/method/medops.api.v1.core.numbering.get_reservation": (
 			"get",
 			"System Manager or HRP System Manager or HRP User or HRP Auditor or HRP Integration User",
 			"Read-only owner scoped",
@@ -3935,7 +3935,7 @@ def validate_access_scope_contract(root: Path) -> list[str]:
 	api_text = (root / APP_NAME / "api" / "v1" / "core" / "scope.py").read_text(encoding="utf-8")
 	if 'methods=["POST"]' not in api_text or "resolve_access_scope" not in api_text:
 		violations.append("CORE-001 must expose the reviewed read-only resolver")
-	endpoint = "/api/method/ione_hrp.api.v1.core.scope.resolve"
+	endpoint = "/api/method/medops.api.v1.core.scope.resolve"
 	with (root / "api" / "api_catalog.csv").open(encoding="utf-8-sig", newline="") as handle:
 		catalog_rows = {row["path"]: row for row in csv.DictReader(handle)}
 	row = catalog_rows.get(endpoint)
@@ -4136,17 +4136,17 @@ def validate_approval_matrix_contract(root: Path) -> list[str]:
 		violations.append("approval matrix field catalog contains replacement question marks")
 
 	endpoints = {
-		"/api/method/ione_hrp.api.v1.core.approval.evaluate": (
+		"/api/method/medops.api.v1.core.approval.evaluate": (
 			"CORE-002",
 			"Read-only deterministic",
 			"Read-only",
 		),
-		"/api/method/ione_hrp.api.v1.core.approval.upsert": (
+		"/api/method/medops.api.v1.core.approval.upsert": (
 			"CORE-028",
 			"Required for write",
 			"Single DB transaction",
 		),
-		"/api/method/ione_hrp.api.v1.core.approval.get": ("CORE-029", "Read-only deterministic", "Read-only"),
+		"/api/method/medops.api.v1.core.approval.get": ("CORE-029", "Read-only deterministic", "Read-only"),
 	}
 	with (root / "api" / "api_catalog.csv").open(encoding="utf-8-sig", newline="") as handle:
 		catalog_rows = {row["path"]: row for row in csv.DictReader(handle)}
@@ -4357,9 +4357,9 @@ def validate_delegation_contract(root: Path) -> list[str]:
 		violations.append("delegation field catalog contains replacement question marks")
 
 	endpoints = {
-		"/api/method/ione_hrp.api.v1.core.delegation.create": ("CORE-008", "post", True),
-		"/api/method/ione_hrp.api.v1.core.delegation.revoke": ("CORE-030", "post", True),
-		"/api/method/ione_hrp.api.v1.core.delegation.get": ("CORE-031", "get", False),
+		"/api/method/medops.api.v1.core.delegation.create": ("CORE-008", "post", True),
+		"/api/method/medops.api.v1.core.delegation.revoke": ("CORE-030", "post", True),
+		"/api/method/medops.api.v1.core.delegation.get": ("CORE-031", "get", False),
 	}
 	with (root / "api" / "api_catalog.csv").open(encoding="utf-8-sig", newline="") as handle:
 		catalog_rows = {row["path"]: row for row in csv.DictReader(handle)}
@@ -4453,7 +4453,7 @@ def validate_environment_profiles(root: Path) -> list[str]:
 		if token not in integration_text:
 			violations.append(f"CI does not validate environment profiles: {token}")
 
-	environment_api = "/api/method/ione_hrp.api.v1.environment.get_environment_status"
+	environment_api = "/api/method/medops.api.v1.environment.get_environment_status"
 	if environment_api not in api_catalog_path.read_text(encoding="utf-8"):
 		violations.append("API catalog is missing the environment status endpoint")
 	if environment_api not in openapi_path.read_text(encoding="utf-8"):
@@ -4530,7 +4530,7 @@ def validate_fixture_governance(root: Path) -> list[str]:
 		if token not in integration_text:
 			violations.append(f"CI does not validate fixture governance: {token}")
 
-	fixture_api = "/api/method/ione_hrp.api.v1.fixtures.get_fixture_governance_status"
+	fixture_api = "/api/method/medops.api.v1.fixtures.get_fixture_governance_status"
 	if fixture_api not in api_catalog_path.read_text(encoding="utf-8"):
 		violations.append("API catalog is missing the fixture governance endpoint")
 	if fixture_api not in openapi_path.read_text(encoding="utf-8"):
@@ -4589,7 +4589,7 @@ def validate_change_governance(root: Path) -> list[str]:
 		"assess_changed_paths",
 		"validate_adr_transition",
 		"merge-base",
-		"ione_hrp-change-governance-audit.jsonl",
+		"medops-change-governance-audit.jsonl",
 		"production_write_enabled",
 		"http_write_enabled",
 	):
@@ -4610,7 +4610,7 @@ def validate_change_governance(root: Path) -> list[str]:
 		if token not in pr_template_text:
 			violations.append(f"PR template is missing change governance evidence: {token}")
 
-	governance_api = "/api/method/ione_hrp.api.v1.change_governance.get_change_governance_status"
+	governance_api = "/api/method/medops.api.v1.change_governance.get_change_governance_status"
 	for catalog_path in catalog_paths:
 		if governance_api not in catalog_path.read_text(encoding="utf-8"):
 			violations.append(f"{catalog_path.relative_to(root)} is missing the change governance endpoint")
@@ -4629,16 +4629,16 @@ def collect_violations(root: Path) -> list[str]:
 	if apps_root.is_dir() and any(
 		path.name.startswith(f"{APP_NAME}_") for path in apps_root.iterdir() if path.is_dir()
 	):
-		violations.append("business domains must be modules, not additional ione_hrp_* apps")
+		violations.append("business domains must be modules, not additional medops_* apps")
 
 	app_root = root
 	package_root = root / APP_NAME
 	if not (package_root / "__init__.py").is_file():
-		violations.append("missing ione_hrp Python package")
+		violations.append("missing medops Python package")
 	elif apps.get(APP_NAME) != app_root:
-		violations.append("ione_hrp pyproject must be at repository root for Press")
+		violations.append("medops pyproject must be at repository root for Press")
 	if not (package_root / "hooks.py").is_file():
-		violations.append("missing Press-discoverable ione_hrp/hooks.py")
+		violations.append("missing Press-discoverable medops/hooks.py")
 
 	violations.extend(find_legacy_prefix_references(root))
 	violations.extend(validate_branch_policy(root))

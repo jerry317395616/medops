@@ -8,7 +8,7 @@ import unittest
 from pathlib import Path
 from typing import cast
 
-from ione_hrp.common.error_catalog import (
+from medops.common.error_catalog import (
 	ErrorCatalogError,
 	IoneApplicationError,
 	load_error_catalog,
@@ -18,8 +18,8 @@ from ione_hrp.common.error_catalog import (
 )
 
 ROOT = Path(__file__).resolve().parents[1]
-CATALOG_PATH = ROOT / "ione_hrp/config/error_catalog.json"
-TRANSLATION_PATH = ROOT / "ione_hrp/translations/zh.csv"
+CATALOG_PATH = ROOT / "medops/config/error_catalog.json"
+TRANSLATION_PATH = ROOT / "medops/translations/zh.csv"
 
 
 class TestErrorCatalog(unittest.TestCase):

@@ -3,7 +3,7 @@ from __future__ import annotations
 import json
 import unittest
 
-from ione_hrp.common.organization import (
+from medops.common.organization import (
 	MAX_HIERARCHY_NODES,
 	OrganizationContractError,
 	build_hierarchy_replace,

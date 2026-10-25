@@ -2,7 +2,7 @@
 
 ## 目标与边界
 
-`HRP System Settings` 是 `ione_hrp` 内 `HRP Foundation` 模块拥有的标准 Single
+`HRP System Settings` 是 `medops` 内 `HRP Foundation` 模块拥有的标准 Single
 DocType。它只保存全站通用且结构明确的安全、集成和默认组织配置，不承载业务主数据，
 也不提供任意 JSON、动态代码或上游应用覆盖入口。
 
@@ -30,7 +30,7 @@ COD-018 已将默认医院升级为 `HRP Hospital` Link，医院必须属于同�
 
 ## 服务与接口
 
-公共服务位于 `ione_hrp.hrp_foundation.services.system_settings`：
+公共服务位于 `medops.hrp_foundation.services.system_settings`：
 
 - `get_system_settings()`：仅系统管理角色可读，返回确定性公开状态。
 - `update_system_settings()`：通过 `DomainService` 执行，禁止直接提交事务。
@@ -38,8 +38,8 @@ COD-018 已将默认医院升级为 `HRP Hospital` Link，医院必须属于同�
 HTTP 契约：
 
 ```text
-GET  /api/method/ione_hrp.api.v1.settings.get_system_settings
-POST /api/method/ione_hrp.api.v1.settings.update_system_settings
+GET  /api/method/medops.api.v1.settings.get_system_settings
+POST /api/method/medops.api.v1.settings.update_system_settings
 ```
 
 POST 必须携带 `Idempotency-Key`，并提交客户端最后读取到的 `expected_version`。

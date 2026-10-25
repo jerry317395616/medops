@@ -3,8 +3,8 @@ from __future__ import annotations
 import unittest
 from dataclasses import FrozenInstanceError
 
-from ione_hrp.common.audit_context import normalize_audit_fields
-from ione_hrp.common.transactional_message import (
+from medops.common.audit_context import normalize_audit_fields
+from medops.common.transactional_message import (
 	BASE_MESSAGE_FIELDS,
 	INBOX_STATUSES,
 	OUTBOX_STATUSES,

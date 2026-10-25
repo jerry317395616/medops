@@ -2,7 +2,7 @@
 
 ## 目标与边界
 
-COD-005 在 GitHub Actions 中建立 `ione_hrp` 的合并门禁。流水线只读取代码并
+COD-005 在 GitHub Actions 中建立 `medops` 的合并门禁。流水线只读取代码并
 创建一次性测试环境，不连接 Press、生产数据库、对象存储或外部业务系统，也
 不使用仓库 Secret。它不会修改 Frappe、ERPNext 或 Frappe HR 源码。
 
@@ -37,7 +37,7 @@ COD-005 在 GitHub Actions 中建立 `ione_hrp` 的合并门禁。流水线只�
 并在 SHA-256 校验成功后执行：
 
 1. npm CycloneDX 依赖图和 pip-audit Python 依赖解析；
-2. 组合 `ione_hrp` 与三个锁定上游，生成并验证 CycloneDX 1.7；
+2. 组合 `medops` 与三个锁定上游，生成并验证 CycloneDX 1.7；
 3. Bandit、Gitleaks、pip-audit、npm audit、Grype 和许可证门禁；
 4. 上传 SBOM、脱敏摘要和 SHA-256 清单，保留 30 天。
 
@@ -52,8 +52,8 @@ COD-005 在 GitHub Actions 中建立 `ione_hrp` 的合并门禁。流水线只�
 1. 从 `resolved_versions.lock.json` 获取并检出 Frappe、ERPNext、Frappe HR
    的不可变提交；
 2. 创建新的 Bench 与 `test_site`，安装 ERPNext、Frappe HR 和唯一自研 App
-   `ione_hrp`；
-3. 再次验证上游锁、执行幂等迁移和全部 `ione_hrp` Frappe 集成测试；
+   `medops`；
+3. 再次验证上游锁、执行幂等迁移和全部 `medops` Frappe 集成测试；
 4. 验证新站点没有 Error Log，四个 App 工作树均保持洁净。
 
 临时站点使用固定的非生产测试密码，运行结束后随 GitHub Runner 销毁。失败时
@@ -89,7 +89,7 @@ python scripts/security_supply_chain.py plan
 具备 MariaDB、Redis、uv、Python 3.14 和 Node.js 24 的一次性 Linux 环境可执行：
 
 ```bash
-BENCH_DIR=/tmp/ione-hrp-ci \
+BENCH_DIR=/tmp/medops-ci \
 SITE_NAME=test_site \
 DB_ROOT_PASSWORD=ci_root_password \
 ADMIN_PASSWORD=ci_admin_password \

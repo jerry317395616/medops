@@ -69,7 +69,7 @@ tail -n 1 "$SECOND_ENVIRONMENT_LOG" | grep -F '"changed": false'
   --correlation-id "CI-${GITHUB_RUN_ID:-local}-test-verify"
 
 bench --site "$SITE_NAME" migrate --skip-search-index
-bench --site "$SITE_NAME" run-tests --app ione_hrp
+bench --site "$SITE_NAME" run-tests --app medops
 
 if grep -Eiq 'password|token|secret' "$BENCH_DIR/logs/environment-audit.jsonl"; then
   echo "Environment audit log contains a forbidden secret marker" >&2
@@ -89,7 +89,7 @@ create_profile_site() {
     --admin-password "$ADMIN_PASSWORD"
   bench --site "$site_name" install-app erpnext
   bench --site "$site_name" install-app hrms
-  bench --site "$site_name" install-app ione_hrp
+  bench --site "$site_name" install-app medops
   "$BENCH_DIR/env/bin/python" "$ROOT_DIR/scripts/environment_manager.py" \
     configure "$profile" \
     --bench-dir "$BENCH_DIR" \
@@ -102,7 +102,7 @@ create_profile_site development "$DEVELOPMENT_SITE_NAME"
 create_profile_site demo "$DEMO_SITE_NAME"
 
 FIXTURE_EXPORT_LOG="$BENCH_DIR/logs/fixture-export.log"
-FIXTURE_MANAGER="$BENCH_DIR/apps/ione_hrp/scripts/fixture_manager.py"
+FIXTURE_MANAGER="$BENCH_DIR/apps/medops/scripts/fixture_manager.py"
 "$BENCH_DIR/env/bin/python" "$FIXTURE_MANAGER" validate
 "$BENCH_DIR/env/bin/python" "$FIXTURE_MANAGER" plan
 "$BENCH_DIR/env/bin/python" "$FIXTURE_MANAGER" export \
@@ -121,9 +121,9 @@ fi
 
 DEMO_FIRST_LOG="$BENCH_DIR/logs/demo-seed-first.log"
 DEMO_SECOND_LOG="$BENCH_DIR/logs/demo-seed-second.log"
-bench --site "$DEMO_SITE_NAME" execute ione_hrp.setup.demo.setup_synthetic_demo \
+bench --site "$DEMO_SITE_NAME" execute medops.setup.demo.setup_synthetic_demo \
   | tee "$DEMO_FIRST_LOG"
-bench --site "$DEMO_SITE_NAME" execute ione_hrp.setup.demo.setup_synthetic_demo \
+bench --site "$DEMO_SITE_NAME" execute medops.setup.demo.setup_synthetic_demo \
   | tee "$DEMO_SECOND_LOG"
 tail -n 1 "$DEMO_SECOND_LOG" | grep -F '"changed": false'
 
@@ -213,7 +213,7 @@ for site_name in sys.argv[2:]:
 		raise SystemExit(f"Fresh CI site {site_name} contains Error Log records")
 PY
 
-for app in frappe erpnext hrms ione_hrp; do
+for app in frappe erpnext hrms medops; do
   if [[ -n "$(git -C "$BENCH_DIR/apps/$app" status --porcelain)" ]]; then
     echo "CI validation changed the $app worktree" >&2
     git -C "$BENCH_DIR/apps/$app" status --short >&2

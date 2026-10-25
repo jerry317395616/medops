@@ -1,0 +1,81 @@
+from medops.common.fixture_policy import get_frappe_fixture_hooks
+
+app_name = "medops"
+app_title = "医衡 MedOps"
+app_publisher = "美妍伊人医疗科技有限公司"
+app_description = "基于 Frappe 生态的医院资源规划平台"
+app_email = "317395616@qq.com"
+app_license = "License Review Required"
+source_link = "https://github.com/jerry317395616/medops"
+
+required_apps = ["jerry317395616/erpnext", "jerry317395616/hrms"]
+
+app_logo_url = "/assets/medops/images/medops-logo.svg"
+app_home = "/desk/hrp"
+add_to_apps_screen = [
+	{
+		"name": app_name,
+		"logo": app_logo_url,
+		"title": app_title,
+		"route": app_home,
+		"has_permission": "medops.permissions.check_app_permission",
+		"sequence_id": 3,
+	}
+]
+
+before_install = "medops.setup.install.before_install"
+after_install = "medops.setup.install.after_install"
+after_migrate = "medops.setup.install.after_migrate"
+before_uninstall = "medops.setup.install.before_uninstall"
+
+before_request = ["medops.services.audit_context.start_http_audit_context"]
+after_request = ["medops.services.audit_context.finish_http_audit_context"]
+before_job = ["medops.services.audit_context.start_job_audit_context"]
+after_job = ["medops.services.audit_context.finish_job_audit_context"]
+
+# Add standard DocType extensions here. Prefer extend_doctype_class over overrides.
+extend_doctype_class = {}
+doc_events = {}
+
+permission_query_conditions = {
+	"HRP Approval Matrix": "medops.hrp_workflow_authorization.permissions.approval_matrix_query",
+	"HRP Delegation": "medops.hrp_workflow_authorization.permissions.delegation_query",
+	"HRP Hospital": "medops.hrp_workflow_authorization.permissions.hospital_query",
+	"HRP Organization Mapping": "medops.hrp_workflow_authorization.permissions.organization_mapping_query",
+	"HRP Organization Unit": "medops.hrp_workflow_authorization.permissions.organization_unit_query",
+	"HRP Organization Version": "medops.hrp_workflow_authorization.permissions.organization_version_query",
+	"HRP Data Quality Issue": "medops.hrp_master_data.permissions.data_quality_query",
+	"HRP Data Quality Rule": "medops.hrp_master_data.permissions.data_quality_query",
+	"HRP External Code Mapping": "medops.hrp_master_data.permissions.external_code_mapping_query",
+	"HRP Master Data Request": "medops.hrp_master_data.permissions.master_data_request_query",
+	"HRP Number Reservation": "medops.hrp_foundation.permissions.number_reservation_query",
+	"HRP Numbering Scheme": "medops.hrp_foundation.permissions.numbering_scheme_query",
+}
+has_permission = {
+	"HRP Approval Matrix": "medops.hrp_workflow_authorization.permissions.can_read_approval_matrix",
+	"HRP Delegation": "medops.hrp_workflow_authorization.permissions.can_read_delegation",
+	"HRP Hospital": "medops.hrp_workflow_authorization.permissions.has_scoped_permission",
+	"HRP Organization Mapping": "medops.hrp_workflow_authorization.permissions.has_scoped_permission",
+	"HRP Organization Unit": "medops.hrp_workflow_authorization.permissions.has_scoped_permission",
+	"HRP Organization Version": "medops.hrp_workflow_authorization.permissions.has_scoped_permission",
+	"HRP Data Quality Issue": "medops.hrp_master_data.permissions.can_read_data_quality",
+	"HRP Data Quality Rule": "medops.hrp_master_data.permissions.can_read_data_quality",
+	"HRP External Code Mapping": "medops.hrp_master_data.permissions.can_read_external_code_mapping",
+	"HRP Master Data Request": "medops.hrp_master_data.permissions.can_read_master_data_request",
+	"HRP Number Reservation": "medops.hrp_foundation.permissions.can_read_number_reservation",
+	"HRP Numbering Scheme": "medops.hrp_foundation.permissions.can_read_numbering_scheme",
+}
+
+scheduler_events = {
+	"daily": [
+		"medops.hrp_master_data.services.data_quality.run_data_quality_rules",
+		"medops.hrp_workflow_authorization.services.delegation.sync_delegation_statuses",
+		"medops.setup.maintenance.daily_maintenance",
+	],
+}
+
+fixture_auto_order = True
+fixtures = get_frappe_fixture_hooks()
+
+export_python_type_annotations = True
+require_type_annotated_api_methods = True

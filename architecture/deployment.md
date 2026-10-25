@@ -18,15 +18,15 @@ development、test、demo 非生产基线见 `architecture/environments.md`；�
 2. 每个锁定 SHA 必须来自对应官方仓库的 `develop`，不能使用本地 snapshot
    commit、浮动分支头或未经审计的 fork 提交。
 3. Press App Source 可以指向公司 fork，但用于发布的分支必须精确包含锁定的
-   官方 commit；自研修改必须留在 `ione_hrp`，不得叠加到三个上游仓库。
+   官方 commit；自研修改必须留在 `medops`，不得叠加到三个上游仓库。
 4. 新组合先在隔离 Bench 完成 `bench new-site`、三个上游 App 安装、
-   `ione_hrp` 安装、`migrate` 和应用测试。
+   `medops` 安装、`migrate` 和应用测试。
 5. 生产更新前执行完整数据库与文件备份，创建新的 Deploy Candidate，并先
    检查候选中三个 App 的 hash 与锁文件一致。
 6. 站点切换成功并完成健康检查后，才能设置：
 
    ```bash
-   bench --site <site> set-config ione_hrp_enforce_upstream_lock 1
+   bench --site <site> set-config medops_enforce_upstream_lock 1
    ```
 
    当前运行提交未对齐时不得提前启用，否则 `after_migrate` 会阻止迁移。

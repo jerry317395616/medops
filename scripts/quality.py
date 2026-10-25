@@ -11,7 +11,7 @@ from pathlib import Path
 from typing import Protocol
 
 ROOT = Path(__file__).resolve().parents[1]
-PYTHON_TARGETS = ("ione_hrp", "scripts", "tests")
+PYTHON_TARGETS = ("medops", "scripts", "tests")
 
 
 class ProcessResult(Protocol):
@@ -85,7 +85,7 @@ def build_quality_steps(
 				"-m",
 				"bandit",
 				"-r",
-				"ione_hrp",
+				"medops",
 				"scripts",
 				"--severity-level",
 				"medium",
@@ -168,7 +168,7 @@ def run_quality(
 
 
 def main(argv: Sequence[str] | None = None) -> int:
-	parser = argparse.ArgumentParser(description="Run the pinned ione_hrp quality toolchain")
+	parser = argparse.ArgumentParser(description="Run the pinned medops quality toolchain")
 	parser.add_argument("--mode", choices=("all", "python", "node"), default="all")
 	args = parser.parse_args(argv)
 	try:

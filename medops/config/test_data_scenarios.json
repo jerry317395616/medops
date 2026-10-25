@@ -1,0 +1,27 @@
+{
+	"schema_version": 1,
+	"app": "medops",
+	"scenarios": [
+		{
+			"scenario_id": "platform-smoke",
+			"version": 1,
+			"label": "Platform smoke data",
+			"description": "Creates deterministic disabled markers for platform integration tests.",
+			"allowed_profiles": ["development", "test"],
+			"required_roles": ["System Manager", "HRP System Manager"],
+			"contains_personal_data": false,
+			"steps": [
+				{
+					"step_id": "foundation-marker",
+					"builder": "feature_flag_marker",
+					"depends_on": []
+				},
+				{
+					"step_id": "dependency-marker",
+					"builder": "feature_flag_marker",
+					"depends_on": ["foundation-marker"]
+				}
+			]
+		}
+	]
+}

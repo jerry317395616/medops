@@ -12,22 +12,22 @@ for app in frappe erpnext hrms; do
 done
 bash "$ROOT_DIR/scripts/lock_versions.sh" "$BENCH_DIR" "$LOCK_FILE"
 
-if [[ -e apps/ione_hrp ]]; then
-  echo "apps/ione_hrp already exists; refusing to overwrite" >&2
+if [[ -e apps/medops ]]; then
+  echo "apps/medops already exists; refusing to overwrite" >&2
   exit 1
 fi
-git clone --no-hardlinks "$ROOT_DIR" apps/ione_hrp
-./env/bin/python -m pip install -e apps/ione_hrp
+git clone --no-hardlinks "$ROOT_DIR" apps/medops
+./env/bin/python -m pip install -e apps/medops
 python3 - "$BENCH_DIR/sites/apps.txt" <<'PYAPPS'
 import sys
 from pathlib import Path
 
 path = Path(sys.argv[1])
 apps = [line.strip() for line in path.read_text(encoding="utf-8").splitlines() if line.strip()]
-if "ione_hrp" not in apps:
-    apps.append("ione_hrp")
+if "medops" not in apps:
+    apps.append("medops")
 path.write_text("\n".join(apps) + "\n", encoding="utf-8")
 PYAPPS
-bench --site "$SITE_NAME" install-app ione_hrp
+bench --site "$SITE_NAME" install-app medops
 bench --site "$SITE_NAME" migrate
-bench build --app ione_hrp
+bench build --app medops

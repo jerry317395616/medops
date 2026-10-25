@@ -13,7 +13,7 @@ from collections.abc import Mapping
 from pathlib import Path
 from urllib.parse import urlsplit
 
-from ione_hrp.common.performance_baseline import (
+from medops.common.performance_baseline import (
 	PerformanceBaselineContractError,
 	evaluate_performance_run,
 	load_performance_baseline_registry,
@@ -164,9 +164,9 @@ def execute(args: argparse.Namespace) -> int:
 		raise ValueError(f"k6 {registry.policy.k6_version} is required")
 	output_path = normalize_output_path(args.output)
 	output_path.parent.mkdir(parents=True, exist_ok=True)
-	script_path = PROJECT_ROOT / "ione_hrp" / "load_tests" / "performance_baseline.js"
+	script_path = PROJECT_ROOT / "medops" / "load_tests" / "performance_baseline.js"
 	run_id = f"perf-{uuid.uuid4().hex[:24]}"
-	with tempfile.TemporaryDirectory(prefix="ione-hrp-performance-") as temp:
+	with tempfile.TemporaryDirectory(prefix="medops-performance-") as temp:
 		raw_summary_path = Path(temp) / "k6-summary.json"
 		child_environment = build_child_environment(
 			os.environ,
@@ -207,7 +207,7 @@ def execute(args: argparse.Namespace) -> int:
 
 def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
 	parser = argparse.ArgumentParser(
-		description="Run the governed I-ONE HRP non-production k6 performance baseline."
+		description="Run the governed MedOps non-production k6 performance baseline."
 	)
 	parser.add_argument("--base-url", required=True)
 	parser.add_argument("--scenario", default="platform-module-registry-read")

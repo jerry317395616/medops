@@ -7,7 +7,7 @@ import unittest
 from pathlib import Path
 from typing import Any, cast
 
-from ione_hrp.common.test_data_factory import (
+from medops.common.test_data_factory import (
 	TEST_DATA_SCENARIOS_PATH,
 	TestDataFactoryContractError,
 	load_test_data_scenario_registry,
@@ -27,7 +27,7 @@ class TestTestDataFactoryContract(unittest.TestCase):
 		second = load_test_data_scenario_registry()
 		self.assertEqual(first.sha256, second.sha256)
 		self.assertEqual(first.schema_version, 1)
-		self.assertEqual(first.app, "ione_hrp")
+		self.assertEqual(first.app, "medops")
 		self.assertEqual(len(first.scenarios), 1)
 		scenario = first.get("platform-smoke")
 		self.assertEqual(

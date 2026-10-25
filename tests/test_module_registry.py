@@ -6,7 +6,7 @@ import unittest
 from pathlib import Path
 from typing import Any
 
-from ione_hrp.services.module_registry import (
+from medops.services.module_registry import (
 	ModuleRegistry,
 	ModuleRegistryError,
 	load_module_registry,
@@ -42,11 +42,11 @@ class ModuleRegistryTest(unittest.TestCase):
 		with tempfile.TemporaryDirectory() as temp:
 			root = Path(temp)
 			(root / "architecture").mkdir()
-			(root / "ione_hrp" / "hrp_unregistered").mkdir(parents=True)
+			(root / "medops" / "hrp_unregistered").mkdir(parents=True)
 			source_registry = ROOT / "architecture" / "module_registry.yaml"
-			source_modules = ROOT / "ione_hrp" / "modules.txt"
+			source_modules = ROOT / "medops" / "modules.txt"
 			(root / "architecture" / "module_registry.yaml").write_bytes(source_registry.read_bytes())
-			(root / "ione_hrp" / "modules.txt").write_bytes(source_modules.read_bytes())
+			(root / "medops" / "modules.txt").write_bytes(source_modules.read_bytes())
 			violations = validate_module_source_tree(root, expected_module_count=36)
 			self.assertIn("unregistered module package: hrp_unregistered", violations)
 

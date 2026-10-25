@@ -185,13 +185,13 @@ class CIPipelineTest(unittest.TestCase):
 			copy_ci_files(root)
 			workflow_path = root / ".github" / "workflows" / "ci.yml"
 			workflow = workflow_path.read_text(encoding="utf-8").replace(
-				"ione_hrp/load_tests/performance_baseline.js",
+				"medops/load_tests/performance_baseline.js",
 				"performance-script-inspection-removed",
 				1,
 			)
 			workflow_path.write_text(workflow, encoding="utf-8")
 			self.assertIn(
-				"CI quality job is missing command: ione_hrp/load_tests/performance_baseline.js",
+				"CI quality job is missing command: medops/load_tests/performance_baseline.js",
 				validate_ci_pipeline(root),
 			)
 

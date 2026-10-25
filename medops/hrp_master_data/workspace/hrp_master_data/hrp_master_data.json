@@ -1,0 +1,134 @@
+{
+	"app": "medops",
+	"charts": [],
+	"content": "[{\"id\":\"master-data-header\",\"type\":\"header\",\"data\":{\"text\":\"主数据中心\",\"col\":12}},{\"id\":\"domain-shortcut\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"主数据域\",\"col\":4}},{\"id\":\"request-shortcut\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"变更申请\",\"col\":4}},{\"id\":\"external-code-shortcut\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"外部编码映射\",\"col\":4}},{\"id\":\"quality-rule-shortcut\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"质量规则\",\"col\":4}},{\"id\":\"quality-issue-shortcut\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"质量问题\",\"col\":4}}]",
+	"creation": "2026-07-30 00:00:00.000000",
+	"custom_blocks": [],
+	"docstatus": 0,
+	"doctype": "Workspace",
+	"for_user": "",
+	"hide_custom": 0,
+	"icon": "database",
+	"idx": 0,
+	"is_hidden": 0,
+	"label": "主数据中心",
+	"links": [
+		{
+			"hidden": 0,
+			"is_query_report": 0,
+			"label": "主数据治理",
+			"link_count": 0,
+			"onboard": 0,
+			"type": "Card Break"
+		},
+		{
+			"dependencies": "",
+			"hidden": 0,
+			"is_query_report": 0,
+			"label": "主数据域",
+			"link_count": 0,
+			"link_to": "HRP Master Data Domain",
+			"link_type": "DocType",
+			"onboard": 1,
+			"type": "Link"
+		},
+		{
+			"dependencies": "",
+			"hidden": 0,
+			"is_query_report": 0,
+			"label": "变更申请",
+			"link_count": 0,
+			"link_to": "HRP Master Data Request",
+			"link_type": "DocType",
+			"onboard": 1,
+			"type": "Link"
+		},
+		{
+			"dependencies": "",
+			"hidden": 0,
+			"is_query_report": 0,
+			"label": "外部编码映射",
+			"link_count": 0,
+			"link_to": "HRP External Code Mapping",
+			"link_type": "DocType",
+			"onboard": 1,
+			"type": "Link"
+		},
+		{
+			"dependencies": "",
+			"hidden": 0,
+			"is_query_report": 0,
+			"label": "质量规则",
+			"link_count": 0,
+			"link_to": "HRP Data Quality Rule",
+			"link_type": "DocType",
+			"onboard": 1,
+			"type": "Link"
+		},
+		{
+			"dependencies": "",
+			"hidden": 0,
+			"is_query_report": 0,
+			"label": "质量问题",
+			"link_count": 0,
+			"link_to": "HRP Data Quality Issue",
+			"link_type": "DocType",
+			"onboard": 1,
+			"type": "Link"
+		}
+	],
+	"modified": "2026-07-30 00:00:00.000000",
+	"modified_by": "Administrator",
+	"module": "HRP Master Data",
+	"name": "HRP Master Data",
+	"number_cards": [],
+	"owner": "Administrator",
+	"parent_page": "HRP",
+	"public": 1,
+	"quick_lists": [],
+	"restrict_to_domain": "",
+	"roles": [
+		{
+			"role": "System Manager"
+		},
+		{
+			"role": "HRP System Manager"
+		},
+		{
+			"role": "HRP Data Steward"
+		},
+		{
+			"role": "HRP User"
+		}
+	],
+	"sequence_id": 5.0,
+	"shortcuts": [
+		{
+			"label": "主数据域",
+			"link_to": "HRP Master Data Domain",
+			"type": "DocType"
+		},
+		{
+			"label": "变更申请",
+			"link_to": "HRP Master Data Request",
+			"type": "DocType"
+		},
+		{
+			"label": "外部编码映射",
+			"link_to": "HRP External Code Mapping",
+			"type": "DocType"
+		},
+		{
+			"label": "质量规则",
+			"link_to": "HRP Data Quality Rule",
+			"type": "DocType"
+		},
+		{
+			"label": "质量问题",
+			"link_to": "HRP Data Quality Issue",
+			"type": "DocType"
+		}
+	],
+	"title": "主数据中心",
+	"type": "Workspace"
+}

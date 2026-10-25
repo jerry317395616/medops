@@ -1,0 +1,102 @@
+{
+	"schema_version": 1,
+	"app": "medops",
+	"task_id_pattern": "^COD-[0-9]{3}$",
+	"adr_id_pattern": "^ADR-[0-9]{4}$",
+	"baseline_task_id": "COD-008",
+	"task_registry": "backlog/backlog.csv",
+	"task_document_directory": "backlog",
+	"change_record_directory": "changes",
+	"adr_directory": "architecture/adr",
+	"allowed_adr_statuses": ["Proposed", "Accepted", "Rejected", "Superseded"],
+	"allowed_adr_transitions": {
+		"Proposed": ["Accepted", "Rejected"],
+		"Accepted": ["Superseded"],
+		"Rejected": [],
+		"Superseded": []
+	},
+	"allowed_change_statuses": ["Planned", "In Progress", "Implemented", "Rolled Back"],
+	"allowed_risk_levels": ["low", "medium", "high", "critical"],
+	"allowed_change_types": [
+		"application",
+		"architecture",
+		"configuration",
+		"data",
+		"dependency",
+		"documentation",
+		"governance",
+		"security"
+	],
+	"required_adr_sections": [
+		"背景与问题",
+		"决策驱动因素",
+		"备选方案",
+		"决策",
+		"后果",
+		"验证与退出条件",
+		"迁移与回滚",
+		"安全与合规"
+	],
+	"risk_rules": [
+		{
+			"id": "application-boundary",
+			"path_globs": [
+				"pyproject.toml",
+				"medops/hooks.py",
+				"medops/modules.txt",
+				"architecture/module_registry.yaml",
+				"architecture/single_app_architecture.md",
+				"resolved_versions.lock.json",
+				"architecture/version_baseline.json"
+			],
+			"minimum_risk": "critical",
+			"requires_accepted_adr": true,
+			"description": "单应用边界、模块注册与锁定上游基线。"
+		},
+		{
+			"id": "governance-control",
+			"path_globs": [
+				"architecture/adr/**",
+				"architecture/ADR_TEMPLATE.md",
+				"architecture/change_governance.md",
+				"medops/config/change_governance.json",
+				"changes/**",
+				"scripts/change_manager.py",
+				".github/pull_request_template.md",
+				".github/workflows/**"
+			],
+			"minimum_risk": "high",
+			"requires_accepted_adr": true,
+			"description": "ADR、变更策略、评审证据与自动化门禁。"
+		},
+		{
+			"id": "security-control",
+			"path_globs": [".github/branch-protection.json", "medops/permissions.py", "medops/**/permissions.py"],
+			"minimum_risk": "critical",
+			"requires_accepted_adr": true,
+			"description": "分支保护与运行时权限边界。"
+		},
+		{
+			"id": "schema-or-migration",
+			"path_globs": [
+				"medops/**/doctype/**",
+				"medops/patches/**",
+				"medops/patches.txt",
+				"medops/fixtures/**",
+				"doctype_blueprints/**",
+				"design/doctype_catalog.csv",
+				"design/field_catalog.csv"
+			],
+			"minimum_risk": "high",
+			"requires_accepted_adr": false,
+			"description": "DocType、Patch、Fixture 与设计目录变更；破坏性变更仍强制 ADR。"
+		},
+		{
+			"id": "service-or-api",
+			"path_globs": ["medops/services/**", "medops/api/**", "api/**"],
+			"minimum_risk": "medium",
+			"requires_accepted_adr": false,
+			"description": "公开服务与 API 契约变更。"
+		}
+	]
+}

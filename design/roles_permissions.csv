@@ -1,145 +1,145 @@
 role,role_cn,app,access,data_scope,can_export,can_submit,can_cancel,remarks,domain_group
-HRP System Manager,系统管理员,ione_hrp,Admin,All,1,0,0,配置、角色、权限和版本管理；不参与业务审批。,Core
-HRP System Manager,系统管理员,ione_hrp,Admin,All,1,0,0,配置、角色、权限和版本管理；不参与业务审批。,Finance
-HRP System Manager,系统管理员,ione_hrp,Admin,All,1,0,0,配置、角色、权限和版本管理；不参与业务审批。,Supply
-HRP System Manager,系统管理员,ione_hrp,Admin,All,1,0,0,配置、角色、权限和版本管理；不参与业务审批。,Asset
-HRP System Manager,系统管理员,ione_hrp,Admin,All,1,0,0,配置、角色、权限和版本管理；不参与业务审批。,People
-HRP System Manager,系统管理员,ione_hrp,Admin,All,1,0,0,配置、角色、权限和版本管理；不参与业务审批。,Project
-HRP System Manager,系统管理员,ione_hrp,Admin,All,1,0,0,配置、角色、权限和版本管理；不参与业务审批。,Governance
-HRP System Manager,系统管理员,ione_hrp,Admin,All,1,0,0,配置、角色、权限和版本管理；不参与业务审批。,Platform
-HRP System Manager,系统管理员,ione_hrp,Admin,All,1,0,0,配置、角色、权限和版本管理；不参与业务审批。,Portal
-HRP Security Administrator,安全管理员,ione_hrp,Admin,All,1,0,0,账号、认证、密钥与安全审计；与系统开发职责分离。,Core
-HRP Security Administrator,安全管理员,ione_hrp,Read,All,0,0,0,账号、认证、密钥与安全审计；与系统开发职责分离。,Finance
-HRP Security Administrator,安全管理员,ione_hrp,Read,All,0,0,0,账号、认证、密钥与安全审计；与系统开发职责分离。,Supply
-HRP Security Administrator,安全管理员,ione_hrp,Read,All,0,0,0,账号、认证、密钥与安全审计；与系统开发职责分离。,Asset
-HRP Security Administrator,安全管理员,ione_hrp,Read,All,0,0,0,账号、认证、密钥与安全审计；与系统开发职责分离。,People
-HRP Security Administrator,安全管理员,ione_hrp,Read,All,0,0,0,账号、认证、密钥与安全审计；与系统开发职责分离。,Project
-HRP Security Administrator,安全管理员,ione_hrp,Read,All,0,0,0,账号、认证、密钥与安全审计；与系统开发职责分离。,Governance
-HRP Security Administrator,安全管理员,ione_hrp,Read,All,0,0,0,账号、认证、密钥与安全审计；与系统开发职责分离。,Platform
-HRP Security Administrator,安全管理员,ione_hrp,Read,All,0,0,0,账号、认证、密钥与安全审计；与系统开发职责分离。,Portal
-HRP Data Steward,数据责任人,ione_hrp,Operate Scoped,Assigned Domains,0,1,0,主数据申请、质量问题和编码映射。,Core
-HRP Applicant,申请人,ione_hrp,Create/Read Own,Own Department,0,0,0,发起本部门业务申请并查看进度。,Core
-HRP Applicant,申请人,ione_hrp,Create/Read Own,Own Department,0,0,0,发起本部门业务申请并查看进度。,Finance
-HRP Applicant,申请人,ione_hrp,Create/Read Own,Own Department,0,0,0,发起本部门业务申请并查看进度。,Supply
-HRP Applicant,申请人,ione_hrp,Create/Read Own,Own Department,0,0,0,发起本部门业务申请并查看进度。,Asset
-HRP Applicant,申请人,ione_hrp,Create/Read Own,Own Department,0,0,0,发起本部门业务申请并查看进度。,People
-HRP Applicant,申请人,ione_hrp,Create/Read Own,Own Department,0,0,0,发起本部门业务申请并查看进度。,Project
-HRP Applicant,申请人,ione_hrp,Read Own,Own Department,0,0,0,发起本部门业务申请并查看进度。,Governance
-HRP Applicant,申请人,ione_hrp,Read Own,Own Department,0,0,0,发起本部门业务申请并查看进度。,Platform
-HRP Applicant,申请人,ione_hrp,Create/Read Own,Own Department,0,0,0,发起本部门业务申请并查看进度。,Portal
-HRP Department Manager,科室负责人,ione_hrp,Operate Scoped,Managed Department,1,1,0,科室预算、采购、报账和绩效初审。,Core
-HRP Budget User,预算经办,ione_hrp,Operate/Approve,Assigned Organization,0,1,1,预算编制、查询和执行跟踪。,Finance
-HRP Budget Manager,预算管理员,ione_hrp,Operate/Approve,Company/Hospital,1,1,1,预算版本、控制策略、下达和调整。,Finance
-HRP Finance User,财务经办,ione_hrp,Operate/Approve,Company,0,1,1,凭证桥接、应付、对账和财务查询。,Finance
-HRP Finance Reviewer,财务复核,ione_hrp,Operate/Approve,Company,0,1,1,费用与会计规则复核；不可独立付款。,Finance
-HRP CFO,总会计师/财务负责人,ione_hrp,Operate/Approve,Company,0,1,1,高金额预算、资金和付款审批。,Finance
-HRP Treasury Reviewer,资金复核,ione_hrp,Operate/Approve,Bank Account Scope,0,1,1,付款指令复核和银行回执处理。,Finance
-HRP Treasury Manager,资金管理员,ione_hrp,Operate/Approve,Bank Account Scope,1,1,1,付款批次、账户和现金计划。,Finance
-HRP Cost Manager,成本管理员,ione_hrp,Operate/Approve,Hospital,1,1,1,成本方案、核算运行和结果发布。,Finance
-HRP Supplier Manager,供应商管理员,ione_hrp,Operate/Approve,Company,1,1,1,供应商准入、证照、评价和风险。,Supply
-HRP Procurement User,采购经办,ione_hrp,Operate/Approve,Procurement Category,0,1,1,采购需求、询价和订单执行。,Supply
-HRP Procurement Reviewer,采购复核,ione_hrp,Operate/Approve,Procurement Category,0,1,1,采购合规、价格和方式复核。,Supply
-HRP Procurement Manager,采购负责人,ione_hrp,Operate/Approve,Company,1,1,1,采购计划、策略和定标执行。,Supply
-HRP Tender Manager,招标管理员,ione_hrp,Operate/Approve,Tender Project,1,1,1,招标项目、专家和评标过程。,Supply
-HRP Evaluation Expert,评审专家,ione_hrp,Operate/Approve,Assigned Tender,0,1,1,仅访问被分配标包并独立评分。,Supply
-HRP Contract User,合同经办,ione_hrp,Operate/Approve,Own Contracts,0,1,1,合同起草、义务和履约证据。,Supply
-HRP Contract Reviewer,合同审核,ione_hrp,Operate/Approve,Company,0,1,1,法务、财务或业务专业审核。,Supply
-HRP Supply Manager,供应链负责人,ione_hrp,Operate/Approve,Warehouse Scope,1,1,1,库存、SPD、寄售和召回。,Supply
-HRP Warehouse User,仓库经办,ione_hrp,Operate/Approve,Warehouse Scope,0,1,1,收发存、盘点和验收。,Supply
-HRP Asset Manager,资产管理员,ione_hrp,Operate/Approve,Asset Scope,1,1,1,资产建卡、调拨、盘点和处置。,Asset
-HRP Equipment Manager,设备管理员,ione_hrp,Operate/Approve,Equipment Scope,1,1,1,设备档案、维保、计量和质控。,Asset
-HRP Equipment Engineer,设备工程师,ione_hrp,Operate/Approve,Assigned Orders,0,1,1,执行维护工单和备件记录。,Asset
-HRP HR User,人事经办,ione_hrp,Operate/Approve,Employee Scope,0,1,1,人事、资质、排班和考勤业务。,People
-HRP Medical Affairs Manager,医务负责人,ione_hrp,Operate/Approve,Hospital,1,1,1,医疗人员资质和临床权限审批。,People
-HRP Performance Manager,绩效管理员,ione_hrp,Operate/Approve,Performance Unit,1,1,1,指标、核算、奖金和公示。,People
-HRP HR Director,人力负责人,ione_hrp,Operate/Approve,Hospital,0,1,1,人力计划、绩效和薪酬发布审批。,People
-HRP Project User,项目经办,ione_hrp,Operate/Approve,Own Projects,0,1,1,项目申报、进度和成果。,Project
-HRP Project Office,项目管理办公室,ione_hrp,Operate/Approve,Project Portfolio,0,1,1,项目阶段门、变更、验收和结题。,Project
-HRP Research Manager,科研管理员,ione_hrp,Operate/Approve,Research Portfolio,1,1,1,科研项目、经费和成果。,Project
-HRP Research Director,科研负责人,ione_hrp,Operate/Approve,Hospital,0,1,1,科研立项和结题审批。,Project
-HRP Internal Control Manager,内控管理员,ione_hrp,Operate/Approve,Company,1,1,1,控制矩阵、测试和缺陷。,Governance
-HRP Risk Manager,风险管理员,ione_hrp,Operate/Approve,Company,1,1,1,风险登记、评估和应对。,Governance
-HRP Internal Auditor,内部审计,ione_hrp,Operate/Approve,Audit Project,0,1,1,审计项目、样本、底稿和发现。,Governance
-HRP Chief Audit Executive,审计负责人,ione_hrp,Operate/Approve,Company,0,1,1,审计计划、报告和整改关闭。,Governance
-HRP Compliance Officer,合规管理员,ione_hrp,Operate/Approve,Company,0,1,1,监管义务、制度和合规事件。,Governance
-HRP Integration Operator,集成运维,ione_hrp,Operate,Interfaces,0,1,0,接口监控、重试与对账。,Platform
-HRP Data Analyst,数据分析师,ione_hrp,Operate,Authorized Datasets,1,1,0,报表、指标和数据集访问。,Platform
-HRP AI User,AI业务用户,ione_hrp,Operate,Own Scope,0,1,0,使用受控AI助手，不获得额外业务权限。,Platform
-HRP Portal Manager,门户管理员,ione_hrp,Read Own,Portal,1,0,0,门户菜单、公告和服务表单。,Core
-HRP Portal Manager,门户管理员,ione_hrp,Read Own,Portal,1,0,0,门户菜单、公告和服务表单。,Finance
-HRP Portal Manager,门户管理员,ione_hrp,Read Own,Portal,1,0,0,门户菜单、公告和服务表单。,Supply
-HRP Portal Manager,门户管理员,ione_hrp,Read Own,Portal,1,0,0,门户菜单、公告和服务表单。,Asset
-HRP Portal Manager,门户管理员,ione_hrp,Read Own,Portal,1,0,0,门户菜单、公告和服务表单。,People
-HRP Portal Manager,门户管理员,ione_hrp,Read Own,Portal,1,0,0,门户菜单、公告和服务表单。,Project
-HRP Portal Manager,门户管理员,ione_hrp,Read Own,Portal,1,0,0,门户菜单、公告和服务表单。,Governance
-HRP Portal Manager,门户管理员,ione_hrp,Read Own,Portal,1,0,0,门户菜单、公告和服务表单。,Platform
-HRP Portal Manager,门户管理员,ione_hrp,Operate Own,Portal,1,1,0,门户菜单、公告和服务表单。,Portal
-Supplier Portal User,供应商门户用户,ione_hrp,Read Own,Own Supplier,0,0,0,仅访问本供应商注册、投标、订单和对账。,Core
-Supplier Portal User,供应商门户用户,ione_hrp,Read Own,Own Supplier,0,0,0,仅访问本供应商注册、投标、订单和对账。,Finance
-Supplier Portal User,供应商门户用户,ione_hrp,Operate/Approve,Own Supplier,0,1,1,仅访问本供应商注册、投标、订单和对账。,Supply
-Supplier Portal User,供应商门户用户,ione_hrp,Read Own,Own Supplier,0,0,0,仅访问本供应商注册、投标、订单和对账。,Asset
-Supplier Portal User,供应商门户用户,ione_hrp,Read Own,Own Supplier,0,0,0,仅访问本供应商注册、投标、订单和对账。,People
-Supplier Portal User,供应商门户用户,ione_hrp,Read Own,Own Supplier,0,0,0,仅访问本供应商注册、投标、订单和对账。,Project
-Supplier Portal User,供应商门户用户,ione_hrp,Read Own,Own Supplier,0,0,0,仅访问本供应商注册、投标、订单和对账。,Governance
-Supplier Portal User,供应商门户用户,ione_hrp,Read Own,Own Supplier,0,0,0,仅访问本供应商注册、投标、订单和对账。,Platform
-Supplier Portal User,供应商门户用户,ione_hrp,Operate Own,Own Supplier,0,1,0,仅访问本供应商注册、投标、订单和对账。,Portal
-HRP Integration User,集成用户,ione_hrp,Operate,Interfaces,0,1,0,标准接口查询、编码映射和受控写入。,Platform
-HRP Integration Publisher,事件发布用户,ione_hrp,Operate,Interfaces,0,1,0,仅允许向Outbox发布已授权领域事件。,Platform
-Integration Client,外部集成客户端,ione_hrp,Operate,Assigned Interfaces,0,1,0,OAuth/签名客户端角色；仅访问被分配接口。,Platform
-HRP Bank Integration,银行集成客户端,ione_hrp,Operate,Bank Interfaces,0,1,0,银行付款回执、流水和余额接口专用角色。,Platform
-HRP Attendance Integration,考勤集成客户端,ione_hrp,Operate,Attendance Interfaces,0,1,0,门禁、考勤机和移动考勤数据接入。,Platform
-HRP Performance Integration,绩效集成客户端,ione_hrp,Operate/Approve,Performance Interfaces,0,1,1,工作量、质量和薪资发布接口专用角色。,People
-HRP Performance Integration,绩效集成客户端,ione_hrp,Operate,Performance Interfaces,0,1,0,工作量、质量和薪资发布接口专用角色。,Platform
-HRP SPD Integration,SPD集成客户端,ione_hrp,Operate,SPD Interfaces,0,1,0,智能柜、耗材和UDI设备接口专用角色。,Platform
-HRP Supplier Integration,供应商集成客户端,ione_hrp,Operate/Approve,Supplier Interfaces,0,1,1,供应商、订单、发货和对账接口专用角色。,Supply
-HRP Supplier Integration,供应商集成客户端,ione_hrp,Operate,Supplier Interfaces,0,1,0,供应商、订单、发货和对账接口专用角色。,Platform
-HRP Portal User,门户用户,ione_hrp,Read Own,Own Scope,0,0,0,统一门户、移动申请和本人业务查询。,Core
-HRP Portal User,门户用户,ione_hrp,Read Own,Own Scope,0,0,0,统一门户、移动申请和本人业务查询。,Finance
-HRP Portal User,门户用户,ione_hrp,Read Own,Own Scope,0,0,0,统一门户、移动申请和本人业务查询。,Supply
-HRP Portal User,门户用户,ione_hrp,Read Own,Own Scope,0,0,0,统一门户、移动申请和本人业务查询。,Asset
-HRP Portal User,门户用户,ione_hrp,Read Own,Own Scope,0,0,0,统一门户、移动申请和本人业务查询。,People
-HRP Portal User,门户用户,ione_hrp,Read Own,Own Scope,0,0,0,统一门户、移动申请和本人业务查询。,Project
-HRP Portal User,门户用户,ione_hrp,Read Own,Own Scope,0,0,0,统一门户、移动申请和本人业务查询。,Governance
-HRP Portal User,门户用户,ione_hrp,Read Own,Own Scope,0,0,0,统一门户、移动申请和本人业务查询。,Platform
-HRP Portal User,门户用户,ione_hrp,Operate Own,Own Scope,0,1,0,统一门户、移动申请和本人业务查询。,Portal
-HRP Finance Manager,财务负责人,ione_hrp,Operate/Approve,Company,1,1,1,会计规则、凭证、业财对账和财务发布。,Finance
-HRP Asset User,资产经办,ione_hrp,Operate/Approve,Asset Scope,0,1,1,资产购置、验收、保管、调拨和盘点经办。,Asset
-HRP Asset Reviewer,资产复核,ione_hrp,Operate/Approve,Asset Scope,0,1,1,资产购置、验收和处置专业复核。,Asset
-HRP Equipment User,设备经办,ione_hrp,Operate/Approve,Equipment Scope,0,1,1,设备档案、维保、计量和质控业务经办。,Asset
-HRP Equipment Reviewer,设备复核,ione_hrp,Operate/Approve,Equipment Scope,0,1,1,设备维护、计量和质控专业复核。,Asset
-HRP Supply Reviewer,供应链复核,ione_hrp,Operate/Approve,Warehouse Scope,0,1,1,耗材使用、寄售、召回和库存异常复核。,Supply
-HRP Performance Reviewer,绩效复核,ione_hrp,Operate/Approve,Performance Unit,0,1,1,指标、得分、奖金和人工调整复核。,People
-HRP Research User,科研经办,ione_hrp,Operate/Approve,Own Research Projects,0,1,1,科研项目、经费、成果和结题经办。,Project
-HRP Research Reviewer,科研复核,ione_hrp,Operate/Approve,Research Portfolio,0,1,1,科研立项、经费和成果专业复核。,Project
-HRP Internal Control Tester,内控测试人员,ione_hrp,Operate/Approve,Assigned Controls,0,1,1,执行控制测试、采集证据和登记缺陷。,Governance
-HRP Auditor,审计用户,ione_hrp,Operate/Approve,Audit Project,0,1,1,审计计划、底稿、证据、发现和整改跟踪。,Governance
-HRP Hospital Executive,医院运营决策负责人,ione_hrp,Read Scoped,Hospital/Company,1,0,0,院级重大预算、采购、合同、资产和运营事项审批。,Core
-HRP Hospital Executive,医院运营决策负责人,ione_hrp,Approve/Read,Hospital/Company,1,1,1,院级重大预算、采购、合同、资产和运营事项审批。,Finance
-HRP Hospital Executive,医院运营决策负责人,ione_hrp,Approve/Read,Hospital/Company,1,1,1,院级重大预算、采购、合同、资产和运营事项审批。,Supply
-HRP Hospital Executive,医院运营决策负责人,ione_hrp,Approve/Read,Hospital/Company,1,1,1,院级重大预算、采购、合同、资产和运营事项审批。,Asset
-HRP Hospital Executive,医院运营决策负责人,ione_hrp,Read Scoped,Hospital/Company,1,0,0,院级重大预算、采购、合同、资产和运营事项审批。,People
-HRP Hospital Executive,医院运营决策负责人,ione_hrp,Approve/Read,Hospital/Company,1,1,1,院级重大预算、采购、合同、资产和运营事项审批。,Project
-HRP Hospital Executive,医院运营决策负责人,ione_hrp,Read Scoped,Hospital/Company,1,0,0,院级重大预算、采购、合同、资产和运营事项审批。,Governance
-HRP Hospital Executive,医院运营决策负责人,ione_hrp,Read Dashboards,Hospital/Company,1,0,0,院级重大预算、采购、合同、资产和运营事项审批。,Platform
-HRP Hospital Executive,医院运营决策负责人,ione_hrp,Operate Own,Hospital/Company,0,1,0,院级重大预算、采购、合同、资产和运营事项审批。,Portal
-HRP System User,系统服务用户,ione_hrp,Operate Service,System Service,0,1,0,受控后台服务账号；仅调用已授权内部服务。,Core
-HRP Integration User,集成用户,ione_hrp,Read Mapping,Interfaces,1,0,0,标准接口查询、编码映射和受控写入。,Core
-HRP Data Operator,数据运维,ione_hrp,Operate Data,Authorized Datasets,0,1,0,数据管道、指标刷新和数据质量任务运维。,Platform
-HRP Reconciliation Operator,对账运维,ione_hrp,Operate Reconciliation,Interfaces,0,1,0,执行跨系统、银行和业务对账及差异闭环。,Finance
-HRP Reconciliation Operator,对账运维,ione_hrp,Operate Reconciliation,Interfaces,0,1,0,执行跨系统、银行和业务对账及差异闭环。,Platform
-Authenticated Clinical System,临床系统客户端,ione_hrp,Operate Clinical API,Clinical Interfaces,0,1,0,HIS/EMR/LIS/PACS等受信系统的最小接口角色。,Platform
-HRP Bank Integration,银行集成客户端,ione_hrp,Operate Bank Callback,Bank Interfaces,0,1,0,银行付款回执、流水和余额接口专用角色。,Finance
-HRP Attendance Integration,考勤集成客户端,ione_hrp,Operate Attendance Import,Attendance Interfaces,0,1,0,门禁、考勤机和移动考勤数据接入。,People
-HRP SPD Integration,SPD集成客户端,ione_hrp,Operate SPD Exchange,SPD Interfaces,0,1,0,智能柜、耗材和UDI设备接口专用角色。,Supply
-HRP Employee,员工自助用户,ione_hrp,Read/Operate Own,Own Employee,1,1,0,员工个人申请、查询和确认。,People
-HRP Employee,员工自助用户,ione_hrp,Operate Own,Own Employee,0,1,0,员工个人申请、查询和确认。,Portal
-HRP Service Desk,服务台经办,ione_hrp,Operate Service Orders,Assigned Services,0,1,0,接单、派单、协同和SLA处理。,Asset
-HRP Service Desk,服务台经办,ione_hrp,Operate Services,Assigned Services,0,1,0,接单、派单、协同和SLA处理。,Portal
-HRP Service Manager,服务管理负责人,ione_hrp,Approve Services,Service Catalog,0,1,1,服务目录、SLA和服务申请终审。,Asset
-HRP Service Manager,服务管理负责人,ione_hrp,Approve Services,Service Catalog,0,1,1,服务目录、SLA和服务申请终审。,Portal
-HRP Expense User,费用报账用户,ione_hrp,Operate Own Expense,Own Department,0,1,0,事前申请、借款、报销和个人往来。,Finance
-HRP Accounts Payable User,应付经办,ione_hrp,Operate Payables,Company,0,1,0,发票、应付、三单匹配和付款前处理。,Finance
-HRP Metrology User,计量质控用户,ione_hrp,Operate Metrology,Equipment Scope,0,1,0,设备计量、校准和质控记录。,Asset
-HRP Credential Reviewer,资质复核,ione_hrp,Review Credentials,Hospital,0,1,0,人员证照、执业范围和临床权限复核。,People
-HRP Roster Manager,排班管理员,ione_hrp,Manage Roster,Roster Units,1,1,1,科室排班规则、发布、调班和覆盖率管理。,People
-HRP Capital Manager,基建管理员,ione_hrp,Manage Capital,Capital Projects,1,1,1,基建概算、进度、工程变更和竣工决算。,Project
+HRP System Manager,系统管理员,medops,Admin,All,1,0,0,配置、角色、权限和版本管理；不参与业务审批。,Core
+HRP System Manager,系统管理员,medops,Admin,All,1,0,0,配置、角色、权限和版本管理；不参与业务审批。,Finance
+HRP System Manager,系统管理员,medops,Admin,All,1,0,0,配置、角色、权限和版本管理；不参与业务审批。,Supply
+HRP System Manager,系统管理员,medops,Admin,All,1,0,0,配置、角色、权限和版本管理；不参与业务审批。,Asset
+HRP System Manager,系统管理员,medops,Admin,All,1,0,0,配置、角色、权限和版本管理；不参与业务审批。,People
+HRP System Manager,系统管理员,medops,Admin,All,1,0,0,配置、角色、权限和版本管理；不参与业务审批。,Project
+HRP System Manager,系统管理员,medops,Admin,All,1,0,0,配置、角色、权限和版本管理；不参与业务审批。,Governance
+HRP System Manager,系统管理员,medops,Admin,All,1,0,0,配置、角色、权限和版本管理；不参与业务审批。,Platform
+HRP System Manager,系统管理员,medops,Admin,All,1,0,0,配置、角色、权限和版本管理；不参与业务审批。,Portal
+HRP Security Administrator,安全管理员,medops,Admin,All,1,0,0,账号、认证、密钥与安全审计；与系统开发职责分离。,Core
+HRP Security Administrator,安全管理员,medops,Read,All,0,0,0,账号、认证、密钥与安全审计；与系统开发职责分离。,Finance
+HRP Security Administrator,安全管理员,medops,Read,All,0,0,0,账号、认证、密钥与安全审计；与系统开发职责分离。,Supply
+HRP Security Administrator,安全管理员,medops,Read,All,0,0,0,账号、认证、密钥与安全审计；与系统开发职责分离。,Asset
+HRP Security Administrator,安全管理员,medops,Read,All,0,0,0,账号、认证、密钥与安全审计；与系统开发职责分离。,People
+HRP Security Administrator,安全管理员,medops,Read,All,0,0,0,账号、认证、密钥与安全审计；与系统开发职责分离。,Project
+HRP Security Administrator,安全管理员,medops,Read,All,0,0,0,账号、认证、密钥与安全审计；与系统开发职责分离。,Governance
+HRP Security Administrator,安全管理员,medops,Read,All,0,0,0,账号、认证、密钥与安全审计；与系统开发职责分离。,Platform
+HRP Security Administrator,安全管理员,medops,Read,All,0,0,0,账号、认证、密钥与安全审计；与系统开发职责分离。,Portal
+HRP Data Steward,数据责任人,medops,Operate Scoped,Assigned Domains,0,1,0,主数据申请、质量问题和编码映射。,Core
+HRP Applicant,申请人,medops,Create/Read Own,Own Department,0,0,0,发起本部门业务申请并查看进度。,Core
+HRP Applicant,申请人,medops,Create/Read Own,Own Department,0,0,0,发起本部门业务申请并查看进度。,Finance
+HRP Applicant,申请人,medops,Create/Read Own,Own Department,0,0,0,发起本部门业务申请并查看进度。,Supply
+HRP Applicant,申请人,medops,Create/Read Own,Own Department,0,0,0,发起本部门业务申请并查看进度。,Asset
+HRP Applicant,申请人,medops,Create/Read Own,Own Department,0,0,0,发起本部门业务申请并查看进度。,People
+HRP Applicant,申请人,medops,Create/Read Own,Own Department,0,0,0,发起本部门业务申请并查看进度。,Project
+HRP Applicant,申请人,medops,Read Own,Own Department,0,0,0,发起本部门业务申请并查看进度。,Governance
+HRP Applicant,申请人,medops,Read Own,Own Department,0,0,0,发起本部门业务申请并查看进度。,Platform
+HRP Applicant,申请人,medops,Create/Read Own,Own Department,0,0,0,发起本部门业务申请并查看进度。,Portal
+HRP Department Manager,科室负责人,medops,Operate Scoped,Managed Department,1,1,0,科室预算、采购、报账和绩效初审。,Core
+HRP Budget User,预算经办,medops,Operate/Approve,Assigned Organization,0,1,1,预算编制、查询和执行跟踪。,Finance
+HRP Budget Manager,预算管理员,medops,Operate/Approve,Company/Hospital,1,1,1,预算版本、控制策略、下达和调整。,Finance
+HRP Finance User,财务经办,medops,Operate/Approve,Company,0,1,1,凭证桥接、应付、对账和财务查询。,Finance
+HRP Finance Reviewer,财务复核,medops,Operate/Approve,Company,0,1,1,费用与会计规则复核；不可独立付款。,Finance
+HRP CFO,总会计师/财务负责人,medops,Operate/Approve,Company,0,1,1,高金额预算、资金和付款审批。,Finance
+HRP Treasury Reviewer,资金复核,medops,Operate/Approve,Bank Account Scope,0,1,1,付款指令复核和银行回执处理。,Finance
+HRP Treasury Manager,资金管理员,medops,Operate/Approve,Bank Account Scope,1,1,1,付款批次、账户和现金计划。,Finance
+HRP Cost Manager,成本管理员,medops,Operate/Approve,Hospital,1,1,1,成本方案、核算运行和结果发布。,Finance
+HRP Supplier Manager,供应商管理员,medops,Operate/Approve,Company,1,1,1,供应商准入、证照、评价和风险。,Supply
+HRP Procurement User,采购经办,medops,Operate/Approve,Procurement Category,0,1,1,采购需求、询价和订单执行。,Supply
+HRP Procurement Reviewer,采购复核,medops,Operate/Approve,Procurement Category,0,1,1,采购合规、价格和方式复核。,Supply
+HRP Procurement Manager,采购负责人,medops,Operate/Approve,Company,1,1,1,采购计划、策略和定标执行。,Supply
+HRP Tender Manager,招标管理员,medops,Operate/Approve,Tender Project,1,1,1,招标项目、专家和评标过程。,Supply
+HRP Evaluation Expert,评审专家,medops,Operate/Approve,Assigned Tender,0,1,1,仅访问被分配标包并独立评分。,Supply
+HRP Contract User,合同经办,medops,Operate/Approve,Own Contracts,0,1,1,合同起草、义务和履约证据。,Supply
+HRP Contract Reviewer,合同审核,medops,Operate/Approve,Company,0,1,1,法务、财务或业务专业审核。,Supply
+HRP Supply Manager,供应链负责人,medops,Operate/Approve,Warehouse Scope,1,1,1,库存、SPD、寄售和召回。,Supply
+HRP Warehouse User,仓库经办,medops,Operate/Approve,Warehouse Scope,0,1,1,收发存、盘点和验收。,Supply
+HRP Asset Manager,资产管理员,medops,Operate/Approve,Asset Scope,1,1,1,资产建卡、调拨、盘点和处置。,Asset
+HRP Equipment Manager,设备管理员,medops,Operate/Approve,Equipment Scope,1,1,1,设备档案、维保、计量和质控。,Asset
+HRP Equipment Engineer,设备工程师,medops,Operate/Approve,Assigned Orders,0,1,1,执行维护工单和备件记录。,Asset
+HRP HR User,人事经办,medops,Operate/Approve,Employee Scope,0,1,1,人事、资质、排班和考勤业务。,People
+HRP Medical Affairs Manager,医务负责人,medops,Operate/Approve,Hospital,1,1,1,医疗人员资质和临床权限审批。,People
+HRP Performance Manager,绩效管理员,medops,Operate/Approve,Performance Unit,1,1,1,指标、核算、奖金和公示。,People
+HRP HR Director,人力负责人,medops,Operate/Approve,Hospital,0,1,1,人力计划、绩效和薪酬发布审批。,People
+HRP Project User,项目经办,medops,Operate/Approve,Own Projects,0,1,1,项目申报、进度和成果。,Project
+HRP Project Office,项目管理办公室,medops,Operate/Approve,Project Portfolio,0,1,1,项目阶段门、变更、验收和结题。,Project
+HRP Research Manager,科研管理员,medops,Operate/Approve,Research Portfolio,1,1,1,科研项目、经费和成果。,Project
+HRP Research Director,科研负责人,medops,Operate/Approve,Hospital,0,1,1,科研立项和结题审批。,Project
+HRP Internal Control Manager,内控管理员,medops,Operate/Approve,Company,1,1,1,控制矩阵、测试和缺陷。,Governance
+HRP Risk Manager,风险管理员,medops,Operate/Approve,Company,1,1,1,风险登记、评估和应对。,Governance
+HRP Internal Auditor,内部审计,medops,Operate/Approve,Audit Project,0,1,1,审计项目、样本、底稿和发现。,Governance
+HRP Chief Audit Executive,审计负责人,medops,Operate/Approve,Company,0,1,1,审计计划、报告和整改关闭。,Governance
+HRP Compliance Officer,合规管理员,medops,Operate/Approve,Company,0,1,1,监管义务、制度和合规事件。,Governance
+HRP Integration Operator,集成运维,medops,Operate,Interfaces,0,1,0,接口监控、重试与对账。,Platform
+HRP Data Analyst,数据分析师,medops,Operate,Authorized Datasets,1,1,0,报表、指标和数据集访问。,Platform
+HRP AI User,AI业务用户,medops,Operate,Own Scope,0,1,0,使用受控AI助手，不获得额外业务权限。,Platform
+HRP Portal Manager,门户管理员,medops,Read Own,Portal,1,0,0,门户菜单、公告和服务表单。,Core
+HRP Portal Manager,门户管理员,medops,Read Own,Portal,1,0,0,门户菜单、公告和服务表单。,Finance
+HRP Portal Manager,门户管理员,medops,Read Own,Portal,1,0,0,门户菜单、公告和服务表单。,Supply
+HRP Portal Manager,门户管理员,medops,Read Own,Portal,1,0,0,门户菜单、公告和服务表单。,Asset
+HRP Portal Manager,门户管理员,medops,Read Own,Portal,1,0,0,门户菜单、公告和服务表单。,People
+HRP Portal Manager,门户管理员,medops,Read Own,Portal,1,0,0,门户菜单、公告和服务表单。,Project
+HRP Portal Manager,门户管理员,medops,Read Own,Portal,1,0,0,门户菜单、公告和服务表单。,Governance
+HRP Portal Manager,门户管理员,medops,Read Own,Portal,1,0,0,门户菜单、公告和服务表单。,Platform
+HRP Portal Manager,门户管理员,medops,Operate Own,Portal,1,1,0,门户菜单、公告和服务表单。,Portal
+Supplier Portal User,供应商门户用户,medops,Read Own,Own Supplier,0,0,0,仅访问本供应商注册、投标、订单和对账。,Core
+Supplier Portal User,供应商门户用户,medops,Read Own,Own Supplier,0,0,0,仅访问本供应商注册、投标、订单和对账。,Finance
+Supplier Portal User,供应商门户用户,medops,Operate/Approve,Own Supplier,0,1,1,仅访问本供应商注册、投标、订单和对账。,Supply
+Supplier Portal User,供应商门户用户,medops,Read Own,Own Supplier,0,0,0,仅访问本供应商注册、投标、订单和对账。,Asset
+Supplier Portal User,供应商门户用户,medops,Read Own,Own Supplier,0,0,0,仅访问本供应商注册、投标、订单和对账。,People
+Supplier Portal User,供应商门户用户,medops,Read Own,Own Supplier,0,0,0,仅访问本供应商注册、投标、订单和对账。,Project
+Supplier Portal User,供应商门户用户,medops,Read Own,Own Supplier,0,0,0,仅访问本供应商注册、投标、订单和对账。,Governance
+Supplier Portal User,供应商门户用户,medops,Read Own,Own Supplier,0,0,0,仅访问本供应商注册、投标、订单和对账。,Platform
+Supplier Portal User,供应商门户用户,medops,Operate Own,Own Supplier,0,1,0,仅访问本供应商注册、投标、订单和对账。,Portal
+HRP Integration User,集成用户,medops,Operate,Interfaces,0,1,0,标准接口查询、编码映射和受控写入。,Platform
+HRP Integration Publisher,事件发布用户,medops,Operate,Interfaces,0,1,0,仅允许向Outbox发布已授权领域事件。,Platform
+Integration Client,外部集成客户端,medops,Operate,Assigned Interfaces,0,1,0,OAuth/签名客户端角色；仅访问被分配接口。,Platform
+HRP Bank Integration,银行集成客户端,medops,Operate,Bank Interfaces,0,1,0,银行付款回执、流水和余额接口专用角色。,Platform
+HRP Attendance Integration,考勤集成客户端,medops,Operate,Attendance Interfaces,0,1,0,门禁、考勤机和移动考勤数据接入。,Platform
+HRP Performance Integration,绩效集成客户端,medops,Operate/Approve,Performance Interfaces,0,1,1,工作量、质量和薪资发布接口专用角色。,People
+HRP Performance Integration,绩效集成客户端,medops,Operate,Performance Interfaces,0,1,0,工作量、质量和薪资发布接口专用角色。,Platform
+HRP SPD Integration,SPD集成客户端,medops,Operate,SPD Interfaces,0,1,0,智能柜、耗材和UDI设备接口专用角色。,Platform
+HRP Supplier Integration,供应商集成客户端,medops,Operate/Approve,Supplier Interfaces,0,1,1,供应商、订单、发货和对账接口专用角色。,Supply
+HRP Supplier Integration,供应商集成客户端,medops,Operate,Supplier Interfaces,0,1,0,供应商、订单、发货和对账接口专用角色。,Platform
+HRP Portal User,门户用户,medops,Read Own,Own Scope,0,0,0,统一门户、移动申请和本人业务查询。,Core
+HRP Portal User,门户用户,medops,Read Own,Own Scope,0,0,0,统一门户、移动申请和本人业务查询。,Finance
+HRP Portal User,门户用户,medops,Read Own,Own Scope,0,0,0,统一门户、移动申请和本人业务查询。,Supply
+HRP Portal User,门户用户,medops,Read Own,Own Scope,0,0,0,统一门户、移动申请和本人业务查询。,Asset
+HRP Portal User,门户用户,medops,Read Own,Own Scope,0,0,0,统一门户、移动申请和本人业务查询。,People
+HRP Portal User,门户用户,medops,Read Own,Own Scope,0,0,0,统一门户、移动申请和本人业务查询。,Project
+HRP Portal User,门户用户,medops,Read Own,Own Scope,0,0,0,统一门户、移动申请和本人业务查询。,Governance
+HRP Portal User,门户用户,medops,Read Own,Own Scope,0,0,0,统一门户、移动申请和本人业务查询。,Platform
+HRP Portal User,门户用户,medops,Operate Own,Own Scope,0,1,0,统一门户、移动申请和本人业务查询。,Portal
+HRP Finance Manager,财务负责人,medops,Operate/Approve,Company,1,1,1,会计规则、凭证、业财对账和财务发布。,Finance
+HRP Asset User,资产经办,medops,Operate/Approve,Asset Scope,0,1,1,资产购置、验收、保管、调拨和盘点经办。,Asset
+HRP Asset Reviewer,资产复核,medops,Operate/Approve,Asset Scope,0,1,1,资产购置、验收和处置专业复核。,Asset
+HRP Equipment User,设备经办,medops,Operate/Approve,Equipment Scope,0,1,1,设备档案、维保、计量和质控业务经办。,Asset
+HRP Equipment Reviewer,设备复核,medops,Operate/Approve,Equipment Scope,0,1,1,设备维护、计量和质控专业复核。,Asset
+HRP Supply Reviewer,供应链复核,medops,Operate/Approve,Warehouse Scope,0,1,1,耗材使用、寄售、召回和库存异常复核。,Supply
+HRP Performance Reviewer,绩效复核,medops,Operate/Approve,Performance Unit,0,1,1,指标、得分、奖金和人工调整复核。,People
+HRP Research User,科研经办,medops,Operate/Approve,Own Research Projects,0,1,1,科研项目、经费、成果和结题经办。,Project
+HRP Research Reviewer,科研复核,medops,Operate/Approve,Research Portfolio,0,1,1,科研立项、经费和成果专业复核。,Project
+HRP Internal Control Tester,内控测试人员,medops,Operate/Approve,Assigned Controls,0,1,1,执行控制测试、采集证据和登记缺陷。,Governance
+HRP Auditor,审计用户,medops,Operate/Approve,Audit Project,0,1,1,审计计划、底稿、证据、发现和整改跟踪。,Governance
+HRP Hospital Executive,医院运营决策负责人,medops,Read Scoped,Hospital/Company,1,0,0,院级重大预算、采购、合同、资产和运营事项审批。,Core
+HRP Hospital Executive,医院运营决策负责人,medops,Approve/Read,Hospital/Company,1,1,1,院级重大预算、采购、合同、资产和运营事项审批。,Finance
+HRP Hospital Executive,医院运营决策负责人,medops,Approve/Read,Hospital/Company,1,1,1,院级重大预算、采购、合同、资产和运营事项审批。,Supply
+HRP Hospital Executive,医院运营决策负责人,medops,Approve/Read,Hospital/Company,1,1,1,院级重大预算、采购、合同、资产和运营事项审批。,Asset
+HRP Hospital Executive,医院运营决策负责人,medops,Read Scoped,Hospital/Company,1,0,0,院级重大预算、采购、合同、资产和运营事项审批。,People
+HRP Hospital Executive,医院运营决策负责人,medops,Approve/Read,Hospital/Company,1,1,1,院级重大预算、采购、合同、资产和运营事项审批。,Project
+HRP Hospital Executive,医院运营决策负责人,medops,Read Scoped,Hospital/Company,1,0,0,院级重大预算、采购、合同、资产和运营事项审批。,Governance
+HRP Hospital Executive,医院运营决策负责人,medops,Read Dashboards,Hospital/Company,1,0,0,院级重大预算、采购、合同、资产和运营事项审批。,Platform
+HRP Hospital Executive,医院运营决策负责人,medops,Operate Own,Hospital/Company,0,1,0,院级重大预算、采购、合同、资产和运营事项审批。,Portal
+HRP System User,系统服务用户,medops,Operate Service,System Service,0,1,0,受控后台服务账号；仅调用已授权内部服务。,Core
+HRP Integration User,集成用户,medops,Read Mapping,Interfaces,1,0,0,标准接口查询、编码映射和受控写入。,Core
+HRP Data Operator,数据运维,medops,Operate Data,Authorized Datasets,0,1,0,数据管道、指标刷新和数据质量任务运维。,Platform
+HRP Reconciliation Operator,对账运维,medops,Operate Reconciliation,Interfaces,0,1,0,执行跨系统、银行和业务对账及差异闭环。,Finance
+HRP Reconciliation Operator,对账运维,medops,Operate Reconciliation,Interfaces,0,1,0,执行跨系统、银行和业务对账及差异闭环。,Platform
+Authenticated Clinical System,临床系统客户端,medops,Operate Clinical API,Clinical Interfaces,0,1,0,HIS/EMR/LIS/PACS等受信系统的最小接口角色。,Platform
+HRP Bank Integration,银行集成客户端,medops,Operate Bank Callback,Bank Interfaces,0,1,0,银行付款回执、流水和余额接口专用角色。,Finance
+HRP Attendance Integration,考勤集成客户端,medops,Operate Attendance Import,Attendance Interfaces,0,1,0,门禁、考勤机和移动考勤数据接入。,People
+HRP SPD Integration,SPD集成客户端,medops,Operate SPD Exchange,SPD Interfaces,0,1,0,智能柜、耗材和UDI设备接口专用角色。,Supply
+HRP Employee,员工自助用户,medops,Read/Operate Own,Own Employee,1,1,0,员工个人申请、查询和确认。,People
+HRP Employee,员工自助用户,medops,Operate Own,Own Employee,0,1,0,员工个人申请、查询和确认。,Portal
+HRP Service Desk,服务台经办,medops,Operate Service Orders,Assigned Services,0,1,0,接单、派单、协同和SLA处理。,Asset
+HRP Service Desk,服务台经办,medops,Operate Services,Assigned Services,0,1,0,接单、派单、协同和SLA处理。,Portal
+HRP Service Manager,服务管理负责人,medops,Approve Services,Service Catalog,0,1,1,服务目录、SLA和服务申请终审。,Asset
+HRP Service Manager,服务管理负责人,medops,Approve Services,Service Catalog,0,1,1,服务目录、SLA和服务申请终审。,Portal
+HRP Expense User,费用报账用户,medops,Operate Own Expense,Own Department,0,1,0,事前申请、借款、报销和个人往来。,Finance
+HRP Accounts Payable User,应付经办,medops,Operate Payables,Company,0,1,0,发票、应付、三单匹配和付款前处理。,Finance
+HRP Metrology User,计量质控用户,medops,Operate Metrology,Equipment Scope,0,1,0,设备计量、校准和质控记录。,Asset
+HRP Credential Reviewer,资质复核,medops,Review Credentials,Hospital,0,1,0,人员证照、执业范围和临床权限复核。,People
+HRP Roster Manager,排班管理员,medops,Manage Roster,Roster Units,1,1,1,科室排班规则、发布、调班和覆盖率管理。,People
+HRP Capital Manager,基建管理员,medops,Manage Capital,Capital Projects,1,1,1,基建概算、进度、工程变更和竣工决算。,Project

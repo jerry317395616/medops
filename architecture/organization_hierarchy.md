@@ -2,7 +2,7 @@
 
 ## 范围
 
-COD-018 在唯一自研 App `ione_hrp` 的 `HRP Organization` 模块内实现医院组织主数据、
+COD-018 在唯一自研 App `medops` 的 `HRP Organization` 模块内实现医院组织主数据、
 版本化层级和生效日期查询。它不修改 Frappe、ERPNext、Frappe HR，也不在本任务中建立
 `Department` 或 `Cost Center` 映射。
 

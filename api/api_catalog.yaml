@@ -1,8 +1,8 @@
 - api_code: CORE-001
-  app: ione_hrp
+  app: medops
   domain_group: Core
   method: POST
-  path: /api/method/ione_hrp.api.v1.core.scope.resolve
+  path: /api/method/medops.api.v1.core.scope.resolve
   description: 解析当前用户组织/数据权限
   request_schema: user,doctype,action
   response_schema: allowed,unrestricted,scopes,filters,masking,decision_digest
@@ -13,9 +13,9 @@
   audit: Always
   version: v1
 - api_code: CORE-002
-  app: ione_hrp
+  app: medops
   method: POST
-  path: /api/method/ione_hrp.api.v1.core.approval.evaluate
+  path: /api/method/medops.api.v1.core.approval.evaluate
   description: 按真实单据上下文确定性解析动态审批链
   request_schema: doctype,docname,amount,dimensions
   response_schema: schema_version,doctype,docname,matrix,matrix_code,matrix_name,policy_version,policy_digest,approvers,steps,decision_digest,correlation_id,request_id,idempotency_replayed
@@ -27,10 +27,10 @@
   version: v1
   domain_group: Core
 - api_code: CORE-003
-  app: ione_hrp
+  app: medops
   domain_group: Core
   method: POST
-  path: /api/method/ione_hrp.api.v1.core.sod.validate
+  path: /api/method/medops.api.v1.core.sod.validate
   description: 校验不相容职责
   request_schema: user,action,doctype,docname
   response_schema: allowed,conflicts
@@ -41,10 +41,10 @@
   audit: Always
   version: v1
 - api_code: CORE-004
-  app: ione_hrp
+  app: medops
   domain_group: Core
   method: GET
-  path: /api/method/ione_hrp.api.v1.master_data.resolve_external_code_mapping
+  path: /api/method/medops.api.v1.master_data.resolve_external_code_mapping
   description: 按外部编码解析内部主数据
   request_schema: master_data_domain,company,hospital,organization_unit,external_system,external_code,effective_on
   response_schema: schema_version,name,master_data_domain,target_doctype,internal_name,company,hospital,organization_unit,external_system,external_code,external_label,enabled,valid_from,valid_to,revision,remarks,correlation_id,request_id,idempotency_replayed
@@ -55,10 +55,10 @@
   audit: Redacted source digest and revision log
   version: v1
 - api_code: CORE-005
-  app: ione_hrp
+  app: medops
   domain_group: Core
   method: POST
-  path: /api/method/ione_hrp.api.v1.core.master.submit_change
+  path: /api/method/medops.api.v1.core.master.submit_change
   description: 提交主数据变更
   request_schema: domain,operation,payload
   response_schema: request_name,workflow_state
@@ -69,10 +69,10 @@
   audit: Always
   version: v1
 - api_code: CORE-006
-  app: ione_hrp
+  app: medops
   domain_group: Core
   method: POST
-  path: /api/method/ione_hrp.api.v1.core.numbering.next
+  path: /api/method/medops.api.v1.core.numbering.next
   description: 取得受控业务编号
   request_schema: scheme,dimensions,date
   response_schema: schema_version,number,reservation_token,scheme,date,dimensions,correlation_id,request_id,idempotency_replayed
@@ -83,10 +83,10 @@
   audit: Redacted scheme revision template digest dimension digest bucket and sequence log
   version: v1
 - api_code: CORE-007
-  app: ione_hrp
+  app: medops
   domain_group: Core
   method: GET
-  path: /api/method/ione_hrp.api.v1.core.inbox.list
+  path: /api/method/medops.api.v1.core.inbox.list
   description: 查询统一待办
   request_schema: filters,page,page_length
   response_schema: items,total
@@ -97,10 +97,10 @@
   audit: Always
   version: v1
 - api_code: CORE-008
-  app: ione_hrp
+  app: medops
   domain_group: Core
   method: POST
-  path: /api/method/ione_hrp.api.v1.core.delegation.create
+  path: /api/method/medops.api.v1.core.delegation.create
   description: 创建审批委托
   request_schema: from_user,to_user,scope,start,end
   response_schema: delegation_name
@@ -111,10 +111,10 @@
   audit: Always
   version: v1
 - api_code: CORE-009
-  app: ione_hrp
+  app: medops
   domain_group: Core
   method: POST
-  path: /api/method/ione_hrp.api.v1.organization.upsert_hospital
+  path: /api/method/medops.api.v1.organization.upsert_hospital
   description: 创建或更新医院主数据
   request_schema: code,company,display_name,enabled,valid_from,valid_to,remarks,expected_revision
   response_schema: schema_version,name,code,company,display_name,enabled,valid_from,valid_to,remarks,revision,changed,changed_fields,correlation_id,request_id,idempotency_replayed
@@ -125,10 +125,10 @@
   audit: Redacted field-name and revision log
   version: v1
 - api_code: CORE-010
-  app: ione_hrp
+  app: medops
   domain_group: Core
   method: POST
-  path: /api/method/ione_hrp.api.v1.organization.create_organization_version
+  path: /api/method/medops.api.v1.organization.create_organization_version
   description: 创建医院组织版本
   request_schema: hospital,effective_from,version_label,remarks
   response_schema: schema_version,name,hospital,company,version_number,version_code,version_label,effective_from,status,docstatus,node_count,hierarchy_digest,revision,published_at,remarks,correlation_id,request_id,idempotency_replayed
@@ -139,10 +139,10 @@
   audit: Redacted version and revision log
   version: v1
 - api_code: CORE-011
-  app: ione_hrp
+  app: medops
   domain_group: Core
   method: POST
-  path: /api/method/ione_hrp.api.v1.organization.replace_organization_hierarchy
+  path: /api/method/medops.api.v1.organization.replace_organization_hierarchy
   description: 整体替换组织层级草稿
   request_schema: organization_version,expected_revision,nodes
   response_schema: schema_version,name,hospital,company,version_number,version_code,version_label,effective_from,status,docstatus,node_count,hierarchy_digest,revision,published_at,remarks,changed,correlation_id,request_id,idempotency_replayed
@@ -153,10 +153,10 @@
   audit: Redacted node-count digest and revision log
   version: v1
 - api_code: CORE-012
-  app: ione_hrp
+  app: medops
   domain_group: Core
   method: POST
-  path: /api/method/ione_hrp.api.v1.organization.publish_organization_version
+  path: /api/method/medops.api.v1.organization.publish_organization_version
   description: 发布医院组织版本
   request_schema: organization_version,expected_revision
   response_schema: schema_version,name,hospital,company,version_number,version_code,version_label,effective_from,status,docstatus,node_count,hierarchy_digest,revision,published_at,remarks,correlation_id,request_id,idempotency_replayed
@@ -167,10 +167,10 @@
   audit: Redacted node-count digest and revision log
   version: v1
 - api_code: CORE-013
-  app: ione_hrp
+  app: medops
   domain_group: Core
   method: GET
-  path: /api/method/ione_hrp.api.v1.organization.get_organization_hierarchy
+  path: /api/method/medops.api.v1.organization.get_organization_hierarchy
   description: 按版本或生效日期查询组织层级
   request_schema: organization_version or hospital,effective_on
   response_schema: schema_version,version,nodes
@@ -181,10 +181,10 @@
   audit: Redacted version revision and node-count log
   version: v1
 - api_code: CORE-014
-  app: ione_hrp
+  app: medops
   domain_group: Core
   method: POST
-  path: /api/method/ione_hrp.api.v1.organization_mapping.upsert_organization_mapping
+  path: /api/method/medops.api.v1.organization_mapping.upsert_organization_mapping
   description: 创建或修订组织标准映射
   request_schema: organization_version,organization_unit,department,cost_center,enabled,expected_revision,remarks
   response_schema: schema_version,name,organization_version,organization_unit,company,hospital,unit_code,unit_type,department,cost_center,enabled,revision,remarks,changed,changed_fields,correlation_id,request_id,idempotency_replayed
@@ -195,10 +195,10 @@
   audit: Redacted revision target-count and changed-field log
   version: v1
 - api_code: CORE-015
-  app: ione_hrp
+  app: medops
   domain_group: Core
   method: GET
-  path: /api/method/ione_hrp.api.v1.organization_mapping.resolve_organization_mapping
+  path: /api/method/medops.api.v1.organization_mapping.resolve_organization_mapping
   description: 按组织单元或业务日期解析标准映射
   request_schema: organization_unit or hospital,unit_code,effective_on
   response_schema: schema_version,name,organization_version,organization_unit,company,hospital,unit_code,unit_type,department,cost_center,enabled,revision,remarks,correlation_id,request_id,idempotency_replayed
@@ -209,10 +209,10 @@
   audit: Redacted revision and target-count log
   version: v1
 - api_code: CORE-016
-  app: ione_hrp
+  app: medops
   domain_group: Core
   method: POST
-  path: /api/method/ione_hrp.api.v1.master_data.upsert_master_data_domain
+  path: /api/method/medops.api.v1.master_data.upsert_master_data_domain
   description: 创建或修订主数据域
   request_schema: code,display_name,target_doctype,enabled,expected_revision,remarks
   response_schema: schema_version,code,display_name,target_doctype,enabled,allow_create,allow_update,allow_disable,allowed_fields,policy_version,policy_digest,revision,remarks,changed,changed_fields,correlation_id,request_id,idempotency_replayed
@@ -223,10 +223,10 @@
   audit: Redacted policy digest and changed-field log
   version: v1
 - api_code: CORE-017
-  app: ione_hrp
+  app: medops
   domain_group: Core
   method: POST
-  path: /api/method/ione_hrp.api.v1.master_data.save_master_data_request
+  path: /api/method/medops.api.v1.master_data.save_master_data_request
   description: 创建或修订主数据变更申请草稿
   request_schema: master_data_domain,company,hospital,organization_unit,operation,target_name,subject,effective_on,changes,request_name,expected_revision
   response_schema: schema_version,name,master_data_domain,target_doctype,operation,target_name,subject,company,hospital,organization_unit,effective_on,request_status,docstatus,proposal_digest,baseline_modified_at,requested_by,requested_at,submitted_at,reviewed_by,reviewed_at,decision_reason,revision,changes,changed,correlation_id,request_id,idempotency_replayed
@@ -237,10 +237,10 @@
   audit: Redacted proposal digest change-count and operation log
   version: v1
 - api_code: CORE-018
-  app: ione_hrp
+  app: medops
   domain_group: Core
   method: POST
-  path: /api/method/ione_hrp.api.v1.master_data.submit_master_data_request
+  path: /api/method/medops.api.v1.master_data.submit_master_data_request
   description: 提交主数据变更申请
   request_schema: request_name,expected_revision
   response_schema: schema_version,name,request_status,docstatus,revision,submitted_at,correlation_id,request_id,idempotency_replayed
@@ -251,10 +251,10 @@
   audit: Redacted proposal digest change-count and revision log
   version: v1
 - api_code: CORE-019
-  app: ione_hrp
+  app: medops
   domain_group: Core
   method: POST
-  path: /api/method/ione_hrp.api.v1.master_data.review_master_data_request
+  path: /api/method/medops.api.v1.master_data.review_master_data_request
   description: 复核主数据变更申请
   request_schema: request_name,expected_revision,decision,reason
   response_schema: schema_version,name,request_status,docstatus,revision,reviewed_by,reviewed_at,decision_reason,correlation_id,request_id,idempotency_replayed
@@ -265,10 +265,10 @@
   audit: Redacted decision proposal digest change-count and revision log
   version: v1
 - api_code: CORE-020
-  app: ione_hrp
+  app: medops
   domain_group: Core
   method: GET
-  path: /api/method/ione_hrp.api.v1.master_data.get_master_data_request
+  path: /api/method/medops.api.v1.master_data.get_master_data_request
   description: 查询主数据变更申请
   request_schema: request_name
   response_schema: schema_version,name,master_data_domain,target_doctype,operation,target_name,subject,company,hospital,organization_unit,effective_on,request_status,docstatus,proposal_digest,baseline_modified_at,requested_by,requested_at,submitted_at,reviewed_by,reviewed_at,decision_reason,revision,changes
@@ -279,10 +279,10 @@
   audit: Redacted status change-count and revision log
   version: v1
 - api_code: CORE-021
-  app: ione_hrp
+  app: medops
   domain_group: Core
   method: POST
-  path: /api/method/ione_hrp.api.v1.master_data.upsert_external_code_mapping
+  path: /api/method/medops.api.v1.master_data.upsert_external_code_mapping
   description: 创建或修订外部编码映射
   request_schema: master_data_domain,company,hospital,organization_unit,external_system,external_code,external_label,internal_name,enabled,valid_from,valid_to,expected_revision,mapping_name,remarks
   response_schema: schema_version,name,master_data_domain,target_doctype,internal_name,company,hospital,organization_unit,external_system,external_code,external_label,enabled,valid_from,valid_to,revision,remarks,changed,changed_fields,correlation_id,request_id,idempotency_replayed
@@ -293,10 +293,10 @@
   audit: Redacted source and target digests changed-fields and revision log
   version: v1
 - api_code: CORE-022
-  app: ione_hrp
+  app: medops
   domain_group: Core
   method: GET
-  path: /api/method/ione_hrp.api.v1.master_data.resolve_internal_code_mapping
+  path: /api/method/medops.api.v1.master_data.resolve_internal_code_mapping
   description: 按内部主数据解析外部编码
   request_schema: master_data_domain,company,hospital,organization_unit,external_system,internal_name,effective_on
   response_schema: schema_version,name,master_data_domain,target_doctype,internal_name,company,hospital,organization_unit,external_system,external_code,external_label,enabled,valid_from,valid_to,revision,remarks,correlation_id,request_id,idempotency_replayed
@@ -307,10 +307,10 @@
   audit: Redacted target digest and revision log
   version: v1
 - api_code: CORE-023
-  app: ione_hrp
+  app: medops
   domain_group: Core
   method: POST
-  path: /api/method/ione_hrp.api.v1.master_data.upsert_data_quality_rule
+  path: /api/method/medops.api.v1.master_data.upsert_data_quality_rule
   description: 创建或修订主数据质量规则
   request_schema: code,display_name,master_data_domain,company,hospital,organization_unit,target_field,rule_type,parameters,severity,enabled,valid_from,valid_to,expected_revision,rule_name,remarks
   response_schema: schema_version,name,code,display_name,master_data_domain,target_doctype,company,hospital,organization_unit,target_field,rule_type,parameters,severity,enabled,valid_from,valid_to,rule_digest,revision,remarks,changed,changed_fields,correlation_id,request_id,idempotency_replayed
@@ -321,10 +321,10 @@
   audit: Redacted rule digest changed-fields and revision log
   version: v1
 - api_code: CORE-024
-  app: ione_hrp
+  app: medops
   domain_group: Core
   method: POST
-  path: /api/method/ione_hrp.api.v1.master_data.evaluate_data_quality
+  path: /api/method/medops.api.v1.master_data.evaluate_data_quality
   description: 评估一条标准主数据记录
   request_schema: rule_name,target_name,effective_on,expected_rule_revision
   response_schema: schema_version,passed,failure_code,issue,changed,correlation_id,request_id,idempotency_replayed
@@ -335,10 +335,10 @@
   audit: Redacted issue key rule digest outcome and revision log
   version: v1
 - api_code: CORE-025
-  app: ione_hrp
+  app: medops
   domain_group: Core
   method: GET
-  path: /api/method/ione_hrp.api.v1.master_data.get_data_quality_issue
+  path: /api/method/medops.api.v1.master_data.get_data_quality_issue
   description: 查询主数据质量问题
   request_schema: issue_name
   response_schema: schema_version,name,quality_rule,master_data_domain,target_doctype,target_name,company,hospital,organization_unit,issue_status,severity,failure_code,failure_message,rule_revision,first_detected_at,last_evaluated_at,resolved_at,occurrence_count,revision
@@ -349,10 +349,10 @@
   audit: Redacted issue key status and revision log
   version: v1
 - api_code: CORE-026
-  app: ione_hrp
+  app: medops
   domain_group: Core
   method: POST
-  path: /api/method/ione_hrp.api.v1.core.numbering.upsert_scheme
+  path: /api/method/medops.api.v1.core.numbering.upsert_scheme
   description: 创建或修订受控业务编号方案
   request_schema: code,display_name,company,hospital,organization_unit,template,reset_policy,sequence_digits,start_number,enabled,valid_from,valid_to,expected_revision,scheme_name,remarks
   response_schema: schema_version,name,code,display_name,company,hospital,organization_unit,template,dimension_keys,reset_policy,sequence_digits,start_number,enabled,valid_from,valid_to,revision,remarks,changed,changed_fields,correlation_id,request_id,idempotency_replayed
@@ -363,10 +363,10 @@
   audit: Redacted template digest dimension count changed fields and revision log
   version: v1
 - api_code: CORE-027
-  app: ione_hrp
+  app: medops
   domain_group: Core
   method: GET
-  path: /api/method/ione_hrp.api.v1.core.numbering.get_reservation
+  path: /api/method/medops.api.v1.core.numbering.get_reservation
   description: 查询编号预留
   request_schema: reservation_token
   response_schema: schema_version,number,reservation_token,scheme,date,dimensions
@@ -377,9 +377,9 @@
   audit: Redacted scheme revision template digest and dimension digest log
   version: v1
 - api_code: CORE-028
-  app: ione_hrp
+  app: medops
   method: POST
-  path: /api/method/ione_hrp.api.v1.core.approval.upsert
+  path: /api/method/medops.api.v1.core.approval.upsert
   description: 创建或修订受控审批矩阵
   request_schema: code,display_name,target_doctype,company,hospital,organization_unit,include_descendants,priority,dimensions,enabled,valid_from,valid_to,steps,expected_revision,matrix_name,remarks
   response_schema: schema_version,name,code,display_name,target_doctype,company,hospital,organization_unit,include_descendants,priority,dimensions,enabled,valid_from,valid_to,revision,steps,policy_digest,changed,changed_fields,correlation_id,request_id,idempotency_replayed
@@ -391,9 +391,9 @@
   version: v1
   domain_group: Core
 - api_code: CORE-029
-  app: ione_hrp
+  app: medops
   method: GET
-  path: /api/method/ione_hrp.api.v1.core.approval.get
+  path: /api/method/medops.api.v1.core.approval.get
   description: 查询审批矩阵定义
   request_schema: matrix_name
   response_schema: schema_version,name,code,display_name,target_doctype,company,hospital,organization_unit,include_descendants,priority,dimensions,enabled,valid_from,valid_to,revision,steps,policy_digest,correlation_id,request_id,idempotency_replayed
@@ -405,10 +405,10 @@
   version: v1
   domain_group: Core
 - api_code: FIN-001
-  app: ione_hrp
+  app: medops
   domain_group: Finance
   method: POST
-  path: /api/method/ione_hrp.api.v1.finance.budget.check
+  path: /api/method/medops.api.v1.finance.budget.check
   description: 预算可用性校验
   request_schema: dimensions,amount,as_of_date
   response_schema: available,control_result,breakdown
@@ -419,10 +419,10 @@
   audit: Always
   version: v1
 - api_code: FIN-002
-  app: ione_hrp
+  app: medops
   domain_group: Finance
   method: POST
-  path: /api/method/ione_hrp.api.v1.finance.budget.reserve
+  path: /api/method/medops.api.v1.finance.budget.reserve
   description: 创建预算预占
   request_schema: source_doctype,source_name,lines
   response_schema: reservation_name,ledger_entries
@@ -433,10 +433,10 @@
   audit: Always
   version: v1
 - api_code: FIN-003
-  app: ione_hrp
+  app: medops
   domain_group: Finance
   method: POST
-  path: /api/method/ione_hrp.api.v1.finance.budget.release
+  path: /api/method/medops.api.v1.finance.budget.release
   description: 释放预算预占
   request_schema: reservation_name,amount,reason
   response_schema: release_entry,available_after
@@ -447,10 +447,10 @@
   audit: Always
   version: v1
 - api_code: FIN-004
-  app: ione_hrp
+  app: medops
   domain_group: Finance
   method: POST
-  path: /api/method/ione_hrp.api.v1.finance.budget.commit
+  path: /api/method/medops.api.v1.finance.budget.commit
   description: 预占转承诺
   request_schema: reservation_name,contract_or_order,amount
   response_schema: commitment_name,ledger_entries
@@ -461,10 +461,10 @@
   audit: Always
   version: v1
 - api_code: FIN-005
-  app: ione_hrp
+  app: medops
   domain_group: Finance
   method: POST
-  path: /api/method/ione_hrp.api.v1.finance.budget.actualize
+  path: /api/method/medops.api.v1.finance.budget.actualize
   description: 承诺转实际
   request_schema: commitment_name,invoice_or_payment,amount
   response_schema: actualization_name,ledger_entries
@@ -475,10 +475,10 @@
   audit: Always
   version: v1
 - api_code: FIN-006
-  app: ione_hrp
+  app: medops
   domain_group: Finance
   method: POST
-  path: /api/method/ione_hrp.api.v1.finance.budget.transfer
+  path: /api/method/medops.api.v1.finance.budget.transfer
   description: 执行预算调剂
   request_schema: from_dimensions,to_dimensions,amount,approval
   response_schema: transfer_name
@@ -489,10 +489,10 @@
   audit: Always
   version: v1
 - api_code: FIN-007
-  app: ione_hrp
+  app: medops
   domain_group: Finance
   method: POST
-  path: /api/method/ione_hrp.api.v1.finance.expense.validate
+  path: /api/method/medops.api.v1.finance.expense.validate
   description: 校验费用标准和事前申请
   request_schema: employee,expense_lines,preapproval
   response_schema: violations,allowed_amount
@@ -503,10 +503,10 @@
   audit: Always
   version: v1
 - api_code: FIN-008
-  app: ione_hrp
+  app: medops
   domain_group: Finance
   method: POST
-  path: /api/method/ione_hrp.api.v1.finance.invoice.verify
+  path: /api/method/medops.api.v1.finance.invoice.verify
   description: 发票验真查重
   request_schema: invoice_image,invoice_fields
   response_schema: verified,duplicate,hash,details
@@ -517,10 +517,10 @@
   audit: Always
   version: v1
 - api_code: FIN-009
-  app: ione_hrp
+  app: medops
   domain_group: Finance
   method: POST
-  path: /api/method/ione_hrp.api.v1.finance.payment.create_batch
+  path: /api/method/medops.api.v1.finance.payment.create_batch
   description: 生成付款批次
   request_schema: approved_requests,bank_account
   response_schema: batch,instructions
@@ -531,10 +531,10 @@
   audit: Always
   version: v1
 - api_code: FIN-010
-  app: ione_hrp
+  app: medops
   domain_group: Finance
   method: POST
-  path: /api/method/ione_hrp.api.v1.finance.payment.send_bank
+  path: /api/method/medops.api.v1.finance.payment.send_bank
   description: 发送银行付款指令
   request_schema: batch,signature
   response_schema: submission_id,status
@@ -545,10 +545,10 @@
   audit: Always
   version: v1
 - api_code: FIN-011
-  app: ione_hrp
+  app: medops
   domain_group: Finance
   method: POST
-  path: /api/method/ione_hrp.api.v1.finance.bank.callback
+  path: /api/method/medops.api.v1.finance.bank.callback
   description: 接收银行回执
   request_schema: submission_id,status,reference,signature
   response_schema: accepted,message
@@ -559,10 +559,10 @@
   audit: Always
   version: v1
 - api_code: FIN-012
-  app: ione_hrp
+  app: medops
   domain_group: Finance
   method: POST
-  path: /api/method/ione_hrp.api.v1.finance.accounting.generate_voucher
+  path: /api/method/medops.api.v1.finance.accounting.generate_voucher
   description: 根据规则生成ERPNext凭证
   request_schema: source_doctype,source_name,rule_code
   response_schema: voucher_type,voucher_name
@@ -573,10 +573,10 @@
   audit: Always
   version: v1
 - api_code: FIN-013
-  app: ione_hrp
+  app: medops
   domain_group: Finance
   method: POST
-  path: /api/method/ione_hrp.api.v1.finance.cost.run
+  path: /api/method/medops.api.v1.finance.cost.run
   description: 启动成本核算
   request_schema: period,scheme,scope
   response_schema: run_name,job_id
@@ -587,10 +587,10 @@
   audit: Always
   version: v1
 - api_code: SUP-001
-  app: ione_hrp
+  app: medops
   domain_group: Supply
   method: POST
-  path: /api/method/ione_hrp.api.v1.supply.supplier.register
+  path: /api/method/medops.api.v1.supply.supplier.register
   description: 供应商门户注册
   request_schema: company_info,contacts,certificates
   response_schema: registration_name
@@ -601,10 +601,10 @@
   audit: Always
   version: v1
 - api_code: SUP-002
-  app: ione_hrp
+  app: medops
   domain_group: Supply
   method: POST
-  path: /api/method/ione_hrp.api.v1.supply.supplier.qualify
+  path: /api/method/medops.api.v1.supply.supplier.qualify
   description: 供应商准入结论
   request_schema: registration,checks,decision
   response_schema: qualification,supplier
@@ -615,10 +615,10 @@
   audit: Always
   version: v1
 - api_code: SUP-003
-  app: ione_hrp
+  app: medops
   domain_group: Supply
   method: POST
-  path: /api/method/ione_hrp.api.v1.supply.supplier.certificate_callback
+  path: /api/method/medops.api.v1.supply.supplier.certificate_callback
   description: 外部证照校验回调
   request_schema: certificate,status,details
   response_schema: accepted
@@ -629,10 +629,10 @@
   audit: Always
   version: v1
 - api_code: SUP-004
-  app: ione_hrp
+  app: medops
   domain_group: Supply
   method: POST
-  path: /api/method/ione_hrp.api.v1.supply.tender.publish
+  path: /api/method/medops.api.v1.supply.tender.publish
   description: 发布招标项目
   request_schema: tender_project,channels
   response_schema: publication_ids
@@ -643,10 +643,10 @@
   audit: Always
   version: v1
 - api_code: SUP-005
-  app: ione_hrp
+  app: medops
   domain_group: Supply
   method: POST
-  path: /api/method/ione_hrp.api.v1.supply.tender.register_bid
+  path: /api/method/medops.api.v1.supply.tender.register_bid
   description: 登记供应商投标
   request_schema: tender_package,supplier,bid_hash
   response_schema: registration_name
@@ -657,10 +657,10 @@
   audit: Always
   version: v1
 - api_code: SUP-006
-  app: ione_hrp
+  app: medops
   domain_group: Supply
   method: POST
-  path: /api/method/ione_hrp.api.v1.supply.tender.submit_score
+  path: /api/method/medops.api.v1.supply.tender.submit_score
   description: 提交专家评分
   request_schema: evaluation,expert,scores,signature
   response_schema: score_name,total
@@ -671,10 +671,10 @@
   audit: Always
   version: v1
 - api_code: SUP-007
-  app: ione_hrp
+  app: medops
   domain_group: Supply
   method: POST
-  path: /api/method/ione_hrp.api.v1.supply.award.approve
+  path: /api/method/medops.api.v1.supply.award.approve
   description: 确认定标
   request_schema: award_decision,approval_token
   response_schema: award_notice
@@ -685,10 +685,10 @@
   audit: Always
   version: v1
 - api_code: SUP-008
-  app: ione_hrp
+  app: medops
   domain_group: Supply
   method: POST
-  path: /api/method/ione_hrp.api.v1.supply.purchase.check_price
+  path: /api/method/medops.api.v1.supply.purchase.check_price
   description: 采购价格合规校验
   request_schema: item,supplier,qty,rate,date
   response_schema: benchmark,deviation,decision
@@ -699,10 +699,10 @@
   audit: Always
   version: v1
 - api_code: SUP-009
-  app: ione_hrp
+  app: medops
   domain_group: Supply
   method: POST
-  path: /api/method/ione_hrp.api.v1.supply.purchase.create_order
+  path: /api/method/medops.api.v1.supply.purchase.create_order
   description: 从批准需求创建ERPNext采购订单
   request_schema: approved_demands,supplier,terms
   response_schema: purchase_order,budget_commitment
@@ -713,10 +713,10 @@
   audit: Always
   version: v1
 - api_code: SUP-010
-  app: ione_hrp
+  app: medops
   domain_group: Supply
   method: POST
-  path: /api/method/ione_hrp.api.v1.supply.receipt.accept
+  path: /api/method/medops.api.v1.supply.receipt.accept
   description: 执行到货/质量验收
   request_schema: purchase_receipt,acceptance_lines
   response_schema: acceptance,status
@@ -727,10 +727,10 @@
   audit: Always
   version: v1
 - api_code: SUP-011
-  app: ione_hrp
+  app: medops
   domain_group: Supply
   method: POST
-  path: /api/method/ione_hrp.api.v1.supply.match.three_way
+  path: /api/method/medops.api.v1.supply.match.three_way
   description: 执行订单-入库-发票三单匹配
   request_schema: purchase_invoice
   response_schema: match_name,result,variances
@@ -741,10 +741,10 @@
   audit: Always
   version: v1
 - api_code: SUP-012
-  app: ione_hrp
+  app: medops
   domain_group: Supply
   method: POST
-  path: /api/method/ione_hrp.api.v1.supply.contract.submit
+  path: /api/method/medops.api.v1.supply.contract.submit
   description: 提交合同审批并创建预算承诺
   request_schema: contract,attachments
   response_schema: workflow_state,commitment
@@ -755,10 +755,10 @@
   audit: Always
   version: v1
 - api_code: SUP-013
-  app: ione_hrp
+  app: medops
   domain_group: Supply
   method: POST
-  path: /api/method/ione_hrp.api.v1.supply.contract.fulfill_obligation
+  path: /api/method/medops.api.v1.supply.contract.fulfill_obligation
   description: 登记合同义务履行
   request_schema: obligation,evidence,actual_date
   response_schema: status,next_action
@@ -769,10 +769,10 @@
   audit: Always
   version: v1
 - api_code: SUP-014
-  app: ione_hrp
+  app: medops
   domain_group: Supply
   method: POST
-  path: /api/method/ione_hrp.api.v1.supply.spd.consume
+  path: /api/method/medops.api.v1.supply.spd.consume
   description: 登记科室/患者耗材消耗
   request_schema: cabinet,udi,patient,procedure,qty
   response_schema: usage,stock_ledger,cost_event
@@ -783,10 +783,10 @@
   audit: Always
   version: v1
 - api_code: AST-001
-  app: ione_hrp
+  app: medops
   domain_group: Asset
   method: POST
-  path: /api/method/ione_hrp.api.v1.asset.asset.acquire
+  path: /api/method/medops.api.v1.asset.asset.acquire
   description: 从验收创建资产卡片
   request_schema: acceptance,lines
   response_schema: assets,links
@@ -797,10 +797,10 @@
   audit: Always
   version: v1
 - api_code: AST-002
-  app: ione_hrp
+  app: medops
   domain_group: Asset
   method: POST
-  path: /api/method/ione_hrp.api.v1.asset.asset.accept
+  path: /api/method/medops.api.v1.asset.asset.accept
   description: 完成资产验收
   request_schema: request,receipt,inspection
   response_schema: acceptance,status
@@ -811,10 +811,10 @@
   audit: Always
   version: v1
 - api_code: AST-003
-  app: ione_hrp
+  app: medops
   domain_group: Asset
   method: POST
-  path: /api/method/ione_hrp.api.v1.asset.asset.transfer
+  path: /api/method/medops.api.v1.asset.asset.transfer
   description: 执行资产调拨
   request_schema: asset,from,to,custodian,approval
   response_schema: asset_movement
@@ -825,10 +825,10 @@
   audit: Always
   version: v1
 - api_code: AST-004
-  app: ione_hrp
+  app: medops
   domain_group: Asset
   method: POST
-  path: /api/method/ione_hrp.api.v1.asset.equipment.generate_pm_orders
+  path: /api/method/medops.api.v1.asset.equipment.generate_pm_orders
   description: 生成预防性维护工单
   request_schema: plan,through_date
   response_schema: orders
@@ -839,10 +839,10 @@
   audit: Always
   version: v1
 - api_code: AST-005
-  app: ione_hrp
+  app: medops
   domain_group: Asset
   method: POST
-  path: /api/method/ione_hrp.api.v1.asset.equipment.report_fault
+  path: /api/method/medops.api.v1.asset.equipment.report_fault
   description: 上报设备故障
   request_schema: equipment,severity,symptom,attachments
   response_schema: fault,work_order
@@ -853,10 +853,10 @@
   audit: Always
   version: v1
 - api_code: AST-006
-  app: ione_hrp
+  app: medops
   domain_group: Asset
   method: POST
-  path: /api/method/ione_hrp.api.v1.asset.equipment.complete_maintenance
+  path: /api/method/medops.api.v1.asset.equipment.complete_maintenance
   description: 完成维护工单
   request_schema: work_order,labor,parts,result
   response_schema: status,next_due
@@ -867,10 +867,10 @@
   audit: Always
   version: v1
 - api_code: AST-007
-  app: ione_hrp
+  app: medops
   domain_group: Asset
   method: POST
-  path: /api/method/ione_hrp.api.v1.asset.calibration.import_result
+  path: /api/method/medops.api.v1.asset.calibration.import_result
   description: 导入计量校准结果
   request_schema: equipment,certificate,result,valid_until
   response_schema: record,alert
@@ -881,10 +881,10 @@
   audit: Always
   version: v1
 - api_code: AST-008
-  app: ione_hrp
+  app: medops
   domain_group: Asset
   method: POST
-  path: /api/method/ione_hrp.api.v1.asset.logistics.create_work_order
+  path: /api/method/medops.api.v1.asset.logistics.create_work_order
   description: 由服务申请生成工单
   request_schema: service_request,assignment
   response_schema: work_order,sla
@@ -895,10 +895,10 @@
   audit: Always
   version: v1
 - api_code: PEO-001
-  app: ione_hrp
+  app: medops
   domain_group: People
   method: POST
-  path: /api/method/ione_hrp.api.v1.people.credential.verify
+  path: /api/method/medops.api.v1.people.credential.verify
   description: 验证职业资质
   request_schema: credential,source
   response_schema: verification,result
@@ -909,10 +909,10 @@
   audit: Always
   version: v1
 - api_code: PEO-002
-  app: ione_hrp
+  app: medops
   domain_group: People
   method: POST
-  path: /api/method/ione_hrp.api.v1.people.privilege.check
+  path: /api/method/medops.api.v1.people.privilege.check
   description: 校验员工可执行的临床权限
   request_schema: employee,procedure,date
   response_schema: allowed,privileges,reasons
@@ -923,10 +923,10 @@
   audit: Always
   version: v1
 - api_code: PEO-003
-  app: ione_hrp
+  app: medops
   domain_group: People
   method: POST
-  path: /api/method/ione_hrp.api.v1.people.roster.generate
+  path: /api/method/medops.api.v1.people.roster.generate
   description: 根据模板生成排班
   request_schema: cycle,unit,template
   response_schema: roster_plan,assignments
@@ -937,10 +937,10 @@
   audit: Always
   version: v1
 - api_code: PEO-004
-  app: ione_hrp
+  app: medops
   domain_group: People
   method: POST
-  path: /api/method/ione_hrp.api.v1.people.roster.change
+  path: /api/method/medops.api.v1.people.roster.change
   description: 提交并应用调班
   request_schema: assignment,from_employee,to_employee,reason
   response_schema: change_request,status
@@ -951,10 +951,10 @@
   audit: Always
   version: v1
 - api_code: PEO-005
-  app: ione_hrp
+  app: medops
   domain_group: People
   method: POST
-  path: /api/method/ione_hrp.api.v1.people.attendance.import
+  path: /api/method/medops.api.v1.people.attendance.import
   description: 导入考勤源数据
   request_schema: source,batch,records
   response_schema: accepted,rejected,reconciliation
@@ -965,10 +965,10 @@
   audit: Always
   version: v1
 - api_code: PEO-006
-  app: ione_hrp
+  app: medops
   domain_group: People
   method: POST
-  path: /api/method/ione_hrp.api.v1.people.performance.collect
+  path: /api/method/medops.api.v1.people.performance.collect
   description: 采集绩效指标
   request_schema: cycle,indicator,source_payload
   response_schema: performance_data,quality_status
@@ -979,10 +979,10 @@
   audit: Always
   version: v1
 - api_code: PEO-007
-  app: ione_hrp
+  app: medops
   domain_group: People
   method: POST
-  path: /api/method/ione_hrp.api.v1.people.bonus.calculate
+  path: /api/method/medops.api.v1.people.bonus.calculate
   description: 计算绩效奖金
   request_schema: cycle,unit,scheme
   response_schema: calculation,results,trace
@@ -993,10 +993,10 @@
   audit: Always
   version: v1
 - api_code: PEO-008
-  app: ione_hrp
+  app: medops
   domain_group: People
   method: POST
-  path: /api/method/ione_hrp.api.v1.people.bonus.publish
+  path: /api/method/medops.api.v1.people.bonus.publish
   description: 发布奖金到HRMS薪资
   request_schema: calculation,payroll_period,approval
   response_schema: additional_salary_records
@@ -1007,10 +1007,10 @@
   audit: Always
   version: v1
 - api_code: PRJ-001
-  app: ione_hrp
+  app: medops
   domain_group: Project
   method: POST
-  path: /api/method/ione_hrp.api.v1.project.project.propose
+  path: /api/method/medops.api.v1.project.project.propose
   description: 提交项目申报
   request_schema: proposal,documents
   response_schema: proposal_name,workflow_state
@@ -1021,10 +1021,10 @@
   audit: Always
   version: v1
 - api_code: PRJ-002
-  app: ione_hrp
+  app: medops
   domain_group: Project
   method: POST
-  path: /api/method/ione_hrp.api.v1.project.project.stage_gate
+  path: /api/method/medops.api.v1.project.project.stage_gate
   description: 执行项目阶段闸门
   request_schema: project,gate,evidence,decision
   response_schema: stage,status,next_gate
@@ -1035,10 +1035,10 @@
   audit: Always
   version: v1
 - api_code: PRJ-003
-  app: ione_hrp
+  app: medops
   domain_group: Project
   method: POST
-  path: /api/method/ione_hrp.api.v1.project.research.import_output
+  path: /api/method/medops.api.v1.project.research.import_output
   description: 导入科研成果
   request_schema: research_project,outputs
   response_schema: created,duplicates
@@ -1049,10 +1049,10 @@
   audit: Always
   version: v1
 - api_code: PRJ-004
-  app: ione_hrp
+  app: medops
   domain_group: Project
   method: POST
-  path: /api/method/ione_hrp.api.v1.project.capital.progress
+  path: /api/method/medops.api.v1.project.capital.progress
   description: 登记基建进度与工程量
   request_schema: capital_project,period,progress,quantity
   response_schema: progress_record,payment_eligible
@@ -1063,10 +1063,10 @@
   audit: Always
   version: v1
 - api_code: PRJ-005
-  app: ione_hrp
+  app: medops
   domain_group: Project
   method: POST
-  path: /api/method/ione_hrp.api.v1.project.project.close
+  path: /api/method/medops.api.v1.project.project.close
   description: 项目结题与余额处理
   request_schema: project,acceptance,settlement
   response_schema: closure,budget_release,archive
@@ -1077,10 +1077,10 @@
   audit: Always
   version: v1
 - api_code: GOV-001
-  app: ione_hrp
+  app: medops
   domain_group: Governance
   method: POST
-  path: /api/method/ione_hrp.api.v1.governance.control.test
+  path: /api/method/medops.api.v1.governance.control.test
   description: 执行控制测试
   request_schema: control,test_plan,sample,evidence
   response_schema: test_result,deficiency
@@ -1091,10 +1091,10 @@
   audit: Always
   version: v1
 - api_code: GOV-002
-  app: ione_hrp
+  app: medops
   domain_group: Governance
   method: POST
-  path: /api/method/ione_hrp.api.v1.governance.risk.recalculate
+  path: /api/method/medops.api.v1.governance.risk.recalculate
   description: 重算风险评分
   request_schema: risk_register,assessment_date
   response_schema: inherent,residual,level
@@ -1105,10 +1105,10 @@
   audit: Always
   version: v1
 - api_code: GOV-003
-  app: ione_hrp
+  app: medops
   domain_group: Governance
   method: POST
-  path: /api/method/ione_hrp.api.v1.governance.audit.create_sample
+  path: /api/method/medops.api.v1.governance.audit.create_sample
   description: 按规则生成审计样本
   request_schema: audit_project,population,method,size
   response_schema: sample,selected_items,seed
@@ -1119,10 +1119,10 @@
   audit: Always
   version: v1
 - api_code: GOV-004
-  app: ione_hrp
+  app: medops
   domain_group: Governance
   method: POST
-  path: /api/method/ione_hrp.api.v1.governance.finding.issue
+  path: /api/method/medops.api.v1.governance.finding.issue
   description: 下发审计发现
   request_schema: audit_project,finding,owner,due_date
   response_schema: finding_name,notification
@@ -1133,10 +1133,10 @@
   audit: Always
   version: v1
 - api_code: GOV-005
-  app: ione_hrp
+  app: medops
   domain_group: Governance
   method: POST
-  path: /api/method/ione_hrp.api.v1.governance.remediation.verify
+  path: /api/method/medops.api.v1.governance.remediation.verify
   description: 验证整改
   request_schema: remediation,evidence,decision
   response_schema: verification,status
@@ -1147,10 +1147,10 @@
   audit: Always
   version: v1
 - api_code: PLT-001
-  app: ione_hrp
+  app: medops
   domain_group: Platform
   method: POST
-  path: /api/method/ione_hrp.api.v1.platform.integration.receive
+  path: /api/method/medops.api.v1.platform.integration.receive
   description: 统一入站接口
   request_schema: interface_code,headers,payload
   response_schema: message_id,accepted
@@ -1161,10 +1161,10 @@
   audit: Always
   version: v1
 - api_code: PLT-002
-  app: ione_hrp
+  app: medops
   domain_group: Platform
   method: POST
-  path: /api/method/ione_hrp.api.v1.platform.integration.publish
+  path: /api/method/medops.api.v1.platform.integration.publish
   description: 发布领域事件/外发消息
   request_schema: event_type,aggregate,payload
   response_schema: outbox_id
@@ -1175,10 +1175,10 @@
   audit: Always
   version: v1
 - api_code: PLT-003
-  app: ione_hrp
+  app: medops
   domain_group: Platform
   method: POST
-  path: /api/method/ione_hrp.api.v1.platform.integration.retry
+  path: /api/method/medops.api.v1.platform.integration.retry
   description: 重试失败消息
   request_schema: message_id,reason
   response_schema: status,next_retry
@@ -1189,10 +1189,10 @@
   audit: Always
   version: v1
 - api_code: PLT-004
-  app: ione_hrp
+  app: medops
   domain_group: Platform
   method: POST
-  path: /api/method/ione_hrp.api.v1.platform.reconciliation.run
+  path: /api/method/medops.api.v1.platform.reconciliation.run
   description: 执行跨系统对账
   request_schema: job,date_range,scope
   response_schema: job_run,differences
@@ -1203,10 +1203,10 @@
   audit: Always
   version: v1
 - api_code: PLT-005
-  app: ione_hrp
+  app: medops
   domain_group: Platform
   method: POST
-  path: /api/method/ione_hrp.api.v1.platform.metric.refresh
+  path: /api/method/medops.api.v1.platform.metric.refresh
   description: 刷新指标
   request_schema: metric,date_range,dimensions
   response_schema: job_id,snapshot_count
@@ -1217,10 +1217,10 @@
   audit: Always
   version: v1
 - api_code: PLT-006
-  app: ione_hrp
+  app: medops
   domain_group: Platform
   method: POST
-  path: /api/method/ione_hrp.api.v1.platform.ai.invoke
+  path: /api/method/medops.api.v1.platform.ai.invoke
   description: 受控调用AI能力
   request_schema: agent,task,context,confirmation_token
   response_schema: invocation,result,citations
@@ -1231,10 +1231,10 @@
   audit: Always
   version: v1
 - api_code: PLT-007
-  app: ione_hrp
+  app: medops
   domain_group: Platform
   method: GET
-  path: /api/method/ione_hrp.api.v1.health.get_upstream_version_status
+  path: /api/method/medops.api.v1.health.get_upstream_version_status
   description: 查询上游版本锁匹配状态
   request_schema: 无
   response_schema: status,lock,runtime,issues
@@ -1245,10 +1245,10 @@
   audit: Request log
   version: v1
 - api_code: PLT-008
-  app: ione_hrp
+  app: medops
   domain_group: Platform
   method: GET
-  path: /api/method/ione_hrp.api.v1.modules.list_modules
+  path: /api/method/medops.api.v1.modules.list_modules
   description: 查询已发布模块及站点启停状态
   request_schema: 无
   response_schema: module,module_key,domain_group,label_cn,enabled,sequence,description
@@ -1259,10 +1259,10 @@
   audit: Request log
   version: v1
 - api_code: PLT-009
-  app: ione_hrp
+  app: medops
   domain_group: Platform
   method: POST
-  path: /api/method/ione_hrp.api.v1.modules.set_module_enabled
+  path: /api/method/medops.api.v1.modules.set_module_enabled
   description: 幂等启停已发布模块
   request_schema: Idempotency-Key,module_name,enabled,correlation_id
   response_schema: module,enabled,changed,correlation_id,request_id,idempotency_replayed
@@ -1273,10 +1273,10 @@
   audit: Encrypted response snapshot + redacted site log
   version: v1
 - api_code: PLT-010
-  app: ione_hrp
+  app: medops
   domain_group: Platform
   method: GET
-  path: /api/method/ione_hrp.api.v1.environment.get_environment_status
+  path: /api/method/medops.api.v1.environment.get_environment_status
   description: 查询当前非生产环境安全配置
   request_schema: 无
   response_schema: managed,name,schema_version,developer_mode,allow_tests,scheduler_enabled,external_integrations_enabled,email_queue_enabled,synthetic_data_only,public_access,reset_policy
@@ -1287,10 +1287,10 @@
   audit: Request log
   version: v1
 - api_code: PLT-011
-  app: ione_hrp
+  app: medops
   domain_group: Platform
   method: GET
-  path: /api/method/ione_hrp.api.v1.fixtures.get_fixture_governance_status
+  path: /api/method/medops.api.v1.fixtures.get_fixture_governance_status
   description: 查询Fixtures导出治理状态
   request_schema: 无
   response_schema: policy,rules,repository,export
@@ -1301,10 +1301,10 @@
   audit: Request log
   version: v1
 - api_code: PLT-012
-  app: ione_hrp
+  app: medops
   domain_group: Platform
   method: GET
-  path: /api/method/ione_hrp.api.v1.change_governance.get_change_governance_status
+  path: /api/method/medops.api.v1.change_governance.get_change_governance_status
   description: 查询ADR与变更治理状态
   request_schema: correlation_id
   response_schema: schema_version,task_count,change_record_count,decision_count,accepted_decisions,sha256,correlation_id,http_write_enabled
@@ -1315,10 +1315,10 @@
   audit: Redacted site log
   version: v1
 - api_code: PLT-013
-  app: ione_hrp
+  app: medops
   domain_group: Platform
   method: GET
-  path: /api/method/ione_hrp.api.v1.errors.get_error_catalog
+  path: /api/method/medops.api.v1.errors.get_error_catalog
   description: 查询统一错误码目录
   request_schema: 无
   response_schema: schema_version,namespace,error_count,sha256,errors,http_write_enabled
@@ -1329,10 +1329,10 @@
   audit: Redacted site log
   version: v1
 - api_code: PLT-014
-  app: ione_hrp
+  app: medops
   domain_group: Platform
   method: GET
-  path: /api/method/ione_hrp.api.v1.audit.get_audit_context
+  path: /api/method/medops.api.v1.audit.get_audit_context
   description: 查询当前请求的审计上下文
   request_schema: X-Correlation-ID
   response_schema: schema_version,correlation_id,request_id,parent_request_id,channel,http_write_enabled
@@ -1343,10 +1343,10 @@
   audit: Redacted context log
   version: v1
 - api_code: PLT-015
-  app: ione_hrp
+  app: medops
   domain_group: Platform
   method: GET
-  path: /api/method/ione_hrp.api.v1.ledgers.get_immutable_ledger_contract
+  path: /api/method/medops.api.v1.ledgers.get_immutable_ledger_contract
   description: 查询不可变台账公共契约
   request_schema: 无
   response_schema: schema_version,base_fields,mutation_policy,reversal_policy,http_write_enabled
@@ -1357,10 +1357,10 @@
   audit: Redacted site log
   version: v1
 - api_code: PLT-016
-  app: ione_hrp
+  app: medops
   domain_group: Platform
   method: GET
-  path: /api/method/ione_hrp.api.v1.messages.get_transactional_message_contract
+  path: /api/method/medops.api.v1.messages.get_transactional_message_contract
   description: 查询Outbox/Inbox事务消息公共契约
   request_schema: 无
   response_schema: schema_version,base_fields,statuses,delivery_semantics,mutation_policy,http_write_enabled
@@ -1371,10 +1371,10 @@
   audit: Redacted site log
   version: v1
 - api_code: PLT-017
-  app: ione_hrp
+  app: medops
   domain_group: Platform
   method: GET
-  path: /api/method/ione_hrp.api.v1.test_data.get_test_data_factory_contract
+  path: /api/method/medops.api.v1.test_data.get_test_data_factory_contract
   description: 查询测试数据工厂公共契约
   request_schema: 无
   response_schema: schema_version,scenario_count,scenarios,seed_policy,generation_policy,environment,generation_available
@@ -1385,10 +1385,10 @@
   audit: Redacted site log
   version: v1
 - api_code: PLT-018
-  app: ione_hrp
+  app: medops
   domain_group: Platform
   method: GET
-  path: /api/method/ione_hrp.api.v1.performance.get_performance_baseline_contract
+  path: /api/method/medops.api.v1.performance.get_performance_baseline_contract
   description: 查询性能基线与非生产压测许可契约
   request_schema: 无
   response_schema: schema_version,scenario_count,scenarios,execution_policy,result_policy,environment,load_test_available
@@ -1399,10 +1399,10 @@
   audit: Redacted site log
   version: v1
 - api_code: PLT-019
-  app: ione_hrp
+  app: medops
   domain_group: Platform
   method: GET
-  path: /api/method/ione_hrp.api.v1.security.get_software_supply_chain_contract
+  path: /api/method/medops.api.v1.security.get_software_supply_chain_contract
   description: 查询软件供应链安全与SBOM治理契约
   request_schema: 无
   response_schema: schema_version,app,sha256,sbom,execution_policy,tools,gates,exception_count,exceptions,scan_available_from_site,artifact_storage
@@ -1413,10 +1413,10 @@
   audit: Redacted site log
   version: v1
 - api_code: PLT-020
-  app: ione_hrp
+  app: medops
   domain_group: Platform
   method: GET
-  path: /api/method/ione_hrp.api.v1.settings.get_system_settings
+  path: /api/method/medops.api.v1.settings.get_system_settings
   description: 查询HRP系统设置
   request_schema: 无
   response_schema: schema_version,doctype,enabled,release_channel,default_company,default_hospital,strict_data_scope,require_human_confirmation_for_ai,integration_timeout_seconds,remarks,configuration_version
@@ -1427,10 +1427,10 @@
   audit: Redacted field-state log
   version: v1
 - api_code: PLT-021
-  app: ione_hrp
+  app: medops
   domain_group: Platform
   method: POST
-  path: /api/method/ione_hrp.api.v1.settings.update_system_settings
+  path: /api/method/medops.api.v1.settings.update_system_settings
   description: 更新HRP系统设置
   request_schema: enabled,default_company,default_hospital,integration_timeout_seconds,remarks,expected_version
   response_schema: schema_version,doctype,enabled,release_channel,default_company,default_hospital,strict_data_scope,require_human_confirmation_for_ai,integration_timeout_seconds,remarks,configuration_version,changed,changed_fields,correlation_id,request_id,idempotency_replayed
@@ -1441,10 +1441,10 @@
   audit: Redacted field-name and version log
   version: v1
 - api_code: POR-001
-  app: ione_hrp
+  app: medops
   domain_group: Portal
   method: GET
-  path: /api/method/ione_hrp.api.v1.portal.home.get
+  path: /api/method/medops.api.v1.portal.home.get
   description: 获取个性化门户首页
   request_schema: context
   response_schema: cards,tasks,alerts,shortcuts
@@ -1455,10 +1455,10 @@
   audit: Always
   version: v1
 - api_code: POR-002
-  app: ione_hrp
+  app: medops
   domain_group: Portal
   method: POST
-  path: /api/method/ione_hrp.api.v1.portal.service.submit
+  path: /api/method/medops.api.v1.portal.service.submit
   description: 提交统一服务表单
   request_schema: service_form,payload,attachments
   response_schema: submission,workflow_state

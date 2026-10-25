@@ -34,15 +34,23 @@ class VersionLockTest(unittest.TestCase):
 			issues,
 		)
 		self.assertIn(
-			"hrms repository must be https://github.com/frappe/hrms.git",
+			"hrms repository must be https://github.com/jerry317395616/hrms.git",
 			issues,
 		)
 
 	def test_normalizes_supported_github_remote_forms(self) -> None:
 		self.assertEqual(
-			normalize_repository("git@github.com:frappe/frappe.git"),
-			normalize_repository("https://github.com/frappe/frappe"),
+			normalize_repository("git@github.com:jerry317395616/frappe.git"),
+			normalize_repository("https://github.com/jerry317395616/frappe"),
 		)
+
+	def test_rejects_direct_official_and_other_owner_sources(self) -> None:
+		for owner in ("frappe", "another-owner"):
+			for app in UPSTREAM_APPS:
+				with self.subTest(owner=owner, app=app):
+					lock = deepcopy(load_lock(DEFAULT_LOCK))
+					lock["apps"][app]["repository"] = f"https://github.com/{owner}/{app}.git"
+					self.assertTrue(any("repository must be" in issue for issue in validate_lock(lock)))
 
 	def test_accepts_bench_upstream_remote_name(self) -> None:
 		with tempfile.TemporaryDirectory() as temp:

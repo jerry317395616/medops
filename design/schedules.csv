@@ -1,33 +1,33 @@
 schedule_code,frequency,cron_or_time,handler,purpose,app,domain_group
-SCH-001,All,*/5 * * * *,process_integration_outbox,发送待处理Outbox消息,ione_hrp,Platform
-SCH-002,All,*/10 * * * *,retry_failed_integrations,按退避策略重试失败接口,ione_hrp,Platform
-SCH-003,All,0 * * * *,monitor_interface_sla,检查接口SLA和积压,ione_hrp,Platform
-SCH-004,Daily,01:00,run_daily_reconciliation,运行库存、财务、银行和HIS日对账,ione_hrp,Platform
-SCH-005,Daily,02:00,refresh_daily_metrics,刷新日粒度指标,ione_hrp,Platform
-SCH-006,Daily,03:00,run_data_quality_rules,运行主数据和交易数据质量规则,ione_hrp,Core
-SCH-007,Daily,04:00,ione_hrp.hrp_workflow_authorization.services.delegation.sync_delegation_statuses,激活到期计划并失效过期审批委托,ione_hrp,Core
-SCH-008,Daily,06:00,generate_due_alerts,生成合同、证照、设备和库存到期预警,ione_hrp,Core
-SCH-009,Daily,07:00,prepare_manager_inbox_digest,生成管理者待办摘要,ione_hrp,Portal
-SCH-010,Daily,08:00,sync_bank_statements,拉取银行流水,ione_hrp,Finance
-SCH-011,Daily,09:00,recalculate_budget_availability,核对预算可用额缓存,ione_hrp,Finance
-SCH-012,Daily,23:00,snapshot_fund_position,生成资金头寸快照,ione_hrp,Finance
-SCH-013,Daily,23:15,snapshot_department_inventory,生成科室库存快照,ione_hrp,Supply
-SCH-014,Daily,23:30,snapshot_equipment_utilization,生成设备利用快照,ione_hrp,Asset
-SCH-015,Daily,23:45,snapshot_workforce,生成人力快照,ione_hrp,People
-SCH-016,Weekly,Mon 01:00,generate_pm_orders,生成未来两周预防性维护工单,ione_hrp,Asset
-SCH-017,Weekly,Mon 02:00,evaluate_supplier_risk,刷新供应商风险与证照评分,ione_hrp,Supply
-SCH-018,Weekly,Mon 03:00,evaluate_sod_conflicts,扫描不相容职责冲突,ione_hrp,Governance
-SCH-019,Weekly,Sun 02:00,archive_closed_documents,归档达到条件的关闭单据,ione_hrp,Asset
-SCH-020,Monthly,1 01:00,open_costing_period,初始化成本核算期间,ione_hrp,Finance
-SCH-021,Monthly,1 02:00,open_performance_period,初始化绩效周期,ione_hrp,People
-SCH-022,Monthly,3 01:00,collect_cost_drivers,采集上月成本动因,ione_hrp,Finance
-SCH-023,Monthly,5 02:00,run_costing_draft,运行成本试算,ione_hrp,Finance
-SCH-024,Monthly,7 02:00,recalculate_performance,运行绩效试算,ione_hrp,People
-SCH-025,Monthly,Last 20:00,period_close_precheck,执行关账前检查,ione_hrp,Finance
-SCH-026,Quarterly,Q+5,supplier_evaluation_cycle,创建供应商季度评价,ione_hrp,Supply
-SCH-027,Quarterly,Q+10,control_self_assessment,创建内控自评任务,ione_hrp,Governance
-SCH-028,Yearly,Oct 01,create_budget_cycle,创建下一年度预算周期,ione_hrp,Finance
-SCH-029,Yearly,Dec 20,year_end_rollover_precheck,年度结转预检查,ione_hrp,Finance
-SCH-030,All,0 */6 * * *,scan_file_security,文件病毒扫描和保留策略检查,ione_hrp,Platform
-SCH-031,Daily,05:00,refresh_knowledge_index,增量更新RAG知识索引,ione_hrp,Platform
-SCH-032,Daily,00:30,purge_ephemeral_payloads,按策略清理临时报文和AI输入,ione_hrp,Platform
+SCH-001,All,*/5 * * * *,process_integration_outbox,发送待处理Outbox消息,medops,Platform
+SCH-002,All,*/10 * * * *,retry_failed_integrations,按退避策略重试失败接口,medops,Platform
+SCH-003,All,0 * * * *,monitor_interface_sla,检查接口SLA和积压,medops,Platform
+SCH-004,Daily,01:00,run_daily_reconciliation,运行库存、财务、银行和HIS日对账,medops,Platform
+SCH-005,Daily,02:00,refresh_daily_metrics,刷新日粒度指标,medops,Platform
+SCH-006,Daily,03:00,run_data_quality_rules,运行主数据和交易数据质量规则,medops,Core
+SCH-007,Daily,04:00,medops.hrp_workflow_authorization.services.delegation.sync_delegation_statuses,激活到期计划并失效过期审批委托,medops,Core
+SCH-008,Daily,06:00,generate_due_alerts,生成合同、证照、设备和库存到期预警,medops,Core
+SCH-009,Daily,07:00,prepare_manager_inbox_digest,生成管理者待办摘要,medops,Portal
+SCH-010,Daily,08:00,sync_bank_statements,拉取银行流水,medops,Finance
+SCH-011,Daily,09:00,recalculate_budget_availability,核对预算可用额缓存,medops,Finance
+SCH-012,Daily,23:00,snapshot_fund_position,生成资金头寸快照,medops,Finance
+SCH-013,Daily,23:15,snapshot_department_inventory,生成科室库存快照,medops,Supply
+SCH-014,Daily,23:30,snapshot_equipment_utilization,生成设备利用快照,medops,Asset
+SCH-015,Daily,23:45,snapshot_workforce,生成人力快照,medops,People
+SCH-016,Weekly,Mon 01:00,generate_pm_orders,生成未来两周预防性维护工单,medops,Asset
+SCH-017,Weekly,Mon 02:00,evaluate_supplier_risk,刷新供应商风险与证照评分,medops,Supply
+SCH-018,Weekly,Mon 03:00,evaluate_sod_conflicts,扫描不相容职责冲突,medops,Governance
+SCH-019,Weekly,Sun 02:00,archive_closed_documents,归档达到条件的关闭单据,medops,Asset
+SCH-020,Monthly,1 01:00,open_costing_period,初始化成本核算期间,medops,Finance
+SCH-021,Monthly,1 02:00,open_performance_period,初始化绩效周期,medops,People
+SCH-022,Monthly,3 01:00,collect_cost_drivers,采集上月成本动因,medops,Finance
+SCH-023,Monthly,5 02:00,run_costing_draft,运行成本试算,medops,Finance
+SCH-024,Monthly,7 02:00,recalculate_performance,运行绩效试算,medops,People
+SCH-025,Monthly,Last 20:00,period_close_precheck,执行关账前检查,medops,Finance
+SCH-026,Quarterly,Q+5,supplier_evaluation_cycle,创建供应商季度评价,medops,Supply
+SCH-027,Quarterly,Q+10,control_self_assessment,创建内控自评任务,medops,Governance
+SCH-028,Yearly,Oct 01,create_budget_cycle,创建下一年度预算周期,medops,Finance
+SCH-029,Yearly,Dec 20,year_end_rollover_precheck,年度结转预检查,medops,Finance
+SCH-030,All,0 */6 * * *,scan_file_security,文件病毒扫描和保留策略检查,medops,Platform
+SCH-031,Daily,05:00,refresh_knowledge_index,增量更新RAG知识索引,medops,Platform
+SCH-032,Daily,00:30,purge_ephemeral_payloads,按策略清理临时报文和AI输入,medops,Platform

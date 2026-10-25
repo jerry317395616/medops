@@ -1,9 +1,9 @@
-# ione_hrp 仓库与分支治理
+# medops 仓库与分支治理
 
 ## 范围
 
 本仓库是医院 HRP 的唯一 mono-repo，也是可被 Press 直接克隆的标准 Frappe
-App 仓库。自研代码只能位于根目录的 `ione_hrp` Python 包，业务边界使用
+App 仓库。自研代码只能位于根目录的 `medops` Python 包，业务边界使用
 该 App 内部的 Frappe Module 和
 Python 包表达。`frappe`、`erpnext`、`hrms` 是锁定提交的上游依赖，不纳入
 本仓库，也不得修改其核心源码。
@@ -35,14 +35,14 @@ python scripts/apply_branch_protection.py --apply
 
 COD-005 已建立 GitHub Actions 流水线；`main` 分支保护必须要求 API 上下文
 `Required`（GitHub 页面显示为 `CI / Required`）。该检查只有仓库质量、前端
-检查、秘密与依赖扫描、锁定 Bench 迁移和 `ione_hrp` 集成测试全部成功时才通过。
+检查、秘密与依赖扫描、锁定 Bench 迁移和 `medops` 集成测试全部成功时才通过。
 
 ## 单应用边界
 
-1. 只允许仓库根目录的 `ione_hrp` 一个自研 App。
+1. 只允许仓库根目录的 `medops` 一个自研 App。
 2. 新业务域登记到 `architecture/module_registry.yaml` 和
-   `ione_hrp/modules.txt`，并创建对应模块包。
-3. 禁止创建 `ione_hrp_budget`、`ione_hrp_supply` 等独立 App。
+   `medops/modules.txt`，并创建对应模块包。
+3. 禁止创建 `medops_budget`、`medops_supply` 等独立 App。
 4. 跨模块调用通过公开 service facade 或领域事件。
 5. 禁止直接写 `GL Entry`、`Stock Ledger Entry`、`Bin`。
 6. 标准业务过账必须调用 ERPNext/Frappe HR 标准控制器。
@@ -73,7 +73,7 @@ ADR、变更记录、状态机、风险升级和差异覆盖的完整契约见
 Frappe 只提供管理员只读状态，不允许从生产 Site 改写架构决策。
 
 Press 不支持从 Git 仓库子目录加载 App，因此 `pyproject.toml` 必须位于仓库
-根目录，且 `ione_hrp/hooks.py` 必须可被 Press 的 App Source 直接发现。
+根目录，且 `medops/hooks.py` 必须可被 Press 的 App Source 直接发现。
 
 ## COD-001 适用性说明
 

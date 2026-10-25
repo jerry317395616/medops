@@ -1,5 +1,5 @@
 {
-	"include": ["ione_hrp", "scripts", "tests"],
+	"include": ["medops", "scripts", "tests"],
 	"exclude": ["**/__pycache__", ".venv", "apps", "build", "dist", "node_modules", "venv"],
 	"extraPaths": [".", "apps/frappe", "apps/erpnext", "apps/hrms", "../frappe", "../erpnext", "../hrms"],
 	"pythonVersion": "3.10",

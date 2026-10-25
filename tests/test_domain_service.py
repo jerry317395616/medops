@@ -3,7 +3,7 @@ from __future__ import annotations
 import math
 import unittest
 
-from ione_hrp.common.domain_service import (
+from medops.common.domain_service import (
 	DOMAIN_SERVICE_SCHEMA_VERSION,
 	DomainServiceContractError,
 	DomainServiceDefinition,

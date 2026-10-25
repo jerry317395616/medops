@@ -18,6 +18,8 @@ const frappeGlobals = {
 export default [
 	{
 		ignores: [
+			"**/.venv/**",
+			"**/venv/**",
 			"**/assets/**",
 			"**/build/**",
 			"**/dist/**",
@@ -30,7 +32,7 @@ export default [
 	...tseslint.configs.recommended,
 	...vue.configs["flat/recommended"],
 	{
-		files: ["ione_hrp/**/*.{js,ts,vue}"],
+		files: ["medops/**/*.{js,ts,vue}"],
 		languageOptions: {
 			ecmaVersion: "latest",
 			globals: {
@@ -41,7 +43,7 @@ export default [
 		},
 	},
 	{
-		files: ["ione_hrp/**/*.js"],
+		files: ["medops/**/*.js"],
 		rules: {
 			"no-unused-vars": [
 				"error",
@@ -54,7 +56,7 @@ export default [
 		},
 	},
 	{
-		files: ["ione_hrp/**/*.{ts,vue}"],
+		files: ["medops/**/*.{ts,vue}"],
 		rules: {
 			"@typescript-eslint/no-unused-vars": [
 				"error",
@@ -68,7 +70,7 @@ export default [
 		},
 	},
 	{
-		files: ["ione_hrp/**/*.vue"],
+		files: ["medops/**/*.vue"],
 		languageOptions: {
 			parserOptions: {
 				extraFileExtensions: [".vue"],

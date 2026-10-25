@@ -2,7 +2,7 @@
 
 ## 目标和边界
 
-COD-012 为 `ione_hrp` 内部业务台账提供统一的追加、冲销、权限、审计、幂等和并发契约。
+COD-012 为 `medops` 内部业务台账提供统一的追加、冲销、权限、审计、幂等和并发契约。
 它不创建“万能台账” DocType，也不提前实现预算或科室库存业务。后续
 `HRP Budget Ledger`、`HRP Department Stock Ledger` 等具体 DocType 仍归各自模块，
 只继承公共控制器和服务。

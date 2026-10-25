@@ -46,9 +46,9 @@ API 返回编号与预留令牌；幂等重放返回原响应而不再次递增�
 
 ## API
 
-- `CORE-006 POST ione_hrp.api.v1.core.numbering.next`：分配编号；
-- `CORE-026 POST ione_hrp.api.v1.core.numbering.upsert_scheme`：创建或修订方案；
-- `CORE-027 GET ione_hrp.api.v1.core.numbering.get_reservation`：查询预留。
+- `CORE-006 POST medops.api.v1.core.numbering.next`：分配编号；
+- `CORE-026 POST medops.api.v1.core.numbering.upsert_scheme`：创建或修订方案；
+- `CORE-027 GET medops.api.v1.core.numbering.get_reservation`：查询预留。
 
 两个 POST 均要求 `Idempotency-Key`，所有接口支持 `X-Correlation-ID`。公开错误只使用统一
 `IONE-CORE` 错误目录。

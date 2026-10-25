@@ -1,7 +1,7 @@
 ---
 id: ADR-0001
 title: 采用单一自研 Frappe App 和多模块架构
-status: Accepted
+status: Superseded
 date: 2026-07-28
 deciders:
   - 产品负责人
@@ -10,7 +10,7 @@ task_ids:
   - COD-003
   - COD-008
 supersedes: []
-superseded_by:
+superseded_by: ADR-0021
 ---
 
 # ADR-0001 采用单一自研 Frappe App 和多模块架构

@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import unittest
 
-from ione_hrp.common.access_scope import (
+from medops.common.access_scope import (
 	ACCESS_ACTIONS,
 	AccessScopeContractError,
 	ScopeGrant,

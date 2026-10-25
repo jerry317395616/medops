@@ -1,1 +1,1 @@
-"""Repository automation helpers for the I-ONE HRP monorepo."""
+"""Repository automation helpers for the MedOps monorepo."""

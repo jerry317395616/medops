@@ -2,7 +2,7 @@
 
 ## 决策
 
-HRP 自研能力统一放入 `ione_hrp` 一个 Frappe App。Frappe、ERPNext 和 Frappe HR 仍是独立上游依赖。业务边界使用 Frappe Module、Python 包、领域服务、权限和事件隔离，而不是拆成九个自研 App。
+HRP 自研能力统一放入 `medops` 一个 Frappe App。Frappe、ERPNext 和 Frappe HR 仍是独立上游依赖。业务边界使用 Frappe Module、Python 包、领域服务、权限和事件隔离，而不是拆成九个自研 App。
 
 该决策由
 `architecture/adr/ADR-0001-single-application-architecture.md` 正式记录。
@@ -33,7 +33,7 @@ HRP 自研能力统一放入 `ione_hrp` 一个 Frappe App。Frappe、ERPNext 和
 pyproject.toml
 architecture/
 └── module_registry.yaml
-ione_hrp/
+medops/
 ├── hooks.py
 ├── modules.txt
 ├── common/
@@ -51,7 +51,7 @@ ione_hrp/
 
 ## 模块新增流程
 
-1. 在 Bench 中运行 `bench ione-hrp-create-module ... --yes`，或在开发包根目录运行 `scripts/create_module.py`。
+1. 在 Bench 中运行 `bench medops-create-module ... --yes`，或在开发包根目录运行 `scripts/create_module.py`。
 2. 审查 `modules.txt`、模块包和 `module_registry.yaml`。
 3. 在模块目录中创建标准 DocType/Report/Page/Workspace。
 4. 运行 `bench --site <site> migrate`；`after_migrate` 会补齐 Module Def 与 HRP Module Setting。
@@ -62,12 +62,12 @@ ione_hrp/
 ## 模块注册表契约
 
 `architecture/module_registry.yaml` 是模块显示名、Python 包名、领域组、中文
-名称、默认启用状态和顺序的唯一机器权威。`ione_hrp.services.module_registry`
+名称、默认启用状态和顺序的唯一机器权威。`medops.services.module_registry`
 负责解析和严格校验，以下入口不得自行实现另一套解析规则：
 
 - 安装和迁移阶段的 `Module Def`、`HRP Module Setting` 同步；
 - 模块查询与启停 API；
-- `bench ione-hrp-create-module` 和 `scripts/create_module.py`；
+- `bench medops-create-module` 和 `scripts/create_module.py`；
 - 仓库契约、打包校验与自动化测试。
 
 当前基线必须恰好登记 36 个模块。注册表、`modules.txt`、模块目录、

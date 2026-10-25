@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import unittest
 
-from ione_hrp.common.audit_context import (
+from medops.common.audit_context import (
 	AUDIT_CONTEXT_SCHEMA_VERSION,
 	AuditContext,
 	AuditContextError,
@@ -116,8 +116,8 @@ class TestAuditContext(unittest.TestCase):
 
 	def test_audit_event_and_logger_names_are_namespaced(self) -> None:
 		self.assertEqual(normalize_audit_event("module_enabled_changed"), "module_enabled_changed")
-		self.assertEqual(normalize_logger_name("ione_hrp.audit"), "ione_hrp.audit")
-		for value in ("Module Changed", "a", "ione_hrp/audit", "frappe.audit"):
+		self.assertEqual(normalize_logger_name("medops.audit"), "medops.audit")
+		for value in ("Module Changed", "a", "medops/audit", "frappe.audit"):
 			with self.subTest(value=value), self.assertRaises(AuditContextError):
 				if value.startswith("ione") or value.startswith("frappe"):
 					normalize_logger_name(value)

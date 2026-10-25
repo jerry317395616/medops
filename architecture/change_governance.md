@@ -6,13 +6,13 @@
 唯一权威。Frappe Site 不保存可编辑副本，也不提供批准或变更状态的 HTTP 写
 接口：
 
-- `ione_hrp/config/change_governance.json`：状态机、风险等级、受保护路径；
+- `medops/config/change_governance.json`：状态机、风险等级、受保护路径；
 - `architecture/adr`：严格 front matter 和固定章节的可读 ADR；
 - `changes/COD-XXX.json`：任务、风险、影响模块、迁移、回滚、权限、安全和测试；
 - `backlog/backlog.csv`：任务状态与依赖；
 - Git 分支、Pull Request、CI 和提交历史：身份、评审和不可变审计证据。
 
-`ione_hrp.services.change_governance` 只向 `System Manager` 或
+`medops.services.change_governance` 只向 `System Manager` 或
 `HRP System Manager` 返回脱敏摘要。API 不返回绝对路径、ADR 正文、决策人、
 Git 命令输出或凭据。
 

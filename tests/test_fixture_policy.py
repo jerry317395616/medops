@@ -5,7 +5,7 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from ione_hrp.common.fixture_policy import (
+from medops.common.fixture_policy import (
 	FIXTURE_DIRECTORY,
 	POLICY_PATH,
 	FixturePolicyError,
@@ -61,7 +61,7 @@ class FixturePolicyTest(unittest.TestCase):
 		payload = [
 			{
 				"doctype": "Custom Field",
-				"name": "Company-ione_hrp_probe",
+				"name": "Company-medops_probe",
 				"module": "Accounts",
 			}
 		]
@@ -72,7 +72,7 @@ class FixturePolicyTest(unittest.TestCase):
 		rule = self.policy.get_rule("Custom Field")
 		base = {
 			"doctype": "Custom Field",
-			"name": "Company-ione_hrp_probe",
+			"name": "Company-medops_probe",
 			"module": "HRP Foundation",
 		}
 		with self.assertRaisesRegex(FixturePolicyError, "sensitive field"):
@@ -92,13 +92,13 @@ class FixturePolicyTest(unittest.TestCase):
 			payload = [
 				{
 					"doctype": "Custom Field",
-					"name": "Company-ione_hrp_z",
+					"name": "Company-medops_z",
 					"module": "HRP Foundation",
 					"modified": "2026-07-29 00:00:00",
 				},
 				{
 					"module": "HRP Foundation",
-					"name": "Company-ione_hrp_a",
+					"name": "Company-medops_a",
 					"doctype": "Custom Field",
 					"owner": "Administrator",
 				},
@@ -112,7 +112,7 @@ class FixturePolicyTest(unittest.TestCase):
 			self.assertEqual(first_text, path.read_text(encoding="utf-8"))
 			self.assertNotIn("modified", first_text)
 			self.assertNotIn("owner", first_text)
-			self.assertLess(first_text.index("ione_hrp_a"), first_text.index("ione_hrp_z"))
+			self.assertLess(first_text.index("medops_a"), first_text.index("medops_z"))
 
 	def test_extra_fixture_file_is_rejected(self) -> None:
 		with tempfile.TemporaryDirectory() as directory:

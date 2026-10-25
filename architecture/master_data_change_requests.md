@@ -9,7 +9,7 @@ COD-020 为 ERPNext 标准主数据建立可审计的“提案与复核”层，
 ## 模型
 
 `HRP Master Data Domain` 以域编码命名，一种标准 DocType 只能存在一个域。允许操作、
-字段和值类型来自 `ione_hrp.common.master_data.MASTER_DATA_TARGET_POLICIES`，保存策略版本
+字段和值类型来自 `medops.common.master_data.MASTER_DATA_TARGET_POLICIES`，保存策略版本
 和摘要用于发现配置漂移。
 
 `HRP Master Data Request` 是可提交单据，字段提案保存在 `HRP Master Data Change Item`：

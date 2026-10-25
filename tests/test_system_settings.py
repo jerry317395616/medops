@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import unittest
 
-from ione_hrp.common.system_settings import (
+from medops.common.system_settings import (
 	LOCKED_RELEASE_CHANNEL,
 	MAX_REFERENCE_LENGTH,
 	MAX_REMARKS_LENGTH,

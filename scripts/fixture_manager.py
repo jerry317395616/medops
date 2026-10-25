@@ -17,9 +17,9 @@ REPOSITORY_ROOT = Path(__file__).resolve().parents[1]
 if str(REPOSITORY_ROOT) not in sys.path:
 	sys.path.insert(0, str(REPOSITORY_ROOT))
 
-from ione_hrp.common.audit_context import AuditContextError, normalize_correlation_id
-from ione_hrp.common.constants import APP_NAME
-from ione_hrp.common.fixture_policy import (
+from medops.common.audit_context import AuditContextError, normalize_correlation_id
+from medops.common.constants import APP_NAME
+from medops.common.fixture_policy import (
 	FixturePolicy,
 	FixturePolicyError,
 	canonicalize_fixture_repository,
@@ -87,7 +87,7 @@ def build_export_target(
 		raise FixtureManagerError("Fixture export requires a non-production .localhost site")
 	app_dir = (resolved_bench / "apps" / APP_NAME).resolve()
 	if app_dir != repository_root.resolve():
-		raise FixtureManagerError("Run the fixture manager from the Bench ione_hrp source checkout")
+		raise FixtureManagerError("Run the fixture manager from the Bench medops source checkout")
 	target = ExportTarget(bench_dir=resolved_bench, site_name=site_name, app_dir=app_dir)
 	if not target.site_config_path.is_file():
 		raise FixtureManagerError("Site configuration is missing")
@@ -107,16 +107,16 @@ def _load_site_config(target: ExportTarget) -> dict[str, Any]:
 def validate_development_target(target: ExportTarget) -> None:
 	config = _load_site_config(target)
 	if (
-		config.get("ione_hrp_environment") != "development"
+		config.get("medops_environment") != "development"
 		or config.get("developer_mode") not in (1, True)
 		or config.get("allow_tests") not in (1, True)
-		or config.get("ione_hrp_external_integrations_enabled") not in (0, False)
+		or config.get("medops_external_integrations_enabled") not in (0, False)
 	):
 		raise FixtureManagerError("Fixture export target is not the managed development site")
 
 
 def validate_hook_contract(policy: FixturePolicy) -> None:
-	import ione_hrp.hooks as hooks
+	import medops.hooks as hooks
 
 	if getattr(hooks, "fixture_auto_order", None) is not policy.fixture_auto_order:
 		raise FixtureManagerError("hooks.py fixture_auto_order does not match policy")
@@ -213,7 +213,7 @@ def export_managed_fixtures(
 			"--site",
 			target.site_name,
 			"execute",
-			"ione_hrp.services.fixtures.assert_fixture_export_allowed",
+			"medops.services.fixtures.assert_fixture_export_allowed",
 		],
 		cwd=target.bench_dir,
 	)
@@ -268,7 +268,7 @@ def _correlation_id(value: str | None) -> str:
 
 
 def main() -> int:
-	parser = argparse.ArgumentParser(description="Govern I-ONE HRP Frappe fixture exports.")
+	parser = argparse.ArgumentParser(description="Govern MedOps Frappe fixture exports.")
 	subparsers = parser.add_subparsers(dest="command", required=True)
 	subparsers.add_parser("validate", help="Validate policy, hooks and committed fixture files.")
 	subparsers.add_parser("plan", help="Show the safe fixture export plan.")

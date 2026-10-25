@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import unittest
 
-from ione_hrp.common.data_quality import (
+from medops.common.data_quality import (
 	DataQualityContractError,
 	build_data_quality_evaluate,
 	build_data_quality_rule_upsert,
@@ -11,7 +11,7 @@ from ione_hrp.common.data_quality import (
 	observed_value_digest,
 	validate_rule_for_policy,
 )
-from ione_hrp.common.master_data import MASTER_DATA_TARGET_POLICIES
+from medops.common.master_data import MASTER_DATA_TARGET_POLICIES
 
 
 def valid_rule(**overrides: object) -> dict[str, object]:

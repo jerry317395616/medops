@@ -3,7 +3,7 @@ from __future__ import annotations
 import unittest
 from decimal import Decimal
 
-from ione_hrp.common.immutable_ledger import (
+from medops.common.immutable_ledger import (
 	BASE_LEDGER_FIELDS,
 	IMMUTABLE_LEDGER_SCHEMA_VERSION,
 	ImmutableLedgerContractError,

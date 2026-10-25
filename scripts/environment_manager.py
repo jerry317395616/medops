@@ -16,8 +16,8 @@ REPOSITORY_ROOT = Path(__file__).resolve().parents[1]
 if str(REPOSITORY_ROOT) not in sys.path:
 	sys.path.insert(0, str(REPOSITORY_ROOT))
 
-from ione_hrp.common.audit_context import AuditContextError, normalize_correlation_id
-from ione_hrp.common.environment_profiles import (
+from medops.common.audit_context import AuditContextError, normalize_correlation_id
+from medops.common.environment_profiles import (
 	EnvironmentProfile,
 	EnvironmentProfileError,
 	EnvironmentRegistry,
@@ -260,7 +260,7 @@ def configure_environment(
 		raise EnvironmentManagerError(f"Site is missing required applications: {missing_apps}")
 
 	site_config = _load_site_config(target)
-	current_profile = str(site_config.get("ione_hrp_environment") or "")
+	current_profile = str(site_config.get("medops_environment") or "")
 	if current_profile and current_profile != target.profile.name:
 		raise EnvironmentManagerError(f"Site is already assigned to environment profile {current_profile}")
 	expected_config = target.profile.expected_site_config(registry.schema_version)
@@ -461,7 +461,7 @@ def _target_from_args(
 
 
 def main() -> int:
-	parser = argparse.ArgumentParser(description="Manage isolated I-ONE HRP non-production environments.")
+	parser = argparse.ArgumentParser(description="Manage isolated MedOps non-production environments.")
 	parser.add_argument(
 		"--profiles",
 		type=Path,

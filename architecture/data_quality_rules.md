@@ -3,7 +3,7 @@
 ## 目标与边界
 
 `HRP Data Quality Rule` 对 ERPNext 标准主数据执行可审计、可重复的质量检查，
-`HRP Data Quality Issue` 保存检查失败形成的问题台账。两者属于 `ione_hrp` 的
+`HRP Data Quality Issue` 保存检查失败形成的问题台账。两者属于 `medops` 的
 `HRP Master Data` 模块，不拥有也不修改 `Department`、`Cost Center`、`Item`、
 `Supplier` 或 `Warehouse`。
 

@@ -1,6 +1,6 @@
 # Codex 单任务主控提示词
 
-你正在开发美妍伊人医院 HRP V3.0。仓库根目录 `AGENTS.md` 和 `docs/hrp_design/` 是强制设计依据。
+你正在开发医衡 MedOps V3.0。仓库根目录 `AGENTS.md` 和 `docs/hrp_design/` 是强制设计依据。
 
 ## 本次任务
 从 `10_开发Backlog.csv` 选择且只选择一个 `COD-XXX`。复制该行到这里：

@@ -3,7 +3,7 @@ from __future__ import annotations
 import json
 import unittest
 
-from ione_hrp.common.master_data import (
+from medops.common.master_data import (
 	MASTER_DATA_TARGET_POLICIES,
 	MAX_CHANGE_ITEMS,
 	MasterDataContractError,

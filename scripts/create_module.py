@@ -9,11 +9,11 @@ REPOSITORY_ROOT = Path(__file__).resolve().parents[1]
 if str(REPOSITORY_ROOT) not in sys.path:
 	sys.path.insert(0, str(REPOSITORY_ROOT))
 
-from ione_hrp.scaffold.module import DOMAIN_GROUPS, create_module_files
+from medops.scaffold.module import DOMAIN_GROUPS, create_module_files
 
 
 def main() -> None:
-	parser = argparse.ArgumentParser(description="Create a new module inside the single ione_hrp app")
+	parser = argparse.ArgumentParser(description="Create a new module inside the single medops app")
 	parser.add_argument("--name", required=True, help='Display name, e.g. "HRP Medical Insurance"')
 	parser.add_argument("--group", required=True, choices=DOMAIN_GROUPS)
 	parser.add_argument("--label-cn", required=True)

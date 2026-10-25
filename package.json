@@ -1,8 +1,8 @@
 {
-	"name": "ione-hrp-quality-tooling",
+	"name": "medops-quality-tooling",
 	"version": "0.1.0",
 	"private": true,
-	"description": "Pinned frontend lint, format and Python type-check tooling for ione_hrp",
+	"description": "Pinned frontend lint, format and Python type-check tooling for medops",
 	"engines": {
 		"node": ">=20.19.0"
 	},
@@ -10,8 +10,8 @@
 	"scripts": {
 		"typecheck": "pyright --project pyrightconfig.json",
 		"lint:frontend": "eslint . --max-warnings 0",
-		"format:frontend:check": "prettier --check \"ione_hrp/**/*.{js,ts,vue,css,scss,json}\" \".prettierrc.json\" \"eslint.config.mjs\" \"package.json\" \"package-lock.json\" \"pyrightconfig.json\"",
-		"format:frontend": "prettier --write \"ione_hrp/**/*.{js,ts,vue,css,scss,json}\" \".prettierrc.json\" \"eslint.config.mjs\" \"package.json\" \"package-lock.json\" \"pyrightconfig.json\"",
+		"format:frontend:check": "prettier --check \"medops/**/*.{js,ts,vue,css,scss,json}\" \".prettierrc.json\" \"eslint.config.mjs\" \"package.json\" \"package-lock.json\" \"pyrightconfig.json\"",
+		"format:frontend": "prettier --write \"medops/**/*.{js,ts,vue,css,scss,json}\" \".prettierrc.json\" \"eslint.config.mjs\" \"package.json\" \"package-lock.json\" \"pyrightconfig.json\"",
 		"quality:node": "npm run typecheck && npm run lint:frontend && npm run format:frontend:check",
 		"quality": "python scripts/quality.py"
 	},

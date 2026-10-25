@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import unittest
 
-from ione_hrp.common.external_code_mapping import (
+from medops.common.external_code_mapping import (
 	GLOBAL_SCOPE_KEY,
 	ExternalCodeMappingContractError,
 	build_external_code_mapping_resolve,

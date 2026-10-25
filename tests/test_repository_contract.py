@@ -53,14 +53,14 @@ class RepositoryContractTest(unittest.TestCase):
 	def test_discovers_multiple_custom_apps(self) -> None:
 		with tempfile.TemporaryDirectory() as temp:
 			root = Path(temp)
-			for name in (APP_NAME, "ione_hrp_budget"):
+			for name in (APP_NAME, "medops_budget"):
 				app_root = root / "apps" / name
 				app_root.mkdir(parents=True)
 				(app_root / "pyproject.toml").write_text(
 					f'[project]\nname = "{name}"\nversion = "1.0.0"\n',
 					encoding="utf-8",
 				)
-			self.assertEqual(set(discover_custom_apps(root)), {APP_NAME, "ione_hrp_budget"})
+			self.assertEqual(set(discover_custom_apps(root)), {APP_NAME, "medops_budget"})
 
 	def test_finds_legacy_prefix(self) -> None:
 		with tempfile.TemporaryDirectory() as temp:
@@ -118,10 +118,10 @@ class RepositoryContractTest(unittest.TestCase):
 	def test_rejects_private_cross_module_import(self) -> None:
 		with tempfile.TemporaryDirectory() as temp:
 			root = Path(temp)
-			source = root / "ione_hrp" / "hrp_budget" / "services" / "budget.py"
+			source = root / "medops" / "hrp_budget" / "services" / "budget.py"
 			source.parent.mkdir(parents=True)
 			source.write_text(
-				"from ione_hrp.hrp_procurement.doctype.purchase import Purchase\n",
+				"from medops.hrp_procurement.doctype.purchase import Purchase\n",
 				encoding="utf-8",
 			)
 			violations = validate_module_boundaries(root)
@@ -131,10 +131,10 @@ class RepositoryContractTest(unittest.TestCase):
 	def test_allows_cross_module_service_facade(self) -> None:
 		with tempfile.TemporaryDirectory() as temp:
 			root = Path(temp)
-			source = root / "ione_hrp" / "hrp_budget" / "services" / "budget.py"
+			source = root / "medops" / "hrp_budget" / "services" / "budget.py"
 			source.parent.mkdir(parents=True)
 			source.write_text(
-				"from ione_hrp.hrp_procurement.services.public import submit_request\n",
+				"from medops.hrp_procurement.services.public import submit_request\n",
 				encoding="utf-8",
 			)
 			self.assertEqual(validate_module_boundaries(root), [])
@@ -199,7 +199,7 @@ class RepositoryContractTest(unittest.TestCase):
 	def test_rejects_direct_transaction_commit(self) -> None:
 		with tempfile.TemporaryDirectory() as temp:
 			root = Path(temp)
-			source = root / "ione_hrp" / "hrp_budget" / "services" / "unsafe.py"
+			source = root / "medops" / "hrp_budget" / "services" / "unsafe.py"
 			source.parent.mkdir(parents=True)
 			source.write_text(
 				"import frappe\n\n\ndef unsafe():\n\tfrappe.db.commit()\n",
@@ -214,10 +214,10 @@ class RepositoryContractTest(unittest.TestCase):
 	def test_rejects_direct_audit_logger_outside_context_service(self) -> None:
 		with tempfile.TemporaryDirectory() as temp:
 			root = Path(temp)
-			source = root / "ione_hrp" / "services" / "unsafe.py"
+			source = root / "medops" / "services" / "unsafe.py"
 			source.parent.mkdir(parents=True)
 			source.write_text(
-				'import frappe\n\n\ndef unsafe():\n\tfrappe.logger("ione_hrp.unsafe").info({"user": "x"})\n',
+				'import frappe\n\n\ndef unsafe():\n\tfrappe.logger("medops.unsafe").info({"user": "x"})\n',
 				encoding="utf-8",
 			)
 
@@ -229,7 +229,7 @@ class RepositoryContractTest(unittest.TestCase):
 	def test_rejects_direct_frappe_throw_outside_error_service(self) -> None:
 		with tempfile.TemporaryDirectory() as temp:
 			root = Path(temp)
-			source = root / "ione_hrp" / "api" / "v1" / "unsafe.py"
+			source = root / "medops" / "api" / "v1" / "unsafe.py"
 			source.parent.mkdir(parents=True)
 			source.write_text(
 				'import frappe\n\n\ndef unsafe():\n\tfrappe.throw("raw payload")\n',
@@ -244,7 +244,7 @@ class RepositoryContractTest(unittest.TestCase):
 	def test_rejects_direct_frappe_only_for_outside_error_service(self) -> None:
 		with tempfile.TemporaryDirectory() as temp:
 			root = Path(temp)
-			source = root / "ione_hrp" / "services" / "unsafe.py"
+			source = root / "medops" / "services" / "unsafe.py"
 			source.parent.mkdir(parents=True)
 			source.write_text(
 				'import frappe\n\n\ndef unsafe():\n\tfrappe.only_for("System Manager")\n',
@@ -259,7 +259,7 @@ class RepositoryContractTest(unittest.TestCase):
 	def test_rejects_direct_immutable_ledger_bypass(self) -> None:
 		with tempfile.TemporaryDirectory() as temp:
 			root = Path(temp)
-			source = root / "ione_hrp" / "hrp_budget" / "services" / "unsafe.py"
+			source = root / "medops" / "hrp_budget" / "services" / "unsafe.py"
 			source.parent.mkdir(parents=True)
 			source.write_text(
 				'import frappe\n\n\ndef unsafe():\n\treturn frappe.get_doc("HRP Budget Ledger", "x")\n',
@@ -274,7 +274,7 @@ class RepositoryContractTest(unittest.TestCase):
 	def test_rejects_direct_transactional_message_bypass(self) -> None:
 		with tempfile.TemporaryDirectory() as temp:
 			root = Path(temp)
-			source = root / "ione_hrp" / "hrp_budget" / "services" / "unsafe.py"
+			source = root / "medops" / "hrp_budget" / "services" / "unsafe.py"
 			source.parent.mkdir(parents=True)
 			source.write_text(
 				'import frappe\n\n\ndef unsafe():\n\treturn frappe.get_doc("HRP Budget Outbox", "x")\n',

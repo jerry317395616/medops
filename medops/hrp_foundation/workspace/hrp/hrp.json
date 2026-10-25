@@ -1,0 +1,475 @@
+{
+	"app": "medops",
+	"charts": [],
+	"content": "[{\"id\":\"hrp-header\",\"type\":\"header\",\"data\":{\"text\":\"医院 HRP\",\"col\":12}},{\"id\":\"settings-shortcut\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"系统设置\",\"col\":3}},{\"id\":\"organization-shortcut\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"组织管理\",\"col\":3}},{\"id\":\"master-data-shortcut\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"主数据中心\",\"col\":3}},{\"id\":\"authorization-shortcut\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"权限与授权\",\"col\":3}},{\"id\":\"numbering-scheme-shortcut\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"编号方案\",\"col\":3}},{\"id\":\"number-reservation-shortcut\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"编号预留\",\"col\":3}},{\"id\":\"modules-shortcut\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"模块设置\",\"col\":3}},{\"id\":\"feature-shortcut\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"特性开关\",\"col\":3}}]",
+	"creation": "2026-07-28 00:00:00.000000",
+	"custom_blocks": [],
+	"docstatus": 0,
+	"doctype": "Workspace",
+	"for_user": "",
+	"hide_custom": 0,
+	"icon": "heart",
+	"idx": 0,
+	"is_hidden": 0,
+	"label": "HRP",
+	"links": [
+		{
+			"hidden": 0,
+			"is_query_report": 0,
+			"label": "平台配置",
+			"link_count": 0,
+			"onboard": 0,
+			"type": "Card Break"
+		},
+		{
+			"dependencies": "",
+			"hidden": 0,
+			"is_query_report": 0,
+			"label": "系统设置",
+			"link_count": 0,
+			"link_to": "HRP System Settings",
+			"link_type": "DocType",
+			"onboard": 1,
+			"type": "Link"
+		},
+		{
+			"dependencies": "",
+			"hidden": 0,
+			"is_query_report": 0,
+			"label": "编号方案",
+			"link_count": 0,
+			"link_to": "HRP Numbering Scheme",
+			"link_type": "DocType",
+			"onboard": 1,
+			"type": "Link"
+		},
+		{
+			"dependencies": "",
+			"hidden": 0,
+			"is_query_report": 0,
+			"label": "编号预留",
+			"link_count": 0,
+			"link_to": "HRP Number Reservation",
+			"link_type": "DocType",
+			"onboard": 1,
+			"type": "Link"
+		},
+		{
+			"dependencies": "",
+			"hidden": 0,
+			"is_query_report": 0,
+			"label": "组织管理",
+			"link_count": 0,
+			"link_to": "HRP Organization",
+			"link_type": "Workspace",
+			"onboard": 1,
+			"type": "Link"
+		},
+		{
+			"dependencies": "",
+			"hidden": 0,
+			"is_query_report": 0,
+			"label": "主数据中心",
+			"link_count": 0,
+			"link_to": "HRP Master Data",
+			"link_type": "Workspace",
+			"onboard": 1,
+			"type": "Link"
+		},
+		{
+			"dependencies": "",
+			"hidden": 0,
+			"is_query_report": 0,
+			"label": "权限与授权",
+			"link_count": 0,
+			"link_to": "HRP Authorization",
+			"link_type": "Workspace",
+			"onboard": 1,
+			"type": "Link"
+		},
+		{
+			"dependencies": "",
+			"hidden": 0,
+			"is_query_report": 0,
+			"label": "模块设置",
+			"link_count": 0,
+			"link_to": "HRP Module Setting",
+			"link_type": "DocType",
+			"onboard": 1,
+			"type": "Link"
+		},
+		{
+			"dependencies": "",
+			"hidden": 0,
+			"is_query_report": 0,
+			"label": "特性开关",
+			"link_count": 0,
+			"link_to": "HRP Feature Flag",
+			"link_type": "DocType",
+			"onboard": 1,
+			"type": "Link"
+		}
+	],
+	"modified": "2026-07-28 00:00:00.000000",
+	"modified_by": "Administrator",
+	"module": "HRP Foundation",
+	"name": "HRP",
+	"number_cards": [],
+	"owner": "Administrator",
+	"parent_page": "",
+	"public": 1,
+	"quick_lists": [],
+	"restrict_to_domain": "",
+	"roles": [
+		{
+			"role": "System Manager"
+		},
+		{
+			"role": "HRP System Manager"
+		},
+		{
+			"role": "HRP Data Steward"
+		},
+		{
+			"role": "HRP User"
+		}
+	],
+	"sequence_id": 3.0,
+	"shortcuts": [
+		{
+			"label": "系统设置",
+			"link_to": "HRP System Settings",
+			"type": "DocType"
+		},
+		{
+			"label": "组织管理",
+			"link_to": "HRP Organization",
+			"type": "Workspace"
+		},
+		{
+			"label": "主数据中心",
+			"link_to": "HRP Master Data",
+			"type": "Workspace"
+		},
+		{
+			"label": "权限与授权",
+			"link_to": "HRP Authorization",
+			"type": "Workspace"
+		},
+		{
+			"label": "模块设置",
+			"link_to": "HRP Module Setting",
+			"type": "DocType"
+		},
+		{
+			"label": "特性开关",
+			"link_to": "HRP Feature Flag",
+			"type": "DocType"
+		},
+		{
+			"label": "编号方案",
+			"link_to": "HRP Numbering Scheme",
+			"type": "DocType"
+		},
+		{
+			"label": "编号预留",
+			"link_to": "HRP Number Reservation",
+			"type": "DocType"
+		}
+	],
+	"sidebar_items": [
+		{
+			"child": 0,
+			"collapsible": 1,
+			"default_workspace": 1,
+			"icon": "house",
+			"indent": 0,
+			"keep_closed": 0,
+			"label": "首页",
+			"link_to": "HRP",
+			"link_type": "Workspace",
+			"open_in_new_tab": 0,
+			"show_arrow": 0,
+			"type": "Link"
+		},
+		{
+			"child": 0,
+			"collapsible": 1,
+			"default_workspace": 1,
+			"icon": "organization",
+			"indent": 0,
+			"keep_closed": 0,
+			"label": "组织管理",
+			"link_to": "HRP Organization",
+			"link_type": "Workspace",
+			"open_in_new_tab": 0,
+			"show_arrow": 0,
+			"type": "Link"
+		},
+		{
+			"child": 0,
+			"collapsible": 1,
+			"default_workspace": 1,
+			"icon": "database",
+			"indent": 0,
+			"keep_closed": 0,
+			"label": "主数据中心",
+			"link_to": "HRP Master Data",
+			"link_type": "Workspace",
+			"open_in_new_tab": 0,
+			"show_arrow": 0,
+			"type": "Link"
+		},
+		{
+			"child": 0,
+			"collapsible": 1,
+			"default_workspace": 1,
+			"icon": "shield-check",
+			"indent": 0,
+			"keep_closed": 0,
+			"label": "权限与授权",
+			"link_to": "HRP Authorization",
+			"link_type": "Workspace",
+			"open_in_new_tab": 0,
+			"show_arrow": 0,
+			"type": "Link"
+		},
+		{
+			"child": 0,
+			"collapsible": 1,
+			"default_workspace": 0,
+			"icon": "building-2",
+			"indent": 1,
+			"keep_closed": 0,
+			"label": "组织主数据",
+			"link_type": "DocType",
+			"open_in_new_tab": 0,
+			"show_arrow": 0,
+			"type": "Section Break"
+		},
+		{
+			"child": 1,
+			"collapsible": 1,
+			"default_workspace": 1,
+			"icon": "",
+			"indent": 0,
+			"keep_closed": 0,
+			"label": "医院",
+			"link_to": "HRP Hospital",
+			"link_type": "DocType",
+			"open_in_new_tab": 0,
+			"show_arrow": 0,
+			"type": "Link"
+		},
+		{
+			"child": 1,
+			"collapsible": 1,
+			"default_workspace": 1,
+			"icon": "",
+			"indent": 0,
+			"keep_closed": 0,
+			"label": "组织版本",
+			"link_to": "HRP Organization Version",
+			"link_type": "DocType",
+			"open_in_new_tab": 0,
+			"show_arrow": 0,
+			"type": "Link"
+		},
+		{
+			"child": 1,
+			"collapsible": 1,
+			"default_workspace": 1,
+			"icon": "",
+			"indent": 0,
+			"keep_closed": 0,
+			"label": "组织层级",
+			"link_to": "HRP Organization Unit",
+			"link_type": "DocType",
+			"open_in_new_tab": 0,
+			"show_arrow": 0,
+			"type": "Link"
+		},
+		{
+			"child": 1,
+			"collapsible": 1,
+			"default_workspace": 1,
+			"icon": "",
+			"indent": 0,
+			"keep_closed": 0,
+			"label": "标准映射",
+			"link_to": "HRP Organization Mapping",
+			"link_type": "DocType",
+			"open_in_new_tab": 0,
+			"show_arrow": 0,
+			"type": "Link"
+		},
+		{
+			"child": 0,
+			"collapsible": 1,
+			"default_workspace": 0,
+			"icon": "shield-check",
+			"indent": 1,
+			"keep_closed": 0,
+			"label": "主数据治理",
+			"link_type": "DocType",
+			"open_in_new_tab": 0,
+			"show_arrow": 0,
+			"type": "Section Break"
+		},
+		{
+			"child": 1,
+			"collapsible": 1,
+			"default_workspace": 1,
+			"icon": "",
+			"indent": 0,
+			"keep_closed": 0,
+			"label": "主数据域",
+			"link_to": "HRP Master Data Domain",
+			"link_type": "DocType",
+			"open_in_new_tab": 0,
+			"show_arrow": 0,
+			"type": "Link"
+		},
+		{
+			"child": 1,
+			"collapsible": 1,
+			"default_workspace": 1,
+			"icon": "",
+			"indent": 0,
+			"keep_closed": 0,
+			"label": "变更申请",
+			"link_to": "HRP Master Data Request",
+			"link_type": "DocType",
+			"open_in_new_tab": 0,
+			"show_arrow": 0,
+			"type": "Link"
+		},
+		{
+			"child": 1,
+			"collapsible": 1,
+			"default_workspace": 1,
+			"icon": "",
+			"indent": 0,
+			"keep_closed": 0,
+			"label": "外部编码映射",
+			"link_to": "HRP External Code Mapping",
+			"link_type": "DocType",
+			"open_in_new_tab": 0,
+			"show_arrow": 0,
+			"type": "Link"
+		},
+		{
+			"child": 1,
+			"collapsible": 1,
+			"default_workspace": 1,
+			"icon": "",
+			"indent": 0,
+			"keep_closed": 0,
+			"label": "质量规则",
+			"link_to": "HRP Data Quality Rule",
+			"link_type": "DocType",
+			"open_in_new_tab": 0,
+			"show_arrow": 0,
+			"type": "Link"
+		},
+		{
+			"child": 1,
+			"collapsible": 1,
+			"default_workspace": 1,
+			"icon": "",
+			"indent": 0,
+			"keep_closed": 0,
+			"label": "质量问题",
+			"link_to": "HRP Data Quality Issue",
+			"link_type": "DocType",
+			"open_in_new_tab": 0,
+			"show_arrow": 0,
+			"type": "Link"
+		},
+		{
+			"child": 0,
+			"collapsible": 1,
+			"default_workspace": 0,
+			"icon": "settings",
+			"indent": 1,
+			"keep_closed": 1,
+			"label": "系统配置",
+			"link_type": "DocType",
+			"open_in_new_tab": 0,
+			"show_arrow": 0,
+			"type": "Section Break"
+		},
+		{
+			"child": 1,
+			"collapsible": 1,
+			"default_workspace": 1,
+			"icon": "",
+			"indent": 0,
+			"keep_closed": 0,
+			"label": "系统设置",
+			"link_to": "HRP System Settings",
+			"link_type": "DocType",
+			"open_in_new_tab": 0,
+			"show_arrow": 0,
+			"type": "Link"
+		},
+		{
+			"child": 1,
+			"collapsible": 1,
+			"default_workspace": 1,
+			"icon": "",
+			"indent": 0,
+			"keep_closed": 0,
+			"label": "模块设置",
+			"link_to": "HRP Module Setting",
+			"link_type": "DocType",
+			"open_in_new_tab": 0,
+			"show_arrow": 0,
+			"type": "Link"
+		},
+		{
+			"child": 1,
+			"collapsible": 1,
+			"default_workspace": 1,
+			"icon": "",
+			"indent": 0,
+			"keep_closed": 0,
+			"label": "特性开关",
+			"link_to": "HRP Feature Flag",
+			"link_type": "DocType",
+			"open_in_new_tab": 0,
+			"show_arrow": 0,
+			"type": "Link"
+		},
+		{
+			"child": 1,
+			"collapsible": 1,
+			"default_workspace": 1,
+			"icon": "",
+			"indent": 0,
+			"keep_closed": 0,
+			"label": "编号方案",
+			"link_to": "HRP Numbering Scheme",
+			"link_type": "DocType",
+			"open_in_new_tab": 0,
+			"show_arrow": 0,
+			"type": "Link"
+		},
+		{
+			"child": 1,
+			"collapsible": 1,
+			"default_workspace": 1,
+			"icon": "",
+			"indent": 0,
+			"keep_closed": 0,
+			"label": "编号预留",
+			"link_to": "HRP Number Reservation",
+			"link_type": "DocType",
+			"open_in_new_tab": 0,
+			"show_arrow": 0,
+			"type": "Link"
+		}
+	],
+	"title": "HRP",
+	"type": "Workspace"
+}
