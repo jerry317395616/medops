@@ -11,6 +11,8 @@
     "code",
     "display_name",
     "target_doctype",
+    "amount_schema_version",
+    "amount_precision",
     "enabled",
     "scope_section",
     "company",
@@ -60,6 +62,25 @@
       "options": "DocType",
       "reqd": 1,
       "search_index": 1
+    },
+    {
+      "fieldname": "amount_schema_version",
+      "label": "金额格式版本",
+      "fieldtype": "Int",
+      "default": "1",
+      "read_only": 1,
+      "hidden": 1,
+      "reqd": 1,
+      "description": "旧版保留原阈值与摘要；精确金额使用版本2。"
+    },
+    {
+      "fieldname": "amount_precision",
+      "label": "金额精度",
+      "fieldtype": "Int",
+      "default": "2",
+      "read_only": 1,
+      "reqd": 1,
+      "description": "策略创建时固定的0至9位精度。"
     },
     {
       "default": "1",

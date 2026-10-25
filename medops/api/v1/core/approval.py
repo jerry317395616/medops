@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from typing import Any
+
 import frappe
 
 from medops.common.approval_matrix import (
@@ -9,36 +11,44 @@ from medops.common.approval_matrix import (
 	build_approval_matrix_upsert,
 )
 from medops.hrp_workflow_authorization.services.approval_matrix import (
+	APPROVAL_MATRIX_ADMIN_ROLES,
+	APPROVAL_MATRIX_EVALUATE_ROLES,
 	evaluate_approval_matrix,
 	get_approval_matrix,
 	upsert_approval_matrix,
 )
 from medops.services.audit_context import service_audit_scope
-from medops.services.errors import raise_ione_error, require_authenticated_user
+from medops.services.errors import raise_ione_error, require_authenticated_user, require_roles
 
 
 @frappe.whitelist(allow_guest=True, methods=["POST"])
 def upsert(
-	code: str,
-	display_name: str,
-	target_doctype: str,
-	company: str,
-	hospital: str,
-	valid_from: str,
-	steps: str | list[dict[str, object]],
-	organization_unit: str | None = None,
-	include_descendants: bool | int | str = False,
-	priority: int | str = 0,
-	dimensions: str | dict[str, object] | None = None,
-	enabled: bool | int | str = True,
-	valid_to: str | None = None,
-	expected_revision: int | str = 0,
-	matrix_name: str | None = None,
-	remarks: str | None = None,
-	correlation_id: str | None = None,
+	code: Any = None,
+	display_name: Any = None,
+	target_doctype: Any = None,
+	company: Any = None,
+	hospital: Any = None,
+	valid_from: Any = None,
+	steps: Any = None,
+	organization_unit: Any = None,
+	include_descendants: Any = False,
+	priority: Any = 0,
+	dimensions: Any = None,
+	enabled: Any = True,
+	valid_to: Any = None,
+	expected_revision: Any = 0,
+	matrix_name: Any = None,
+	remarks: Any = None,
+	correlation_id: Any = None,
+	schema_version: Any = 1,
+	amount_precision: Any = 2,
+	**extra: Any,
 ) -> dict[str, object]:
 	with service_audit_scope(correlation_id):
 		require_authenticated_user()
+		require_roles(APPROVAL_MATRIX_ADMIN_ROLES)
+		if set(extra) - {"cmd"}:
+			raise_ione_error("INVALID_REQUEST")
 		try:
 			command = build_approval_matrix_upsert(
 				matrix_name=matrix_name,
@@ -56,7 +66,11 @@ def upsert(
 				valid_from=valid_from,
 				valid_to=valid_to,
 				remarks=remarks,
-				steps=build_approval_matrix_steps(steps),
+				steps=build_approval_matrix_steps(
+					steps, schema_version=schema_version, amount_precision=amount_precision
+				),
+				schema_version=schema_version,
+				amount_precision=amount_precision,
 			)
 		except ApprovalMatrixContractError as exc:
 			raise_ione_error("INVALID_REQUEST", cause=exc)
@@ -69,20 +83,28 @@ def upsert(
 
 @frappe.whitelist(allow_guest=True, methods=["POST"])
 def evaluate(
-	doctype: str,
-	docname: str,
-	amount: int | float | str,
-	dimensions: str | dict[str, object],
-	correlation_id: str | None = None,
+	doctype: Any = None,
+	docname: Any = None,
+	amount: Any = None,
+	dimensions: Any = None,
+	correlation_id: Any = None,
+	schema_version: Any = 1,
+	amount_precision: Any = 2,
+	**extra: Any,
 ) -> dict[str, object]:
 	with service_audit_scope(correlation_id):
 		require_authenticated_user()
+		require_roles(APPROVAL_MATRIX_EVALUATE_ROLES)
+		if set(extra) - {"cmd"}:
+			raise_ione_error("INVALID_REQUEST")
 		try:
 			query = build_approval_evaluation(
 				doctype=doctype,
 				docname=docname,
 				amount=amount,
 				dimensions=dimensions,
+				schema_version=schema_version,
+				amount_precision=amount_precision,
 			)
 		except ApprovalMatrixContractError as exc:
 			raise_ione_error("INVALID_REQUEST", cause=exc)

@@ -17,12 +17,14 @@ from medops.common.approval_matrix import (
 	build_approval_decision,
 )
 from medops.common.domain_service import DomainServiceDefinition, DomainServiceExecution
+from medops.common.exact_money import MAX_APPROVAL_AMOUNT, ExactMoneyError, exact_decimal_amount
 from medops.hrp_workflow_authorization.doctype.hrp_approval_matrix.hrp_approval_matrix import (
 	HRPApprovalMatrix,
 )
 from medops.hrp_workflow_authorization.permissions import has_scoped_permission
 from medops.hrp_workflow_authorization.services.access_scope import dimension_fields_for
 from medops.hrp_workflow_authorization.services.delegation import apply_active_delegations
+from medops.hrp_workflow_authorization.services.rule_contracts import can_read_named_fields
 from medops.services.audit_context import emit_audit_event
 from medops.services.domain_service import DomainService
 from medops.services.errors import raise_ione_error, require_roles
@@ -56,6 +58,8 @@ class ApprovalMatrixDocumentPayload(TypedDict):
 	revision: int
 	remarks: str | None
 	steps: list[dict[str, object]]
+	amount_schema_version: int
+	amount_precision: int
 
 
 def _execution_payload(execution: DomainServiceExecution) -> dict[str, object]:
@@ -198,6 +202,8 @@ class UpsertApprovalMatrixService(DomainService[ApprovalMatrixUpsert]):
 		)
 		if identity != requested:
 			raise_ione_error("OPERATION_NOT_ALLOWED")
+		if doc.amount_profile() != (definition.schema_version, definition.amount_precision):
+			raise_ione_error("OPERATION_NOT_ALLOWED")
 		changed_fields = [
 			fieldname
 			for fieldname, current, requested_value in (
@@ -251,6 +257,13 @@ class UpsertApprovalMatrixService(DomainService[ApprovalMatrixUpsert]):
 
 	@staticmethod
 	def _document_payload(definition: ApprovalMatrixDefinition) -> ApprovalMatrixDocumentPayload:
+		steps = []
+		for step in definition.steps:
+			payload = step.as_dict()
+			if definition.schema_version == 2:
+				payload["exact_threshold_amount"] = payload.pop("threshold_amount")
+				payload["threshold_amount"] = 0
+			steps.append(payload)
 		return {
 			"doctype": "HRP Approval Matrix",
 			"code": definition.code,
@@ -272,11 +285,15 @@ class UpsertApprovalMatrixService(DomainService[ApprovalMatrixUpsert]):
 			"valid_to": definition.valid_to,
 			"revision": 1,
 			"remarks": definition.remarks,
-			"steps": [step.as_dict() for step in definition.steps],
+			"steps": steps,
+			"amount_schema_version": definition.schema_version,
+			"amount_precision": definition.amount_precision,
 		}
 
 	@staticmethod
 	def _stored_steps(doc: HRPApprovalMatrix) -> list[dict[str, object]]:
+		if doc.amount_profile()[0] == 2:
+			return UpsertApprovalMatrixService._requested_steps(doc.as_definition(revision=doc.revision))
 		return sorted(
 			[
 				{
@@ -364,18 +381,25 @@ def _matrix_matches_unit(matrix: HRPApprovalMatrix, organization_unit: str) -> b
 
 
 def _select_matrix(command: ApprovalEvaluation) -> HRPApprovalMatrix:
-	rows = frappe.get_all(
-		"HRP Approval Matrix",
-		filters={
-			"target_doctype": command.target_doctype,
-			"company": command.company,
-			"hospital": command.hospital,
-			"enabled": 1,
-			"valid_from": ("<=", command.effective_on),
-		},
-		fields=["name"],
-		order_by="priority desc, revision desc, name asc",
-		limit=MAX_MATRIX_CANDIDATES + 1,
+	# Filter incompatible amount profiles before the bounded candidate scan.
+	# Version1 callers keep selecting only their original policy contract.
+	rows = frappe.db.sql(
+		"""SELECT name FROM `tabHRP Approval Matrix`
+		WHERE target_doctype=%s AND company=%s AND hospital=%s
+		AND enabled=1 AND valid_from<=%s
+		AND (COALESCE(amount_schema_version,1)=1
+		OR (%s=2 AND amount_schema_version=2 AND amount_precision=%s))
+		ORDER BY priority DESC, revision DESC, name ASC LIMIT %s""",
+		(
+			command.target_doctype,
+			command.company,
+			command.hospital,
+			command.effective_on,
+			command.schema_version,
+			command.amount_precision,
+			MAX_MATRIX_CANDIDATES + 1,
+		),
+		as_dict=True,
 	)
 	if len(rows) > MAX_MATRIX_CANDIDATES:
 		raise_ione_error("CONFIGURATION_INVALID")
@@ -457,7 +481,6 @@ class EvaluateApprovalMatrixService(DomainService[ApprovalEvaluation]):
 		doc = frappe.get_doc(command.target_doctype, command.docname)
 		if not frappe.has_permission(command.target_doctype, ptype="read", doc=doc):
 			raise_ione_error("PERMISSION_DENIED")
-		self._assert_document_context(command)
 		_assert_organization_scope(
 			company=command.company,
 			hospital=command.hospital,
@@ -466,6 +489,7 @@ class EvaluateApprovalMatrixService(DomainService[ApprovalEvaluation]):
 		)
 		if not has_scoped_permission(doc, user=frappe.session.user, ptype="read"):
 			raise_ione_error("PERMISSION_DENIED")
+		self._assert_document_context(command)
 
 	@staticmethod
 	def _assert_document_context(command: ApprovalEvaluation) -> None:
@@ -473,6 +497,34 @@ class EvaluateApprovalMatrixService(DomainService[ApprovalEvaluation]):
 		meta = frappe.get_meta(command.target_doctype)
 		fields = {field.fieldname for field in meta.fields}
 		dimension_fields = dimension_fields_for(command.target_doctype)
+		date_fields = (
+			"transaction_date",
+			"posting_date",
+			"effective_on",
+			"request_date",
+			"valid_from",
+			"date",
+		)
+		date_field = next((name for name in date_fields if name in fields), None)
+		amount_fields = ("grand_total", "rounded_total", "base_grand_total", "total_amount", "total")
+		available = next((name for name in amount_fields if name in fields), None)
+		precision_fields = {name for name in ("currency_precision", "amount_precision") if name in fields}
+		used_fields = {*dimension_fields.values(), *command.dimensions, date_field or "creation"}
+		if available:
+			used_fields.add(available)
+		if command.schema_version == 2:
+			used_fields.update(precision_fields)
+		if not can_read_named_fields(doc, used_fields):
+			raise_ione_error("PERMISSION_DENIED")
+		if command.schema_version == 2:
+			if not precision_fields or not available:
+				raise_ione_error("CONFIGURATION_INVALID")
+			if meta.get_field(available).fieldtype not in {"Data", "Int", "Long Int"} or any(
+				meta.get_field(name).fieldtype != "Int" for name in precision_fields
+			):
+				raise_ione_error("CONFIGURATION_INVALID")
+			if any(doc.get(name) != command.amount_precision for name in precision_fields):
+				raise_ione_error("CONFLICT")
 		for dimension, expected in (
 			("company", command.company),
 			("hospital", command.hospital),
@@ -484,33 +536,24 @@ class EvaluateApprovalMatrixService(DomainService[ApprovalEvaluation]):
 		for key, expected in command.dimensions.items():
 			if key not in fields or str(doc.get(key) or "") != expected:
 				raise_ione_error("CONFLICT")
-		date_fields = (
-			"transaction_date",
-			"posting_date",
-			"effective_on",
-			"request_date",
-			"valid_from",
-			"date",
-		)
-		date_field = next((fieldname for fieldname in date_fields if fieldname in fields), None)
 		stored_date = doc.get(date_field) if date_field else str(doc.creation or "")[:10]
 		if not stored_date or str(stored_date) != command.effective_on:
 			raise_ione_error("CONFLICT")
-		amount_fields = (
-			"grand_total",
-			"rounded_total",
-			"base_grand_total",
-			"total_amount",
-			"total",
-		)
-		available = next((fieldname for fieldname in amount_fields if fieldname in fields), None)
 		if available is None:
 			if command.amount != 0:
 				raise_ione_error("CONFLICT")
 			return
 		try:
-			stored = Decimal(str(doc.get(available) or 0)).quantize(Decimal("0.01"))
-		except (InvalidOperation, ValueError) as exc:
+			stored = (
+				Decimal(
+					exact_decimal_amount(
+						doc.get(available), command.amount_precision, maximum=MAX_APPROVAL_AMOUNT
+					)
+				)
+				if command.schema_version == 2
+				else Decimal(str(doc.get(available) or 0)).quantize(Decimal("0.01"))
+			)
+		except (InvalidOperation, ValueError, ExactMoneyError) as exc:
 			raise_ione_error("CONFIGURATION_INVALID", cause=exc)
 		if stored != command.amount:
 			raise_ione_error("CONFLICT")

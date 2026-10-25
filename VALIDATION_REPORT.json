@@ -1,46 +1,29 @@
 {
 	"schema_version": 1,
-	"status": "VERIFIED_DEVELOPMENT_RELEASE_COD_031",
-	"task_id": "COD-031",
+	"status": "IN_PROGRESS_COD_032",
+	"task_id": "COD-032",
 	"recorded_on": "2026-10-25",
 	"runtime_namespace": "medops",
 	"architecture_decisions": [
-		"ADR-0028"
+		"ADR-0029"
 	],
-	"release_evidence": "architecture/releases/COD-031.json",
-	"merge_commit": "c65a66a6c7375de663ac7a1db34df7c88b157930",
-	"checks": {
-		"pure_tests": 331,
-		"full_frappe_tests": 312,
-		"budget_tests_included": 20,
-		"dual_process_races": 5,
-		"repeated_migrations_per_site": 2,
-		"protected_ci": {
-			"run": 40233150012,
-			"candidate": "d9cf20c7b56cfc8fdc1e443ea2d3f880959283c2",
-			"all_required_passed": true
-		},
-		"browser": {
-			"runtime_commit": "0ce114cef008935a945c6736923cdc4aafd76a28",
-			"workflow": [
-				"create and save plan",
-				"exact12period allocation",
-				"freeze compilation",
-				"clone draft",
-				"maintain funding source",
-				"download CSV"
-			],
-			"amount": "100000.01",
-			"csv_rows": 12,
-			"note": "Subsequent native source fences and float rejection are covered by final312 HTTP/service tests. Browser evidence records its actual earlier runtime."
-		},
-		"deployment": "backed_up_migrated_and_verified",
-		"user_and_role_profile_assignments": "unchanged full-row hashes against exact reconstructed backup",
-		"expected_permission_metadata_additions_per_site": 11,
-		"other_running_sites": "existing PIDs/states and HTTP unchanged",
-		"public_https_login_and_ping": 200,
-		"error_logs": "not increased"
+	"prior_verified_release": {
+		"merge_commit": "4c6b0b89118b34f4a8ece3128001c453c5ef4925",
+		"feature_pr": 43,
+		"closure_pr": 44,
+		"runtime_tests": 312,
+		"evidence": "architecture/releases/COD-031.json"
 	},
-	"overall_hospital_production_readiness": "not_established",
-	"next_task": "COD-032"
+	"current_scope": "Versioned exact approval amount contract and migration compatibility; submission/aggregation/human approval not yet implemented.",
+	"checks": {
+		"new_pure_tests_passed": 12,
+		"pure_tests_expected": 345,
+		"new_frappe_tests_defined": 9,
+		"frappe_tests_total_expected": 321,
+		"native_migration_baseline": "Captured from old d9 validation app before installing new schema; new migration/replay verification pending.",
+		"native_tests": "pending",
+		"local_quality": "passed: repository/package, lint/format, bandit,345pure,checksums,types,frontend",
+		"pure_tests_passed": 345
+	},
+	"overall_hospital_production_readiness": "not_established"
 }

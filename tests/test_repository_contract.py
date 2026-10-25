@@ -230,6 +230,35 @@ class RepositoryContractTest(unittest.TestCase):
 		self.assertEqual(len(violations), 1)
 		self.assertIn("the outer Frappe transaction owns the commit", violations[0])
 
+	def test_rejects_local_transaction_commit_in_services_and_hooks(self) -> None:
+		for relative in ("medops/services/unsafe.py", "medops/hooks.py"):
+			with self.subTest(path=relative), tempfile.TemporaryDirectory() as temp:
+				root = Path(temp)
+				source = root / relative
+				source.parent.mkdir(parents=True, exist_ok=True)
+				source.write_text(
+					"import frappe\n\ndef unsafe():\n\tfrappe.local.db.commit()\n", encoding="utf-8"
+				)
+				violations = find_direct_transaction_commits(root)
+				self.assertEqual(len(violations), 1)
+				self.assertIn("calls frappe.local.db.commit", violations[0])
+
+	def test_native_fixture_commit_exception_requires_a_real_test_path(self) -> None:
+		for relative, accessor, allowed in (
+			("medops/hrp_budget/tests/test_fixture.py", "frappe.local.db", True),
+			("medops/services/test_fixture.py", "frappe.local.db", False),
+			("medops/hrp_budget/tests/service.py", "frappe.local.db", False),
+			("medops/hrp_budget/tests/test_fixture.py", "frappe.db", False),
+		):
+			with self.subTest(path=relative, accessor=accessor), tempfile.TemporaryDirectory() as temp:
+				root = Path(temp)
+				source = root / relative
+				source.parent.mkdir(parents=True, exist_ok=True)
+				source.write_text(
+					f"import frappe\n\ndef fixture():\n\t{accessor}.commit()\n", encoding="utf-8"
+				)
+				self.assertEqual(len(find_direct_transaction_commits(root)), 0 if allowed else 1)
+
 	def test_rejects_direct_audit_logger_outside_context_service(self) -> None:
 		with tempfile.TemporaryDirectory() as temp:
 			root = Path(temp)

@@ -811,11 +811,23 @@ def find_direct_transaction_commits(root: Path) -> list[str]:
 				and node.func.attr == "commit"
 				and isinstance(node.func.value, ast.Attribute)
 				and node.func.value.attr == "db"
-				and isinstance(node.func.value.value, ast.Name)
-				and node.func.value.value.id == "frappe"
 			):
+				owner = node.func.value.value
+				direct = isinstance(owner, ast.Name) and owner.id == "frappe"
+				local = (
+					isinstance(owner, ast.Attribute)
+					and owner.attr == "local"
+					and isinstance(owner.value, ast.Name)
+					and owner.value.id == "frappe"
+				)
+				# Native Frappe fixture setup/concurrency owns its outer transaction.
+				# This exception is limited to actual test_ files under a tests directory.
+				fixture = path.name.startswith("test_") and "tests" in path.relative_to(app_root).parts
+				if not direct and not (local and not fixture):
+					continue
+				accessor = "frappe.db" if direct else "frappe.local.db"
 				violations.append(
-					f"{path.relative_to(root)}:{node.lineno} calls frappe.db.commit; "
+					f"{path.relative_to(root)}:{node.lineno} calls {accessor}.commit; "
 					"the outer Frappe transaction owns the commit"
 				)
 	return violations
@@ -4025,6 +4037,8 @@ def validate_approval_matrix_contract(root: Path) -> list[str]:
 			"code",
 			"display_name",
 			"target_doctype",
+			"amount_schema_version",
+			"amount_precision",
 			"enabled",
 			"company",
 			"hospital",
@@ -4043,6 +4057,7 @@ def validate_approval_matrix_contract(root: Path) -> list[str]:
 			"sequence_no",
 			"step_name",
 			"threshold_amount",
+			"exact_threshold_amount",
 			"approver_type",
 			"approver_role",
 			"approver_user",
@@ -4070,6 +4085,12 @@ def validate_approval_matrix_contract(root: Path) -> list[str]:
 		blueprint.pop("x_hrp", None)
 		if runtime != blueprint:
 			violations.append(f"{name} runtime and blueprint metadata must match")
+		if name == APPROVAL_MATRIX_ROW_DOCTYPE:
+			types = {field["fieldname"]: field["fieldtype"] for field in runtime.get("fields", [])}
+			if types.get("threshold_amount") != "Currency" or types.get("exact_threshold_amount") != "Data":
+				violations.append(
+					"approval amount versions must preserve legacy Currency and exact Data columns"
+				)
 		if "?" in blueprint_paths[name].read_text(encoding="utf-8"):
 			violations.append(f"{name} blueprint contains replacement question marks")
 
@@ -4130,6 +4151,7 @@ def validate_approval_matrix_contract(root: Path) -> list[str]:
 		"idx_hrp_approval_matrix_resolution",
 		"idx_hrp_approval_matrix_organization",
 		"idx_hrp_approval_matrix_step",
+		"idx_hrp_approval_matrix_amount_profile",
 	):
 		if token not in setup_text:
 			violations.append(f"approval matrix migration is missing: {token}")

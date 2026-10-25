@@ -17,8 +17,8 @@
   method: POST
   path: /api/method/medops.api.v1.core.approval.evaluate
   description: 按真实单据上下文确定性解析动态审批链
-  request_schema: doctype,docname,amount,dimensions
-  response_schema: schema_version,doctype,docname,matrix,matrix_code,matrix_name,policy_version,policy_digest,approvers,steps,decision_digest,correlation_id,request_id,idempotency_replayed
+  request_schema: doctype,docname,amount,dimensions,schema_version?,amount_precision?
+  response_schema: schema_version,doctype,docname,matrix,matrix_code,matrix_name,policy_version,policy_digest,approvers,steps,decision_digest,correlation_id,request_id,idempotency_replayed,amount?,amount_precision?,context_digest?,policy_schema_version?
   required_role: System Manager or HRP System Manager or HRP User or HRP Auditor or HRP Integration User
   idempotency: Read-only deterministic
   async: 'No'
@@ -381,7 +381,7 @@
   method: POST
   path: /api/method/medops.api.v1.core.approval.upsert
   description: 创建或修订受控审批矩阵
-  request_schema: code,display_name,target_doctype,company,hospital,organization_unit,include_descendants,priority,dimensions,enabled,valid_from,valid_to,steps,expected_revision,matrix_name,remarks
+  request_schema: code,display_name,target_doctype,company,hospital,organization_unit,include_descendants,priority,dimensions,enabled,valid_from,valid_to,steps,expected_revision,matrix_name,remarks,schema_version?,amount_precision?
   response_schema: schema_version,name,code,display_name,target_doctype,company,hospital,organization_unit,include_descendants,priority,dimensions,enabled,valid_from,valid_to,revision,steps,policy_digest,changed,changed_fields,correlation_id,request_id,idempotency_replayed
   required_role: System Manager or HRP System Manager
   idempotency: Required for write
@@ -1825,8 +1825,7 @@
   description: 按当前来源和字段权限读取预算记录
   request_schema: kind,name
   response_schema: typed record
-  required_role: Budget reader or Data steward plus current scope and native source
-    field permissions
+  required_role: Budget reader or Data steward plus current scope and native source field permissions
   idempotency: Not required (read-only)
   transaction_boundary: Read-only
   audit: Redacted operation, revision and counts; no financial values
@@ -1840,8 +1839,7 @@
   description: 按当前权限分页查询预算及分类
   request_schema: kind,filters,offset,limit,search
   response_schema: items,next_offset,limit
-  required_role: Budget reader or Data steward plus current scope and native source
-    field permissions
+  required_role: Budget reader or Data steward plus current scope and native source field permissions
   idempotency: Not required (read-only)
   transaction_boundary: Read-only
   audit: Redacted operation, revision and counts; no financial values
@@ -1869,8 +1867,7 @@
   description: 受控预算链接检索
   request_schema: doctype,txt,searchfield,start,page_len,filters
   response_schema: link results
-  required_role: Budget reader or Data steward plus current scope and native source
-    field permissions
+  required_role: Budget reader or Data steward plus current scope and native source field permissions
   idempotency: Not required (read-only)
   transaction_boundary: Read-only
   audit: Redacted operation, revision and counts; no financial values
@@ -1884,8 +1881,7 @@
   description: 按当前导出与来源权限读取计划明细
   request_schema: name
   response_schema: name,currency,columns,rows
-  required_role: Budget reader with native export and current scope plus current scope
-    and native source field permissions
+  required_role: Budget reader with native export and current scope plus current scope and native source field permissions
   idempotency: Not required (read-only)
   transaction_boundary: Read-only
   audit: Redacted operation, revision and counts; no financial values

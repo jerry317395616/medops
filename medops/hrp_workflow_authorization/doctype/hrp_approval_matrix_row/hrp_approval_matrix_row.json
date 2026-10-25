@@ -10,6 +10,7 @@
 		"sequence_no",
 		"step_name",
 		"threshold_amount",
+		"exact_threshold_amount",
 		"approver_type",
 		"approver_role",
 		"approver_user",
@@ -40,6 +41,13 @@
 			"label": "起始金额",
 			"precision": "2",
 			"reqd": 1
+		},
+		{
+			"fieldname": "exact_threshold_amount",
+			"label": "金额阈值（精确）",
+			"fieldtype": "Data",
+			"in_list_view": 1,
+			"description": "按矩阵精度保存十进制金额，新版不用Currency浮点列。"
 		},
 		{
 			"default": "Role",

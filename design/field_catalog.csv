@@ -827,29 +827,32 @@ medops,HRP Workflow Authorization,HRP Access Scope Member,18,enabled,启用,Chec
 medops,HRP Workflow Authorization,HRP Approval Matrix,10,code,矩阵编码,Data,,1,1,1,0,1,,,,矩阵编码,Core
 medops,HRP Workflow Authorization,HRP Approval Matrix,11,display_name,矩阵名称,Data,,1,0,1,0,1,,,,矩阵名称,Core
 medops,HRP Workflow Authorization,HRP Approval Matrix,12,target_doctype,适用单据类型,Link,DocType,1,0,1,0,1,,,,适用单据类型,Core
-medops,HRP Workflow Authorization,HRP Approval Matrix,13,enabled,启用,Check,,0,0,1,0,1,,1,,启用,Core
-medops,HRP Workflow Authorization,HRP Approval Matrix,14,company,法人,Link,Company,1,0,1,0,1,,,,法人,Core
-medops,HRP Workflow Authorization,HRP Approval Matrix,15,hospital,医院,Link,HRP Hospital,1,0,1,0,0,,,,医院,Core
-medops,HRP Workflow Authorization,HRP Approval Matrix,16,organization_unit,组织单元,Link,HRP Organization Unit,0,0,1,0,0,,,,组织单元,Core
-medops,HRP Workflow Authorization,HRP Approval Matrix,17,include_descendants,包含下级组织,Check,,0,0,0,0,0,,0,eval:doc.organization_unit,包含下级组织,Core
-medops,HRP Workflow Authorization,HRP Approval Matrix,18,priority,优先级,Int,,1,0,1,0,0,,0,,优先级,Core
-medops,HRP Workflow Authorization,HRP Approval Matrix,19,valid_from,有效期开始,Date,,1,0,1,0,0,,,,有效期开始,Core
-medops,HRP Workflow Authorization,HRP Approval Matrix,20,valid_to,有效期结束,Date,,0,0,1,0,0,,,,有效期结束,Core
-medops,HRP Workflow Authorization,HRP Approval Matrix,21,dimensions_json,业务维度,Code,JSON,0,0,0,0,0,,,,"仅填写声明式 JSON 对象，例如 {""purchase_method"":""公开招标""}；留空表示不限制额外维度。",Core
-medops,HRP Workflow Authorization,HRP Approval Matrix,22,steps,审批步骤,Table,HRP Approval Matrix Row,1,0,0,0,0,,,,审批步骤,Core
-medops,HRP Workflow Authorization,HRP Approval Matrix,23,revision,策略版本,Int,,1,0,0,1,0,,1,,策略版本,Core
-medops,HRP Workflow Authorization,HRP Approval Matrix,24,policy_digest,策略摘要,Data,,1,0,0,1,0,,,,策略摘要,Core
-medops,HRP Workflow Authorization,HRP Approval Matrix,25,remarks,备注,Small Text,,0,0,0,0,0,,,,备注,Core
+medops,HRP Workflow Authorization,HRP Approval Matrix,13,amount_schema_version,金额格式版本,Int,,1,0,0,1,0,,1,,旧版保留原阈值与摘要；精确金额使用版本2。,Core
+medops,HRP Workflow Authorization,HRP Approval Matrix,14,amount_precision,金额精度,Int,,1,0,0,1,0,,2,,策略创建时固定的0至9位精度。,Core
+medops,HRP Workflow Authorization,HRP Approval Matrix,15,enabled,启用,Check,,0,0,1,0,1,,1,,启用,Core
+medops,HRP Workflow Authorization,HRP Approval Matrix,16,company,法人,Link,Company,1,0,1,0,1,,,,法人,Core
+medops,HRP Workflow Authorization,HRP Approval Matrix,17,hospital,医院,Link,HRP Hospital,1,0,1,0,0,,,,医院,Core
+medops,HRP Workflow Authorization,HRP Approval Matrix,18,organization_unit,组织单元,Link,HRP Organization Unit,0,0,1,0,0,,,,组织单元,Core
+medops,HRP Workflow Authorization,HRP Approval Matrix,19,include_descendants,包含下级组织,Check,,0,0,0,0,0,,0,eval:doc.organization_unit,包含下级组织,Core
+medops,HRP Workflow Authorization,HRP Approval Matrix,20,priority,优先级,Int,,1,0,1,0,0,,0,,优先级,Core
+medops,HRP Workflow Authorization,HRP Approval Matrix,21,valid_from,有效期开始,Date,,1,0,1,0,0,,,,有效期开始,Core
+medops,HRP Workflow Authorization,HRP Approval Matrix,22,valid_to,有效期结束,Date,,0,0,1,0,0,,,,有效期结束,Core
+medops,HRP Workflow Authorization,HRP Approval Matrix,23,dimensions_json,业务维度,Code,JSON,0,0,0,0,0,,,,"仅填写声明式 JSON 对象，例如 {""purchase_method"":""公开招标""}；留空表示不限制额外维度。",Core
+medops,HRP Workflow Authorization,HRP Approval Matrix,24,steps,审批步骤,Table,HRP Approval Matrix Row,1,0,0,0,0,,,,审批步骤,Core
+medops,HRP Workflow Authorization,HRP Approval Matrix,25,revision,策略版本,Int,,1,0,0,1,0,,1,,策略版本,Core
+medops,HRP Workflow Authorization,HRP Approval Matrix,26,policy_digest,策略摘要,Data,,1,0,0,1,0,,,,策略摘要,Core
+medops,HRP Workflow Authorization,HRP Approval Matrix,27,remarks,备注,Small Text,,0,0,0,0,0,,,,备注,Core
 medops,HRP Workflow Authorization,HRP Approval Matrix Row,10,sequence_no,步骤序号,Int,,1,0,0,0,1,,1,,步骤序号,Core
 medops,HRP Workflow Authorization,HRP Approval Matrix Row,11,step_name,步骤名称,Data,,1,0,0,0,1,,,,步骤名称,Core
 medops,HRP Workflow Authorization,HRP Approval Matrix Row,12,threshold_amount,起始金额,Currency,,1,0,0,0,1,2,0,,起始金额,Core
-medops,HRP Workflow Authorization,HRP Approval Matrix Row,13,approver_type,审批人类型,Select,"Role
+medops,HRP Workflow Authorization,HRP Approval Matrix Row,13,exact_threshold_amount,金额阈值（精确）,Data,,0,0,0,0,1,,,,按矩阵精度保存十进制金额，新版不用Currency浮点列。,Core
+medops,HRP Workflow Authorization,HRP Approval Matrix Row,14,approver_type,审批人类型,Select,"Role
 User",1,0,0,0,1,,Role,,审批人类型,Core
-medops,HRP Workflow Authorization,HRP Approval Matrix Row,14,approver_role,审批角色,Link,Role,0,0,0,0,1,,,eval:doc.approver_type == 'Role',审批角色,Core
-medops,HRP Workflow Authorization,HRP Approval Matrix Row,15,approver_user,指定审批人,Link,User,0,0,0,0,1,,,eval:doc.approver_type == 'User',指定审批人,Core
-medops,HRP Workflow Authorization,HRP Approval Matrix Row,16,approval_mode,通过方式,Select,"All
+medops,HRP Workflow Authorization,HRP Approval Matrix Row,15,approver_role,审批角色,Link,Role,0,0,0,0,1,,,eval:doc.approver_type == 'Role',审批角色,Core
+medops,HRP Workflow Authorization,HRP Approval Matrix Row,16,approver_user,指定审批人,Link,User,0,0,0,0,1,,,eval:doc.approver_type == 'User',指定审批人,Core
+medops,HRP Workflow Authorization,HRP Approval Matrix Row,17,approval_mode,通过方式,Select,"All
 Any",1,0,0,0,0,,All,,通过方式,Core
-medops,HRP Workflow Authorization,HRP Approval Matrix Row,17,description,步骤说明,Small Text,,0,0,0,0,0,,,,步骤说明,Core
+medops,HRP Workflow Authorization,HRP Approval Matrix Row,18,description,步骤说明,Small Text,,0,0,0,0,0,,,,步骤说明,Core
 medops,HRP Workflow Authorization,HRP Delegation,10,matrix,审批矩阵,Link,HRP Approval Matrix,1,0,1,1,1,,,,锁定委托所依据的审批矩阵。,Core
 medops,HRP Workflow Authorization,HRP Delegation,11,matrix_revision,矩阵修订号,Int,,1,0,0,1,0,,,,锁定创建时的矩阵修订号。,Core
 medops,HRP Workflow Authorization,HRP Delegation,12,matrix_digest,矩阵策略摘要,Data,,1,0,0,1,0,,,,锁定创建时的矩阵策略摘要。,Core
