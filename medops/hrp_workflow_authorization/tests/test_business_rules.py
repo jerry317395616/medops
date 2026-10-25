@@ -258,11 +258,20 @@ class TestBusinessRules(IntegrationTestCase):
 				frappe.local.db.commit()
 		finally:
 			frappe.local.db = primary
-		decision, _, _ = evaluate_document(
-			source_document(SOURCE, doc.name, lock=True), "validate", lock=True
-		)
+		frappe.db.set_value(SOURCE, doc.name, "amount", 11)
+		try:
+			decision, _, _ = evaluate_document(
+				source_document(SOURCE, doc.name, lock=True), "validate", lock=True
+			)
+		except (frappe.QueryDeadlockError, frappe.QueryTimeoutError):
+			# Some MariaDB snapshot modes reject the current read and roll back the transaction.
+			# This is an outer-request retry, never permission to reuse the old Passed result.
+			frappe.local.db.rollback()
+			decision = evaluate(doc)
 		self.assertEqual(decision["outcome"], "Blocked")
 		self.assertEqual(decision["rules"][0]["revision"], 2)
+		frappe.local.db.rollback()
+		self.assertEqual(frappe.db.get_value(SOURCE, doc.name, "amount"), 10)
 		self.assertFalse(evaluate(doc)["allowed"])
 		frappe.local.db.commit()
 		new_code = "COD029-CREATED-AFTER-SNAPSHOT"
@@ -273,9 +282,18 @@ class TestBusinessRules(IntegrationTestCase):
 				frappe.local.db.commit()
 		finally:
 			frappe.local.db = primary
-		with self.assertRaises(IoneApplicationError) as raised:
-			upsert(policy(code=new_code), label="stale-create-after-snapshot")
-		self.assertEqual(raised.exception.code, "IONE-CORE-0005")
+		for attempt in range(2):
+			try:
+				upsert(policy(code=new_code), label="stale-create-after-snapshot")
+			except (frappe.QueryDeadlockError, frappe.QueryTimeoutError):
+				frappe.local.db.rollback()
+				if attempt:
+					raise
+			except IoneApplicationError as exc:
+				self.assertEqual(exc.code, "IONE-CORE-0005")
+				break
+			else:
+				self.fail("Concurrent creation must return a controlled conflict")
 
 	def test_when_false_is_not_an_authorization(self):
 		upsert(policy(when_json={"field": "status", "op": "eq", "value": "Approved"}))
