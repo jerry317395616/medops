@@ -1,0 +1,64 @@
+{
+  "schema_version": 1,
+  "task_id": "COD-027",
+  "title": "实现不相容职责校验",
+  "status": "Implemented",
+  "risk_level": "critical",
+  "change_types": [
+    "application",
+    "architecture",
+    "configuration",
+    "data",
+    "documentation",
+    "security"
+  ],
+  "affected_modules": [
+    "HRP Workflow Authorization",
+    "HRP Foundation",
+    "HRP Organization"
+  ],
+  "breaking_change": false,
+  "adr_ids": [
+    "ADR-0022"
+  ],
+  "path_globs": [
+    "README.md",
+    "DELIVERY_MANIFEST.json",
+    "SHA256SUMS.txt",
+    "VALIDATION_REPORT.json",
+    "api/**",
+    "architecture/segregation_of_duties.md",
+    "architecture/adr/ADR-0022-declarative-fail-closed-segregation-of-duties.md",
+    "backlog/**",
+    "changes/COD-027.json",
+    "design/**",
+    "doctype_blueprints/hrp_workflow_authorization/hrp_segregation_rule.json",
+    "medops/api/v1/core/sod.py",
+    "medops/common/segregation.py",
+    "medops/hooks.py",
+    "medops/hrp_foundation/tests/test_change_governance.py",
+    "medops/hrp_workflow_authorization/**",
+    "medops/setup/**",
+    "scripts/repository_contract.py",
+    "tests/**",
+    "architecture/production_readiness.md"
+  ],
+  "permissions_impact": "System Manager和HRP System Manager维护并执行职责校验；HRP Auditor只读规则；被校验用户仍须目标DocPerm和组织范围；Guest与普通用户拒绝。",
+  "migration_impact": "新增HRP Segregation Rule运行DocType、两个复合索引和中文工作区入口；不修改现有ERPNext或HRP业务数据。",
+  "rollback_plan": "部署前完整备份Site；回滚应用提交并迁移，保留规则及表；紧急处置通过幂等修订停用规则，禁止破坏性删除。",
+  "security_impact": "真实单据派生组织和日期；CORE-003每次重读权限、角色和规则并重验运行时引用，不持久化或重放授权决策；冲突、缺少适用规则或引用漂移默认拒绝；决策摘要绑定全部已评估规则名、修订和策略摘要；禁止SQL、Python、Server Script和表达式；响应与审计不记录用户、组织或单据标识。",
+  "test_plan": [
+    "纯契约覆盖动作和字段白名单、列表边界、确定性摘要、责任人和角色冲突",
+    "DocType、中文标签、角色、索引和工作区重复迁移测试",
+    "规则幂等创建、乐观锁修订、不可变身份和直接写保护测试",
+    "CORE-003实时决策不重放、运行时引用漂移默认拒绝和全量适用策略摘要绑定测试",
+    "真实单据组织和日期上下文及漏配默认拒绝测试",
+    "被校验用户DocPerm和组织范围测试",
+    "CORE-003、CORE-032、CORE-033真实HTTP和Guest边界测试",
+    "仓库契约、格式、类型、安全、集成、备份与生产数据完整性回归",
+    "按真实单据业务日期排除过期规则；过期规则的角色失效不阻断当前规则，也不消耗候选上限"
+  ],
+  "owner": "MedOps Maintainers",
+  "created_on": "2026-08-20",
+  "updated_on": "2026-10-25"
+}

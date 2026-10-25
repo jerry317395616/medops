@@ -1000,29 +1000,31 @@ medops,HRP Workflow Authorization,HRP Signing Authority,22,valid_from,有效期�
 medops,HRP Workflow Authorization,HRP Signing Authority,23,valid_to,有效期结束,Date,,0,0,0,0,0,,,,有效期结束,Core
 medops,HRP Workflow Authorization,HRP Signing Authority,24,owner_department,责任部门,Link,Department,0,0,0,0,0,,,,责任部门,Core
 medops,HRP Workflow Authorization,HRP Signing Authority,25,remarks,备注,Small Text,,0,0,0,0,0,,,,备注,Core
-medops,HRP Workflow Authorization,HRP Segregation Rule,10,company,法人,Link,Company,1,0,1,0,1,,,,法人,Core
-medops,HRP Workflow Authorization,HRP Segregation Rule,11,hospital,医院,Link,HRP Hospital,1,0,1,0,0,,,,医院,Core
-medops,HRP Workflow Authorization,HRP Segregation Rule,12,campus,院区,Link,HRP Campus,0,0,1,0,0,,,,院区,Core
-medops,HRP Workflow Authorization,HRP Segregation Rule,13,organization_unit,组织单元,Link,HRP Organization Unit,1,0,1,0,1,,,,组织单元,Core
-medops,HRP Workflow Authorization,HRP Segregation Rule,14,cost_center,成本中心,Link,Cost Center,0,0,1,0,0,,,,成本中心,Core
-medops,HRP Workflow Authorization,HRP Segregation Rule,15,fiscal_year,财政年度,Link,Fiscal Year,0,0,1,0,0,,,,财政年度,Core
-medops,HRP Workflow Authorization,HRP Segregation Rule,16,currency,币种,Link,Currency,0,0,0,0,0,,CNY,,币种,Core
-medops,HRP Workflow Authorization,HRP Segregation Rule,17,status,业务状态,Select,"Draft
-Under Review
-Approved
-Rejected
-In Progress
-Completed
-Cancelled
-Closed",0,0,1,0,1,,Draft,,业务状态,Core
-medops,HRP Workflow Authorization,HRP Segregation Rule,18,workflow_state,工作流状态,Link,Workflow State,0,0,1,1,0,,,,工作流状态,Core
-medops,HRP Workflow Authorization,HRP Segregation Rule,19,code,编码,Data,,1,1,1,0,1,,,,编码,Core
-medops,HRP Workflow Authorization,HRP Segregation Rule,20,display_name,名称,Data,,1,0,0,0,1,,,,名称,Core
-medops,HRP Workflow Authorization,HRP Segregation Rule,21,enabled,启用,Check,,0,0,1,0,0,,1,,启用,Core
-medops,HRP Workflow Authorization,HRP Segregation Rule,22,valid_from,有效期开始,Date,,0,0,0,0,0,,,,有效期开始,Core
-medops,HRP Workflow Authorization,HRP Segregation Rule,23,valid_to,有效期结束,Date,,0,0,0,0,0,,,,有效期结束,Core
-medops,HRP Workflow Authorization,HRP Segregation Rule,24,owner_department,责任部门,Link,Department,0,0,0,0,0,,,,责任部门,Core
-medops,HRP Workflow Authorization,HRP Segregation Rule,25,remarks,备注,Small Text,,0,0,0,0,0,,,,备注,Core
+medops,HRP Workflow Authorization,HRP Segregation Rule,10,code,规则编码,Data,,1,1,1,0,1,,,,稳定且唯一的规则编码,Core
+medops,HRP Workflow Authorization,HRP Segregation Rule,11,display_name,规则名称,Data,,1,0,1,0,1,,,,规则显示名称,Core
+medops,HRP Workflow Authorization,HRP Segregation Rule,12,target_doctype,适用单据类型,Link,DocType,1,0,1,0,1,,,,需要校验职责分离的真实单据类型,Core
+medops,HRP Workflow Authorization,HRP Segregation Rule,13,target_action,受控动作,Select,"amend
+approve
+cancel
+create
+pay
+post
+reconcile
+release
+review
+submit",1,0,1,0,1,,,,封闭白名单中的目标动作,Core
+medops,HRP Workflow Authorization,HRP Segregation Rule,14,enabled,启用,Check,,0,0,1,0,1,,1,,是否参与校验,Core
+medops,HRP Workflow Authorization,HRP Segregation Rule,15,company,法人,Link,Company,1,0,1,0,1,,,,适用法人,Core
+medops,HRP Workflow Authorization,HRP Segregation Rule,16,hospital,医院,Link,HRP Hospital,1,0,1,0,0,,,,适用医院,Core
+medops,HRP Workflow Authorization,HRP Segregation Rule,17,organization_unit,组织单元,Link,HRP Organization Unit,0,0,1,0,0,,,,可选适用组织单元,Core
+medops,HRP Workflow Authorization,HRP Segregation Rule,18,include_descendants,包含下级组织,Check,,0,0,0,0,0,,0,eval:doc.organization_unit,是否覆盖同一发布版本中的下级组织,Core
+medops,HRP Workflow Authorization,HRP Segregation Rule,19,actor_fields_json,责任人字段,Code,JSON,0,0,0,0,0,,,,最多16个指向User的真实单据字段,Core
+medops,HRP Workflow Authorization,HRP Segregation Rule,20,conflicting_roles_json,冲突角色,Code,JSON,0,0,0,0,0,,,,最多16个不允许执行目标动作的角色,Core
+medops,HRP Workflow Authorization,HRP Segregation Rule,21,valid_from,有效期开始,Date,,1,0,1,0,0,,,,规则有效期开始,Core
+medops,HRP Workflow Authorization,HRP Segregation Rule,22,valid_to,有效期结束,Date,,0,0,1,0,0,,,,规则有效期结束,Core
+medops,HRP Workflow Authorization,HRP Segregation Rule,23,revision,策略版本,Int,,1,0,0,1,0,,1,,服务维护的单调修订号,Core
+medops,HRP Workflow Authorization,HRP Segregation Rule,24,policy_digest,策略摘要,Data,,1,0,0,1,0,,,,不含修订号的确定性SHA-256策略摘要,Core
+medops,HRP Workflow Authorization,HRP Segregation Rule,25,remarks,备注,Small Text,,0,0,0,0,0,,,,不含敏感身份的规则说明,Core
 medops,HRP Workflow Authorization,HRP Workflow Extension,10,company,法人,Link,Company,1,0,1,0,1,,,,法人,Core
 medops,HRP Workflow Authorization,HRP Workflow Extension,11,hospital,医院,Link,HRP Hospital,1,0,1,0,0,,,,医院,Core
 medops,HRP Workflow Authorization,HRP Workflow Extension,12,campus,院区,Link,HRP Campus,0,0,1,0,0,,,,院区,Core

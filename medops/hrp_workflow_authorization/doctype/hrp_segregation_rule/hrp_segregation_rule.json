@@ -1,0 +1,221 @@
+{
+	"actions": [],
+	"allow_rename": 0,
+	"autoname": "field:code",
+	"creation": "2026-08-20 00:00:00.000000",
+	"description": "按真实单据、目标动作、历史责任人和冲突角色执行默认拒绝的不相容职责校验。",
+	"doctype": "DocType",
+	"engine": "InnoDB",
+	"field_order": [
+		"identity_section",
+		"code",
+		"display_name",
+		"target_doctype",
+		"target_action",
+		"enabled",
+		"scope_section",
+		"company",
+		"hospital",
+		"organization_unit",
+		"include_descendants",
+		"conflict_section",
+		"actor_fields_json",
+		"conflicting_roles_json",
+		"control_section",
+		"valid_from",
+		"valid_to",
+		"revision",
+		"policy_digest",
+		"remarks"
+	],
+	"fields": [
+		{
+			"fieldname": "identity_section",
+			"fieldtype": "Section Break",
+			"label": "不相容职责规则"
+		},
+		{
+			"fieldname": "code",
+			"fieldtype": "Data",
+			"in_list_view": 1,
+			"label": "规则编码",
+			"reqd": 1,
+			"search_index": 1,
+			"unique": 1
+		},
+		{
+			"fieldname": "display_name",
+			"fieldtype": "Data",
+			"in_list_view": 1,
+			"label": "规则名称",
+			"reqd": 1,
+			"search_index": 1
+		},
+		{
+			"fieldname": "target_doctype",
+			"fieldtype": "Link",
+			"in_list_view": 1,
+			"label": "适用单据类型",
+			"options": "DocType",
+			"reqd": 1,
+			"search_index": 1
+		},
+		{
+			"fieldname": "target_action",
+			"fieldtype": "Select",
+			"in_list_view": 1,
+			"label": "受控动作",
+			"options": "amend\napprove\ncancel\ncreate\npay\npost\nreconcile\nrelease\nreview\nsubmit",
+			"reqd": 1,
+			"search_index": 1
+		},
+		{
+			"default": "1",
+			"fieldname": "enabled",
+			"fieldtype": "Check",
+			"in_list_view": 1,
+			"label": "启用",
+			"search_index": 1
+		},
+		{
+			"fieldname": "scope_section",
+			"fieldtype": "Section Break",
+			"label": "适用组织范围"
+		},
+		{
+			"fieldname": "company",
+			"fieldtype": "Link",
+			"in_list_view": 1,
+			"label": "法人",
+			"options": "Company",
+			"reqd": 1,
+			"search_index": 1
+		},
+		{
+			"fieldname": "hospital",
+			"fieldtype": "Link",
+			"label": "医院",
+			"options": "HRP Hospital",
+			"reqd": 1,
+			"search_index": 1
+		},
+		{
+			"fieldname": "organization_unit",
+			"fieldtype": "Link",
+			"label": "组织单元",
+			"options": "HRP Organization Unit",
+			"search_index": 1
+		},
+		{
+			"default": "0",
+			"depends_on": "eval:doc.organization_unit",
+			"fieldname": "include_descendants",
+			"fieldtype": "Check",
+			"label": "包含下级组织"
+		},
+		{
+			"fieldname": "conflict_section",
+			"fieldtype": "Section Break",
+			"label": "冲突来源"
+		},
+		{
+			"description": "仅允许最多16个指向User的字段名，例如 [\"owner\",\"reviewed_by\"]。",
+			"fieldname": "actor_fields_json",
+			"fieldtype": "Code",
+			"label": "责任人字段",
+			"options": "JSON"
+		},
+		{
+			"description": "仅允许最多16个现有角色名称，例如 [\"HRP Applicant\"]。",
+			"fieldname": "conflicting_roles_json",
+			"fieldtype": "Code",
+			"label": "冲突角色",
+			"options": "JSON"
+		},
+		{
+			"fieldname": "control_section",
+			"fieldtype": "Section Break",
+			"label": "控制信息"
+		},
+		{
+			"fieldname": "valid_from",
+			"fieldtype": "Date",
+			"label": "有效期开始",
+			"reqd": 1,
+			"search_index": 1
+		},
+		{
+			"fieldname": "valid_to",
+			"fieldtype": "Date",
+			"label": "有效期结束",
+			"search_index": 1
+		},
+		{
+			"default": "1",
+			"fieldname": "revision",
+			"fieldtype": "Int",
+			"label": "策略版本",
+			"no_copy": 1,
+			"read_only": 1,
+			"reqd": 1
+		},
+		{
+			"fieldname": "policy_digest",
+			"fieldtype": "Data",
+			"label": "策略摘要",
+			"no_copy": 1,
+			"read_only": 1,
+			"reqd": 1
+		},
+		{
+			"fieldname": "remarks",
+			"fieldtype": "Small Text",
+			"label": "备注"
+		}
+	],
+	"index_web_pages_for_search": 0,
+	"links": [],
+	"modified": "2026-08-20 00:00:00.000000",
+	"modified_by": "Administrator",
+	"module": "HRP Workflow Authorization",
+	"name": "HRP Segregation Rule",
+	"naming_rule": "By fieldname",
+	"owner": "Administrator",
+	"permissions": [
+		{
+			"create": 1,
+			"email": 1,
+			"export": 1,
+			"print": 1,
+			"read": 1,
+			"report": 1,
+			"role": "System Manager",
+			"share": 1,
+			"write": 1
+		},
+		{
+			"create": 1,
+			"email": 1,
+			"export": 1,
+			"print": 1,
+			"read": 1,
+			"report": 1,
+			"role": "HRP System Manager",
+			"share": 1,
+			"write": 1
+		},
+		{
+			"export": 1,
+			"print": 1,
+			"read": 1,
+			"report": 1,
+			"role": "HRP Auditor"
+		}
+	],
+	"search_fields": "code,display_name,target_doctype,target_action,company,hospital,organization_unit",
+	"sort_field": "modified",
+	"sort_order": "DESC",
+	"states": [],
+	"title_field": "display_name",
+	"track_changes": 1
+}

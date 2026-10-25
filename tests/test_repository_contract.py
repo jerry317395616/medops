@@ -34,6 +34,7 @@ from scripts.repository_contract import (
 	validate_performance_baseline_contract,
 	validate_push_guard,
 	validate_quality_tooling,
+	validate_segregation_contract,
 	validate_system_settings_contract,
 	validate_test_data_factory_contract,
 	validate_transactional_message_contract,
@@ -195,6 +196,9 @@ class RepositoryContractTest(unittest.TestCase):
 
 	def test_current_numbering_contract_is_mandatory(self) -> None:
 		self.assertEqual(validate_numbering_contract(ROOT), [])
+
+	def test_current_segregation_contract_is_mandatory(self) -> None:
+		self.assertEqual(validate_segregation_contract(ROOT), [])
 
 	def test_rejects_direct_transaction_commit(self) -> None:
 		with tempfile.TemporaryDirectory() as temp:

@@ -31,14 +31,14 @@
   domain_group: Core
   method: POST
   path: /api/method/medops.api.v1.core.sod.validate
-  description: 校验不相容职责
+  description: 按真实单据实时校验不相容职责
   request_schema: user,action,doctype,docname
-  response_schema: allowed,conflicts
-  required_role: HRP System Manager
-  idempotency: Required for write
+  response_schema: schema_version,action,allowed,rules_evaluated,conflicts,decision_digest,correlation_id,request_id,idempotency_replayed
+  required_role: System Manager or HRP System Manager
+  idempotency: Read-only deterministic
   async: 'No'
-  transaction_boundary: Single DB transaction
-  audit: Always
+  transaction_boundary: Read-only
+  audit: Redacted conflicts and digest bound to every evaluated rule name revision and policy digest
   version: v1
 - api_code: CORE-004
   app: medops
@@ -397,6 +397,62 @@
   description: 查询审批矩阵定义
   request_schema: matrix_name
   response_schema: schema_version,name,code,display_name,target_doctype,company,hospital,organization_unit,include_descendants,priority,dimensions,enabled,valid_from,valid_to,revision,steps,policy_digest,correlation_id,request_id,idempotency_replayed
+  required_role: System Manager or HRP System Manager or HRP Auditor
+  idempotency: Read-only deterministic
+  async: 'No'
+  transaction_boundary: Read-only
+  audit: Redacted policy digest and revision
+  version: v1
+  domain_group: Core
+- api_code: CORE-030
+  app: medops
+  method: POST
+  path: /api/method/medops.api.v1.core.delegation.revoke
+  description: 撤销审批委托
+  request_schema: delegation,reason
+  response_schema: schema_version,name,status,revoked_at,revoked_by,revocation_reason,policy_digest,correlation_id,request_id,idempotency_replayed
+  required_role: System Manager or HRP System Manager or HRP Department Manager
+  idempotency: Required for write
+  async: 'No'
+  transaction_boundary: Single DB transaction
+  audit: Redacted policy digest matrix revision and status
+  version: v1
+  domain_group: Core
+- api_code: CORE-031
+  app: medops
+  method: GET
+  path: /api/method/medops.api.v1.core.delegation.get
+  description: 查询审批委托
+  request_schema: delegation
+  response_schema: schema_version,name,matrix,matrix_revision,matrix_digest,target_doctype,company,hospital,organization_unit,include_descendants,from_user,to_user,step_sequence,valid_from,valid_to,status,reason,policy_digest,revoked_at,revoked_by,revocation_reason,expired_at,correlation_id,request_id,idempotency_replayed
+  required_role: System Manager or HRP System Manager or HRP Department Manager or HRP User or HRP Auditor
+  idempotency: Read-only owner scoped
+  async: 'No'
+  transaction_boundary: Read-only
+  audit: Redacted policy digest matrix revision and status
+  version: v1
+  domain_group: Core
+- api_code: CORE-032
+  app: medops
+  method: POST
+  path: /api/method/medops.api.v1.core.sod.upsert_rule
+  description: 创建或修订不相容职责规则
+  request_schema: code,display_name,target_doctype,target_action,company,hospital,organization_unit,include_descendants,actor_fields,conflicting_roles,enabled,valid_from,valid_to,expected_revision,rule_name,remarks
+  response_schema: schema_version,name,code,display_name,target_doctype,target_action,company,hospital,organization_unit,include_descendants,actor_fields,conflicting_roles,enabled,valid_from,valid_to,revision,remarks,policy_digest,changed,changed_fields,correlation_id,request_id,idempotency_replayed
+  required_role: System Manager or HRP System Manager
+  idempotency: Required for write
+  async: 'No'
+  transaction_boundary: Single DB transaction
+  audit: Redacted policy digest revision and changed fields
+  version: v1
+  domain_group: Core
+- api_code: CORE-033
+  app: medops
+  method: GET
+  path: /api/method/medops.api.v1.core.sod.get_rule
+  description: 查询不相容职责规则
+  request_schema: rule_name
+  response_schema: schema_version,name,code,display_name,target_doctype,target_action,company,hospital,organization_unit,include_descendants,actor_fields,conflicting_roles,enabled,valid_from,valid_to,revision,remarks,policy_digest,correlation_id,request_id,idempotency_replayed
   required_role: System Manager or HRP System Manager or HRP Auditor
   idempotency: Read-only deterministic
   async: 'No'

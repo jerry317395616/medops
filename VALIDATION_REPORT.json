@@ -528,5 +528,40 @@
   "not_run": [
     "full upstream Frappe/ERPNext/HRMS application test suites"
   ],
-  "reason_not_run": "COD-026 已通过本地门禁、GitHub 必需检查、锁定 MariaDB Bench 重复迁移、7 项委托专项测试、199 项 medops 全应用测试、完整生产备份、两遍生产迁移与数据完整性验收。完整上游 Frappe、ERPNext 与 HRMS 应用测试套件超出自定义应用变更范围。"
+  "reason_not_run": "COD-026 已通过本地门禁、GitHub 必需检查、锁定 MariaDB Bench 重复迁移、7 项委托专项测试、199 项 medops 全应用测试、完整生产备份、两遍生产迁移与数据完整性验收。完整上游 Frappe、ERPNext 与 HRMS 应用测试套件超出自定义应用变更范围。",
+  "cod_027_medops": {
+    "status": "isolated_validation_passed",
+    "legacy_source_pr": 36,
+    "runtime_namespace": "medops",
+    "architecture_decision": "ADR-0022",
+    "local_unit_tests_passed": 288,
+    "local_typecheck_errors": 0,
+    "isolated_migration": "passed",
+    "frappe_integration": "pending",
+    "production_readiness": "not_established",
+    "frappe_integration_baseline": {
+      "commit": "7be08d4",
+      "tests_passed": 208
+    },
+    "segregation_tests_passed": 8,
+    "expired_rule_regression": {
+      "before_fix": "failed_as_expected",
+      "after_fix": "passed"
+    },
+    "frappe_integration_final": {
+      "commit": "8ffd85cdb7aec112fa058fc227de15a22f07d5b9",
+      "tests_passed": 209,
+      "site": "cod027-8ffd85c.localhost",
+      "bench": "/home/zyd/frappe/medical-validation/bench",
+      "installed_apps": [
+        "frappe",
+        "erpnext",
+        "hrms",
+        "medops",
+        "ione_core"
+      ]
+    },
+    "github_required_checks": "pending_for_final_candidate",
+    "deployment": "pending_after_required_checks"
+  }
 }

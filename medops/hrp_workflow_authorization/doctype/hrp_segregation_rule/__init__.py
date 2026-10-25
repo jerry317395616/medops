@@ -1,0 +1,1 @@
+"""HRP Segregation Rule DocType."""

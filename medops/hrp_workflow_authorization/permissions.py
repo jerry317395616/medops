@@ -148,6 +148,29 @@ def can_read_approval_matrix(
 	return user != "Guest" and bool(allowed.intersection(frappe.get_roles(user)))
 
 
+def segregation_rule_query(user: str | None = None) -> str:
+	user = user or frappe.session.user
+	if user != "Guest" and {"System Manager", "HRP System Manager", "HRP Auditor"}.intersection(
+		frappe.get_roles(user)
+	):
+		return ""
+	return "1=0"
+
+
+def can_read_segregation_rule(
+	doc: _ScopedDocument,
+	user: str | None = None,
+	ptype: str | None = None,
+	debug: bool = False,
+) -> bool:
+	del doc, debug
+	user = user or frappe.session.user
+	allowed = {"System Manager", "HRP System Manager"}
+	if ptype in (None, "read", "report", "export", "print", "email"):
+		allowed.add("HRP Auditor")
+	return user != "Guest" and bool(allowed.intersection(frappe.get_roles(user)))
+
+
 def delegation_query(user: str | None = None) -> str:
 	user = user or frappe.session.user
 	if user == "Guest":
@@ -180,6 +203,7 @@ __all__ = [
 	"approval_matrix_query",
 	"can_read_approval_matrix",
 	"can_read_delegation",
+	"can_read_segregation_rule",
 	"delegation_query",
 	"has_scoped_permission",
 	"hospital_query",
@@ -187,4 +211,5 @@ __all__ = [
 	"organization_unit_query",
 	"organization_version_query",
 	"scope_permission_query",
+	"segregation_rule_query",
 ]

@@ -40,6 +40,7 @@ doc_events = {}
 permission_query_conditions = {
 	"HRP Approval Matrix": "medops.hrp_workflow_authorization.permissions.approval_matrix_query",
 	"HRP Delegation": "medops.hrp_workflow_authorization.permissions.delegation_query",
+	"HRP Segregation Rule": "medops.hrp_workflow_authorization.permissions.segregation_rule_query",
 	"HRP Hospital": "medops.hrp_workflow_authorization.permissions.hospital_query",
 	"HRP Organization Mapping": "medops.hrp_workflow_authorization.permissions.organization_mapping_query",
 	"HRP Organization Unit": "medops.hrp_workflow_authorization.permissions.organization_unit_query",
@@ -54,6 +55,7 @@ permission_query_conditions = {
 has_permission = {
 	"HRP Approval Matrix": "medops.hrp_workflow_authorization.permissions.can_read_approval_matrix",
 	"HRP Delegation": "medops.hrp_workflow_authorization.permissions.can_read_delegation",
+	"HRP Segregation Rule": "medops.hrp_workflow_authorization.permissions.can_read_segregation_rule",
 	"HRP Hospital": "medops.hrp_workflow_authorization.permissions.has_scoped_permission",
 	"HRP Organization Mapping": "medops.hrp_workflow_authorization.permissions.has_scoped_permission",
 	"HRP Organization Unit": "medops.hrp_workflow_authorization.permissions.has_scoped_permission",
