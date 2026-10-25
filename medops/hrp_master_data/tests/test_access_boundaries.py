@@ -496,9 +496,16 @@ class TestMasterDataAccess(IntegrationTestCase):
 		for user in (ACTOR, PEER):
 			grant_scope(user)
 			frappe.get_doc("User", user).add_roles("Stock User")
+		original_get_list = frappe.get_list
+
+		def scoped_targets(doctype, *args, **kwargs):
+			if doctype == "Item":
+				return [frappe._dict(name=TEST_ITEM)]
+			return original_get_list(doctype, *args, **kwargs)
+
 		with patch(
 			"medops.hrp_master_data.services.data_quality.frappe.get_list",
-			return_value=[frappe._dict(name=TEST_ITEM)],
+			side_effect=scoped_targets,
 		):
 			for user, expected_count in (("Administrator", 1), (ACTOR, 2), (ACTOR, 2), (PEER, 3), (PEER, 3)):
 				frappe.set_user(user)

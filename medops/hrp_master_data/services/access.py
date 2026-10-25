@@ -73,6 +73,10 @@ def target_readable(
 def require_target_read(
 	doctype: str, name: str, *, fields: Collection[str] = (), company: str | None = None, lock: bool = False
 ) -> None:
+	if frappe.session.user == "Administrator" and (
+		not frappe.db.exists("DocType", doctype) or not frappe.db.exists(doctype, name)
+	):
+		raise_ione_error("RESOURCE_NOT_FOUND")
 	if not target_readable(doctype, name, fields=fields, lock=lock):
 		raise_ione_error("PERMISSION_DENIED")
 	policy = MASTER_DATA_TARGET_POLICIES.get(doctype)

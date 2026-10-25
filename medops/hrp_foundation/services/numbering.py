@@ -349,7 +349,7 @@ class AllocateNumberService(DomainService[NumberAllocation]):
 	)
 
 	def authorize_result(self, result: dict[str, object]) -> None:
-		doc = frappe.get_doc("HRP Number Reservation", str(result["name"]))
+		doc = frappe.get_doc("HRP Number Reservation", str(result["reservation_token"]))
 		require_scoped_read(doc)
 		if not public_fields_readable(doc):
 			raise_ione_error("PERMISSION_DENIED")

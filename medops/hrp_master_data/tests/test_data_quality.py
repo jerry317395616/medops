@@ -268,7 +268,9 @@ class TestDataQuality(IntegrationTestCase):
 		self.assertEqual(rule_meta.get_field("target_field").label, "校验字段")
 		self.assertEqual(issue_meta.get_field("issue_status").label, "问题状态")
 		self.assertEqual(len(rule_meta.fields), 17)
-		self.assertEqual(len(issue_meta.fields), 20)
+		self.assertEqual(len(issue_meta.fields), 21)
+		self.assertTrue(issue_meta.get_field("evaluation_read_fields").read_only)
+		self.assertTrue(issue_meta.get_field("evaluation_read_fields").hidden)
 		for meta in (rule_meta, issue_meta):
 			self.assertFalse(meta.is_submittable)
 			self.assertFalse(any(permission.write for permission in meta.permissions))
