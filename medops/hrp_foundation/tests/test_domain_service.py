@@ -74,6 +74,19 @@ class ModuleCountQueryService(DomainService[None]):
 
 
 class TestDomainService(IntegrationTestCase):
+	def test_database_conflict_preserves_outer_retry_instead_of_missing_savepoint(self) -> None:
+		with (
+			patch.object(
+				ModuleCountQueryService,
+				"perform",
+				side_effect=frappe.QueryDeadlockError("synthetic conflict"),
+			),
+			patch.object(ModuleCountQueryService, "_rollback") as rollback,
+			self.assertRaises(frappe.QueryDeadlockError),
+		):
+			ModuleCountQueryService().execute(None)
+		rollback.assert_not_called()
+
 	def test_query_does_not_require_or_persist_idempotency(self) -> None:
 		before = frappe.db.count("HRP Service Idempotency")
 

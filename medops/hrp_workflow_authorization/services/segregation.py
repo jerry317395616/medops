@@ -367,6 +367,11 @@ def _document_context(doc: Document) -> _DocumentContext:
 	return context
 
 
+def get_governed_document_context(doc: Document) -> _DocumentContext:
+	"""Shared reviewed tenant/date context for services observing governed documents."""
+	return _document_context(doc)
+
+
 def _rule_matches_unit(rule: HRPSegregationRule, organization_unit: str) -> bool:
 	if not rule.organization_unit:
 		return True
@@ -542,6 +547,7 @@ __all__ = [
 	"SEGREGATION_READ_ROLES",
 	"UpsertSegregationRuleService",
 	"ValidateSegregationService",
+	"get_governed_document_context",
 	"get_segregation_rule",
 	"upsert_segregation_rule",
 	"validate_segregation",

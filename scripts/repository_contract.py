@@ -5075,6 +5075,34 @@ def validate_change_governance(root: Path) -> list[str]:
 	return violations
 
 
+def validate_sla_contract(root: Path) -> list[str]:
+	"""Keep deployed metadata, blueprint and source-event wiring aligned."""
+	violations: list[str] = []
+	module = root / "medops/hrp_workflow_authorization"
+	for slug in ("hrp_sla_policy", "hrp_sla_escalation"):
+		runtime = json.loads((module / "doctype" / slug / f"{slug}.json").read_text(encoding="utf-8"))
+		blueprint = json.loads(
+			(root / "doctype_blueprints/hrp_workflow_authorization" / f"{slug}.json").read_text(
+				encoding="utf-8"
+			)
+		)
+		if runtime["fields"] != blueprint["fields"] or runtime["permissions"] != blueprint["permissions"]:
+			violations.append(f"SLA blueprint differs from runtime: {slug}")
+		if runtime["is_submittable"] or runtime["allow_rename"] or not runtime["track_changes"]:
+			violations.append(f"SLA lifecycle metadata is unsafe: {slug}")
+	hooks = (root / "medops/hooks.py").read_text(encoding="utf-8")
+	for token in ("sla.sync_source", "sla.protect_todo", "sla.run_due_sla_cases"):
+		if token not in hooks:
+			violations.append(f"SLA hook missing: {token}")
+	case = json.loads(
+		(module / "doctype/hrp_sla_escalation/hrp_sla_escalation.json").read_text(encoding="utf-8")
+	)
+	fields = {field["fieldname"]: field for field in case["fields"]}
+	if not all(fields[key].get("unique") for key in ("cycle_key", "active_key")):
+		violations.append("SLA cycle and active source keys must be unique")
+	return violations
+
+
 def collect_violations(root: Path) -> list[str]:
 	root = root.resolve()
 	violations: list[str] = []
@@ -5130,6 +5158,7 @@ def collect_violations(root: Path) -> list[str]:
 	violations.extend(validate_approval_matrix_contract(root))
 	violations.extend(validate_delegation_contract(root))
 	violations.extend(validate_segregation_contract(root))
+	violations.extend(validate_sla_contract(root))
 	return violations
 
 

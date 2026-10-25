@@ -1524,3 +1524,59 @@
   transaction_boundary: Single DB transaction
   audit: Always
   version: v1
+- api_code: CORE-034
+  app: medops
+  method: POST
+  path: /api/method/medops.api.v1.core.sla.upsert_policy
+  description: 保存服务时限策略
+  request_schema: policy,expected_revision
+  response_schema: name,revision,policy_digest,policy,correlation_id,request_id,idempotency_replayed
+  required_role: System Manager or HRP System Manager
+  idempotency: Required for write
+  async: 'No'
+  transaction_boundary: Single DB transaction
+  audit: Redacted state revision and digest
+  version: v1
+  domain_group: Core
+- api_code: CORE-035
+  app: medops
+  method: POST
+  path: /api/method/medops.api.v1.core.sla.act
+  description: 确认响应、检查或停止计时
+  request_schema: case_name,action,expected_revision,reason
+  response_schema: name,reference_doctype,reference_name,status,revision,correlation_id,request_id,idempotency_replayed
+  required_role: Authenticated User with source read scope and action permission
+  idempotency: Required for write
+  async: 'No'
+  transaction_boundary: Single DB transaction
+  audit: Redacted state revision and digest
+  version: v1
+  domain_group: Core
+- api_code: CORE-036
+  app: medops
+  method: GET
+  path: /api/method/medops.api.v1.core.sla.get
+  description: 查看服务时限周期
+  request_schema: case_name
+  response_schema: name,reference_doctype,reference_name,status,revision
+  required_role: Authenticated User with source read scope
+  idempotency: Not applicable
+  async: 'No'
+  transaction_boundary: Read-only
+  audit: Redacted state revision and digest
+  version: v1
+  domain_group: Core
+- api_code: CORE-037
+  app: medops
+  method: GET
+  path: /api/method/medops.api.v1.core.sla.list_my
+  description: 列出可见服务时限周期
+  request_schema: offset,limit
+  response_schema: items,next_offset
+  required_role: Authenticated User with source read scope
+  idempotency: Not applicable
+  async: 'No'
+  transaction_boundary: Read-only
+  audit: Redacted state revision and digest
+  version: v1
+  domain_group: Core

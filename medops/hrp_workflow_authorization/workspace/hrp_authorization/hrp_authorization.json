@@ -1,7 +1,7 @@
 {
 	"app": "medops",
 	"charts": [],
-	"content": "[{\"id\":\"authorization-header\",\"type\":\"header\",\"data\":{\"text\":\"权限与授权\",\"col\":12}},{\"id\":\"access-scope-shortcut\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"访问范围\",\"col\":3}},{\"id\":\"approval-matrix-shortcut\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"审批矩阵\",\"col\":3}},{\"id\":\"segregation-rule-shortcut\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"职责分离规则\",\"col\":3}},{\"id\":\"delegation-shortcut\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"审批委托\",\"col\":3}},{\"id\":\"delegation-report-shortcut\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"委托与超期清单\",\"col\":3}}]",
+	"content": "[{\"id\":\"authorization-header\",\"type\":\"header\",\"data\":{\"text\":\"权限与授权\",\"col\":12}},{\"id\":\"access-scope-shortcut\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"访问范围\",\"col\":3}},{\"id\":\"approval-matrix-shortcut\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"审批矩阵\",\"col\":3}},{\"id\":\"segregation-rule-shortcut\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"职责分离规则\",\"col\":3}},{\"id\":\"delegation-shortcut\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"审批委托\",\"col\":3}},{\"id\":\"delegation-report-shortcut\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"委托与超期清单\",\"col\":3}},{\"id\":\"sla-HRP SLA Policy\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"服务时限策略\",\"col\":3}},{\"id\":\"sla-hrp-sla-console\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"服务时限与超时待办\",\"col\":3}}]",
 	"creation": "2026-08-12 00:00:00.000000",
 	"custom_blocks": [],
 	"docstatus": 0,
@@ -83,6 +83,24 @@
 			"link_type": "Report",
 			"onboard": 0,
 			"type": "Link"
+		},
+		{
+			"hidden": 0,
+			"is_query_report": 0,
+			"label": "服务时限策略",
+			"link_to": "HRP SLA Policy",
+			"link_type": "DocType",
+			"onboard": 0,
+			"type": "Link"
+		},
+		{
+			"hidden": 0,
+			"is_query_report": 0,
+			"label": "服务时限与超时待办",
+			"link_to": "hrp-sla-console",
+			"link_type": "Page",
+			"onboard": 0,
+			"type": "Link"
 		}
 	],
 	"modified": "2026-08-13 00:00:00.000000",
@@ -96,19 +114,63 @@
 	"quick_lists": [],
 	"restrict_to_domain": "",
 	"roles": [
-		{ "role": "System Manager" },
-		{ "role": "HRP System Manager" },
-		{ "role": "HRP Auditor" },
-		{ "role": "HRP Department Manager" },
-		{ "role": "HRP User" }
+		{
+			"role": "System Manager"
+		},
+		{
+			"role": "HRP System Manager"
+		},
+		{
+			"role": "HRP Auditor"
+		},
+		{
+			"role": "HRP Department Manager"
+		},
+		{
+			"role": "HRP User"
+		}
 	],
 	"sequence_id": 4.0,
 	"shortcuts": [
-		{ "label": "访问范围", "link_to": "HRP Access Scope", "type": "DocType" },
-		{ "label": "审批矩阵", "link_to": "HRP Approval Matrix", "type": "DocType" },
-		{ "label": "职责分离规则", "link_to": "HRP Segregation Rule", "type": "DocType" },
-		{ "label": "审批委托", "link_to": "HRP Delegation", "type": "DocType" },
-		{ "label": "委托与超期清单", "link_to": "HRP Delegation and Expiry Register", "type": "Report" }
+		{
+			"label": "访问范围",
+			"link_to": "HRP Access Scope",
+			"type": "DocType"
+		},
+		{
+			"label": "审批矩阵",
+			"link_to": "HRP Approval Matrix",
+			"type": "DocType"
+		},
+		{
+			"label": "职责分离规则",
+			"link_to": "HRP Segregation Rule",
+			"type": "DocType"
+		},
+		{
+			"label": "审批委托",
+			"link_to": "HRP Delegation",
+			"type": "DocType"
+		},
+		{
+			"label": "委托与超期清单",
+			"link_to": "HRP Delegation and Expiry Register",
+			"type": "Report"
+		},
+		{
+			"color": "Grey",
+			"doc_view": "List",
+			"label": "服务时限策略",
+			"link_to": "HRP SLA Policy",
+			"type": "DocType"
+		},
+		{
+			"color": "Grey",
+			"doc_view": "",
+			"label": "服务时限与超时待办",
+			"link_to": "hrp-sla-console",
+			"type": "Page"
+		}
 	],
 	"sidebar_items": [
 		{
