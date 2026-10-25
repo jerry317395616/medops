@@ -234,19 +234,23 @@
 	"permissions": [
 		{
 			"read": 1,
-			"role": "System Manager"
+			"role": "System Manager",
+			"report": 1
 		},
 		{
 			"read": 1,
-			"role": "HRP System Manager"
+			"role": "HRP System Manager",
+			"report": 1
 		},
 		{
 			"read": 1,
-			"role": "HRP Data Steward"
+			"role": "HRP Data Steward",
+			"report": 1
 		},
 		{
 			"read": 1,
-			"role": "HRP User"
+			"role": "HRP User",
+			"report": 1
 		}
 	],
 	"search_fields": "subject,master_data_domain,target_name,company,hospital",

@@ -514,32 +514,24 @@ class TestMasterDataAccess(IntegrationTestCase):
 		for user in (ACTOR, PEER):
 			grant_scope(user)
 			frappe.get_doc("User", user).add_roles("Stock User")
-		original_get_list = frappe.get_list
+		from medops.hrp_foundation.services.reference_links import register_references
+		from medops.hrp_master_data.tests.test_data_quality import data_quality_domain
 
-		def scoped_targets(doctype, *args, **kwargs):
-			if (
-				doctype == "Item"
-				and kwargs.get("fields") == ["name"]
-				and kwargs.get("order_by") == "name asc"
-				and kwargs.get("limit_page_length") == 200
-			):
-				return [frappe._dict(name=TEST_ITEM)]
-			return original_get_list(doctype, *args, **kwargs)
-
-		with patch(
-			"medops.hrp_master_data.services.data_quality.frappe.get_list",
-			side_effect=scoped_targets,
-		):
-			for user, expected_count in (("Administrator", 1), (ACTOR, 2), (ACTOR, 2), (PEER, 3), (PEER, 3)):
-				frappe.set_user(user)
-				batch = run_data_quality_rule_batch(
-					rule_name=name, effective_on="2026-08-08", expected_rule_revision=1
-				)
-				self.assertEqual(batch, {"processed": 1, "failed": 0, "has_more": False})
-				self.assertEqual(
-					frappe.db.get_value("HRP Data Quality Issue", issue["name"], "occurrence_count"),
-					expected_count,
-				)
+		register_references(
+			{"company": TEST_COMPANY, "hospital": TEST_HOSPITAL, "master_data_domain": data_quality_domain()},
+			[{"target_name": TEST_ITEM, "valid_from": "2026-01-01"}],
+			idempotency_key=key("schedule-population"),
+		)
+		for user, expected_count in (("Administrator", 1), (ACTOR, 2), (ACTOR, 2), (PEER, 3), (PEER, 3)):
+			frappe.set_user(user)
+			batch = run_data_quality_rule_batch(
+				rule_name=name, effective_on="2026-08-08", expected_rule_revision=1
+			)
+			self.assertEqual(batch, {"processed": 1, "failed": 0, "has_more": False})
+			self.assertEqual(
+				frappe.db.get_value("HRP Data Quality Issue", issue["name"], "occurrence_count"),
+				expected_count,
+			)
 
 
 class TestMasterDataAccessAPI(FrappeAPITestCase):

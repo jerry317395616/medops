@@ -1,0 +1,26 @@
+{
+	"doctype": "Report",
+	"name": "HRP Organization Version Difference",
+	"report_name": "HRP Organization Version Difference",
+	"module": "HRP Organization",
+	"ref_doctype": "HRP Organization Version",
+	"report_type": "Script Report",
+	"is_standard": "Yes",
+	"disabled": 0,
+	"prepared_report": 0,
+	"disable_prepared_report": 1,
+	"add_total_row": 0,
+	"columns": [],
+	"filters": [],
+	"roles": [
+		{
+			"role": "System Manager"
+		},
+		{
+			"role": "HRP System Manager"
+		},
+		{
+			"role": "HRP Data Steward"
+		}
+	]
+}

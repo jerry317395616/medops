@@ -1678,3 +1678,59 @@
   version: v1
   domain_group: Core
   async: 'No'
+- api_code: CORE-045
+  app: medops
+  method: POST
+  path: /api/method/medops.api.v1.core_workbench.register_population
+  description: 登记医院使用的标准主数据
+  request_schema: scope,entries
+  response_schema: items,idempotency_replayed,correlation_id
+  required_role: System Manager or HRP System Manager or HRP Data Steward
+  idempotency: Required for write
+  transaction_boundary: Single DB transaction
+  audit: Redacted report or operation counts
+  version: v1
+  domain_group: Core
+  async: 'No'
+- api_code: CORE-046
+  app: medops
+  method: GET
+  path: /api/method/medops.api.v1.core_workbench.overview
+  description: 查询核心工作台的实际可见事项
+  request_schema: filters
+  response_schema: sections,reports,counts_are_preview_only
+  required_role: Authenticated core role with current source permissions
+  idempotency: Not required (read-only)
+  transaction_boundary: Read-only
+  audit: Redacted report or operation counts
+  version: v1
+  domain_group: Core
+  async: 'No'
+- api_code: CORE-047
+  app: medops
+  method: GET
+  path: /api/method/medops.api.v1.core_workbench.report
+  description: 执行八张核心报表的受控查询
+  request_schema: code,filters
+  response_schema: columns,rows
+  required_role: Report role plus current native scope and field read permissions
+  idempotency: Not required (read-only)
+  transaction_boundary: Read-only
+  audit: Redacted report or operation counts
+  version: v1
+  domain_group: Core
+  async: 'No'
+- api_code: CORE-048
+  app: medops
+  method: GET
+  path: /api/method/medops.api.v1.core_workbench.population
+  description: 查询当前可见医院主数据登记
+  request_schema: filters
+  response_schema: items
+  required_role: Native reference read role and current target permissions
+  idempotency: Not required (read-only)
+  transaction_boundary: Read-only
+  audit: Redacted report or operation counts
+  version: v1
+  domain_group: Core
+  async: 'No'

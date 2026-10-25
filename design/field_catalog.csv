@@ -283,33 +283,6 @@ medops,HRP Foundation,HRP Retention Policy,31,evidence_required,要求证据,Che
 medops,HRP Foundation,HRP Retention Policy,32,root_cause,根因,Long Text,,0,0,0,0,0,,,,根因,Core
 medops,HRP Foundation,HRP Retention Policy,33,corrective_action,纠正措施,Long Text,,0,0,0,0,0,,,,纠正措施,Core
 medops,HRP Foundation,HRP Retention Policy,34,verification_result,验证结果,Small Text,,0,0,0,0,0,,,,验证结果,Core
-medops,HRP Foundation,HRP Reference Link,10,company,法人,Link,Company,1,0,1,0,1,,,,法人,Core
-medops,HRP Foundation,HRP Reference Link,11,hospital,医院,Link,HRP Hospital,1,0,1,0,0,,,,医院,Core
-medops,HRP Foundation,HRP Reference Link,12,campus,院区,Link,HRP Campus,0,0,1,0,0,,,,院区,Core
-medops,HRP Foundation,HRP Reference Link,13,organization_unit,组织单元,Link,HRP Organization Unit,1,0,1,0,1,,,,组织单元,Core
-medops,HRP Foundation,HRP Reference Link,14,cost_center,成本中心,Link,Cost Center,0,0,1,0,0,,,,成本中心,Core
-medops,HRP Foundation,HRP Reference Link,15,fiscal_year,财政年度,Link,Fiscal Year,0,0,1,0,0,,,,财政年度,Core
-medops,HRP Foundation,HRP Reference Link,16,currency,币种,Link,Currency,0,0,0,0,0,,CNY,,币种,Core
-medops,HRP Foundation,HRP Reference Link,17,status,业务状态,Select,"Draft
-Under Review
-Approved
-Rejected
-In Progress
-Completed
-Cancelled
-Closed",0,0,1,0,1,,Draft,,业务状态,Core
-medops,HRP Foundation,HRP Reference Link,18,workflow_state,工作流状态,Link,Workflow State,0,0,1,1,0,,,,工作流状态,Core
-medops,HRP Foundation,HRP Reference Link,19,posting_date,业务日期,Date,,1,0,1,0,1,,,,业务日期,Core
-medops,HRP Foundation,HRP Reference Link,20,applicant,申请人,Link,User,1,0,1,0,0,,,,申请人,Core
-medops,HRP Foundation,HRP Reference Link,21,employee,员工,Link,Employee,0,0,1,0,0,,,,员工,Core
-medops,HRP Foundation,HRP Reference Link,22,subject,主题,Data,,1,0,0,0,1,,,,主题,Core
-medops,HRP Foundation,HRP Reference Link,23,total_amount,总金额,Currency,currency,0,0,0,0,1,2,,,总金额,Core
-medops,HRP Foundation,HRP Reference Link,24,external_id,外部ID,Data,,0,0,1,0,0,,,,外部ID,Core
-medops,HRP Foundation,HRP Reference Link,25,source_doctype,来源类型,Link,DocType,0,0,0,0,0,,,,来源类型,Core
-medops,HRP Foundation,HRP Reference Link,26,source_name,来源单据,Dynamic Link,source_doctype,0,0,1,0,0,,,,来源单据,Core
-medops,HRP Foundation,HRP Reference Link,27,submitted_at,提交时间,Datetime,,0,0,0,1,0,,,,提交时间,Core
-medops,HRP Foundation,HRP Reference Link,28,approved_at,批准时间,Datetime,,0,0,0,1,0,,,,批准时间,Core
-medops,HRP Foundation,HRP Reference Link,29,remarks,备注,Small Text,,0,0,0,0,0,,,,备注,Core
 medops,HRP Foundation,HRP Attachment Category,10,company,法人,Link,Company,1,0,1,0,1,,,,法人,Core
 medops,HRP Foundation,HRP Attachment Category,11,hospital,医院,Link,HRP Hospital,1,0,1,0,0,,,,医院,Core
 medops,HRP Foundation,HRP Attachment Category,12,campus,院区,Link,HRP Campus,0,0,1,0,0,,,,院区,Core
@@ -13748,3 +13721,36 @@ medops,HRP Service,HRP Service Knowledge Link,37,token_usage,Token用量,Int,,0,
 medops,HRP Service,HRP Service Knowledge Link,38,human_confirmation_required,需要人工确认,Check,,0,0,0,0,0,,1,,需要人工确认,Portal
 medops,HRP Service,HRP Service Knowledge Link,39,confirmed_by,确认人,Link,User,0,0,0,0,0,,,,确认人,Portal
 medops,HRP Master Data,HRP Data Quality Issue,30,evaluation_read_fields,评估读取字段约束,Code,JSON,0,0,0,1,0,,,,质量结论历史涉及的字段名集合；只扩展，不保存字段值。,Core
+medops,HRP Foundation,HRP Reference Link,10,company,法人,Link,Company,1,0,0,1,0,,,,法人,Core
+medops,HRP Foundation,HRP Reference Link,20,hospital,医院,Link,HRP Hospital,1,0,0,1,0,,,,医院,Core
+medops,HRP Foundation,HRP Reference Link,30,organization_unit,科室或组织,Link,HRP Organization Unit,0,0,0,1,0,,,,科室或组织,Core
+medops,HRP Foundation,HRP Reference Link,40,master_data_domain,主数据域,Link,HRP Master Data Domain,1,0,0,1,0,,,,主数据域,Core
+medops,HRP Foundation,HRP Reference Link,50,target_doctype,标准类型,Link,DocType,1,0,0,1,0,,,,标准类型,Core
+medops,HRP Foundation,HRP Reference Link,60,target_name,主数据编号,Dynamic Link,target_doctype,1,0,0,1,0,,,,主数据编号,Core
+medops,HRP Foundation,HRP Reference Link,70,identity_key,登记身份,Data,,1,1,0,1,0,,,,登记身份,Core
+medops,HRP Foundation,HRP Reference Link,80,enabled,启用,Check,,1,0,0,1,0,,1,,启用,Core
+medops,HRP Foundation,HRP Reference Link,90,valid_from,生效日期,Date,,1,0,0,1,0,,,,生效日期,Core
+medops,HRP Foundation,HRP Reference Link,100,valid_to,失效日期,Date,,0,0,0,1,0,,,,失效日期,Core
+medops,HRP Foundation,HRP Reference Link,110,revision,修订,Int,,1,0,0,1,0,,1,,修订,Core
+medops,HRP Master Data,HRP Data Quality Event,10,event_key,事件键,Data,,1,1,0,1,0,,,,事件键,Core
+medops,HRP Master Data,HRP Data Quality Event,20,issue,质量问题,Link,HRP Data Quality Issue,0,0,0,1,0,,,,质量问题,Core
+medops,HRP Master Data,HRP Data Quality Event,30,company,法人,Link,Company,0,0,0,1,0,,,,法人,Core
+medops,HRP Master Data,HRP Data Quality Event,40,hospital,医院,Link,HRP Hospital,0,0,0,1,0,,,,医院,Core
+medops,HRP Master Data,HRP Data Quality Event,50,organization_unit,科室或组织,Link,HRP Organization Unit,0,0,0,1,0,,,,科室或组织,Core
+medops,HRP Master Data,HRP Data Quality Event,60,event_type,事件类型,Select,"Epoch
+Baseline
+Detected
+Resolved
+Reopened
+Repeated
+Observed",1,0,0,1,0,,,,事件类型,Core
+medops,HRP Master Data,HRP Data Quality Event,70,from_status,原状态,Select,"
+Open
+Resolved",0,0,0,1,0,,,,原状态,Core
+medops,HRP Master Data,HRP Data Quality Event,80,to_status,当前状态,Select,"
+Open
+Resolved",0,0,0,1,0,,,,当前状态,Core
+medops,HRP Master Data,HRP Data Quality Event,90,occurred_at,采集时间,Datetime,,1,0,0,1,0,,,,采集时间,Core
+medops,HRP Master Data,HRP Data Quality Event,100,issue_revision,问题修订,Int,,1,0,0,1,0,,,,问题修订,Core
+medops,HRP Master Data,HRP Data Quality Event,110,occurrence_count,发现次数,Int,,1,0,0,1,0,,,,发现次数,Core
+medops,HRP Master Data,HRP Data Quality Event,120,access_fields,历史读取字段,Code,JSON,1,0,0,1,0,,,,历史读取字段,Core

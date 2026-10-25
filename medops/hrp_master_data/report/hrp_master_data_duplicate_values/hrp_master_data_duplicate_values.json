@@ -1,0 +1,35 @@
+{
+	"doctype": "Report",
+	"name": "HRP Master Data Duplicate Values",
+	"report_name": "HRP Master Data Duplicate Values",
+	"module": "HRP Master Data",
+	"ref_doctype": "HRP Reference Link",
+	"report_type": "Script Report",
+	"is_standard": "Yes",
+	"disabled": 0,
+	"prepared_report": 0,
+	"disable_prepared_report": 1,
+	"add_total_row": 0,
+	"columns": [],
+	"filters": [],
+	"roles": [
+		{
+			"role": "System Manager"
+		},
+		{
+			"role": "HRP System Manager"
+		},
+		{
+			"role": "HRP Data Steward"
+		},
+		{
+			"role": "HRP User"
+		},
+		{
+			"role": "HRP Auditor"
+		},
+		{
+			"role": "HRP Integration User"
+		}
+	]
+}

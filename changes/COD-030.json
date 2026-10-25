@@ -1,0 +1,64 @@
+{
+	"schema_version": 1,
+	"task_id": "COD-030",
+	"title": "交付核心工作台与报表",
+	"status": "In Progress",
+	"risk_level": "critical",
+	"change_types": [
+		"application",
+		"architecture",
+		"configuration",
+		"data",
+		"documentation",
+		"security"
+	],
+	"affected_modules": [
+		"HRP Foundation",
+		"HRP Organization",
+		"HRP Master Data",
+		"HRP Workflow Authorization"
+	],
+	"breaking_change": true,
+	"adr_ids": [
+		"ADR-0027"
+	],
+	"path_globs": [
+		"README.md",
+		"DELIVERY_MANIFEST.json",
+		"VALIDATION_REPORT.json",
+		"SHA256SUMS.txt",
+		"api/**",
+		"architecture/**",
+		"backlog/**",
+		"changes/COD-030.json",
+		"design/**",
+		"doctype_blueprints/**",
+		"medops/common/core_reports.py",
+		"medops/api/v1/core_workbench.py",
+		"medops/hrp_foundation/**",
+		"medops/hrp_master_data/**",
+		"medops/hrp_organization/**",
+		"medops/hrp_workflow_authorization/**",
+		"medops/services/core*.py",
+		"medops/setup/**",
+		"medops/hooks.py",
+		"scripts/repository_contract.py",
+		"tests/**",
+		"medops/tests/**"
+	],
+	"permissions_impact": "真实来源、组织、字段与导出权限；历史需要完整事件授权；未自动扩权。",
+	"migration_impact": "新增登记和只追加质量事件；明确采集起点并保守建立既有问题基线，不虚构历史。",
+	"rollback_plan": "先备份、暂停本项目任务并保持维护模式；保留历史事件与授权字段，不能通过旧代码重开已修复越权。",
+	"security_impact": "标准报表和同步、后台、邮件导出均重查当前权限；全局目录不自动归属医院。",
+	"test_plan": [
+		"八张报表的真实业务数据与边界",
+		"登记批次原子性、版本、并发与重试",
+		"历史基线、状态转换、事务回滚和重复迁移",
+		"字段、范围、所有者、原生与导出权限",
+		"工作台真实待办、申请、问题、SLA及HTTP",
+		"完整质量、受保护CI和隔离推广"
+	],
+	"owner": "MedOps Maintainers",
+	"created_on": "2026-10-25",
+	"updated_on": "2026-10-25"
+}

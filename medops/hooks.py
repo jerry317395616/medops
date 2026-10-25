@@ -11,7 +11,7 @@ source_link = "https://github.com/jerry317395616/medops"
 required_apps = ["jerry317395616/erpnext", "jerry317395616/hrms"]
 
 app_logo_url = "/assets/medops/images/medops-logo.svg"
-app_home = "/desk/hrp"
+app_home = "/desk/hrp-core-workbench"
 add_to_apps_screen = [
 	{
 		"name": app_name,
@@ -36,6 +36,7 @@ after_job = ["medops.services.audit_context.finish_job_audit_context"]
 # Add standard DocType extensions here. Prefer extend_doctype_class over overrides.
 extend_doctype_class = {}
 doc_events = {
+	"HRP Data Quality Issue": {"on_update": "medops.hrp_master_data.services.quality_history.append_event"},
 	"*": {
 		"on_update": "medops.hrp_workflow_authorization.services.sla.sync_source",
 		"on_update_after_submit": "medops.hrp_workflow_authorization.services.sla.sync_source",
@@ -50,6 +51,8 @@ doc_events = {
 }
 
 permission_query_conditions = {
+	"HRP Reference Link": "medops.hrp_foundation.services.reference_links.reference_query",
+	"HRP Data Quality Event": "medops.services.core_report_access.history_query",
 	"HRP Rule Execution Log": "medops.hrp_workflow_authorization.services.business_rules.log_query",
 	"HRP Approval Matrix": "medops.hrp_workflow_authorization.permissions.approval_matrix_query",
 	"HRP Delegation": "medops.hrp_workflow_authorization.permissions.delegation_query",
@@ -66,6 +69,8 @@ permission_query_conditions = {
 	"HRP Numbering Scheme": "medops.hrp_foundation.permissions.numbering_scheme_query",
 }
 has_permission = {
+	"HRP Reference Link": "medops.hrp_foundation.services.reference_links.reference_permission",
+	"HRP Data Quality Event": "medops.services.core_report_access.history_permission",
 	"HRP Rule Execution Log": "medops.hrp_workflow_authorization.services.business_rules.log_permission",
 	"HRP Approval Matrix": "medops.hrp_workflow_authorization.permissions.can_read_approval_matrix",
 	"HRP Delegation": "medops.hrp_workflow_authorization.permissions.can_read_delegation",
@@ -96,3 +101,7 @@ fixtures = get_frappe_fixture_hooks()
 
 export_python_type_annotations = True
 require_type_annotated_api_methods = True
+
+override_whitelisted_methods = {
+	"frappe.desk.query_report.export_query": "medops.services.core_reports.export_query"
+}

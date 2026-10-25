@@ -1,0 +1,32 @@
+{
+	"doctype": "Page",
+	"name": "hrp-core-workbench",
+	"page_name": "hrp-core-workbench",
+	"title": "核心工作台",
+	"module": "HRP Foundation",
+	"standard": "Yes",
+	"system_page": 0,
+	"roles": [
+		{
+			"role": "System Manager"
+		},
+		{
+			"role": "HRP System Manager"
+		},
+		{
+			"role": "HRP Data Steward"
+		},
+		{
+			"role": "HRP User"
+		},
+		{
+			"role": "HRP Auditor"
+		},
+		{
+			"role": "HRP Integration User"
+		},
+		{
+			"role": "HRP Department Manager"
+		}
+	]
+}
