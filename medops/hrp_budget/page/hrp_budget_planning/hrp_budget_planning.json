@@ -1,0 +1,18 @@
+{
+	"doctype": "Page",
+	"name": "hrp-budget-planning",
+	"page_name": "hrp-budget-planning",
+	"title": "预算编制",
+	"module": "HRP Budget",
+	"standard": "Yes",
+	"system_page": 0,
+	"roles": [
+		{ "role": "System Manager" },
+		{ "role": "HRP System Manager" },
+		{ "role": "HRP Budget Manager" },
+		{ "role": "HRP Budget User" },
+		{ "role": "HRP Finance User" },
+		{ "role": "HRP Auditor" },
+		{ "role": "HRP Data Steward" }
+	]
+}

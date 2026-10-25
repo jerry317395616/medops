@@ -10,6 +10,8 @@ import frappe
 from frappe.model.document import Document
 from frappe.utils import get_datetime, now_datetime
 
+from medops.common.budget_planning import MAX_LINES as MAX_BUDGET_LINES
+from medops.common.budget_planning import PLAN as BUDGET_PLAN
 from medops.common.business_rules import (
 	MAX_CHILD_ROWS,
 	MAX_FIELD_PATHS,
@@ -151,7 +153,8 @@ def _source_values(source: Document, contracts: dict[str, dict[str, Any]]) -> tu
 			digest.update(canonical_json(values[path]).encode())
 			continue
 		rows = source.get(path) or []
-		if not isinstance(rows, list) or len(rows) > MAX_CHILD_ROWS:
+		maximum = MAX_BUDGET_LINES if source.doctype == BUDGET_PLAN and path == "lines" else MAX_CHILD_ROWS
+		if not isinstance(rows, list) or len(rows) > maximum:
 			raise BusinessRuleError("too many child rows")
 		child_fields = {
 			name.split(".")[1]: spec for name, spec in contracts.items() if name.startswith(path + ".")

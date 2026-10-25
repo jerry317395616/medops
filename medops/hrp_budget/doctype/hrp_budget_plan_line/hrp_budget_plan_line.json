@@ -1,0 +1,118 @@
+{
+	"doctype": "DocType",
+	"name": "HRP Budget Plan Line",
+	"module": "HRP Budget",
+	"custom": 0,
+	"engine": "InnoDB",
+	"autoname": "",
+	"title_field": "",
+	"is_submittable": 0,
+	"istable": 1,
+	"issingle": 0,
+	"track_changes": 0,
+	"allow_rename": 0,
+	"editable_grid": 1,
+	"search_fields": "",
+	"field_order": [
+		"line_key",
+		"budget_subject",
+		"funding_source",
+		"account",
+		"project",
+		"period_index",
+		"period_start",
+		"period_end",
+		"amount",
+		"description"
+	],
+	"fields": [
+		{
+			"fieldname": "line_key",
+			"label": "内部明细键",
+			"fieldtype": "Data",
+			"read_only": 1,
+			"reqd": 1,
+			"hidden": 1
+		},
+		{
+			"fieldname": "budget_subject",
+			"label": "预算科目",
+			"fieldtype": "Link",
+			"read_only": 1,
+			"reqd": 1,
+			"in_list_view": 1,
+			"options": "HRP Dimension Value"
+		},
+		{
+			"fieldname": "funding_source",
+			"label": "资金来源",
+			"fieldtype": "Link",
+			"read_only": 1,
+			"reqd": 1,
+			"in_list_view": 1,
+			"options": "HRP Funding Source"
+		},
+		{
+			"fieldname": "account",
+			"label": "会计科目",
+			"fieldtype": "Link",
+			"read_only": 1,
+			"reqd": 1,
+			"in_list_view": 1,
+			"options": "Account"
+		},
+		{
+			"fieldname": "project",
+			"label": "项目",
+			"fieldtype": "Link",
+			"read_only": 1,
+			"reqd": 0,
+			"in_list_view": 1,
+			"options": "Project"
+		},
+		{
+			"fieldname": "period_index",
+			"label": "期间序号",
+			"fieldtype": "Int",
+			"read_only": 1,
+			"reqd": 1,
+			"in_list_view": 1
+		},
+		{
+			"fieldname": "period_start",
+			"label": "期间开始",
+			"fieldtype": "Date",
+			"read_only": 1,
+			"reqd": 1
+		},
+		{
+			"fieldname": "period_end",
+			"label": "期间结束",
+			"fieldtype": "Date",
+			"read_only": 1,
+			"reqd": 1
+		},
+		{
+			"fieldname": "amount",
+			"label": "预算金额",
+			"fieldtype": "Data",
+			"read_only": 1,
+			"reqd": 1,
+			"in_list_view": 1,
+			"length": 32
+		},
+		{
+			"fieldname": "description",
+			"label": "说明",
+			"fieldtype": "Small Text",
+			"read_only": 1,
+			"reqd": 0
+		}
+	],
+	"permissions": [],
+	"sort_field": "modified",
+	"sort_order": "DESC",
+	"actions": [],
+	"links": [],
+	"states": []
+}

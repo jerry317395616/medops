@@ -1,61 +1,39 @@
 {
 	"schema_version": 1,
-	"status": "LOCAL_VALIDATED_COD_030",
-	"task_id": "COD-030",
-	"recorded_on": "2026-10-25",
+	"status": "RELEASE_CANDIDATE_COD_031",
+	"task_id": "COD-031",
+	"recorded_on": "2026-10-26",
 	"runtime_namespace": "medops",
 	"architecture_decisions": [
-		"ADR-0027"
+		"ADR-0028"
 	],
-	"candidate_code_commit": "828dab0640b1ece63f838f046030ae1ac36ee72a",
 	"checks": {
-		"local_quality": "passed",
-		"unit_tests_passed": 321,
-		"integration_tests_defined": 292,
-		"isolated_full_suite": {
-			"commit": "828dab0640b1ece63f838f046030ae1ac36ee72a",
-			"passed": 292,
-			"new_report_tests": 26,
-			"site": "cod030-828dab0.localhost"
+		"pure_tests_last_passed": 331,
+		"new_frappe_tests_defined": 20,
+		"isolated_domain_suite": "c70e338:20 budget service/HTTP tests passed; final312 full and protected checks pending",
+		"full_integration": {
+			"commit": "02399a3af86b3e095639d3a6a587817fccec4fd0",
+			"fresh_site": "cod031-02399a3.localhost",
+			"passed": 312,
+			"repeat_migrations": 2,
+			"budget_dual_process_races": 5,
+			"final_permission_order": "pending"
 		},
-		"prior_focused_tests_passed": 80,
-		"repeated_migration": "passed",
-		"concurrency_regressions": [
-			"registration same key single result",
-			"registration distinct keys single row plus conflict",
-			"quality same key single event",
-			"quality distinct keys no lost issue revision or event"
-		],
-		"browser_checks": [
-			"actual workbench four sections and eight report buttons",
-			"registration dialog",
-			"two real synthetic duplicate-value rows"
-		],
-		"personal_fork_upstream_lock": "matched",
-		"runtime_code_required_ci": 40212830609
-	},
-	"release_evidence": {
-		"required_ci": "https://github.com/jerry317395616/medops/pull/42/checks",
-		"required_context": "Required",
-		"ci_must_pass_before_merge": true,
-		"final_metadata_head_requires_current_ci": true,
-		"isolated_acceptance": "/home/zyd/frappe/medical-validation/evidence/cod030-828dab0-full-result.json",
-		"deployment_evidence": "/home/zyd/frappe/medical-deployment-evidence/cod030-promotion/result.json",
-		"deployment_occurs_only_after_protected_merge": true
+		"api_and_ui": "Browser passed create08,12period exact100000.01 save/reload,freeze08,clone10,funding-source maintenance and actual CSV download with12rows totaling100000.01.",
+		"protected_ci": {
+			"last_green_commit": "e5bb13598eee3d8ac195e588eb90d14823b23e83",
+			"run": 40225809699,
+			"final_candidate": "pending"
+		},
+		"secret_scanning": "Exact API-route false positives removed from unreleased feature history; complete backup retained; fresh full history117commits and current tree zero findings; no scanner exceptions added.",
+		"reference_rename_snapshot": "c70e338:20 budget tests passed. Old1c75de5 reached native DB conflict after missing new reference; source fences/current reads now return controlled409 and a fresh retry denies referenced rename.",
+		"native_rename_permission_order": "Native legacy RPC invokes before_rename before framework permission validation; hook now checks native write first. Earlier78/617 regression fixture retained Accounts User and was not an unauthorized baseline. Corrected fixture explicitly revokes that role and asserts write denial before exercising the RPC; repeat verification pending."
 	},
 	"prior_base": {
-		"commit": "bb3296b0521c10e358c1706ba4d90f54585ed77a",
-		"pull_request": 41,
-		"ci_run": 40204550823,
-		"frappe_tests_passed": 266,
-		"isolated_medical_development_promotion": "verified"
+		"commit": "72af62556e2ec42b899748742de7a9c9d2ede0d2",
+		"pull_request": 42,
+		"ci_run": 40214581558,
+		"promotion": "verified"
 	},
-	"not_run": [
-		"complete upstream application test suites",
-		"hospital-specific UAT",
-		"agreed hospital capacity benchmark",
-		"real HIS financial and materials interfaces",
-		"hospital HA and disaster-recovery acceptance"
-	],
 	"overall_hospital_production_readiness": "not_established"
 }

@@ -1,313 +1,305 @@
 {
-  "doctype": "DocType",
-  "name": "HRP Budget Plan",
-  "module": "HRP Budget",
-  "custom": 0,
-  "engine": "InnoDB",
-  "autoname": "format:FIN-.YYYY.-.#####",
-  "title_field": "subject",
-  "is_submittable": 1,
-  "istable": 0,
-  "issingle": 0,
-  "track_changes": 1,
-  "allow_rename": 0,
-  "editable_grid": 0,
-  "sort_field": "modified",
-  "sort_order": "DESC",
-  "index_web_pages_for_search": 0,
-  "description": "全面预算领域的HRP预算计划对象；用于支撑业务闭环、权限、审计与对账。",
-  "fields": [
-    {
-      "fieldname": "company",
-      "label": "法人",
-      "fieldtype": "Link",
-      "options": "Company",
-      "reqd": 1,
-      "search_index": 1,
-      "in_list_view": 1,
-      "description": "法人"
-    },
-    {
-      "fieldname": "hospital",
-      "label": "医院",
-      "fieldtype": "Link",
-      "options": "HRP Hospital",
-      "reqd": 1,
-      "search_index": 1,
-      "description": "医院"
-    },
-    {
-      "fieldname": "campus",
-      "label": "院区",
-      "fieldtype": "Link",
-      "options": "HRP Campus",
-      "search_index": 1,
-      "description": "院区"
-    },
-    {
-      "fieldname": "organization_unit",
-      "label": "组织单元",
-      "fieldtype": "Link",
-      "options": "HRP Organization Unit",
-      "reqd": 1,
-      "search_index": 1,
-      "in_list_view": 1,
-      "description": "组织单元"
-    },
-    {
-      "fieldname": "cost_center",
-      "label": "成本中心",
-      "fieldtype": "Link",
-      "options": "Cost Center",
-      "search_index": 1,
-      "description": "成本中心"
-    },
-    {
-      "fieldname": "fiscal_year",
-      "label": "财政年度",
-      "fieldtype": "Link",
-      "options": "Fiscal Year",
-      "search_index": 1,
-      "description": "财政年度"
-    },
-    {
-      "fieldname": "currency",
-      "label": "币种",
-      "fieldtype": "Link",
-      "options": "Currency",
-      "default": "CNY",
-      "description": "币种"
-    },
-    {
-      "fieldname": "status",
-      "label": "业务状态",
-      "fieldtype": "Select",
-      "options": "Draft\nUnder Review\nApproved\nRejected\nIn Progress\nCompleted\nCancelled\nClosed",
-      "default": "Draft",
-      "search_index": 1,
-      "in_list_view": 1,
-      "description": "业务状态"
-    },
-    {
-      "fieldname": "workflow_state",
-      "label": "工作流状态",
-      "fieldtype": "Link",
-      "options": "Workflow State",
-      "search_index": 1,
-      "read_only": 1,
-      "description": "工作流状态"
-    },
-    {
-      "fieldname": "posting_date",
-      "label": "业务日期",
-      "fieldtype": "Date",
-      "reqd": 1,
-      "search_index": 1,
-      "in_list_view": 1,
-      "description": "业务日期"
-    },
-    {
-      "fieldname": "applicant",
-      "label": "申请人",
-      "fieldtype": "Link",
-      "options": "User",
-      "reqd": 1,
-      "search_index": 1,
-      "description": "申请人"
-    },
-    {
-      "fieldname": "employee",
-      "label": "员工",
-      "fieldtype": "Link",
-      "options": "Employee",
-      "search_index": 1,
-      "description": "员工"
-    },
-    {
-      "fieldname": "subject",
-      "label": "主题",
-      "fieldtype": "Data",
-      "reqd": 1,
-      "in_list_view": 1,
-      "description": "主题"
-    },
-    {
-      "fieldname": "total_amount",
-      "label": "总金额",
-      "fieldtype": "Currency",
-      "options": "currency",
-      "in_list_view": 1,
-      "precision": "2",
-      "description": "总金额"
-    },
-    {
-      "fieldname": "external_id",
-      "label": "外部ID",
-      "fieldtype": "Data",
-      "search_index": 1,
-      "description": "外部ID"
-    },
-    {
-      "fieldname": "source_doctype",
-      "label": "来源类型",
-      "fieldtype": "Link",
-      "options": "DocType",
-      "description": "来源类型"
-    },
-    {
-      "fieldname": "source_name",
-      "label": "来源单据",
-      "fieldtype": "Dynamic Link",
-      "options": "source_doctype",
-      "search_index": 1,
-      "description": "来源单据"
-    },
-    {
-      "fieldname": "submitted_at",
-      "label": "提交时间",
-      "fieldtype": "Datetime",
-      "read_only": 1,
-      "description": "提交时间"
-    },
-    {
-      "fieldname": "approved_at",
-      "label": "批准时间",
-      "fieldtype": "Datetime",
-      "read_only": 1,
-      "description": "批准时间"
-    },
-    {
-      "fieldname": "remarks",
-      "label": "备注",
-      "fieldtype": "Small Text",
-      "description": "备注"
-    },
-    {
-      "fieldname": "budget_version",
-      "label": "预算版本",
-      "fieldtype": "Link",
-      "options": "HRP Budget Version",
-      "search_index": 1,
-      "description": "预算版本"
-    },
-    {
-      "fieldname": "budget_subject",
-      "label": "预算科目",
-      "fieldtype": "Link",
-      "options": "HRP Dimension Value",
-      "search_index": 1,
-      "description": "预算科目"
-    },
-    {
-      "fieldname": "funding_source",
-      "label": "资金来源",
-      "fieldtype": "Link",
-      "options": "HRP Funding Source",
-      "search_index": 1,
-      "description": "资金来源"
-    },
-    {
-      "fieldname": "approved_amount",
-      "label": "批准金额",
-      "fieldtype": "Currency",
-      "options": "currency",
-      "precision": "2",
-      "description": "批准金额"
-    },
-    {
-      "fieldname": "reserved_amount",
-      "label": "预占金额",
-      "fieldtype": "Currency",
-      "options": "currency",
-      "read_only": 1,
-      "precision": "2",
-      "description": "预占金额"
-    },
-    {
-      "fieldname": "committed_amount",
-      "label": "承诺金额",
-      "fieldtype": "Currency",
-      "options": "currency",
-      "read_only": 1,
-      "precision": "2",
-      "description": "承诺金额"
-    },
-    {
-      "fieldname": "actual_amount",
-      "label": "实际金额",
-      "fieldtype": "Currency",
-      "options": "currency",
-      "read_only": 1,
-      "precision": "2",
-      "description": "实际金额"
-    },
-    {
-      "fieldname": "available_amount",
-      "label": "可用金额",
-      "fieldtype": "Currency",
-      "options": "currency",
-      "read_only": 1,
-      "in_list_view": 1,
-      "precision": "2",
-      "description": "可用金额"
-    },
-    {
-      "fieldname": "control_mode",
-      "label": "控制模式",
-      "fieldtype": "Select",
-      "options": "Hard\nSoft\nAlert\nNone",
-      "default": "Hard",
-      "description": "控制模式"
-    },
-    {
-      "fieldname": "period_start",
-      "label": "期间开始",
-      "fieldtype": "Date",
-      "description": "期间开始"
-    },
-    {
-      "fieldname": "period_end",
-      "label": "期间结束",
-      "fieldtype": "Date",
-      "description": "期间结束"
-    }
-  ],
-  "permissions": [
-    {
-      "role": "HRP Finance User",
-      "read": 1,
-      "write": 1,
-      "create": 1,
-      "delete": 0,
-      "submit": 1,
-      "cancel": 1,
-      "amend": 0
-    },
-    {
-      "role": "HRP Budget Manager",
-      "read": 1,
-      "write": 1,
-      "create": 1,
-      "delete": 0,
-      "submit": 1,
-      "cancel": 1,
-      "amend": 0
-    }
-  ],
-  "links": [],
-  "actions": [],
-  "x_hrp": {
-    "app": "medops",
-    "retention_years": 10,
-    "data_classification": "内部",
-    "key_indexes": [
-      "company",
-      "organization_unit",
-      "status",
-      "posting_date"
-    ],
-    "standard_references": [],
-    "domain_group": "Finance",
-    "module_package": "hrp_budget"
-  }
+	"doctype": "DocType",
+	"name": "HRP Budget Plan",
+	"module": "HRP Budget",
+	"custom": 0,
+	"engine": "InnoDB",
+	"autoname": "field:identity_key",
+	"title_field": "subject",
+	"is_submittable": 1,
+	"istable": 0,
+	"issingle": 0,
+	"track_changes": 0,
+	"allow_rename": 0,
+	"editable_grid": 0,
+	"search_fields": "subject",
+	"field_order": [
+		"company",
+		"hospital",
+		"budget_version",
+		"organization_version",
+		"organization_unit",
+		"cost_center",
+		"identity_key",
+		"fiscal_year",
+		"currency",
+		"currency_precision",
+		"subject",
+		"status",
+		"applicant",
+		"posting_date",
+		"total_amount",
+		"lines",
+		"revision",
+		"source_plan",
+		"remarks"
+	],
+	"fields": [
+		{
+			"fieldname": "company",
+			"label": "法人",
+			"fieldtype": "Link",
+			"read_only": 1,
+			"reqd": 1,
+			"options": "Company"
+		},
+		{
+			"fieldname": "hospital",
+			"label": "医院",
+			"fieldtype": "Link",
+			"read_only": 1,
+			"reqd": 1,
+			"options": "HRP Hospital"
+		},
+		{
+			"fieldname": "budget_version",
+			"label": "预算版本",
+			"fieldtype": "Link",
+			"read_only": 1,
+			"reqd": 1,
+			"search_index": 1,
+			"options": "HRP Budget Version"
+		},
+		{
+			"fieldname": "organization_version",
+			"label": "组织快照",
+			"fieldtype": "Link",
+			"read_only": 1,
+			"reqd": 1,
+			"options": "HRP Organization Version"
+		},
+		{
+			"fieldname": "organization_unit",
+			"label": "编制科室",
+			"fieldtype": "Link",
+			"read_only": 1,
+			"reqd": 1,
+			"search_index": 1,
+			"in_list_view": 1,
+			"options": "HRP Organization Unit"
+		},
+		{
+			"fieldname": "cost_center",
+			"label": "标准成本中心",
+			"fieldtype": "Link",
+			"read_only": 1,
+			"reqd": 1,
+			"options": "Cost Center"
+		},
+		{
+			"fieldname": "identity_key",
+			"label": "内部身份",
+			"fieldtype": "Data",
+			"read_only": 1,
+			"reqd": 1,
+			"unique": 1,
+			"hidden": 1
+		},
+		{
+			"fieldname": "fiscal_year",
+			"label": "财政年度",
+			"fieldtype": "Link",
+			"read_only": 1,
+			"reqd": 1,
+			"options": "Fiscal Year"
+		},
+		{
+			"fieldname": "currency",
+			"label": "记账币种",
+			"fieldtype": "Link",
+			"read_only": 1,
+			"reqd": 1,
+			"options": "Currency"
+		},
+		{
+			"fieldname": "currency_precision",
+			"label": "金额精度",
+			"fieldtype": "Int",
+			"read_only": 1,
+			"reqd": 1
+		},
+		{
+			"fieldname": "subject",
+			"label": "计划名称",
+			"fieldtype": "Data",
+			"read_only": 1,
+			"reqd": 1,
+			"in_list_view": 1
+		},
+		{
+			"fieldname": "status",
+			"label": "编制状态",
+			"fieldtype": "Select",
+			"read_only": 1,
+			"reqd": 1,
+			"default": "Draft",
+			"in_list_view": 1,
+			"options": "Draft\nWithdrawn"
+		},
+		{
+			"fieldname": "applicant",
+			"label": "编制人",
+			"fieldtype": "Link",
+			"read_only": 1,
+			"reqd": 1,
+			"options": "User"
+		},
+		{
+			"fieldname": "posting_date",
+			"label": "编制日期",
+			"fieldtype": "Date",
+			"read_only": 1,
+			"reqd": 1
+		},
+		{
+			"fieldname": "total_amount",
+			"label": "预算合计",
+			"fieldtype": "Data",
+			"read_only": 1,
+			"reqd": 1,
+			"length": 32
+		},
+		{
+			"fieldname": "lines",
+			"label": "预算明细",
+			"fieldtype": "Table",
+			"read_only": 1,
+			"reqd": 1,
+			"options": "HRP Budget Plan Line"
+		},
+		{
+			"fieldname": "revision",
+			"label": "修订",
+			"fieldtype": "Int",
+			"read_only": 1,
+			"reqd": 1,
+			"default": "1"
+		},
+		{
+			"fieldname": "source_plan",
+			"label": "来源计划",
+			"fieldtype": "Link",
+			"read_only": 1,
+			"reqd": 0,
+			"hidden": 1,
+			"permlevel": 1,
+			"options": "HRP Budget Plan"
+		},
+		{
+			"fieldname": "remarks",
+			"label": "说明",
+			"fieldtype": "Small Text",
+			"read_only": 1,
+			"reqd": 0
+		}
+	],
+	"permissions": [
+		{
+			"role": "System Manager",
+			"read": 1,
+			"report": 1,
+			"export": 1,
+			"print": 1,
+			"create": 0,
+			"write": 0,
+			"delete": 0,
+			"submit": 0,
+			"cancel": 0,
+			"amend": 0
+		},
+		{
+			"role": "HRP System Manager",
+			"read": 1,
+			"report": 1,
+			"export": 1,
+			"print": 1,
+			"create": 0,
+			"write": 0,
+			"delete": 0,
+			"submit": 0,
+			"cancel": 0,
+			"amend": 0
+		},
+		{
+			"role": "HRP Budget User",
+			"read": 1,
+			"report": 1,
+			"export": 1,
+			"print": 1,
+			"create": 0,
+			"write": 0,
+			"delete": 0,
+			"submit": 0,
+			"cancel": 0,
+			"amend": 0
+		},
+		{
+			"role": "HRP Budget Manager",
+			"read": 1,
+			"report": 1,
+			"export": 1,
+			"print": 1,
+			"create": 0,
+			"write": 0,
+			"delete": 0,
+			"submit": 0,
+			"cancel": 0,
+			"amend": 0
+		},
+		{
+			"role": "HRP Finance User",
+			"read": 1,
+			"report": 1,
+			"export": 1,
+			"print": 1,
+			"create": 0,
+			"write": 0,
+			"delete": 0,
+			"submit": 0,
+			"cancel": 0,
+			"amend": 0
+		},
+		{
+			"role": "HRP Auditor",
+			"read": 1,
+			"report": 1,
+			"export": 1,
+			"print": 1,
+			"create": 0,
+			"write": 0,
+			"delete": 0,
+			"submit": 0,
+			"cancel": 0,
+			"amend": 0
+		},
+		{
+			"role": "System Manager",
+			"permlevel": 1,
+			"read": 1
+		},
+		{
+			"role": "HRP System Manager",
+			"permlevel": 1,
+			"read": 1
+		}
+	],
+	"sort_field": "modified",
+	"sort_order": "DESC",
+	"actions": [],
+	"links": [],
+	"states": [],
+	"x_hrp": {
+		"app": "medops",
+		"retention_years": 10,
+		"data_classification": "内部",
+		"key_indexes": [
+			"company",
+			"hospital",
+			"revision"
+		],
+		"standard_references": [],
+		"domain_group": "Finance",
+		"module_package": "hrp_budget"
+	},
+	"show_title_field_in_link": 1
 }
