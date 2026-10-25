@@ -475,6 +475,19 @@ class TestBusinessRulesAPI(FrappeAPITestCase):
 			{"doctype": SOURCE, "name": "missing", "action": "validate", "company": TEST_COMPANY},
 		)
 		self.assertEqual(response.status_code, 400)
+		for malformed in (
+			policy() | {"severity": {}},
+			policy()
+			| {
+				"assertion_json": {
+					"table": "items",
+					"quantifier": [],
+					"where": {"field": "qty", "op": "required"},
+				}
+			},
+		):
+			response = self.post(self.method(API + "upsert"), {"policy": malformed})
+			self.assertEqual(response.status_code, 400, response.get_data(as_text=True))
 		self.assertEqual(self.get(self.method(API + "logs"), {"limit": 51}).status_code, 400)
 		self.assertEqual(
 			self.get(self.method(API + "execution_log"), {"log_name": "missing"}).status_code, 404

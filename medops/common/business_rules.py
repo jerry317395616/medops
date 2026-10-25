@@ -100,7 +100,7 @@ def normalize_tree(value: object, *, optional: bool = False) -> dict[str, Any] |
 				raise BusinessRuleError("boolean groups require one to sixteen conditions")
 			return {key: [walk(child, depth + 1, in_table) for child in children]}
 		if set(node) == {"table", "quantifier", "where"}:
-			if in_table or node["quantifier"] not in {"all", "any"}:
+			if in_table or node["quantifier"] not in ("all", "any"):
 				raise BusinessRuleError("nested tables or unknown quantifiers are not supported")
 			return {
 				"table": _field(node["table"]),
@@ -352,7 +352,7 @@ def rule_payload(value: object) -> dict[str, Any]:
 		p["remarks"] = normalize_optional_text(p.get("remarks"), label="remarks", maximum=500)
 	except ValueError as exc:
 		raise BusinessRuleError(str(exc)) from exc
-	if p.get("target_action") not in RULE_ACTIONS or p.get("severity") not in {"Block", "Warn"}:
+	if p.get("target_action") not in RULE_ACTIONS or p.get("severity") not in ("Block", "Warn"):
 		raise BusinessRuleError("unsupported action or severity")
 	p["when_json"] = canonical_json(normalize_tree(p.get("when_json"), optional=True))
 	p["assertion_json"] = canonical_json(normalize_tree(p.get("assertion_json")))

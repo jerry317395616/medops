@@ -73,6 +73,7 @@ class BusinessRuleTests(unittest.TestCase):
 			{"field": "__class__", "op": "eq", "value": "x"},
 			{"field": "amount", "op": "eval", "value": "True"},
 			{"field": "amount", "op": "required", "sql": "select 1"},
+			{"table": "items", "quantifier": [], "where": {"field": "qty", "op": "required"}},
 			{
 				"table": "items",
 				"quantifier": "all",
@@ -136,6 +137,7 @@ class BusinessRuleTests(unittest.TestCase):
 			{"valid_to": "2025-01-01"},
 			{"include_descendants": 1},
 			{"target_action": "exec"},
+			{"severity": {}},
 		]:
 			with self.subTest(extra=extra), self.assertRaises(BusinessRuleError):
 				rule_payload({**p, **extra})
