@@ -504,6 +504,17 @@ class TestBudgetPlanningServices(IntegrationTestCase):
 		with self.assertRaises(IoneApplicationError):
 			doc.save(ignore_permissions=True)
 		account = doc.lines[0].account
+		frappe.set_user(PLANNER)
+		try:
+			with self.assertRaises(frappe.PermissionError):
+				frappe.call(
+					"frappe.client.rename_doc",
+					doctype="Account",
+					old_name=account,
+					new_name="COD031 Unauthorized Rename - C031",
+				)
+		finally:
+			frappe.set_user("Administrator")
 		with self.assertRaises(IoneApplicationError):
 			frappe.rename_doc("Account", account, "COD031 Renamed - C031")
 		self.assertTrue(frappe.db.exists("Account", account))
