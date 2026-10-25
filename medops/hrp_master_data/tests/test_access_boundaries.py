@@ -420,6 +420,24 @@ class TestMasterDataAccess(IntegrationTestCase):
 			allocate_number(command, idempotency_key=key("number"))
 		self.assertEqual(frappe.db.count("HRP Number Reservation", {"scheme_code": "COD201-NUM"}), 0)
 		frappe.set_user("Administrator")
+		grant_scope(
+			company=OTHER_COMPANY, hospital=OTHER_HOSPITAL, organization_unit=self.unit, suffix="leaf"
+		)
+		share_item(target=OTHER_ITEM)
+		root = frappe.db.get_value(
+			"HRP Organization Unit",
+			{"organization_version": self.version["name"], "code": OTHER_HOSPITAL},
+			"name",
+		)
+		frappe.set_user(ACTOR)
+		draft = save_master_data_request(request_command(self.unit), idempotency_key=key("leaf-request"))
+		self.assertEqual(get_master_data_request(request_name=draft["name"])["name"], draft["name"])
+		with self.assertRaises(IoneApplicationError) as outside:
+			save_master_data_request(request_command(root), idempotency_key=key("outside-leaf"))
+		self.assertEqual(outside.exception.code, "IONE-CORE-0002")
+		with self.assertRaises(IoneApplicationError):
+			get_organization_hierarchy(organization_version=self.version["name"])
+		frappe.set_user("Administrator")
 		grant_scope()
 		grant_scope(PEER)
 		grant_scope(company=OTHER_COMPANY, hospital=OTHER_HOSPITAL, suffix="org")
