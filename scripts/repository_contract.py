@@ -1797,7 +1797,8 @@ def validate_software_supply_chain_contract(root: Path) -> list[str]:
 
 	expected_fingerprint = (
 		"2403cc6f43ebaaf0a924adaaac42cd5f3b217027:"
-		"medops/hrp_foundation/tests/test_test_data_factory.py:generic-api-key:90"
+		# This fingerprint identifies an immutable historical commit before the app rename.
+		"ione_hrp/hrp_foundation/tests/test_test_data_factory.py:generic-api-key:90"
 	)
 	gitleaks_entries = [
 		line.strip()
