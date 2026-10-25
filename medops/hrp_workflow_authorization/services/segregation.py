@@ -415,6 +415,10 @@ def _applicable_rules(
 			"enabled": 1,
 			"valid_from": ("<=", context.effective_on),
 		},
+		or_filters=[
+			["valid_to", "is", "not set"],
+			["valid_to", ">=", context.effective_on],
+		],
 		fields=["name"],
 		order_by="name asc",
 		limit=MAX_SEGREGATION_RULE_CANDIDATES + 1,

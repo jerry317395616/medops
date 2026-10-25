@@ -73,6 +73,8 @@ def rule_command(
 	expected_revision: int = 0,
 	rule_name: str | None = None,
 	display_name: str = "组织单元制单审批分离",
+	valid_from: str = "2026-01-01",
+	valid_to: str | None = None,
 ):
 	return build_segregation_rule_upsert(
 		rule_name=rule_name,
@@ -88,7 +90,8 @@ def rule_command(
 		actor_fields=actor_fields,
 		conflicting_roles=conflicting_roles,
 		enabled=True,
-		valid_from="2026-01-01",
+		valid_from=valid_from,
+		valid_to=valid_to,
 	)
 
 
@@ -254,6 +257,55 @@ class TestSegregation(IntegrationTestCase):
 			allowed = validate_segregation(evaluation_command(TEST_USER))
 		self.assertTrue(allowed["allowed"])
 		self.assertEqual(allowed["conflicts"], [])
+
+	def test_expired_rules_do_not_validate_stale_references_or_consume_candidate_limit(self) -> None:
+		role = "COD027 Expired Policy Role"
+		if not frappe.db.exists("Role", role):
+			frappe.get_doc({"doctype": "Role", "role_name": role}).insert(ignore_permissions=True)
+		original_disabled = frappe.db.get_value("Role", role, "disabled")
+		frappe.db.set_value("Role", role, "disabled", 0, update_modified=False)
+		create_access_scope(user=TEST_USER)
+		upsert_segregation_rule(
+			rule_command(organization_unit=None), idempotency_key="COD-027-active-period"
+		)
+		for index in range(2):
+			upsert_segregation_rule(
+				rule_command(
+					code=f"COD027-EXPIRED-{index}",
+					actor_fields=[],
+					conflicting_roles=[role],
+					organization_unit=None,
+					valid_to="2026-01-02",
+				),
+				idempotency_key=f"COD-027-expired-period-{index}",
+			)
+		frappe.db.set_value("Role", role, "disabled", 1, update_modified=False)
+		original_valid_from = frappe.db.get_value("HRP Organization Unit", TEST_UNIT, "valid_from")
+		try:
+			# Evaluate expiry against the real document date, rather than the wall clock.
+			frappe.db.set_value(
+				"HRP Organization Unit", TEST_UNIT, "valid_from", "2026-01-03", update_modified=False
+			)
+			frappe.clear_document_cache("HRP Organization Unit", TEST_UNIT)
+			with (
+				patch(
+					"medops.hrp_workflow_authorization.services.segregation.frappe.has_permission",
+					return_value=True,
+				),
+				patch(
+					"medops.hrp_workflow_authorization.services.segregation.MAX_SEGREGATION_RULE_CANDIDATES",
+					1,
+				),
+			):
+				decision = validate_segregation(evaluation_command(TEST_USER))
+			self.assertTrue(decision["allowed"])
+			self.assertEqual(decision["rules_evaluated"], 1)
+		finally:
+			frappe.db.set_value(
+				"HRP Organization Unit", TEST_UNIT, "valid_from", original_valid_from, update_modified=False
+			)
+			frappe.clear_document_cache("HRP Organization Unit", TEST_UNIT)
+			frappe.db.set_value("Role", role, "disabled", original_disabled, update_modified=False)
 
 	def test_validation_rejects_invalid_user_scope_and_runtime_reference_drift(self) -> None:
 		with self.assertRaises(IoneApplicationError) as invalid_field:

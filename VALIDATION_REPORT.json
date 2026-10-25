@@ -536,8 +536,18 @@
     "architecture_decision": "ADR-0022",
     "local_unit_tests_passed": 288,
     "local_typecheck_errors": 0,
-    "isolated_migration": "pending",
+    "isolated_migration": "passed",
     "frappe_integration": "pending",
-    "production_readiness": "not_established"
+    "production_readiness": "not_established",
+    "frappe_integration_baseline": {
+      "commit": "7be08d4",
+      "tests_passed": 208
+    },
+    "segregation_tests_passed": 8,
+    "expired_rule_regression": {
+      "before_fix": "failed_as_expected",
+      "after_fix": "passed"
+    },
+    "frappe_integration_final": "pending"
   }
 }
