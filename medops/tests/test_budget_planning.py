@@ -504,6 +504,15 @@ class TestBudgetPlanningServices(IntegrationTestCase):
 		with self.assertRaises(IoneApplicationError):
 			doc.save(ignore_permissions=True)
 		account = doc.lines[0].account
+		# Accounts User has native Account write permission in the pinned ERP.
+		# Revoke it before exercising the legacy RPC with an unauthorized actor.
+		frappe.db.delete("Has Role", {"parent": PLANNER, "role": "Accounts User"})
+		frappe.clear_cache(user=PLANNER)
+		self.assertFalse(
+			frappe.has_permission(
+				"Account", ptype="write", doc=frappe.get_doc("Account", account), user=PLANNER
+			)
+		)
 		frappe.set_user(PLANNER)
 		try:
 			with self.assertRaises(frappe.PermissionError):

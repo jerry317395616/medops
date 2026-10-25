@@ -27,7 +27,7 @@
 		},
 		"secret_scanning": "Exact API-route false positives removed from unreleased feature history; complete backup retained; fresh full history117commits and current tree zero findings; no scanner exceptions added.",
 		"reference_rename_snapshot": "c70e338:20 budget tests passed. Old1c75de5 reached native DB conflict after missing new reference; source fences/current reads now return controlled409 and a fresh retry denies referenced rename.",
-		"native_rename_permission_order": "78c3c36 regression reproduced missing native source write check before reference inspection; repaired candidate awaiting repeat suite and protected CI."
+		"native_rename_permission_order": "Native legacy RPC invokes before_rename before framework permission validation; hook now checks native write first. Earlier78/617 regression fixture retained Accounts User and was not an unauthorized baseline. Corrected fixture explicitly revokes that role and asserts write denial before exercising the RPC; repeat verification pending."
 	},
 	"prior_base": {
 		"commit": "72af62556e2ec42b899748742de7a9c9d2ede0d2",
