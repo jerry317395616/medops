@@ -2,7 +2,7 @@
 	"schema_version": 1,
 	"task_id": "COD-030",
 	"title": "交付核心工作台与报表",
-	"status": "In Progress",
+	"status": "Implemented",
 	"risk_level": "critical",
 	"change_types": [
 		"application",

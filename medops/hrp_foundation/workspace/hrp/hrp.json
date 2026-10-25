@@ -433,6 +433,19 @@
 			"type": "Link"
 		},
 		{
+			"child": 0,
+			"collapsible": 1,
+			"default_workspace": 0,
+			"icon": "list",
+			"indent": 1,
+			"keep_closed": 0,
+			"label": "核心报表",
+			"link_type": "DocType",
+			"open_in_new_tab": 0,
+			"show_arrow": 0,
+			"type": "Section Break"
+		},
+		{
 			"child": 1,
 			"collapsible": 1,
 			"default_workspace": 1,
