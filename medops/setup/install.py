@@ -11,6 +11,7 @@ from medops.setup.master_data import ensure_master_data_governance
 from medops.setup.modules import sync_module_defs, sync_module_settings
 from medops.setup.numbering import ensure_numbering_governance
 from medops.setup.organization import ensure_organization_hierarchy
+from medops.setup.segregation import ensure_segregation_governance
 from medops.setup.settings import ensure_system_settings
 from medops.setup.versions import validate_runtime_versions
 from medops.setup.workspaces import sync_owned_workspaces
@@ -49,6 +50,7 @@ def after_install() -> None:
 	ensure_access_scope_governance()
 	ensure_approval_matrix_governance()
 	ensure_delegation_governance()
+	ensure_segregation_governance()
 	ensure_system_settings()
 	sync_owned_workspaces()
 
@@ -64,6 +66,7 @@ def after_migrate() -> None:
 	ensure_access_scope_governance()
 	ensure_approval_matrix_governance()
 	ensure_delegation_governance()
+	ensure_segregation_governance()
 	ensure_system_settings()
 	sync_owned_workspaces()
 

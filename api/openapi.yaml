@@ -912,41 +912,155 @@ paths:
       x-required-role: System Manager or HRP System Manager or HRP Auditor
       x-transaction-boundary: Read-only
       x-idempotency: Read-only deterministic
-  /api/method/medops_core.api.v1.sod.validate:
+  /api/method/medops.api.v1.core.sod.validate:
     post:
       operationId: core_003
-      summary: 校验不相容职责
+      summary: 按真实单据实时校验不相容职责
       tags:
       - medops
       security:
       - tokenAuth: []
       parameters:
-      - name: X-Correlation-ID
-        in: header
-        required: false
-        schema:
-          type: string
-      - name: Idempotency-Key
-        in: header
-        required: true
-        schema:
-          type: string
+      - $ref: '#/components/parameters/CorrelationId'
       responses:
         '200':
-          description: Success
+          description: Live, deterministic and redacted segregation decision; never replayed from an idempotency snapshot
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/FrappeResponse'
+                $ref: '#/components/schemas/SegregationValidationFrappeResponse'
+        '400':
+          description: Invalid request or correlation identifier
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/IoneErrorResponse'
+        '401':
+          description: Authentication required
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/IoneErrorResponse'
         '403':
-          description: Forbidden
+          description: System management role, DocPerm or organization scope required
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/IoneErrorResponse'
+        '404':
+          description: Target DocType, document or evaluated user not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/IoneErrorResponse'
         '409':
-          description: Conflict / duplicate request
-        '422':
-          description: Business validation error
+          description: Evaluated user is disabled or is not a System User
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/IoneErrorResponse'
         '500':
-          description: Internal error
-      x-required-role: HRP System Manager
+          description: Persisted rule references or document scope configuration is invalid
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/IoneErrorResponse'
+      x-required-role: System Manager or HRP System Manager
+      x-transaction-boundary: Read-only
+      x-idempotency: Read-only deterministic
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required:
+              - user
+              - action
+              - doctype
+              - docname
+              properties:
+                user:
+                  type: string
+                  minLength: 1
+                  maxLength: 140
+                action:
+                  type: string
+                  enum:
+                  - amend
+                  - approve
+                  - cancel
+                  - create
+                  - pay
+                  - post
+                  - reconcile
+                  - release
+                  - review
+                  - submit
+                doctype:
+                  type: string
+                  minLength: 1
+                  maxLength: 140
+                docname:
+                  type: string
+                  minLength: 1
+                  maxLength: 140
+  /api/method/medops.api.v1.core.sod.upsert_rule:
+    post:
+      operationId: core_032
+      summary: 创建或修订不相容职责规则
+      tags:
+      - medops
+      security:
+      - tokenAuth: []
+      parameters:
+      - $ref: '#/components/parameters/CorrelationId'
+      - $ref: '#/components/parameters/IdempotencyKey'
+      responses:
+        '200':
+          description: Created, revised or idempotently replayed rule
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SegregationRuleUpsertFrappeResponse'
+        '400':
+          description: Invalid rule contract, correlation identifier or missing idempotency key
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/IoneErrorResponse'
+        '401':
+          description: Authentication required
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/IoneErrorResponse'
+        '403':
+          description: System management role required or immutable rule identity change attempted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/IoneErrorResponse'
+        '404':
+          description: Rule or referenced DocType, company, hospital, organization unit or role not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/IoneErrorResponse'
+        '409':
+          description: Duplicate identity, stale revision, invalid referenced state or idempotency conflict
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/IoneErrorResponse'
+        '500':
+          description: Referenced DocType or organization configuration is invalid
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/IoneErrorResponse'
+      x-required-role: System Manager or HRP System Manager
       x-transaction-boundary: Single DB transaction
       x-idempotency: Required for write
       requestBody:
@@ -955,8 +1069,150 @@ paths:
           application/json:
             schema:
               type: object
-              description: user,action,doctype,docname
-              additionalProperties: true
+              additionalProperties: false
+              required:
+              - code
+              - display_name
+              - target_doctype
+              - target_action
+              - company
+              - hospital
+              - valid_from
+              properties:
+                code:
+                  type: string
+                  minLength: 1
+                  maxLength: 140
+                display_name:
+                  type: string
+                  minLength: 1
+                  maxLength: 140
+                target_doctype:
+                  type: string
+                  minLength: 1
+                  maxLength: 140
+                target_action:
+                  type: string
+                  enum:
+                  - amend
+                  - approve
+                  - cancel
+                  - create
+                  - pay
+                  - post
+                  - reconcile
+                  - release
+                  - review
+                  - submit
+                company:
+                  type: string
+                  minLength: 1
+                  maxLength: 140
+                hospital:
+                  type: string
+                  minLength: 1
+                  maxLength: 140
+                organization_unit:
+                  type: string
+                  maxLength: 140
+                  nullable: true
+                include_descendants:
+                  type: boolean
+                  default: false
+                actor_fields:
+                  type: array
+                  maxItems: 16
+                  uniqueItems: true
+                  items:
+                    type: string
+                    pattern: ^[a-z][a-z0-9_]{0,63}$
+                conflicting_roles:
+                  type: array
+                  maxItems: 16
+                  uniqueItems: true
+                  items:
+                    type: string
+                    minLength: 1
+                    maxLength: 140
+                enabled:
+                  type: boolean
+                  default: true
+                valid_from:
+                  type: string
+                  format: date
+                valid_to:
+                  type: string
+                  format: date
+                  nullable: true
+                expected_revision:
+                  type: integer
+                  minimum: 0
+                  default: 0
+                rule_name:
+                  type: string
+                  maxLength: 140
+                  nullable: true
+                remarks:
+                  type: string
+                  maxLength: 500
+                  nullable: true
+  /api/method/medops.api.v1.core.sod.get_rule:
+    get:
+      operationId: core_033
+      summary: 查询不相容职责规则
+      tags:
+      - medops
+      security:
+      - tokenAuth: []
+      parameters:
+      - $ref: '#/components/parameters/CorrelationId'
+      - name: rule_name
+        in: query
+        required: true
+        schema:
+          type: string
+          minLength: 1
+          maxLength: 140
+      responses:
+        '200':
+          description: Source-controlled rule definition and revision
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SegregationRuleGetFrappeResponse'
+        '400':
+          description: Missing or invalid rule name or correlation identifier
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/IoneErrorResponse'
+        '401':
+          description: Authentication required
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/IoneErrorResponse'
+        '403':
+          description: System management or auditor role required
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/IoneErrorResponse'
+        '404':
+          description: Rule not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/IoneErrorResponse'
+        '500':
+          description: Persisted rule contract or references are invalid
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/IoneErrorResponse'
+      x-required-role: System Manager or HRP System Manager or HRP Auditor
+      x-transaction-boundary: Read-only
+      x-idempotency: Read-only deterministic
   /api/method/medops.api.v1.master_data.resolve_external_code_mapping:
     get:
       operationId: core_004
@@ -5377,6 +5633,415 @@ components:
           type: array
           items:
             type: string
+    SegregationValidationFrappeResponse:
+      type: object
+      additionalProperties: false
+      required:
+      - message
+      properties:
+        message:
+          $ref: '#/components/schemas/SegregationValidationResult'
+    SegregationValidationResult:
+      type: object
+      additionalProperties: false
+      required:
+      - schema_version
+      - action
+      - allowed
+      - rules_evaluated
+      - conflicts
+      - decision_digest
+      - correlation_id
+      - request_id
+      - idempotency_replayed
+      properties:
+        schema_version:
+          type: integer
+          const: 1
+        action:
+          type: string
+          enum:
+          - amend
+          - approve
+          - cancel
+          - create
+          - pay
+          - post
+          - reconcile
+          - release
+          - review
+          - submit
+        allowed:
+          type: boolean
+        rules_evaluated:
+          type: integer
+          minimum: 0
+          maximum: 100
+        conflicts:
+          type: array
+          maxItems: 100
+          items:
+            $ref: '#/components/schemas/SegregationConflict'
+        decision_digest:
+          type: string
+          pattern: ^[0-9a-f]{64}$
+          description: Binds the subject and document context, the redacted decision, and every evaluated rule name, revision and policy digest.
+        correlation_id:
+          type: string
+          pattern: ^[A-Za-z0-9][A-Za-z0-9._:/-]{0,139}$
+        request_id:
+          type: string
+          pattern: ^req-[A-Za-z0-9]{20}$
+        idempotency_replayed:
+          type: boolean
+          const: false
+          description: Compatibility field that is always false because authorization decisions are evaluated live.
+    SegregationConflict:
+      oneOf:
+      - $ref: '#/components/schemas/SegregationRuleConflict'
+      - $ref: '#/components/schemas/SegregationNoApplicableRuleConflict'
+    SegregationRuleConflict:
+      type: object
+      additionalProperties: false
+      required:
+      - rule
+      - code
+      - revision
+      - policy_digest
+      - reason
+      - matched_actor_fields
+      - matched_roles
+      properties:
+        rule:
+          type: string
+          minLength: 1
+          maxLength: 140
+        code:
+          type: string
+          minLength: 1
+          maxLength: 140
+        revision:
+          type: integer
+          minimum: 1
+        policy_digest:
+          type: string
+          pattern: ^[0-9a-f]{64}$
+        reason:
+          type: string
+          enum:
+          - ACTOR_AND_ROLE
+          - ACTOR_REUSE
+          - INCOMPATIBLE_ROLE
+        matched_actor_fields:
+          type: array
+          maxItems: 16
+          uniqueItems: true
+          items:
+            type: string
+            pattern: ^[a-z][a-z0-9_]{0,63}$
+        matched_roles:
+          type: array
+          maxItems: 16
+          uniqueItems: true
+          items:
+            type: string
+            minLength: 1
+            maxLength: 140
+    SegregationNoApplicableRuleConflict:
+      type: object
+      additionalProperties: false
+      required:
+      - rule
+      - code
+      - reason
+      - matched_actor_fields
+      - matched_roles
+      properties:
+        rule:
+          type: 'null'
+        code:
+          type: string
+          const: NO_APPLICABLE_RULE
+        reason:
+          type: string
+          const: NO_APPLICABLE_RULE
+        matched_actor_fields:
+          type: array
+          maxItems: 0
+        matched_roles:
+          type: array
+          maxItems: 0
+    SegregationRuleUpsertFrappeResponse:
+      type: object
+      additionalProperties: false
+      required:
+      - message
+      properties:
+        message:
+          $ref: '#/components/schemas/SegregationRuleUpsertResult'
+    SegregationRuleGetFrappeResponse:
+      type: object
+      additionalProperties: false
+      required:
+      - message
+      properties:
+        message:
+          $ref: '#/components/schemas/SegregationRuleGetResult'
+    SegregationRuleUpsertResult:
+      type: object
+      additionalProperties: false
+      required:
+      - schema_version
+      - name
+      - code
+      - display_name
+      - target_doctype
+      - target_action
+      - company
+      - hospital
+      - organization_unit
+      - include_descendants
+      - actor_fields
+      - conflicting_roles
+      - enabled
+      - valid_from
+      - valid_to
+      - revision
+      - remarks
+      - policy_digest
+      - changed
+      - changed_fields
+      - correlation_id
+      - request_id
+      - idempotency_replayed
+      properties:
+        schema_version:
+          type: integer
+          const: 1
+        name:
+          type: string
+          minLength: 1
+          maxLength: 140
+        code:
+          type: string
+          minLength: 1
+          maxLength: 140
+        display_name:
+          type: string
+          minLength: 1
+          maxLength: 140
+        target_doctype:
+          type: string
+          minLength: 1
+          maxLength: 140
+        target_action:
+          type: string
+          enum:
+          - amend
+          - approve
+          - cancel
+          - create
+          - pay
+          - post
+          - reconcile
+          - release
+          - review
+          - submit
+        company:
+          type: string
+          minLength: 1
+          maxLength: 140
+        hospital:
+          type: string
+          minLength: 1
+          maxLength: 140
+        organization_unit:
+          type:
+          - string
+          - 'null'
+          maxLength: 140
+        include_descendants:
+          type: boolean
+        actor_fields:
+          type: array
+          maxItems: 16
+          uniqueItems: true
+          items:
+            type: string
+            pattern: ^[a-z][a-z0-9_]{0,63}$
+        conflicting_roles:
+          type: array
+          maxItems: 16
+          uniqueItems: true
+          items:
+            type: string
+            minLength: 1
+            maxLength: 140
+        enabled:
+          type: boolean
+        valid_from:
+          type: string
+          format: date
+        valid_to:
+          type:
+          - string
+          - 'null'
+          format: date
+        revision:
+          type: integer
+          minimum: 1
+        remarks:
+          type:
+          - string
+          - 'null'
+          maxLength: 500
+        policy_digest:
+          type: string
+          pattern: ^[0-9a-f]{64}$
+        changed:
+          type: boolean
+        changed_fields:
+          type: array
+          maxItems: 8
+          uniqueItems: true
+          items:
+            type: string
+            enum:
+            - created
+            - display_name
+            - include_descendants
+            - actor_fields_json
+            - conflicting_roles_json
+            - enabled
+            - valid_from
+            - valid_to
+            - remarks
+        correlation_id:
+          type: string
+          pattern: ^[A-Za-z0-9][A-Za-z0-9._:/-]{0,139}$
+        request_id:
+          type: string
+          pattern: ^req-[A-Za-z0-9]{20}$
+        idempotency_replayed:
+          type: boolean
+    SegregationRuleGetResult:
+      type: object
+      additionalProperties: false
+      required:
+      - schema_version
+      - name
+      - code
+      - display_name
+      - target_doctype
+      - target_action
+      - company
+      - hospital
+      - organization_unit
+      - include_descendants
+      - actor_fields
+      - conflicting_roles
+      - enabled
+      - valid_from
+      - valid_to
+      - revision
+      - remarks
+      - policy_digest
+      - correlation_id
+      - request_id
+      - idempotency_replayed
+      properties:
+        schema_version:
+          type: integer
+          const: 1
+        name:
+          type: string
+          minLength: 1
+          maxLength: 140
+        code:
+          type: string
+          minLength: 1
+          maxLength: 140
+        display_name:
+          type: string
+          minLength: 1
+          maxLength: 140
+        target_doctype:
+          type: string
+          minLength: 1
+          maxLength: 140
+        target_action:
+          type: string
+          enum:
+          - amend
+          - approve
+          - cancel
+          - create
+          - pay
+          - post
+          - reconcile
+          - release
+          - review
+          - submit
+        company:
+          type: string
+          minLength: 1
+          maxLength: 140
+        hospital:
+          type: string
+          minLength: 1
+          maxLength: 140
+        organization_unit:
+          type:
+          - string
+          - 'null'
+          maxLength: 140
+        include_descendants:
+          type: boolean
+        actor_fields:
+          type: array
+          maxItems: 16
+          uniqueItems: true
+          items:
+            type: string
+            pattern: ^[a-z][a-z0-9_]{0,63}$
+        conflicting_roles:
+          type: array
+          maxItems: 16
+          uniqueItems: true
+          items:
+            type: string
+            minLength: 1
+            maxLength: 140
+        enabled:
+          type: boolean
+        valid_from:
+          type: string
+          format: date
+        valid_to:
+          type:
+          - string
+          - 'null'
+          format: date
+        revision:
+          type: integer
+          minimum: 1
+        remarks:
+          type:
+          - string
+          - 'null'
+          maxLength: 500
+        policy_digest:
+          type: string
+          pattern: ^[0-9a-f]{64}$
+        correlation_id:
+          type: string
+          pattern: ^[A-Za-z0-9][A-Za-z0-9._:/-]{0,139}$
+        request_id:
+          type: string
+          pattern: ^req-[A-Za-z0-9]{20}$
+        idempotency_replayed:
+          type: boolean
+          const: false
     ModuleEnabledFrappeResponse:
       type: object
       additionalProperties: false

@@ -213,6 +213,18 @@ python scripts/fixture_manager.py validate
 自我委托和权限提升均默认拒绝。审批解析结果保留委托人、受托人和委托记录证据，但不直接
 批准或修改业务单据。完整模型、安全边界、运维与回滚规则见 `architecture/delegation.md`。
 
+## 不相容职责
+
+`HRP Segregation Rule` 以封闭动作、真实单据 User 字段、冲突角色和组织范围定义 maker-checker
+硬控制。`CORE-003` 在动作前同时验证调用方读权限、被校验用户 DocPerm 和 COD-024 组织范围；
+任何责任人复用、冲突角色或规则漏配均返回 `allowed=false`。请求不能覆盖单据中的法人、医院、
+组织或日期，规则也不能执行 SQL、Python、表达式或 Server Script。
+
+`CORE-032` 通过幂等和乐观修订维护规则，`CORE-033` 供管理员与审计员只读查询。响应和审计只
+保留规则、字段名、角色名、数量与摘要，不记录用户、组织、责任人值或单据名。完整设计、迁移和
+回滚规则见 `architecture/segregation_of_duties.md` 与
+`architecture/adr/ADR-0022-declarative-fail-closed-segregation-of-duties.md`。
+
 ## ADR 与变更治理
 
 Git 中的 ADR 和结构化 COD 变更记录是工程治理的唯一权威。每个已完成任务

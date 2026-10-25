@@ -528,5 +528,16 @@
   "not_run": [
     "full upstream Frappe/ERPNext/HRMS application test suites"
   ],
-  "reason_not_run": "COD-026 已通过本地门禁、GitHub 必需检查、锁定 MariaDB Bench 重复迁移、7 项委托专项测试、199 项 medops 全应用测试、完整生产备份、两遍生产迁移与数据完整性验收。完整上游 Frappe、ERPNext 与 HRMS 应用测试套件超出自定义应用变更范围。"
+  "reason_not_run": "COD-026 已通过本地门禁、GitHub 必需检查、锁定 MariaDB Bench 重复迁移、7 项委托专项测试、199 项 medops 全应用测试、完整生产备份、两遍生产迁移与数据完整性验收。完整上游 Frappe、ERPNext 与 HRMS 应用测试套件超出自定义应用变更范围。",
+  "cod_027_medops": {
+    "status": "in_progress",
+    "legacy_source_pr": 36,
+    "runtime_namespace": "medops",
+    "architecture_decision": "ADR-0022",
+    "local_unit_tests_passed": 288,
+    "local_typecheck_errors": 0,
+    "isolated_migration": "pending",
+    "frappe_integration": "pending",
+    "production_readiness": "not_established"
+  }
 }

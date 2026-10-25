@@ -9,14 +9,14 @@
 		"design_doctypes": 400,
 		"design_fields": 10046,
 		"doctype_blueprints": 400,
-		"starter_doctypes": 21,
-		"repository_contract_tests": 281,
-		"frappe_integration_tests": 201,
+		"starter_doctypes": 22,
+		"repository_contract_tests": 288,
+		"frappe_integration_tests": 208,
 		"environment_profiles": 3,
 		"fixture_rules": 3,
 		"fixture_files": 3,
-		"architecture_decisions": 21,
-		"change_records": 27,
+		"architecture_decisions": 22,
+		"change_records": 28,
 		"change_risk_rules": 5,
 		"error_definitions": 12,
 		"error_translations": 28
@@ -146,6 +146,12 @@
 		"medops/common/delegation.py",
 		"medops/api/v1/core/delegation.py",
 		"medops/setup/delegation.py",
-		"backlog/COD-026.md"
+		"backlog/COD-026.md",
+		"backlog/COD-027.md",
+		"architecture/segregation_of_duties.md",
+		"architecture/adr/ADR-0022-declarative-fail-closed-segregation-of-duties.md",
+		"medops/api/v1/core/sod.py",
+		"medops/common/segregation.py",
+		"medops/setup/segregation.py"
 	]
 }
