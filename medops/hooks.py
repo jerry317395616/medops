@@ -35,7 +35,19 @@ after_job = ["medops.services.audit_context.finish_job_audit_context"]
 
 # Add standard DocType extensions here. Prefer extend_doctype_class over overrides.
 extend_doctype_class = {}
-doc_events = {}
+doc_events = {
+	"*": {
+		"on_update": "medops.hrp_workflow_authorization.services.sla.sync_source",
+		"on_update_after_submit": "medops.hrp_workflow_authorization.services.sla.sync_source",
+		"on_cancel": "medops.hrp_workflow_authorization.services.sla.sync_source",
+		"on_trash": "medops.hrp_workflow_authorization.services.sla.sync_source",
+	},
+	"ToDo": {
+		"validate": "medops.hrp_workflow_authorization.services.sla.protect_todo",
+		"on_trash": "medops.hrp_workflow_authorization.services.sla.protect_todo",
+		"before_rename": "medops.hrp_workflow_authorization.services.sla.protect_todo",
+	},
+}
 
 permission_query_conditions = {
 	"HRP Approval Matrix": "medops.hrp_workflow_authorization.permissions.approval_matrix_query",
@@ -69,6 +81,7 @@ has_permission = {
 }
 
 scheduler_events = {
+	"cron": {"* * * * *": ["medops.hrp_workflow_authorization.services.sla.run_due_sla_cases"]},
 	"daily": [
 		"medops.hrp_master_data.services.data_quality.run_data_quality_rules",
 		"medops.hrp_workflow_authorization.services.delegation.sync_delegation_statuses",

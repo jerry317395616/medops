@@ -1,0 +1,16 @@
+{
+	"doctype": "Page",
+	"name": "hrp-sla-console",
+	"page_name": "hrp-sla-console",
+	"title": "服务时限与超时待办",
+	"module": "HRP Workflow Authorization",
+	"standard": "Yes",
+	"system_page": 0,
+	"roles": [
+		{ "role": "System Manager" },
+		{ "role": "HRP System Manager" },
+		{ "role": "HRP User" },
+		{ "role": "HRP Auditor" },
+		{ "role": "HRP Data Steward" }
+	]
+}

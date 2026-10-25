@@ -7,16 +7,16 @@
 		"custom_apps": 1,
 		"modules": 36,
 		"design_doctypes": 400,
-		"design_fields": 10046,
+		"design_fields": 10064,
 		"doctype_blueprints": 400,
-		"starter_doctypes": 22,
-		"repository_contract_tests": 288,
-		"frappe_integration_tests": 209,
+		"starter_doctypes": 24,
+		"repository_contract_tests": 301,
+		"frappe_integration_tests": 232,
 		"environment_profiles": 3,
 		"fixture_rules": 3,
 		"fixture_files": 3,
-		"architecture_decisions": 22,
-		"change_records": 28,
+		"architecture_decisions": 24,
+		"change_records": 29,
 		"change_risk_rules": 5,
 		"error_definitions": 12,
 		"error_translations": 28
@@ -152,6 +152,10 @@
 		"architecture/adr/ADR-0022-declarative-fail-closed-segregation-of-duties.md",
 		"medops/api/v1/core/sod.py",
 		"medops/common/segregation.py",
-		"medops/setup/segregation.py"
+		"medops/setup/segregation.py",
+		"architecture/sla.md",
+		"architecture/adr/ADR-0023-frozen-sla-cycles.md",
+		"backlog/COD-028.md",
+		"architecture/adr/ADR-0024-database-conflict-job-boundaries.md"
 	]
 }

@@ -1,0 +1,277 @@
+{
+	"doctype": "DocType",
+	"name": "HRP SLA Policy",
+	"module": "HRP Workflow Authorization",
+	"custom": 0,
+	"engine": "InnoDB",
+	"autoname": "field:code",
+	"title_field": "display_name",
+	"is_submittable": 0,
+	"istable": 0,
+	"issingle": 0,
+	"track_changes": 1,
+	"allow_rename": 0,
+	"editable_grid": 0,
+	"sort_field": "modified",
+	"sort_order": "DESC",
+	"index_web_pages_for_search": 0,
+	"description": "受控服务时限策略。",
+	"field_order": [
+		"code",
+		"display_name",
+		"target_doctype",
+		"company",
+		"hospital",
+		"organization_unit",
+		"include_descendants",
+		"priority",
+		"enabled",
+		"valid_from",
+		"valid_to",
+		"status_field",
+		"start_field",
+		"response_field",
+		"start_statuses_json",
+		"pause_statuses_json",
+		"completion_statuses_json",
+		"response_seconds",
+		"resolution_seconds",
+		"clock_basis",
+		"support_hours_json",
+		"holiday_list",
+		"responsible_user",
+		"escalation_steps_json",
+		"revision",
+		"policy_digest",
+		"remarks"
+	],
+	"fields": [
+		{
+			"fieldname": "code",
+			"label": "策略编码",
+			"fieldtype": "Data",
+			"reqd": 1,
+			"unique": 1,
+			"in_list_view": 1,
+			"description": "策略编码"
+		},
+		{
+			"fieldname": "display_name",
+			"label": "策略名称",
+			"fieldtype": "Data",
+			"reqd": 1,
+			"in_list_view": 1,
+			"description": "策略名称"
+		},
+		{
+			"fieldname": "target_doctype",
+			"label": "适用单据类型",
+			"fieldtype": "Link",
+			"reqd": 1,
+			"search_index": 1,
+			"options": "DocType",
+			"description": "适用单据类型"
+		},
+		{
+			"fieldname": "company",
+			"label": "法人",
+			"fieldtype": "Link",
+			"reqd": 1,
+			"search_index": 1,
+			"options": "Company",
+			"description": "法人"
+		},
+		{
+			"fieldname": "hospital",
+			"label": "医院",
+			"fieldtype": "Link",
+			"reqd": 1,
+			"search_index": 1,
+			"options": "HRP Hospital",
+			"description": "医院"
+		},
+		{
+			"fieldname": "organization_unit",
+			"label": "组织单元",
+			"fieldtype": "Link",
+			"search_index": 1,
+			"options": "HRP Organization Unit",
+			"description": "组织单元"
+		},
+		{
+			"fieldname": "include_descendants",
+			"label": "包含下级组织",
+			"fieldtype": "Check",
+			"default": "0",
+			"description": "包含下级组织"
+		},
+		{
+			"fieldname": "priority",
+			"label": "优先级",
+			"fieldtype": "Int",
+			"default": "0",
+			"description": "优先级"
+		},
+		{
+			"fieldname": "enabled",
+			"label": "启用",
+			"fieldtype": "Check",
+			"default": "1",
+			"in_list_view": 1,
+			"description": "启用"
+		},
+		{
+			"fieldname": "valid_from",
+			"label": "有效期开始",
+			"fieldtype": "Date",
+			"reqd": 1,
+			"description": "有效期开始"
+		},
+		{
+			"fieldname": "valid_to",
+			"label": "有效期结束",
+			"fieldtype": "Date",
+			"description": "有效期结束"
+		},
+		{
+			"fieldname": "status_field",
+			"label": "状态字段",
+			"fieldtype": "Data",
+			"reqd": 1,
+			"description": "状态字段"
+		},
+		{
+			"fieldname": "start_field",
+			"label": "起算时间字段",
+			"fieldtype": "Data",
+			"reqd": 1,
+			"description": "起算时间字段"
+		},
+		{
+			"fieldname": "response_field",
+			"label": "响应时间字段",
+			"fieldtype": "Data",
+			"description": "响应时间字段"
+		},
+		{
+			"fieldname": "start_statuses_json",
+			"label": "起算状态",
+			"fieldtype": "Code",
+			"options": "JSON",
+			"description": "起算状态"
+		},
+		{
+			"fieldname": "pause_statuses_json",
+			"label": "暂停状态",
+			"fieldtype": "Code",
+			"options": "JSON",
+			"description": "暂停状态"
+		},
+		{
+			"fieldname": "completion_statuses_json",
+			"label": "完成状态",
+			"fieldtype": "Code",
+			"options": "JSON",
+			"description": "完成状态"
+		},
+		{
+			"fieldname": "response_seconds",
+			"label": "响应时限秒",
+			"fieldtype": "Int",
+			"reqd": 1,
+			"description": "响应时限秒"
+		},
+		{
+			"fieldname": "resolution_seconds",
+			"label": "处理时限秒",
+			"fieldtype": "Int",
+			"reqd": 1,
+			"description": "处理时限秒"
+		},
+		{
+			"fieldname": "clock_basis",
+			"label": "计时方式",
+			"fieldtype": "Select",
+			"reqd": 1,
+			"options": "Elapsed\nBusiness Hours",
+			"description": "计时方式"
+		},
+		{
+			"fieldname": "support_hours_json",
+			"label": "每周工作时间",
+			"fieldtype": "Code",
+			"options": "JSON",
+			"description": "每周工作时间"
+		},
+		{
+			"fieldname": "holiday_list",
+			"label": "节假日表",
+			"fieldtype": "Link",
+			"options": "Holiday List",
+			"description": "节假日表"
+		},
+		{
+			"fieldname": "responsible_user",
+			"label": "响应责任人",
+			"fieldtype": "Link",
+			"reqd": 1,
+			"options": "User",
+			"description": "响应责任人"
+		},
+		{
+			"fieldname": "escalation_steps_json",
+			"label": "升级步骤",
+			"fieldtype": "Code",
+			"reqd": 1,
+			"options": "JSON",
+			"description": "升级步骤"
+		},
+		{
+			"fieldname": "revision",
+			"label": "策略版本",
+			"fieldtype": "Int",
+			"read_only": 1,
+			"reqd": 1,
+			"default": "1",
+			"description": "策略版本"
+		},
+		{
+			"fieldname": "policy_digest",
+			"label": "策略摘要",
+			"fieldtype": "Data",
+			"read_only": 1,
+			"reqd": 1,
+			"description": "策略摘要"
+		},
+		{
+			"fieldname": "remarks",
+			"label": "备注",
+			"fieldtype": "Small Text",
+			"description": "备注"
+		}
+	],
+	"permissions": [
+		{
+			"role": "System Manager",
+			"read": 1,
+			"report": 1,
+			"write": 1,
+			"create": 1
+		},
+		{
+			"role": "HRP System Manager",
+			"read": 1,
+			"report": 1,
+			"write": 1,
+			"create": 1
+		},
+		{
+			"role": "HRP Auditor",
+			"read": 1,
+			"report": 1
+		}
+	],
+	"actions": [],
+	"links": [],
+	"states": []
+}

@@ -1,0 +1,64 @@
+{
+	"schema_version": 1,
+	"task_id": "COD-028",
+	"title": "实现SLA和升级",
+	"status": "In Progress",
+	"risk_level": "critical",
+	"change_types": [
+		"application",
+		"architecture",
+		"configuration",
+		"data",
+		"documentation",
+		"security"
+	],
+	"affected_modules": [
+		"HRP Workflow Authorization",
+		"HRP Foundation"
+	],
+	"breaking_change": false,
+	"adr_ids": [
+		"ADR-0023",
+		"ADR-0024"
+	],
+	"path_globs": [
+		"README.md",
+		"DELIVERY_MANIFEST.json",
+		"SHA256SUMS.txt",
+		"VALIDATION_REPORT.json",
+		"api/**",
+		"architecture/sla.md",
+		"architecture/production_readiness.md",
+		"architecture/adr/ADR-0023-frozen-sla-cycles.md",
+		"backlog/**",
+		"changes/COD-028.json",
+		"design/**",
+		"doctype_blueprints/hrp_workflow_authorization/hrp_sla_*.json",
+		"medops/api/v1/core/sla.py",
+		"medops/common/sla.py",
+		"medops/hooks.py",
+		"medops/hrp_foundation/tests/test_change_governance.py",
+		"medops/hrp_workflow_authorization/**",
+		"medops/setup/**",
+		"scripts/repository_contract.py",
+		"tests/**",
+		"medops/hrp_master_data/tests/test_sla_bridge.py",
+		"architecture/adr/ADR-0024-database-conflict-job-boundaries.md",
+		"medops/services/domain_service.py",
+		"medops/hrp_foundation/tests/test_domain_service.py"
+	],
+	"permissions_impact": "管理员维护策略、检查及带理由停止周期。响应确认需要责任人或当前升级接收人并有真实源读取权限；周期通用列表仅管理员，范围接口逐条检查源权限。",
+	"migration_impact": "新增HRP SLA Policy、HRP SLA Escalation、三个复合索引和工作台入口；无业务策略种子，无历史申请扫描。",
+	"rollback_plan": "完整备份隔离Site；回滚代码保留表及待办，暂停本项目调度器并受控停止活动周期，禁止删除历史数据。",
+	"security_impact": "声明式策略，冻结日历，源与周期行锁、幂等、修订及确定性待办；预查用户启用状态和DocPerm、组织范围，不自动共享、不增加审批付款记账权限。",
+	"test_plan": [
+		"纯时钟验证节假日、周末、边界、精度和有界失败",
+		"Frappe真实源保存钩子、暂停恢复、重复周期与派单、策略快照",
+		"管理员与收件人源范围、跨范围拒绝、标准待办防篡改、错误退避",
+		"真实HTTP认证、输入、幂等与分页边界",
+		"全量质量、集成、重复迁移和受保护CI"
+	],
+	"owner": "MedOps Maintainers",
+	"created_on": "2026-10-25",
+	"updated_on": "2026-10-25"
+}

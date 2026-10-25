@@ -1,4 +1,4 @@
-﻿app,module,doctype,field_order,fieldname,label_cn,fieldtype,options,reqd,unique,indexed,read_only,in_list_view,precision,default,depends_on,description,domain_group
+app,module,doctype,field_order,fieldname,label_cn,fieldtype,options,reqd,unique,indexed,read_only,in_list_view,precision,default,depends_on,description,domain_group
 medops,HRP Foundation,HRP System Settings,10,enabled,启用,Check,,0,0,0,0,0,,1,,启用,Core
 medops,HRP Foundation,HRP System Settings,11,release_channel,发布通道,Data,,0,0,0,1,0,,locked-develop,,由锁定上游基线决定，不允许在站点内修改,Core
 medops,HRP Foundation,HRP System Settings,12,configuration_version,配置版本,Int,,0,0,0,1,0,,1,,用于防止并发覆盖的单调版本,Core
@@ -1052,70 +1052,73 @@ medops,HRP Workflow Authorization,HRP Workflow Extension,26,source_name,来源�
 medops,HRP Workflow Authorization,HRP Workflow Extension,27,submitted_at,提交时间,Datetime,,0,0,0,1,0,,,,提交时间,Core
 medops,HRP Workflow Authorization,HRP Workflow Extension,28,approved_at,批准时间,Datetime,,0,0,0,1,0,,,,批准时间,Core
 medops,HRP Workflow Authorization,HRP Workflow Extension,29,remarks,备注,Small Text,,0,0,0,0,0,,,,备注,Core
-medops,HRP Workflow Authorization,HRP SLA Policy,10,company,法人,Link,Company,1,0,1,0,1,,,,法人,Core
-medops,HRP Workflow Authorization,HRP SLA Policy,11,hospital,医院,Link,HRP Hospital,1,0,1,0,0,,,,医院,Core
-medops,HRP Workflow Authorization,HRP SLA Policy,12,campus,院区,Link,HRP Campus,0,0,1,0,0,,,,院区,Core
-medops,HRP Workflow Authorization,HRP SLA Policy,13,organization_unit,组织单元,Link,HRP Organization Unit,1,0,1,0,1,,,,组织单元,Core
-medops,HRP Workflow Authorization,HRP SLA Policy,14,cost_center,成本中心,Link,Cost Center,0,0,1,0,0,,,,成本中心,Core
-medops,HRP Workflow Authorization,HRP SLA Policy,15,fiscal_year,财政年度,Link,Fiscal Year,0,0,1,0,0,,,,财政年度,Core
-medops,HRP Workflow Authorization,HRP SLA Policy,16,currency,币种,Link,Currency,0,0,0,0,0,,CNY,,币种,Core
-medops,HRP Workflow Authorization,HRP SLA Policy,17,status,业务状态,Select,"Draft
-Under Review
-Approved
-Rejected
-In Progress
+medops,HRP Workflow Authorization,HRP SLA Policy,10,code,策略编码,Data,,1,1,0,0,1,,,,策略编码,Core
+medops,HRP Workflow Authorization,HRP SLA Policy,11,display_name,策略名称,Data,,1,0,0,0,1,,,,策略名称,Core
+medops,HRP Workflow Authorization,HRP SLA Policy,12,target_doctype,适用单据类型,Link,DocType,1,0,1,0,0,,,,适用单据类型,Core
+medops,HRP Workflow Authorization,HRP SLA Policy,13,company,法人,Link,Company,1,0,1,0,0,,,,法人,Core
+medops,HRP Workflow Authorization,HRP SLA Policy,14,hospital,医院,Link,HRP Hospital,1,0,1,0,0,,,,医院,Core
+medops,HRP Workflow Authorization,HRP SLA Policy,15,organization_unit,组织单元,Link,HRP Organization Unit,0,0,1,0,0,,,,组织单元,Core
+medops,HRP Workflow Authorization,HRP SLA Policy,16,include_descendants,包含下级组织,Check,,0,0,0,0,0,,0,,包含下级组织,Core
+medops,HRP Workflow Authorization,HRP SLA Policy,17,priority,优先级,Int,,0,0,0,0,0,,0,,优先级,Core
+medops,HRP Workflow Authorization,HRP SLA Policy,18,enabled,启用,Check,,0,0,0,0,1,,1,,启用,Core
+medops,HRP Workflow Authorization,HRP SLA Policy,19,valid_from,有效期开始,Date,,1,0,0,0,0,,,,有效期开始,Core
+medops,HRP Workflow Authorization,HRP SLA Policy,20,valid_to,有效期结束,Date,,0,0,0,0,0,,,,有效期结束,Core
+medops,HRP Workflow Authorization,HRP SLA Policy,21,status_field,状态字段,Data,,1,0,0,0,0,,,,状态字段,Core
+medops,HRP Workflow Authorization,HRP SLA Policy,22,start_field,起算时间字段,Data,,1,0,0,0,0,,,,起算时间字段,Core
+medops,HRP Workflow Authorization,HRP SLA Policy,23,response_field,响应时间字段,Data,,0,0,0,0,0,,,,响应时间字段,Core
+medops,HRP Workflow Authorization,HRP SLA Policy,24,start_statuses_json,起算状态,Code,JSON,0,0,0,0,0,,,,起算状态,Core
+medops,HRP Workflow Authorization,HRP SLA Policy,25,pause_statuses_json,暂停状态,Code,JSON,0,0,0,0,0,,,,暂停状态,Core
+medops,HRP Workflow Authorization,HRP SLA Policy,26,completion_statuses_json,完成状态,Code,JSON,0,0,0,0,0,,,,完成状态,Core
+medops,HRP Workflow Authorization,HRP SLA Policy,27,response_seconds,响应时限秒,Int,,1,0,0,0,0,,,,响应时限秒,Core
+medops,HRP Workflow Authorization,HRP SLA Policy,28,resolution_seconds,处理时限秒,Int,,1,0,0,0,0,,,,处理时限秒,Core
+medops,HRP Workflow Authorization,HRP SLA Policy,29,clock_basis,计时方式,Select,"Elapsed
+Business Hours",1,0,0,0,0,,,,计时方式,Core
+medops,HRP Workflow Authorization,HRP SLA Policy,30,support_hours_json,每周工作时间,Code,JSON,0,0,0,0,0,,,,每周工作时间,Core
+medops,HRP Workflow Authorization,HRP SLA Policy,31,holiday_list,节假日表,Link,Holiday List,0,0,0,0,0,,,,节假日表,Core
+medops,HRP Workflow Authorization,HRP SLA Policy,32,responsible_user,响应责任人,Link,User,1,0,0,0,0,,,,响应责任人,Core
+medops,HRP Workflow Authorization,HRP SLA Policy,33,escalation_steps_json,升级步骤,Code,JSON,1,0,0,0,0,,,,升级步骤,Core
+medops,HRP Workflow Authorization,HRP SLA Policy,34,revision,策略版本,Int,,1,0,0,1,0,,1,,策略版本,Core
+medops,HRP Workflow Authorization,HRP SLA Policy,35,policy_digest,策略摘要,Data,,1,0,0,1,0,,,,策略摘要,Core
+medops,HRP Workflow Authorization,HRP SLA Policy,36,remarks,备注,Small Text,,0,0,0,0,0,,,,备注,Core
+medops,HRP Workflow Authorization,HRP SLA Escalation,10,cycle_key,计时周期键,Data,,1,1,0,0,0,,,,计时周期键,Core
+medops,HRP Workflow Authorization,HRP SLA Escalation,11,active_key,活动单据键,Data,,0,1,0,0,0,,,,活动单据键,Core
+medops,HRP Workflow Authorization,HRP SLA Escalation,12,reference_doctype,业务单据类型,Link,DocType,1,0,0,0,0,,,,业务单据类型,Core
+medops,HRP Workflow Authorization,HRP SLA Escalation,13,reference_name,业务单据,Dynamic Link,reference_doctype,1,0,0,0,1,,,,业务单据,Core
+medops,HRP Workflow Authorization,HRP SLA Escalation,14,source_start_at,源起算时间,Datetime,,1,0,0,0,0,,,,源起算时间,Core
+medops,HRP Workflow Authorization,HRP SLA Escalation,15,sla_policy,服务时限策略,Link,HRP SLA Policy,1,0,0,0,0,,,,服务时限策略,Core
+medops,HRP Workflow Authorization,HRP SLA Escalation,16,policy_revision,策略版本,Int,,1,0,0,0,0,,,,策略版本,Core
+medops,HRP Workflow Authorization,HRP SLA Escalation,17,policy_digest,策略摘要,Data,,1,0,0,0,0,,,,策略摘要,Core
+medops,HRP Workflow Authorization,HRP SLA Escalation,18,snapshot_json,冻结策略及日历,Code,JSON,1,0,0,0,0,,,,冻结策略及日历,Core
+medops,HRP Workflow Authorization,HRP SLA Escalation,19,snapshot_digest,快照摘要,Data,,1,0,0,0,0,,,,快照摘要,Core
+medops,HRP Workflow Authorization,HRP SLA Escalation,20,company,法人,Link,Company,1,0,1,0,0,,,,法人,Core
+medops,HRP Workflow Authorization,HRP SLA Escalation,21,hospital,医院,Link,HRP Hospital,1,0,1,0,0,,,,医院,Core
+medops,HRP Workflow Authorization,HRP SLA Escalation,22,organization_unit,组织单元,Link,HRP Organization Unit,0,0,1,0,0,,,,组织单元,Core
+medops,HRP Workflow Authorization,HRP SLA Escalation,23,status,计时状态,Select,"Open
+Paused
 Completed
-Cancelled
-Closed",0,0,1,0,1,,Draft,,业务状态,Core
-medops,HRP Workflow Authorization,HRP SLA Policy,18,workflow_state,工作流状态,Link,Workflow State,0,0,1,1,0,,,,工作流状态,Core
-medops,HRP Workflow Authorization,HRP SLA Policy,19,code,编码,Data,,1,1,1,0,1,,,,编码,Core
-medops,HRP Workflow Authorization,HRP SLA Policy,20,display_name,名称,Data,,1,0,0,0,1,,,,名称,Core
-medops,HRP Workflow Authorization,HRP SLA Policy,21,enabled,启用,Check,,0,0,1,0,0,,1,,启用,Core
-medops,HRP Workflow Authorization,HRP SLA Policy,22,valid_from,有效期开始,Date,,0,0,0,0,0,,,,有效期开始,Core
-medops,HRP Workflow Authorization,HRP SLA Policy,23,valid_to,有效期结束,Date,,0,0,0,0,0,,,,有效期结束,Core
-medops,HRP Workflow Authorization,HRP SLA Policy,24,owner_department,责任部门,Link,Department,0,0,0,0,0,,,,责任部门,Core
-medops,HRP Workflow Authorization,HRP SLA Policy,25,remarks,备注,Small Text,,0,0,0,0,0,,,,备注,Core
-medops,HRP Workflow Authorization,HRP SLA Policy,26,risk_level,风险等级,Select,"Low
-Medium
-High
-Critical",0,0,1,0,0,,,,风险等级,Core
-medops,HRP Workflow Authorization,HRP SLA Policy,27,control_owner,控制责任人,Link,User,0,0,0,0,0,,,,控制责任人,Core
-medops,HRP Workflow Authorization,HRP SLA Policy,28,responsible_department,责任部门,Link,Department,0,0,1,0,0,,,,责任部门,Core
-medops,HRP Workflow Authorization,HRP SLA Policy,29,due_date,到期日,Date,,0,0,1,0,0,,,,到期日,Core
-medops,HRP Workflow Authorization,HRP SLA Policy,30,severity,严重程度,Select,"Minor
-Major
-Critical",0,0,1,0,0,,,,严重程度,Core
-medops,HRP Workflow Authorization,HRP SLA Policy,31,evidence_required,要求证据,Check,,0,0,0,0,0,,1,,要求证据,Core
-medops,HRP Workflow Authorization,HRP SLA Policy,32,root_cause,根因,Long Text,,0,0,0,0,0,,,,根因,Core
-medops,HRP Workflow Authorization,HRP SLA Policy,33,corrective_action,纠正措施,Long Text,,0,0,0,0,0,,,,纠正措施,Core
-medops,HRP Workflow Authorization,HRP SLA Policy,34,verification_result,验证结果,Small Text,,0,0,0,0,0,,,,验证结果,Core
-medops,HRP Workflow Authorization,HRP SLA Escalation,10,company,法人,Link,Company,1,0,1,0,1,,,,法人,Core
-medops,HRP Workflow Authorization,HRP SLA Escalation,11,hospital,医院,Link,HRP Hospital,1,0,1,0,0,,,,医院,Core
-medops,HRP Workflow Authorization,HRP SLA Escalation,12,campus,院区,Link,HRP Campus,0,0,1,0,0,,,,院区,Core
-medops,HRP Workflow Authorization,HRP SLA Escalation,13,organization_unit,组织单元,Link,HRP Organization Unit,1,0,1,0,1,,,,组织单元,Core
-medops,HRP Workflow Authorization,HRP SLA Escalation,14,cost_center,成本中心,Link,Cost Center,0,0,1,0,0,,,,成本中心,Core
-medops,HRP Workflow Authorization,HRP SLA Escalation,15,fiscal_year,财政年度,Link,Fiscal Year,0,0,1,0,0,,,,财政年度,Core
-medops,HRP Workflow Authorization,HRP SLA Escalation,16,currency,币种,Link,Currency,0,0,0,0,0,,CNY,,币种,Core
-medops,HRP Workflow Authorization,HRP SLA Escalation,17,status,业务状态,Select,"Draft
-Under Review
-Approved
-Rejected
-In Progress
-Completed
-Cancelled
-Closed",0,0,1,0,1,,Draft,,业务状态,Core
-medops,HRP Workflow Authorization,HRP SLA Escalation,18,workflow_state,工作流状态,Link,Workflow State,0,0,1,1,0,,,,工作流状态,Core
-medops,HRP Workflow Authorization,HRP SLA Escalation,19,posting_date,业务日期,Date,,1,0,1,0,1,,,,业务日期,Core
-medops,HRP Workflow Authorization,HRP SLA Escalation,20,applicant,申请人,Link,User,1,0,1,0,0,,,,申请人,Core
-medops,HRP Workflow Authorization,HRP SLA Escalation,21,employee,员工,Link,Employee,0,0,1,0,0,,,,员工,Core
-medops,HRP Workflow Authorization,HRP SLA Escalation,22,subject,主题,Data,,1,0,0,0,1,,,,主题,Core
-medops,HRP Workflow Authorization,HRP SLA Escalation,23,total_amount,总金额,Currency,currency,0,0,0,0,1,2,,,总金额,Core
-medops,HRP Workflow Authorization,HRP SLA Escalation,24,external_id,外部ID,Data,,0,0,1,0,0,,,,外部ID,Core
-medops,HRP Workflow Authorization,HRP SLA Escalation,25,source_doctype,来源类型,Link,DocType,0,0,0,0,0,,,,来源类型,Core
-medops,HRP Workflow Authorization,HRP SLA Escalation,26,source_name,来源单据,Dynamic Link,source_doctype,0,0,1,0,0,,,,来源单据,Core
-medops,HRP Workflow Authorization,HRP SLA Escalation,27,submitted_at,提交时间,Datetime,,0,0,0,1,0,,,,提交时间,Core
-medops,HRP Workflow Authorization,HRP SLA Escalation,28,approved_at,批准时间,Datetime,,0,0,0,1,0,,,,批准时间,Core
-medops,HRP Workflow Authorization,HRP SLA Escalation,29,remarks,备注,Small Text,,0,0,0,0,0,,,,备注,Core
+Cancelled",1,0,0,0,1,,,,计时状态,Core
+medops,HRP Workflow Authorization,HRP SLA Escalation,24,started_at,起算时间,Datetime,,1,0,0,0,0,,,,起算时间,Core
+medops,HRP Workflow Authorization,HRP SLA Escalation,25,active_since,本次计时开始,Datetime,,0,0,0,0,0,,,,本次计时开始,Core
+medops,HRP Workflow Authorization,HRP SLA Escalation,26,elapsed_work_seconds,已计时秒,Float,,0,0,0,0,0,6,0,,已计时秒,Core
+medops,HRP Workflow Authorization,HRP SLA Escalation,27,response_due_at,响应截止,Datetime,,0,0,0,0,1,,,,响应截止,Core
+medops,HRP Workflow Authorization,HRP SLA Escalation,28,resolution_due_at,处理截止,Datetime,,0,0,0,0,1,,,,处理截止,Core
+medops,HRP Workflow Authorization,HRP SLA Escalation,29,responded_at,响应时间,Datetime,,0,0,0,0,0,,,,响应时间,Core
+medops,HRP Workflow Authorization,HRP SLA Escalation,30,completed_at,结束时间,Datetime,,0,0,0,0,0,,,,结束时间,Core
+medops,HRP Workflow Authorization,HRP SLA Escalation,31,paused_at,暂停时间,Datetime,,0,0,0,0,0,,,,暂停时间,Core
+medops,HRP Workflow Authorization,HRP SLA Escalation,32,response_breached,响应超时,Check,,0,0,0,0,0,,,,响应超时,Core
+medops,HRP Workflow Authorization,HRP SLA Escalation,33,resolution_breached,处理超时,Check,,0,0,0,0,0,,,,处理超时,Core
+medops,HRP Workflow Authorization,HRP SLA Escalation,34,response_level,响应升级层级,Int,,0,0,0,0,0,,,,响应升级层级,Core
+medops,HRP Workflow Authorization,HRP SLA Escalation,35,resolution_level,处理升级层级,Int,,0,0,0,0,0,,,,处理升级层级,Core
+medops,HRP Workflow Authorization,HRP SLA Escalation,36,responsible_user,响应责任人,Link,User,1,0,0,0,0,,,,响应责任人,Core
+medops,HRP Workflow Authorization,HRP SLA Escalation,37,current_assignments_json,当前待办,Code,JSON,0,0,0,0,0,,,,当前待办,Core
+medops,HRP Workflow Authorization,HRP SLA Escalation,38,next_run_at,下次处理时间,Datetime,,0,0,1,0,0,,,,下次处理时间,Core
+medops,HRP Workflow Authorization,HRP SLA Escalation,39,last_processed_at,最近处理时间,Datetime,,0,0,0,0,0,,,,最近处理时间,Core
+medops,HRP Workflow Authorization,HRP SLA Escalation,40,last_error_code,最近错误码,Data,,0,0,0,0,0,,,,最近错误码,Core
+medops,HRP Workflow Authorization,HRP SLA Escalation,41,last_error_at,最近错误时间,Datetime,,0,0,0,0,0,,,,最近错误时间,Core
+medops,HRP Workflow Authorization,HRP SLA Escalation,42,retry_count,连续错误次数,Int,,0,0,0,0,0,,0,,连续错误次数,Core
+medops,HRP Workflow Authorization,HRP SLA Escalation,43,revision,处理版本,Int,,1,0,0,0,0,,1,,处理版本,Core
+medops,HRP Workflow Authorization,HRP SLA Escalation,44,disposition_reason,人工处置原因,Small Text,,0,0,0,0,0,,,,人工处置原因,Core
+medops,HRP Workflow Authorization,HRP SLA Escalation,45,disposition_by,人工处置人,Link,User,0,0,0,0,0,,,,人工处置人,Core
 medops,HRP Workflow Authorization,HRP Business Rule,10,company,法人,Link,Company,1,0,1,0,1,,,,法人,Core
 medops,HRP Workflow Authorization,HRP Business Rule,11,hospital,医院,Link,HRP Hospital,1,0,1,0,0,,,,医院,Core
 medops,HRP Workflow Authorization,HRP Business Rule,12,campus,院区,Link,HRP Campus,0,0,1,0,0,,,,院区,Core

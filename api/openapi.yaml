@@ -5585,6 +5585,219 @@ paths:
       x-required-role: System Manager or HRP System Manager or HRP Data Steward
       x-transaction-boundary: Read-only
       x-idempotency: Read-only deterministic
+  /api/method/medops.api.v1.core.sla.upsert_policy:
+    post:
+      operationId: core_034
+      summary: 保存服务时限策略
+      tags:
+      - medops
+      security:
+      - tokenAuth: []
+      responses:
+        '200':
+          description: Successful permission-checked result
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                - message
+                properties:
+                  message:
+                    type: object
+        '400':
+          description: Invalid request
+        '401':
+          description: Authentication required
+        '403':
+          description: Permission denied
+        '404':
+          description: Resource not found
+        '409':
+          description: Revision or idempotency conflict
+      x-api-code: CORE-034
+      x-required-role: System Manager or HRP System Manager
+      x-transaction-boundary: Single DB transaction
+      x-idempotency: Required for write
+      parameters:
+      - in: header
+        name: Idempotency-Key
+        required: true
+        schema:
+          type: string
+          minLength: 8
+          maxLength: 140
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required:
+              - policy
+              properties:
+                policy:
+                  type: object
+                  description: Complete declarative SLA policy; unknown fields rejected.
+                expected_revision:
+                  type: integer
+                  minimum: 0
+  /api/method/medops.api.v1.core.sla.act:
+    post:
+      operationId: core_035
+      summary: 确认响应、检查或停止计时
+      tags:
+      - medops
+      security:
+      - tokenAuth: []
+      responses:
+        '200':
+          description: Successful permission-checked result
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                - message
+                properties:
+                  message:
+                    type: object
+        '400':
+          description: Invalid request
+        '401':
+          description: Authentication required
+        '403':
+          description: Permission denied
+        '404':
+          description: Resource not found
+        '409':
+          description: Revision or idempotency conflict
+      x-api-code: CORE-035
+      x-required-role: Authenticated User with source read scope and action permission
+      x-transaction-boundary: Single DB transaction
+      x-idempotency: Required for write
+      parameters:
+      - in: header
+        name: Idempotency-Key
+        required: true
+        schema:
+          type: string
+          minLength: 8
+          maxLength: 140
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required:
+              - case_name
+              - action
+              - expected_revision
+              properties:
+                case_name:
+                  type: string
+                action:
+                  type: string
+                  enum:
+                  - acknowledge
+                  - process
+                  - cancel
+                expected_revision:
+                  type: integer
+                  minimum: 0
+                reason:
+                  type: string
+                  maxLength: 500
+  /api/method/medops.api.v1.core.sla.get:
+    get:
+      operationId: core_036
+      summary: 查看服务时限周期
+      tags:
+      - medops
+      security:
+      - tokenAuth: []
+      responses:
+        '200':
+          description: Successful permission-checked result
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                - message
+                properties:
+                  message:
+                    type: object
+        '400':
+          description: Invalid request
+        '401':
+          description: Authentication required
+        '403':
+          description: Permission denied
+        '404':
+          description: Resource not found
+        '409':
+          description: Revision or idempotency conflict
+      x-api-code: CORE-036
+      x-required-role: Authenticated User with source read scope
+      x-transaction-boundary: Read-only
+      x-idempotency: Not applicable
+      parameters:
+      - in: query
+        name: case_name
+        required: true
+        schema:
+          type: string
+  /api/method/medops.api.v1.core.sla.list_my:
+    get:
+      operationId: core_037
+      summary: 列出可见服务时限周期
+      tags:
+      - medops
+      security:
+      - tokenAuth: []
+      responses:
+        '200':
+          description: Successful permission-checked result
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                - message
+                properties:
+                  message:
+                    type: object
+        '400':
+          description: Invalid request
+        '401':
+          description: Authentication required
+        '403':
+          description: Permission denied
+        '404':
+          description: Resource not found
+        '409':
+          description: Revision or idempotency conflict
+      x-api-code: CORE-037
+      x-required-role: Authenticated User with source read scope
+      x-transaction-boundary: Read-only
+      x-idempotency: Not applicable
+      parameters:
+      - in: query
+        name: offset
+        required: false
+        schema:
+          type: integer
+          minimum: 0
+      - in: query
+        name: limit
+        required: false
+        schema:
+          type: integer
+          minimum: 1
 components:
   headers:
     CorrelationId:

@@ -113,6 +113,11 @@ class DomainService(ABC, Generic[CommandT]):
 					request_id=context.request_id,
 					idempotency_replayed=False,
 				)
+			except (frappe.QueryDeadlockError, frappe.QueryTimeoutError) as exc:
+				# InnoDB may have rolled back the entire transaction and removed every savepoint.
+				# Preserve Frappe's 508/retry signal; only the outer request/job can restart safely.
+				self._audit_failure(cause_type=type(exc).__name__)
+				raise
 			except IoneApplicationError as exc:
 				self._rollback(savepoint)
 				self._audit_failure(error_code=exc.code)
