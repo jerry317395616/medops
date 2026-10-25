@@ -2,7 +2,7 @@
 	"schema_version": 1,
 	"status": "IN_PROGRESS_COD_032",
 	"task_id": "COD-032",
-	"recorded_on": "2026-10-25",
+	"recorded_on": "2026-10-26",
 	"runtime_namespace": "medops",
 	"architecture_decisions": [
 		"ADR-0029"
@@ -14,11 +14,11 @@
 		"runtime_tests": 312,
 		"evidence": "architecture/releases/COD-031.json"
 	},
-	"current_scope": "Exact approval amount foundation verified; department sealed snapshots, guarded source service, FIN025-027 and planning-page entry under verification. Human approval and consolidation still incomplete.",
+	"current_scope": "Exact approval foundation and department sealed snapshots verified in development; complete COD032 human approval and consolidation remain unfinished. No public promotion.",
 	"checks": {
-		"new_pure_tests_passed": 13,
+		"new_pure_tests_passed": 23,
 		"pure_tests_expected": 354,
-		"new_frappe_tests_defined": 9,
+		"new_frappe_tests_defined": 22,
 		"frappe_tests_total_expected": 334,
 		"native_migration_baseline": {
 			"status": "passed",
@@ -51,13 +51,32 @@
 		"department_snapshot": {
 			"pure_tests_passed": 8,
 			"native_tests_defined": 13,
-			"native_status": "12passed at6974133; additional current display-label mask regression pending",
+			"native_status": "passed",
 			"models_added": 2,
 			"public_deployment": "none",
-			"native_passed_commit": "69741331c3ecce40fd6a15ecbb1fe52c994501fe",
-			"native_tests_passed": 12,
+			"native_passed_commit": "250be50e1e062d4b9e3f1c7267d84a2949ce42eb",
+			"native_tests_passed": 13,
 			"repeat_migrations": 2,
-			"schema_migration_commit": "e757a845570c4761fc3918ecee6d5bbe34a60f84"
+			"schema_migration_commit": "250be50e1e062d4b9e3f1c7267d84a2949ce42eb",
+			"native_regressions": 29,
+			"total_focused": 42,
+			"browser": {
+				"status": "passed",
+				"created_commit": "69741331c3ecce40fd6a15ecbb1fe52c994501fe",
+				"refreshed_commit": "250be50e1e062d4b9e3f1c7267d84a2949ce42eb",
+				"total": "100000.000000001",
+				"digest_unchanged": true,
+				"friendly_names_and_period_order": true
+			},
+			"races": {
+				"status": "passed",
+				"count": 2,
+				"commit": "69741331c3ecce40fd6a15ecbb1fe52c994501fe",
+				"write_ast_and_dependencies_identical_in_250be50": true,
+				"same_key": "one created one replay after one outer retry",
+				"different_keys": "one created one409",
+				"financial_counts_unchanged": true
+			}
 		},
 		"exact_foundation_ci": {
 			"head": "5f3e3ed30a2de758f9a6ea93e1c657dfd0f261e0",
@@ -65,7 +84,32 @@
 			"security": "passed",
 			"integration": "passed",
 			"required": "passed"
+		},
+		"new_pure_components": {
+			"exact_amount": 13,
+			"transaction_guard": 2,
+			"department_snapshot": 8
+		},
+		"full_ci": {
+			"commit": "250be50e1e062d4b9e3f1c7267d84a2949ce42eb",
+			"run": 40245494299,
+			"quality": "passed354",
+			"security": "passed",
+			"integration": "passed334",
+			"required": "passed",
+			"fresh_site_error_logs": {
+				"hrp-test.localhost": 0,
+				"hrp-dev.localhost": 0,
+				"hrp-demo.localhost": 0
+			}
 		}
 	},
-	"overall_hospital_production_readiness": "not_established"
+	"overall_hospital_production_readiness": "not_established",
+	"public_state": {
+		"commit": "4c6b0b89118b34f4a8ece3128001c453c5ef4925",
+		"source_clean": true,
+		"medical_units_active": 7,
+		"medical_child_rehab_health": 200,
+		"cod032_promoted": false
+	}
 }
