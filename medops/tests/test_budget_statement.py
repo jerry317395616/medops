@@ -337,7 +337,9 @@ class TestBudgetStatement(FrappeAPITestCase):
 
 	def test_export_requires_current_scope_export_grant(self):
 		book = self.success(self.statement())
+		frappe.set_user(ACTOR)
 		with statement_connection():
+			self.assertEqual(statements.statement_actor(), ACTOR)
 			statements.require_statement_scope(book["context"], export=True)
 		frappe.set_user("Administrator")
 		name = "COD032C-scope-" + ACTOR.split("@")[0]
@@ -352,7 +354,9 @@ class TestBudgetStatement(FrappeAPITestCase):
 			self.success(self.statement())
 			# Isolate the scope guard from independent native master export
 			# requirements; the API must reject too, without partial results.
+			frappe.set_user(ACTOR)
 			with statement_connection():
+				self.assertEqual(statements.statement_actor(), ACTOR)
 				with self.assertRaises(IoneApplicationError) as failure:
 					statements.require_statement_scope(book["context"], export=True)
 				self.assertEqual(failure.exception.code, "IONE-CORE-0002")
