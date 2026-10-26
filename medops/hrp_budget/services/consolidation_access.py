@@ -9,10 +9,12 @@ from medops.common.budget_consolidation import (
 	consolidated_snapshot_from_payload,
 )
 from medops.common.budget_workflow import CASE, REVIEW
+from medops.hrp_budget.services.access_graph import access_graph_cache, read_graph
 from medops.hrp_budget.services.planning_access import native_source
 from medops.services.errors import raise_ione_error
 
 
+@read_graph
 def approved_department(submission_name, case_name, *, user=None, export=False, lock=False):
 	"""Read a complete approved leaf, never recurse through a consolidated source."""
 	from medops.hrp_budget.services.approval_access import case_permission, review_permission
@@ -21,6 +23,10 @@ def approved_department(submission_name, case_name, *, user=None, export=False, 
 	from medops.hrp_budget.services.submission_documents import stored_facts
 
 	user = user or frappe.session.user
+	cache = access_graph_cache()
+	key = ("approved_department", submission_name, case_name, user, bool(export))
+	if not lock and cache is not None and key in cache:
+		return cache[key]
 	if not frappe.db.exists(SUBMISSION, submission_name) or not frappe.db.exists(CASE, case_name):
 		raise_ione_error("RESOURCE_NOT_FOUND")
 	doc = frappe.get_doc(SUBMISSION, submission_name, for_update=lock)
@@ -80,7 +86,10 @@ def approved_department(submission_name, case_name, *, user=None, export=False, 
 			requested_by=case.requested_by,
 		)
 	)
-	return ref, department_snapshot_from_payload(stored_facts(doc))
+	result = ref, department_snapshot_from_payload(stored_facts(doc))
+	if not lock and cache is not None:
+		cache[key] = result
+	return result
 
 
 def aggregation_root(context, unit_name, *, user=None, export=False, operational=False, posting_date=None):
@@ -142,6 +151,7 @@ def assert_leaf_ancestry(context, root, snapshots, *, user=None, export=False):
 			raise_ione_error("CONFLICT")
 
 
+@read_graph
 def aggregate_sources_valid(doc, *, user, export=False):
 	from medops.common.error_catalog import IoneApplicationError
 	from medops.hrp_budget.services.submission_documents import stored_facts

@@ -104,12 +104,16 @@
 			}
 		},
 		"consolidation_candidate": {
-			"status": "unverified",
+			"status": "initial native run interrupted for performance; read-graph optimization pending verification",
 			"pure_tests_defined": 12,
 			"native_tests_defined": 8,
-			"repeat_migration": "pending",
+			"repeat_migration": "passed twice at307a497",
 			"browser": "pending",
-			"concurrency": "pending"
+			"concurrency": "pending",
+			"initial_candidate": "307a497f6b7cdfa9867d190d475aab584ab25972",
+			"initial_local_quality": "passed375 pure and all checks",
+			"source_revocation": "passed at307a497",
+			"access_graph_pure_tests": 5
 		}
 	},
 	"overall_hospital_production_readiness": "not_established",

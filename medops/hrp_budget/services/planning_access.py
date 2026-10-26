@@ -7,6 +7,7 @@ from typing import Any
 import frappe
 
 from medops.common.budget_planning import DIMENSION, FUND, PLAN, VALUE, VERSION
+from medops.hrp_budget.services.access_graph import access_graph_cache, read_graph
 from medops.hrp_master_data.services.budget_dimensions import native_read
 from medops.hrp_workflow_authorization.services.rule_contracts import can_read_named_fields
 from medops.services.data_access import require_scope, scope_allowed, scope_permission_query
@@ -42,7 +43,10 @@ def line_query(user=None):
 
 
 def native_source(doctype: str, name: str | None, fields: set[str], *, user=None, export=False, cache=None):
-	key = (doctype, name, tuple(sorted(fields)), user or frappe.session.user, export)
+	graph = access_graph_cache()
+	if graph is not None:
+		cache = graph
+	key = ("native_source", doctype, name, tuple(sorted(fields)), user or frappe.session.user, export)
 	if cache is not None and key in cache:
 		return cache[key]
 	result = None
@@ -77,6 +81,7 @@ def version_sources(doc, *, user=None, export=False, cache=None) -> bool:
 	)
 
 
+@read_graph
 def version_permission(doc, user=None, ptype=None, debug=False):
 	del debug
 	user = user or frappe.session.user
@@ -91,6 +96,7 @@ def version_permission(doc, user=None, ptype=None, debug=False):
 	return can_read_named_fields(doc, fields, user=user) and version_sources(doc, user=user, export=export)
 
 
+@read_graph
 def plan_permission(doc, user=None, ptype=None, debug=False):
 	del debug
 	user = user or frappe.session.user
@@ -186,6 +192,7 @@ def line_permission(doc, user=None, ptype=None, debug=False):
 	)
 
 
+@read_graph
 def get_version(name: str, *, lock=False, export=False):
 	if not frappe.db.exists(VERSION, name):
 		raise_ione_error("RESOURCE_NOT_FOUND")
@@ -199,6 +206,7 @@ def get_version(name: str, *, lock=False, export=False):
 	return doc
 
 
+@read_graph
 def get_plan(name: str, *, lock=False, export=False):
 	if not frappe.db.exists(PLAN, name):
 		raise_ione_error("RESOURCE_NOT_FOUND")

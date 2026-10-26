@@ -7,6 +7,7 @@ import frappe
 
 from medops.common.budget_workflow import APPROVER_ROLE, CASE, REVIEW, approval_mutation, parse_decision
 from medops.common.exact_money import exact_decimal_amount
+from medops.hrp_budget.services.access_graph import read_graph
 from medops.hrp_budget.services.planning_access import READ_ROLES
 from medops.hrp_budget.services.submission_access import submission_permission
 from medops.hrp_workflow_authorization.services.rule_contracts import can_read_named_fields
@@ -97,6 +98,7 @@ def case_source(doc, user: str, *, export=False):
 	return source
 
 
+@read_graph
 def case_permission(doc, user=None, ptype=None, debug=False):
 	del debug
 	user = user or frappe.session.user
@@ -143,6 +145,7 @@ def case_permission(doc, user=None, ptype=None, debug=False):
 	return True
 
 
+@read_graph
 def can_approve_case(user: str, doc) -> bool:
 	roles = set(frappe.get_roles(user))
 	meta = frappe.get_meta(REVIEW)
@@ -161,6 +164,7 @@ def can_approve_case(user: str, doc) -> bool:
 	)
 
 
+@read_graph
 def review_permission(doc, user=None, ptype=None, debug=False):
 	del debug
 	user = user or frappe.session.user
@@ -191,6 +195,7 @@ def review_permission(doc, user=None, ptype=None, debug=False):
 	)
 
 
+@read_graph
 def get_case(name: str, *, lock=False):
 	if not frappe.db.exists(CASE, name):
 		raise_ione_error("RESOURCE_NOT_FOUND")

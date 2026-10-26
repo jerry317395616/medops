@@ -7,6 +7,7 @@ import frappe
 
 from medops.common.budget_approval import SUBMISSION, SUBMISSION_LINE, department_snapshot_from_payload
 from medops.common.budget_planning import PLAN, VERSION, plan_definition, planning_digest
+from medops.hrp_budget.services.access_graph import read_graph
 from medops.hrp_budget.services.planning_access import READ_ROLES, native_source, plan_permission
 from medops.hrp_budget.services.submission_documents import stored_facts
 from medops.hrp_workflow_authorization.services.rule_contracts import can_read_named_fields
@@ -36,6 +37,7 @@ def submission_line_query(user=None):
 	return "" if (user or frappe.session.user) == "Administrator" else "1=0"
 
 
+@read_graph
 def submission_permission(doc, user=None, ptype=None, debug=False):
 	del debug
 	user = user or frappe.session.user
@@ -121,6 +123,7 @@ def submission_line_permission(doc, user=None, ptype=None, debug=False):
 	)
 
 
+@read_graph
 def get_submission(name: str, *, lock=False):
 	if not frappe.db.exists(SUBMISSION, name):
 		raise_ione_error("RESOURCE_NOT_FOUND")
