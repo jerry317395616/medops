@@ -14,6 +14,7 @@ from medops.common.domain_service import (
 	canonical_json_object,
 	normalize_sha256,
 )
+from medops.common.private_values import PrivateText
 
 MESSAGE_BOX_SCHEMA_VERSION = 1
 MAX_EVENT_ID_LENGTH = 140
@@ -353,11 +354,13 @@ def message_record_name(kind: MessageBoxKind, event_id: object, consumer: object
 
 
 def normalize_processing_token(value: object) -> str:
-	return _normalize_pattern(
-		value,
-		label="processing_token",
-		pattern=PROCESSING_TOKEN_PATTERN,
-		max_length=MAX_PROCESSING_TOKEN_LENGTH,
+	return PrivateText(
+		_normalize_pattern(
+			value,
+			label="processing_token",
+			pattern=PROCESSING_TOKEN_PATTERN,
+			max_length=MAX_PROCESSING_TOKEN_LENGTH,
+		)
 	)
 
 

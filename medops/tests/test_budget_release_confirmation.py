@@ -207,6 +207,30 @@ class TestBudgetReleaseConfirmation(FrappeAPITestCase):
 		self.success(self.confirm(fresh))
 		self.assert_unposted()
 
+	def test_preview_faults_hide_generated_and_encrypted_idempotency_proof(self):
+		from medops.hrp_budget.services import release_confirmation
+		from medops.hrp_foundation.doctype.hrp_service_idempotency.hrp_service_idempotency import (
+			HRPServiceIdempotency,
+		)
+		from medops.tests.privacy_diagnostics import PUBLIC_CANARY, NativeDiagnostics, injected_retry
+
+		before = {
+			doctype: frappe.db.count(doctype)
+			for doctype in (RELEASE_ENTRY, LEDGER, OUTBOX, "HRP Service Idempotency")
+		}
+		for phase in ("evidence", "idempotency"):
+			with self.subTest(phase=phase), NativeDiagnostics() as diagnostics:
+				with (
+					patch.object(release_confirmation.secrets, "token_urlsafe", return_value=PUBLIC_CANARY),
+					patch.object(release_confirmation, "append_release_event", new=injected_retry)
+					if phase == "evidence"
+					else patch.object(HRPServiceIdempotency, "save", new=injected_retry),
+				):
+					response = self.preview()
+				diagnostics.assert_private_retry(self, response)
+				self.assertEqual(before, {doctype: frappe.db.count(doctype) for doctype in before})
+		self.assert_unposted()
+
 	def test_changed_prepared_intent_invalidates_a_previous_confirmation(self):
 		preview = self.success(self.preview())
 		self.success(

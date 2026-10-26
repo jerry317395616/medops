@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from medops.common.private_values import PrivateText
+
 REDACTED_CONFIRMATION = "[redacted human confirmation]"
 
 
@@ -22,9 +24,11 @@ class ConfirmationPayload(str):
 		del memo
 		return REDACTED_CONFIRMATION
 
+	def __sentry_repr__(self) -> str:
+		return REDACTED_CONFIRMATION
 
-class ConfirmationProof(str):
+
+class ConfirmationProof(PrivateText):
 	"""Preserve proof bytes for validation while hiding ordinary traceback repr."""
 
-	def __repr__(self) -> str:
-		return repr(REDACTED_CONFIRMATION)
+	redaction = REDACTED_CONFIRMATION

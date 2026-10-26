@@ -20,6 +20,7 @@ from medops.common.domain_service import (
 	normalize_idempotency_key,
 	normalize_sha256,
 )
+from medops.common.private_values import PrivateText
 from medops.services.errors import raise_ione_error, require_roles
 
 if TYPE_CHECKING:
@@ -110,7 +111,7 @@ def _load_replayed_result(record: HRPServiceIdempotency) -> dict[str, object]:
 	if int(record.response_schema_version) != IDEMPOTENCY_RESPONSE_SCHEMA_VERSION:
 		raise_ione_error("CONFIGURATION_INVALID")
 	try:
-		serialized = decrypt(record.response_snapshot)
+		serialized = PrivateText(decrypt(record.response_snapshot))
 		normalize_sha256(record.response_fingerprint, label="response_fingerprint")
 		if fingerprint_json(json.loads(serialized)) != record.response_fingerprint:
 			raise DomainServiceContractError("idempotency response fingerprint mismatch")

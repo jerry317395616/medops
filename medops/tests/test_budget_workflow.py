@@ -231,6 +231,34 @@ class TestBudgetWorkflowAPI(FrappeAPITestCase):
 	def read_case(self, name):
 		return self.get(self.method(PREFIX + "get_record"), {"name": name})
 
+	def test_preview_faults_hide_generated_and_encrypted_idempotency_proof(self):
+		from medops.hrp_budget.services import approval
+		from medops.hrp_foundation.doctype.hrp_service_idempotency.hrp_service_idempotency import (
+			HRPServiceIdempotency,
+		)
+		from medops.tests.privacy_diagnostics import PUBLIC_CANARY, NativeDiagnostics, injected_retry
+
+		case = self.open_case()["name"]
+		self.login_actor(ACTORS[0])
+		before = {
+			doctype: frappe.db.count(doctype)
+			for doctype in (REVIEW, "HRP Service Idempotency", "GL Entry", "Stock Ledger Entry")
+		}
+		for phase in ("evidence", "idempotency"):
+			with self.subTest(phase=phase), NativeDiagnostics() as diagnostics:
+				with (
+					patch.object(approval.secrets, "token_urlsafe", return_value=PUBLIC_CANARY),
+					patch.object(approval, "append_review", new=injected_retry)
+					if phase == "evidence"
+					else patch.object(HRPServiceIdempotency, "save", new=injected_retry),
+				):
+					response = self.prepare(case)
+				diagnostics.assert_private_retry(self, response)
+				self.assertEqual(before, {doctype: frappe.db.count(doctype) for doctype in before})
+				self.assertEqual(
+					frappe.db.get_value(CASE, case, ["revision", "status", "docstatus"]), (1, "Pending", 0)
+				)
+
 	def test_all_votes_persist_confirmation_and_native_workflow_without_financial_posting(self):
 		before = {dt: frappe.db.count(dt) for dt in ("Budget", "GL Entry", "Stock Ledger Entry", "DocShare")}
 		case = self.open_case()["name"]

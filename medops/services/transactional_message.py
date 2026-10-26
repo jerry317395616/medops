@@ -13,6 +13,7 @@ from frappe.model.document import Document
 from frappe.utils import add_to_date, cint, get_datetime, now_datetime
 
 from medops.common.domain_service import DomainServiceDefinition, normalize_sha256
+from medops.common.private_values import PrivateText
 from medops.common.transactional_message import (
 	BASE_MESSAGE_FIELDS,
 	IMMUTABLE_MESSAGE_FIELDS,
@@ -785,7 +786,7 @@ class ClaimOutboxService(_MessageBoxService[ClaimOutboxMessage]):
 		if cint(document.attempt_count) >= self.message_box_definition.max_attempts:
 			raise_ione_error("INVALID_STATE_TRANSITION")
 
-		token = secrets.token_urlsafe(32)
+		token = PrivateText(secrets.token_urlsafe(32))
 		document.status = "Processing"
 		document.attempt_count = cint(document.attempt_count) + 1
 		document.claim_owner = normalize_endpoint(command.worker, label="worker")
@@ -1029,7 +1030,7 @@ class BeginInboxService(_MessageBoxService[MessageEnvelope]):
 			snapshot["destination"],
 		)
 		now = now_datetime()
-		token = secrets.token_urlsafe(32)
+		token = PrivateText(secrets.token_urlsafe(32))
 		if frappe.db.exists(self.message_box_definition.doctype, name):
 			document = _lock_message(self.message_box_definition, name)
 			_assert_existing_inbox_matches(document, snapshot)

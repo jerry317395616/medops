@@ -7,6 +7,8 @@ from dataclasses import dataclass
 from hashlib import sha256
 from typing import Literal
 
+from medops.common.private_values import PrivateText, private_json_strings
+
 DOMAIN_SERVICE_SCHEMA_VERSION = 1
 IDEMPOTENCY_RESPONSE_SCHEMA_VERSION = 1
 MAX_IDEMPOTENCY_KEY_LENGTH = 140
@@ -109,8 +111,8 @@ def canonical_json(value: object) -> str:
 
 
 def canonical_json_object(value: object) -> tuple[dict[str, object], str]:
-	serialized = canonical_json(value)
-	normalized = json.loads(serialized)
+	serialized = PrivateText(canonical_json(value))
+	normalized = private_json_strings(json.loads(serialized))
 	if not isinstance(normalized, dict):
 		raise DomainServiceContractError("service snapshot must be a JSON object")
 	return normalized, serialized

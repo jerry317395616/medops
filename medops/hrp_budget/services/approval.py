@@ -29,6 +29,7 @@ from medops.common.budget_workflow import (
 	replay_votes,
 	vote_identity,
 )
+from medops.common.confirmation_privacy import ConfirmationProof
 from medops.common.domain_service import DomainServiceDefinition, canonical_json, fingerprint_json
 from medops.hrp_budget.services.approval_access import (
 	can_approve_case,
@@ -308,7 +309,7 @@ class PrepareHumanDecision(DomainService[ReviewIntent]):
 		assert_actor(case, command.action, int(case.current_step))
 
 	def authorize_result(self, result):
-		row = checked_confirmation(str(result["confirmation"]), str(result["proof"]))
+		row = checked_confirmation(str(result["confirmation"]), ConfirmationProof(result["proof"]))
 		case = get_case(row.case)
 		assert_actor(case, row.action, int(row.sequence_no))
 		if (
@@ -343,7 +344,7 @@ class PrepareHumanDecision(DomainService[ReviewIntent]):
 				)
 			except ValueError as exc:
 				raise_ione_error("INVALID_STATE_TRANSITION", cause=exc)
-			proof = secrets.token_urlsafe(32)
+			proof = ConfirmationProof(secrets.token_urlsafe(32))
 			expiry = now_datetime() + timedelta(seconds=CONFIRMATION_SECONDS)
 			row = append_review(
 				case,

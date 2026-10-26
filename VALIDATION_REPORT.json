@@ -9,10 +9,10 @@
 		"ADR-0031",
 		"ADR-0032"
 	],
-	"current_scope": "65f43ef full444 local quality;7095a40 native confirmation8 and real concurrent confirmation/execution/reversal passed. Native508 preserved;fresh whole-HTTP same-key retry409;new419 log bytes omit proof/SID/CSRF.709 actual browser revision/unchecked denial/reconfirmation/standard-RQ release+full reversal passed. e311174 frontend-only fix passed fresh-origin FIRST query139 rows,current-page50 vs actual browser XLSX139 exact text rows;genuine filter changes and old in-flight200 response invalidation passed. Private financial counts334/589/278/262 and old-budget/roles held. All5 apps clean on public/private;public8291 unchanged;helpers/tunnels/tabs stopped;long0/default386/workers0. Pre-hook/preview-error privacy,otherUI/performance,full438/CI/promotion remain pending.",
+	"current_scope": "Prior e311/709 browser,download and contention verified. New normalCookie/CSRF fault injection at e311 confirmed canary in native preview-evidence,idempotency-save and pre-hook initialization diagnostics;all data/counts/roles/default386 unchanged. Private string/byte diagnostic values and protected canonical snapshot strings now implemented;proof generation and replay validation preserve wrappers;message nonces normalized privately.4 pure and2 native matrix cases added;targeted pure15 and typecheck passed,full448/new native and early-boundary fix pending. Whole440/CI/promotion incomplete.",
 	"checks": {
-		"pure_tests_expected": 444,
-		"complete_frappe_tests_expected": 438,
+		"pure_tests_expected": 448,
+		"complete_frappe_tests_expected": 440,
 		"exact_foundation_pure_tests_passed": 21,
 		"native_foundation": {
 			"status": "passed",
@@ -36,7 +36,7 @@
 		"protected_ci": "not run for COD-033",
 		"local_quality": "Full444 passed at65f43ef;production backend unchanged at709/e311;709 test-only ande311 frontend scoped checks passed;no new full suite at UI-only source",
 		"pure_tests_passed": 444,
-		"complete_frappe_tests": "438 expected; complete suite pending",
+		"complete_frappe_tests": "440 expected; complete suite pending",
 		"current_protocol": {
 			"status": "full local quality passed",
 			"tests": 11,
@@ -630,6 +630,33 @@
 			"status": "not_complete",
 			"verified_gap": "before_request follows HTTPRequest;other early session failures not covered by this hook",
 			"code_review_hypothesis_not_runtime_verified": "Preview proof generation and plaintext serialization/encrypted idempotency persistence exception paths require an invalid canary matrix;confirm-input tests alone do not establish those paths safe"
+		},
+		"privacy_generation_probe": {
+			"source_commit": "e31117474985d0c0b04f59c4b70ba8a59e66e344",
+			"status": "observed_gaps",
+			"native_retry_status": 508,
+			"phases": [
+				"preview_evidence",
+				"preview_idempotency_save",
+				"early_http_request"
+			],
+			"canary_entered_native_context_in_all_phases": true,
+			"actual_sid_csrf_in_captured_error_context": false,
+			"normal_cookie_csrf": true,
+			"frappe_test_mode": false,
+			"fault_injection_not_real_contention": true,
+			"all_financial_idempotency_gl_stock_error_counts_old_budget_roles_and_queues_unchanged": true,
+			"public_non_authorizing_canary": true,
+			"raw_diagnostic_contents_returned": false
+		},
+		"privacy_values_patch": {
+			"status": "implemented_not_runtime_accepted",
+			"pure_added": 4,
+			"native_added": 2,
+			"native_targets": "budget release and approval preview evidence/idempotency faults;native error context,telemetry message and actual SDK serialization without outbound transport",
+			"wire_schema_fingerprint_and_encryption_content_change": false,
+			"new_tables_or_user_grants": false,
+			"early_http_request_boundary": "still not fixed"
 		}
 	},
 	"previous_verified_release": {

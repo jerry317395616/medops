@@ -20,6 +20,7 @@ from medops.common.budget_ledger import (
 )
 from medops.common.budget_release_control import expected_release_record, release_write
 from medops.common.budget_workflow import CONFIRMATION_SECONDS, HumanConfirmation
+from medops.common.confirmation_privacy import ConfirmationProof
 from medops.common.domain_service import DomainServiceDefinition, fingerprint_json
 from medops.common.integration_outbox import outbox_publication
 from medops.common.transactional_message import normalize_payload
@@ -132,7 +133,7 @@ class PrepareReleaseConfirmation(DomainService[ReleasePreviewRequest]):
 		require_financial_actor(get_release(command.release))
 
 	def authorize_result(self, result):
-		row = checked_release_confirmation(str(result["confirmation"]), str(result["proof"]))
+		row = checked_release_confirmation(str(result["confirmation"]), ConfirmationProof(result["proof"]))
 		doc = get_release(row.release)
 		require_financial_actor(doc)
 		require_open_intent(doc, int(row.release_revision))
@@ -144,7 +145,7 @@ class PrepareReleaseConfirmation(DomainService[ReleasePreviewRequest]):
 		facts = require_financial_actor(doc)
 		require_open_intent(doc, command.expected_revision)
 		enforce_business_rules(doc, "release")
-		proof = secrets.token_urlsafe(32)
+		proof = ConfirmationProof(secrets.token_urlsafe(32))
 		expiry = now_datetime() + timedelta(seconds=CONFIRMATION_SECONDS)
 		with release_write("preview", facts, command.expected_revision):
 			row = append_release_event(
