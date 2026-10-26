@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+from pathlib import Path
 from unittest.mock import patch
 
 import frappe
@@ -25,8 +26,13 @@ class TestChangeGovernanceAPI(FrappeAPITestCase):
 		payload = response.get_json()["message"]
 		self.assertEqual(payload["status"], "ok")
 		self.assertEqual(payload["correlation_id"], "COD-008-http-success")
-		self.assertEqual(payload["change_record_count"], 34)
-		self.assertEqual(payload["decision_count"], 29)
+		root = Path(frappe.get_app_path("medops")).resolve().parent
+		changes = tuple((root / "changes").glob("COD-*.json"))
+		decisions = tuple((root / "architecture" / "adr").glob("ADR-*.md"))
+		self.assertTrue(changes)
+		self.assertTrue(decisions)
+		self.assertEqual(payload["change_record_count"], len(changes))
+		self.assertEqual(payload["decision_count"], len(decisions))
 		self.assertFalse(payload["http_write_enabled"])
 		self.assertEqual(payload["write_channel"], "Git pull request only")
 		serialized = json.dumps(payload, ensure_ascii=False)

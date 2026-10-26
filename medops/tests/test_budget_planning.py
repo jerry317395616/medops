@@ -653,6 +653,7 @@ class TestBudgetPlanningAPI(FrappeAPITestCase):
 
 	def setUp(self):
 		super().setUp()
+		self.request_namespace = uuid4().hex
 		frappe.set_user("Administrator")
 		self.TEST_CLIENT.set_cookie(key="sid", value=self.sid)
 
@@ -666,7 +667,7 @@ class TestBudgetPlanningAPI(FrappeAPITestCase):
 		return self.post(
 			self.method(METHOD_PREFIX + method),
 			{"payload": payload},
-			headers={"Idempotency-Key": key(self._testMethodName + "-" + (label or method))},
+			headers={"Idempotency-Key": key("http-" + self.request_namespace + "-" + (label or method))},
 		)
 
 	def create_version(self):
@@ -823,6 +824,7 @@ class TestBudgetPlanningAPI(FrappeAPITestCase):
 		)
 
 	def test_http_master_maintenance_custom_link_search_and_export(self):
+		fund_code = "HTTP-" + uuid4().hex[:12].upper()
 		version, _ = self.create_version()
 		plan, _ = self.create_plan(version)
 		exported = self.get(self.method(METHOD_PREFIX + "export_plan"), {"name": plan["name"]})
@@ -835,19 +837,19 @@ class TestBudgetPlanningAPI(FrappeAPITestCase):
 				"payload": {
 					"company": COMPANY,
 					"hospital": HOSPITAL,
-					"code": "HTTP",
+					"code": fund_code,
 					"display_name": "HTTP资金",
 					"source_type": "Other",
 					"valid_from": "2026-01-01",
 				},
 			},
-			headers={"Idempotency-Key": key("http-fund")},
+			headers={"Idempotency-Key": key("http-fund-" + self.request_namespace)},
 		)
 		self.assertEqual(response.status_code, 200, response.get_data(as_text=True))
 		self.login_planner()
 		search = self.get(
 			self.method(METHOD_PREFIX + "search"),
-			{"doctype": FUND, "txt": "HTTP", "filters": {"hospital": HOSPITAL}},
+			{"doctype": FUND, "txt": fund_code, "filters": {"hospital": HOSPITAL}},
 		)
 		self.assertEqual(search.status_code, 200, search.get_data(as_text=True))
 		self.assertEqual(search.get_json()["message"][0][1], "HTTP资金")
@@ -856,7 +858,7 @@ class TestBudgetPlanningAPI(FrappeAPITestCase):
 				self.method("frappe.desk.search.search_link"),
 				{
 					"doctype": FUND,
-					"txt": "HTTP",
+					"txt": fund_code,
 					"query": METHOD_PREFIX + "search",
 					"reference_doctype": "",
 					"filters": {"hospital": HOSPITAL},

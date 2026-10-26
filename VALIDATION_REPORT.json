@@ -9,7 +9,7 @@
 		"ADR-0031",
 		"ADR-0032"
 	],
-	"current_scope": "1627858 full453 local quality and1447 committed blobs passed; all58 focused native passed [2,5,13,10,19,9]. Normal Cookie/CSRF, non-test seven-phase diagnostic probe passed:14 native deferred Error Logs,14 actual SDK memory-transport events and12748 new native file-log bytes contain no public canary or actual SID/CSRF;native fingerprint/frame/type/timestamp identity retained. Existing protected data/counts/roles/default386 preserved;session logged out,no telemetry opt-in/network change. Probe tests the boundary after normal HTTPRequest construction and before application hooks, including JSON/form/v1/v2/legacy cmd. Full443 initial attempt stopped after7 tests when isolated1.5GiB database hit confirmed cgroup OOM;all preserved-state recovery checks passed. Isolated db live limit raised to4GiB without restart;host had64GiB available,compose persisted,public unchanged. Full443 same source rerun active,PID2330748; full result, UI/performance/backup/CI/promotion incomplete. New candidate adds bounded stored-document snapshots to avoid repeated native source loads within one actor/owned-RO-connection/graph phase. Independent native controllers/children returned;locks and non-owned reads bypass cache, explicit authority refresh clears it. Seven budget source types only,no physical ledger cache;8MiB conservative snapshot budget,2000 child-row per-doc cache limit,cache misses/oversize retain full native reading. Two real-SQL boundary cases added;new445 native inventory and performance still pending. Running443 at162 stays untouched.",
+	"current_scope": "1627858 full453 local quality and1447 committed blobs passed; all58 focused native passed [2,5,13,10,19,9]. Normal Cookie/CSRF, non-test seven-phase diagnostic probe passed:14 native deferred Error Logs,14 actual SDK memory-transport events and12748 new native file-log bytes contain no public canary or actual SID/CSRF;native fingerprint/frame/type/timestamp identity retained. Existing protected data/counts/roles/default386 preserved;session logged out,no telemetry opt-in/network change. Probe tests the boundary after normal HTTPRequest construction and before application hooks, including JSON/form/v1/v2/legacy cmd. Full443 initial attempt stopped after7 tests when isolated1.5GiB database hit confirmed cgroup OOM;all preserved-state recovery checks passed. Isolated db live limit raised to4GiB without restart;host had64GiB available,compose persisted,public unchanged. Full443 same source rerun active,PID2330748; full result, UI/performance/backup/CI/promotion incomplete. New candidate adds bounded stored-document snapshots to avoid repeated native source loads within one actor/owned-RO-connection/graph phase. Independent native controllers/children returned;locks and non-owned reads bypass cache, explicit authority refresh clears it. Seven budget source types only,no physical ledger cache;8MiB conservative snapshot budget,2000 child-row per-doc cache limit,cache misses/oversize retain full native reading. Two real-SQL boundary cases added;new445 native inventory and performance still pending. Running443 at162 stays untouched. Full443 at162 completed1879.029s with440passing/3failures;allnine preserved-state checks true,default386,long0/workers0. Failures traced to obsolete governance counts, reused HTTP master fixture identities/finite receipts, and assuming yesterday precedes site capture epoch. Test fixes preserve real replay,known-zero and unknown history assertions;new source native445 validation pending.",
 	"checks": {
 		"pure_tests_expected": 453,
 		"complete_frappe_tests_expected": 445,
@@ -817,13 +817,18 @@
 		"coverage_limit": "Injected after native HTTPRequest construction and before before_request; earlier connection/session-constructor branches and proxy/server sinks not certified."
 	},
 	"full_native_suite": {
-		"status": "running",
+		"status": "failed",
 		"expected_tests": 443,
 		"commit": "1627858250777ed0b34149459a61717ad7fcee57",
 		"driver_pid": 2330748,
 		"proof_when_complete": "cod033-1627858-full-native-suite-memory4g.json",
 		"first_attempt": "failed after7 tests/73 cascading errors due confirmed isolated-database cgroup OOM; nine recovery integrity checks passed",
-		"resource_change": "private database memory limit1.5GiB to4GiB,live update,compose persisted;no restart or public service change"
+		"resource_change": "private database memory limit1.5GiB to4GiB,live update,compose persisted;no restart or public service change",
+		"completed_tests": 443,
+		"passed_tests": 440,
+		"failures": 3,
+		"all_preserved_state_checks_passed": true,
+		"proof": "cod033-1627858-full-native-suite-memory4g.json"
 	},
 	"pending_read_optimization": {
 		"status": "implemented, native validation and profiling pending",
@@ -845,5 +850,12 @@
 		},
 		"database_permission_api_or_model_changes": false,
 		"performance_improvement_not_yet_proven": true
+	},
+	"full_native_failure_fixes": {
+		"status": "implemented; runtime revalidation pending",
+		"change_governance": "Compare HTTP counts with actual change/ADR catalogs instead of obsolete34/29 constants.",
+		"planning_fixtures": "Per-test HTTP idempotency namespace and unique fund code preserve within-test replay while avoiding prior committed fixtures/expired receipts.",
+		"history_fixtures": "Unique quality rule/initial-evaluation identity; verify recorded zero separately from a day before real capture epoch and from future unknown coverage.",
+		"production_permission_or_history_semantics_relaxed": false
 	}
 }

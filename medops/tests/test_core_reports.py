@@ -4,6 +4,7 @@ import json
 from datetime import timedelta
 from typing import Any, cast
 from unittest.mock import patch
+from uuid import uuid4
 
 import frappe
 from frappe.tests import IntegrationTestCase
@@ -107,13 +108,15 @@ def report(code, filters=None, export=False):
 
 
 def create_quality():
+	fixture_id = uuid4().hex[:16]
 	rule = upsert_data_quality_rule(
-		rule_command(code="COD030-QUALITY", parameters={"maximum": 2}), idempotency_key=key("quality-rule")
+		rule_command(code="COD030-QUALITY-" + fixture_id, parameters={"maximum": 2}),
+		idempotency_key=key("quality-rule-" + fixture_id),
 	)
 	command = build_data_quality_evaluate(
 		rule_name=rule["name"], target_name=TEST_ITEM, effective_on=today(), expected_rule_revision=1
 	)
-	result = evaluate_data_quality(command, idempotency_key=key("quality-first"))
+	result = evaluate_data_quality(command, idempotency_key=key("quality-first-" + fixture_id))
 	return rule, command, cast(dict[str, Any], result["issue"])
 
 
@@ -308,6 +311,8 @@ class TestCoreReports(IntegrationTestCase):
 			self.assertNotIn(SECOND, content)
 
 	def test_history_tracks_real_transitions_and_unknown_days(self):
+		observed = getdate(today())
+		epoch = getdate(capture_epoch())
 		_, command, issue = create_quality()
 		evaluate_data_quality(command, idempotency_key=key("repeat"))
 		frappe.db.set_value("Item", TEST_ITEM, "item_name", "A")
@@ -317,16 +322,28 @@ class TestCoreReports(IntegrationTestCase):
 			{
 				"company": TEST_COMPANY,
 				"hospital": TEST_HOSPITAL,
-				"from_date": str(getdate(today()) - timedelta(days=1)),
-				"to_date": str(getdate(today()) + timedelta(days=1)),
+				"from_date": str(observed - timedelta(days=1)),
+				"to_date": str(observed + timedelta(days=1)),
 			},
 		)[1]
-		self.assertIsNone(rows[0]["opened"])
+		self.assertEqual(rows[0]["opened"], 0 if observed - timedelta(days=1) >= epoch else None)
 		self.assertEqual(rows[1]["opened"], 1)
 		self.assertEqual(rows[1]["repeated"], 1)
 		self.assertEqual(rows[1]["resolved"], 1)
 		self.assertEqual(rows[1]["open_at_end"], 0)
 		self.assertIsNone(rows[2]["open_at_end"])
+		unknown_day = str(epoch - timedelta(days=1))
+		unknown = report(
+			"RPT-006",
+			{
+				"company": TEST_COMPANY,
+				"hospital": TEST_HOSPITAL,
+				"from_date": unknown_day,
+				"to_date": unknown_day,
+			},
+		)[1]
+		self.assertIsNone(unknown[0]["opened"])
+		self.assertIsNone(unknown[0]["open_at_end"])
 		self.assertEqual(frappe.db.count(QUALITY_EVENT, {"issue": issue["name"]}), 3)
 
 	def test_event_failure_rolls_back_issue_and_idempotency(self):
