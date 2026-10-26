@@ -37,11 +37,9 @@ def public_entry(row):
 def authorize_base_entry(doc, *, export=False):
 	actor = statement_actor()
 	with native_ledger_base_check():
-		allowed = frappe.has_permission(LEDGER, "read", doc=doc, user=actor, print_logs=False)
+		allowed = frappe.has_permission(LEDGER, "read", doc=doc, user=actor)
 		if export:
-			allowed = allowed and frappe.has_permission(
-				LEDGER, "export", doc=doc, user=actor, print_logs=False
-			)
+			allowed = allowed and frappe.has_permission(LEDGER, "export", doc=doc, user=actor)
 	if (
 		not allowed
 		or not scope_allowed(doc, user=actor, action="export" if export else "read")
