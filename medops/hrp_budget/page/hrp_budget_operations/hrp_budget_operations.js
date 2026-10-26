@@ -429,4 +429,11 @@ frappe.pages["hrp-budget-operations"].on_page_load = (wrapper) => {
 		fact(body, "操作提示", __("选择法人、医院和年度后查询。下达与冲销分别需要核对来源并明确人工确认。"));
 	};
 };
-frappe.pages["hrp-budget-operations"].on_page_show = (wrapper) => wrapper.budgetOperationsRefresh?.();
+frappe.pages["hrp-budget-operations"].on_page_show = (wrapper) => {
+	frappe.breadcrumbs.add({
+		type: "Custom",
+		label: __("预算下达与冲销"),
+		route: "/desk/hrp-budget-operations",
+	});
+	return wrapper.budgetOperationsRefresh?.();
+};
