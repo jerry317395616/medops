@@ -10,7 +10,7 @@
 		"design_fields": 10011,
 		"doctype_blueprints": 401,
 		"starter_doctypes": 38,
-		"repository_contract_tests": 394,
+		"repository_contract_tests": 405,
 		"frappe_integration_tests": 367,
 		"environment_profiles": 3,
 		"fixture_rules": 3,
@@ -185,6 +185,8 @@
 		"architecture/adr/ADR-0029-exact-budget-submission-and-human-approval.md",
 		"architecture/releases/COD-032.json",
 		"backlog/COD-033.md",
-		"architecture/adr/ADR-0030-exact-budget-ledger-and-release-authority.md"
+		"architecture/adr/ADR-0030-exact-budget-ledger-and-release-authority.md",
+		"architecture/budget_ledger.md",
+		"medops/common/budget_ledger.py"
 	]
 }

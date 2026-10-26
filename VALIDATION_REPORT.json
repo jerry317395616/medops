@@ -7,9 +7,9 @@
 	"architecture_decisions": [
 		"ADR-0030"
 	],
-	"current_scope": "Exact immutable ledger foundation only; concrete budget release models, independent human authorization, async execution, department statements and UI are pending.",
+	"current_scope": "Exact ledger foundation plus release/reversal intent and complete original-grain allocation mapping. Runtime models, persisted human authority, async execution, department statements and UI remain pending.",
 	"checks": {
-		"pure_tests_expected": 394,
+		"pure_tests_expected": 405,
 		"complete_frappe_tests_expected": 367,
 		"exact_foundation_pure_tests_passed": 21,
 		"native_foundation": {
@@ -32,9 +32,14 @@
 			"migrations": 0
 		},
 		"protected_ci": "not run for COD-033",
-		"local_quality": "all passed at 77da19bf54a0521a207db38664ae83e669d3dfb1",
+		"local_quality": "Foundation passed at77da19b; full check for current protocol pending",
 		"pure_tests_passed": 394,
-		"complete_frappe_tests": "367 expected; full current suite pending concrete release slice"
+		"complete_frappe_tests": "367 expected; full current suite pending concrete release slice",
+		"current_protocol": {
+			"status": "focused tests passed; full current quality pending",
+			"tests": 11,
+			"combined_ledger_pure": 32
+		}
 	},
 	"previous_verified_release": {
 		"schema_version": 1,
