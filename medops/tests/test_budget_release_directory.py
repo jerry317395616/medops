@@ -19,7 +19,7 @@ from medops.services.errors import raise_ione_error
 from medops.services.module_registry import load_module_registry
 from medops.tests import test_budget_consolidation as source_fixture
 from medops.tests import test_budget_release_confirmation as confirmation_fixture
-from medops.tests.scope_fixtures import committed_test_changes, share_test_records
+from medops.tests.scope_fixtures import share_test_records
 from medops.tests.test_budget_release_preparation import release_rule_fixtures
 
 ACTOR = source_fixture.MANAGER
@@ -173,7 +173,7 @@ class TestBudgetReleaseDirectory(FrappeAPITestCase):
 			self.assertEqual(len(self.success(self.listing())["items"]), 1)
 			self.denied(self.preview())
 		finally:
-			with committed_test_changes(self):
+			with source_fixture.committed_test_changes(self):
 				user = frappe.get_doc("User", ACTOR)
 				user.add_roles("HRP Budget Manager")
 				if not had_auditor:
@@ -224,7 +224,7 @@ class TestBudgetReleaseDirectory(FrappeAPITestCase):
 			):
 				self.denied(self.listing())
 		finally:
-			with committed_test_changes(self):
+			with source_fixture.committed_test_changes(self):
 				share_test_records("HRP Hospital", (source_fixture.HOSPITAL,), (ACTOR,))
 
 	def test_final_cached_source_success_cannot_hide_committed_share_revocation(self):
@@ -234,7 +234,7 @@ class TestBudgetReleaseDirectory(FrappeAPITestCase):
 			):
 				self.denied(self.listing(), "IONE-CORE-0005", (409,))
 		finally:
-			with committed_test_changes(self):
+			with source_fixture.committed_test_changes(self):
 				share_test_records("HRP Hospital", (source_fixture.HOSPITAL,), (ACTOR,))
 
 	def test_current_field_revocation_rejects_selected_record(self):
@@ -251,7 +251,7 @@ class TestBudgetReleaseDirectory(FrappeAPITestCase):
 			with self.revoke_on_projection(revoke):
 				self.denied(self.record())
 		finally:
-			with committed_test_changes(self):
+			with source_fixture.committed_test_changes(self):
 				for name in setters:
 					frappe.delete_doc("Property Setter", name, ignore_permissions=True)
 					self.assertFalse(frappe.db.exists("Property Setter", name))
@@ -270,7 +270,7 @@ class TestBudgetReleaseDirectory(FrappeAPITestCase):
 			):
 				self.denied(self.record())
 		finally:
-			with committed_test_changes(self):
+			with source_fixture.committed_test_changes(self):
 				frappe.get_doc("User", ACTOR).add_roles("HRP Budget Manager")
 			frappe.cache.hdel("roles", ACTOR)
 
@@ -314,7 +314,7 @@ class TestBudgetReleaseDirectory(FrappeAPITestCase):
 			):
 				self.denied(self.record())
 		finally:
-			with committed_test_changes(self):
+			with source_fixture.committed_test_changes(self):
 				for name in permissions:
 					if frappe.db.exists("User Permission", name):
 						frappe.delete_doc("User Permission", name, ignore_permissions=True)

@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from contextlib import contextmanager
+
 import frappe
 from frappe.tests.test_api import FrappeAPITestCase
 
@@ -47,6 +49,19 @@ MANAGER = "cod032c-manager@example.com"
 MAKERS = ("cod032c-maker-a@example.com", "cod032c-maker-b@example.com")
 REVIEWER = "cod032c-reviewer@example.com"
 PREFIX = "medops.api.v1.finance."
+
+
+@contextmanager
+def committed_test_changes(test_case):
+	"""Change committed fixtures from a fresh secondary snapshot, not the caller's."""
+	with test_case.secondary_connection():
+		frappe.db.rollback()
+		frappe.set_user("Administrator")
+		try:
+			yield
+			frappe.local.db.commit()
+		finally:
+			frappe.db.rollback()
 
 
 def fixture_master(kind, payload):
