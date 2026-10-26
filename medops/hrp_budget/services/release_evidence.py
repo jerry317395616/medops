@@ -1,10 +1,21 @@
 from __future__ import annotations
 
+from dataclasses import asdict
+
 import frappe
 from frappe.utils import get_datetime
 
-from medops.common.budget_ledger import RELEASE, RELEASE_ENTRY
+from medops.common.budget_ledger import (
+	RELEASE,
+	RELEASE_ENTRY,
+	RELEASE_EVENT_DESTINATION,
+	RELEASE_EVENT_SOURCE,
+	RELEASE_EVENT_TYPE,
+	ReleaseExecutionAuthorization,
+)
 from medops.common.domain_service import fingerprint_json, normalize_sha256
+from medops.common.integration_outbox import OUTBOX
+from medops.common.transactional_message import message_record_name, normalize_payload
 from medops.services.errors import raise_ione_error
 
 RELEASE_EVIDENCE_FIELDS = (
@@ -160,4 +171,39 @@ def release_authorization(doc):
 		or get_datetime(decision.recorded_at) < get_datetime(confirmation.recorded_at)
 	):
 		raise_ione_error("CONFIGURATION_INVALID")
+	validate_authorization_message(doc, decision)
 	return decision
+
+
+def validate_authorization_message(doc, decision):
+	# Internal integrity proof only. Never return private payloads or leases from
+	# this adapter, and never treat it as a grant to read a financial source.
+	message = frappe.get_doc(OUTBOX, doc.outbox_message)
+	try:
+		authority = ReleaseExecutionAuthorization.from_payload(
+			dict(
+				release=doc.name,
+				authorization_revision=int(doc.authorization_revision),
+				intent_digest=doc.intent_digest,
+				decision=decision.name,
+				actor=decision.actor,
+			)
+		)
+		payload, _, digest = normalize_payload(message.payload_json)
+		if (
+			payload != asdict(authority)
+			or digest != message.payload_hash
+			or message.name != message_record_name("outbox", authority.event_id)
+			or message.event_id != authority.event_id
+			or message.event_type != RELEASE_EVENT_TYPE
+			or message.source != RELEASE_EVENT_SOURCE
+			or message.destination != RELEASE_EVENT_DESTINATION
+			or message.reference_doctype != RELEASE
+			or message.reference_name != doc.name
+			or int(message.payload_schema_version) != 1
+			or get_datetime(message.occurred_at) != get_datetime(decision.recorded_at)
+			or (doc.status == "Posted" and message.status != "Completed")
+		):
+			raise ValueError("durable financial message differs")
+	except (TypeError, ValueError) as error:
+		raise_ione_error("CONFIGURATION_INVALID", cause=error)

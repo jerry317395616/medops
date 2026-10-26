@@ -194,6 +194,58 @@ def build_revise_release_request(value: object) -> ReviseReleaseRequest:
 
 
 @dataclass(frozen=True, slots=True)
+class ReleasePreviewRequest:
+	release: str
+	expected_revision: int
+
+
+def build_release_preview(value: object) -> ReleasePreviewRequest:
+	data = object_payload(value, {"release", "expected_revision"})
+	return ReleasePreviewRequest(
+		release=normalize_reference(data.get("release"), label="release"),
+		expected_revision=normalize_positive_integer(
+			data.get("expected_revision"), label="expected_revision"
+		),
+	)
+
+
+@dataclass(frozen=True, slots=True)
+class ReleaseExecutionAuthorization:
+	"""Reference-only durable message; the worker must recheck persisted authority."""
+
+	release: str
+	authorization_revision: int
+	intent_digest: str
+	decision: str
+	actor: str
+
+	@classmethod
+	def from_payload(cls, value: object) -> ReleaseExecutionAuthorization:
+		data = object_payload(value, set(cls.__dataclass_fields__))
+		revision = normalize_positive_integer(
+			data.get("authorization_revision"), label="authorization_revision"
+		)
+		if revision < 2:
+			raise ValueError("persisted financial authorization revision required")
+		return cls(
+			release=normalize_reference(data.get("release"), label="release"),
+			authorization_revision=revision,
+			intent_digest=normalize_sha256(data.get("intent_digest"), label="intent_digest"),
+			decision=normalize_reference(data.get("decision"), label="decision"),
+			actor=normalize_reference(data.get("actor"), label="actor"),
+		)
+
+	@property
+	def event_id(self) -> str:
+		return fingerprint_json(["budget-release-authorization-v1", asdict(self)])
+
+
+RELEASE_EVENT_TYPE = "medops.budget.release.authorized.v1"
+RELEASE_EVENT_SOURCE = "medops.hrp_budget"
+RELEASE_EVENT_DESTINATION = "medops.hrp_budget.release"
+
+
+@dataclass(frozen=True, slots=True)
 class FinalBudgetApproval:
 	submission: str
 	snapshot_digest: str

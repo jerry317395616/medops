@@ -7,7 +7,9 @@ from decimal import Decimal, localcontext
 from medops.common.budget_ledger import (
 	BUDGET_LEDGER_DEFINITION,
 	FinalBudgetApproval,
+	ReleaseExecutionAuthorization,
 	allocation_values,
+	build_release_preview,
 	build_release_request,
 	build_reverse_request,
 	ledger_entry_key,
@@ -52,6 +54,66 @@ def reverse(original, **overrides):
 
 
 class TestBudgetLedger(unittest.TestCase):
+	def test_release_preview_cannot_change_frozen_financial_intent_or_actor(self):
+		value = dict(release="Release", expected_revision=1)
+		self.assertEqual(build_release_preview(value).release, "Release")
+		for changes in (
+			{"expected_revision": True},
+			{"expected_revision": 0},
+			{"reason": "changed"},
+			{"actor": "other"},
+			{"amount": "1"},
+		):
+			with self.subTest(changes=changes), self.assertRaises(ValueError):
+				build_release_preview(dict(value, **changes))
+
+	def test_execution_authority_contains_only_strict_durable_references(self):
+		value = dict(
+			release="Release",
+			authorization_revision=2,
+			intent_digest="a" * 64,
+			decision="Decision",
+			actor="finance@example.com",
+		)
+		authority = ReleaseExecutionAuthorization.from_payload(value)
+		self.assertEqual(asdict(authority), value)
+		for changes in (
+			{"authorization_revision": True},
+			{"authorization_revision": 1},
+			{"intent_digest": "bad"},
+			{"actor": ""},
+			{"amount": "1"},
+			{"method": "arbitrary"},
+			{"processing_token": "secret"},
+		):
+			with self.subTest(changes=changes), self.assertRaises(ValueError):
+				ReleaseExecutionAuthorization.from_payload(dict(value, **changes))
+
+	def test_execution_event_identity_changes_for_each_authority_epoch(self):
+		authority = ReleaseExecutionAuthorization.from_payload(
+			dict(
+				release="Release",
+				authorization_revision=2,
+				intent_digest="a" * 64,
+				decision="Decision",
+				actor="finance@example.com",
+			)
+		)
+		self.assertEqual(
+			authority.event_id, ReleaseExecutionAuthorization.from_payload(asdict(authority)).event_id
+		)
+		for changes in (
+			dict(authorization_revision=3),
+			dict(decision="New Decision"),
+			dict(actor="other@example.com"),
+			dict(intent_digest="b" * 64),
+		):
+			with self.subTest(changes=changes):
+				self.assertNotEqual(
+					authority.event_id,
+					ReleaseExecutionAuthorization.from_payload(dict(asdict(authority), **changes)).event_id,
+				)
+
 	def test_financial_request_accepts_references_but_rejects_injected_amount_or_authority(self):
 		request = dict(
 			approval_case="Approval",

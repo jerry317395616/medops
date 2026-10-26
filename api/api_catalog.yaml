@@ -2052,3 +2052,99 @@
   version: v1
   domain_group: Finance
   async: 'No'
+- api_code: FIN-035
+  app: medops
+  method: POST
+  path: /api/method/medops.api.v1.finance.release.create
+  description: 从完整已批准汇总准备预算下达意图
+  request_schema: payload
+  response_schema: BudgetReleaseAcknowledgement
+  required_role: Budget manager (auditor may read); current complete source, field
+    and scope permissions
+  idempotency: Required for write
+  transaction_boundary: Single DB transaction
+  audit: Redacted status, revision and counts; no financial facts, human proof or
+    message payload
+  version: v1
+  domain_group: Finance
+  async: 'No'
+- api_code: FIN-036
+  app: medops
+  method: POST
+  path: /api/method/medops.api.v1.finance.release.create_reversal
+  description: 从已过账下达准备完整冲销意图
+  request_schema: payload
+  response_schema: BudgetReleaseAcknowledgement
+  required_role: Budget manager (auditor may read); current complete source, field
+    and scope permissions
+  idempotency: Required for write
+  transaction_boundary: Single DB transaction
+  audit: Redacted status, revision and counts; no financial facts, human proof or
+    message payload
+  version: v1
+  domain_group: Finance
+  async: 'No'
+- api_code: FIN-037
+  app: medops
+  method: POST
+  path: /api/method/medops.api.v1.finance.release.revise
+  description: 修订尚未授权的预算下达或冲销意图
+  request_schema: payload
+  response_schema: BudgetReleaseAcknowledgement
+  required_role: Budget manager (auditor may read); current complete source, field
+    and scope permissions
+  idempotency: Required for write
+  transaction_boundary: Single DB transaction
+  audit: Redacted status, revision and counts; no financial facts, human proof or
+    message payload
+  version: v1
+  domain_group: Finance
+  async: 'No'
+- api_code: FIN-038
+  app: medops
+  method: POST
+  path: /api/method/medops.api.v1.finance.release.prepare
+  description: 持久化预算下达或冲销的独立人工确认预览
+  request_schema: payload
+  response_schema: BudgetReleaseHumanPreview
+  required_role: Budget manager (auditor may read); current complete source, field
+    and scope permissions
+  idempotency: Required for write
+  transaction_boundary: Single DB transaction
+  audit: Redacted status, revision and counts; no financial facts, human proof or
+    message payload
+  version: v1
+  domain_group: Finance
+  async: 'No'
+- api_code: FIN-039
+  app: medops
+  method: POST
+  path: /api/method/medops.api.v1.finance.release.confirm
+  description: 消费当前网页会话确认并原子保存授权和待执行消息
+  request_schema: payload
+  response_schema: BudgetReleaseAuthorizationAcknowledgement
+  required_role: Budget manager (auditor may read); current complete source, field
+    and scope permissions
+  idempotency: Required for write
+  transaction_boundary: Single DB transaction
+  audit: Redacted status, revision and counts; no financial facts, human proof or
+    message payload
+  version: v1
+  domain_group: Finance
+  async: 'No'
+- api_code: FIN-040
+  app: medops
+  method: GET
+  path: /api/method/medops.api.v1.finance.release.get_record
+  description: 按当前完整来源及字段权限读取预算下达凭证
+  request_schema: name
+  response_schema: BudgetReleaseRecord
+  required_role: Budget manager (auditor may read); current complete source, field
+    and scope permissions
+  idempotency: Not required (read-only)
+  transaction_boundary: Read-only
+  audit: Redacted status, revision and counts; no financial facts, human proof or
+    message payload
+  version: v1
+  domain_group: Finance
+  async: 'No'

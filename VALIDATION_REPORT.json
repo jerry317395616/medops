@@ -7,10 +7,10 @@
 	"architecture_decisions": [
 		"ADR-0030"
 	],
-	"current_scope": "Four runtime model files, exact source and evidence guards, preparation/revision services and Outbox wrappers implemented. Current migrations/native flows are pending verification. Human confirmation, queued financial execution, department statements and API/UI remain unfinished.",
+	"current_scope": "Runtime models migrated twice and real preparation verified privately. Independent human confirmation, durable authorization, atomic Pending Outbox and six APIs implemented, awaiting focused native verification. Queued financial execution, department statements and UI remain unfinished.",
 	"checks": {
-		"pure_tests_expected": 412,
-		"complete_frappe_tests_expected": 375,
+		"pure_tests_expected": 415,
+		"complete_frappe_tests_expected": 382,
 		"exact_foundation_pure_tests_passed": 21,
 		"native_foundation": {
 			"status": "passed",
@@ -34,7 +34,7 @@
 		"protected_ci": "not run for COD-033",
 		"local_quality": "all passed at 5ef0fa3e2ead0fb50f938077b565dc4031ab2d2f",
 		"pure_tests_passed": 405,
-		"complete_frappe_tests": "367 expected; full current suite pending concrete release slice",
+		"complete_frappe_tests": "382 expected; full current suite pending complete vertical slice",
 		"current_protocol": {
 			"status": "full local quality passed",
 			"tests": 11,
@@ -42,7 +42,7 @@
 			"source_commit": "5ef0fa3e2ead0fb50f938077b565dc4031ab2d2f"
 		},
 		"current_runtime_models": {
-			"status": "implemented; migration and native verification pending",
+			"status": "two private migrations passed at daaed16; old budget and user-role hashes unchanged; no financial seeds",
 			"runtime_models": 42,
 			"design_fields": 10028,
 			"models": [
@@ -57,7 +57,26 @@
 				"Outbox stale-snapshot full transaction retry"
 			]
 		},
-		"current_local_quality": "pending; previous405 quality5ef0fa3 and native20 at77da19b remain foundation evidence only"
+		"current_local_quality": "Full412 passed at daaed16; current415 quality pending",
+		"runtime_native_partial": {
+			"source_commit": "daaed16f7765c0fb2e796fa100ca817970585499",
+			"passed_counts": [
+				5,
+				12,
+				9
+			],
+			"repeated_migrations": 2,
+			"preparation_commit": "10c2a4a3d048307c6673430bdd6cc6f125acafe7",
+			"preparation_passed": 1,
+			"full_suite": false,
+			"public_sites_untouched": true
+		},
+		"current_human_authorization": {
+			"status": "implemented; focused native verification pending",
+			"native_tests_expected": 7,
+			"public_deployment": false,
+			"asynchronous_posting": false
+		}
 	},
 	"previous_verified_release": {
 		"schema_version": 1,

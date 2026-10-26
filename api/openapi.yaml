@@ -7681,6 +7681,409 @@ paths:
                   type: string
                   minLength: 1
                   maxLength: 140
+  /api/method/medops.api.v1.finance.release.create:
+    post:
+      operationId: fin_035
+      summary: 从完整已批准汇总准备预算下达意图
+      tags:
+      - medops
+      security:
+      - sessionAuth: []
+      responses:
+        '200':
+          description: Current authorized result
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: false
+                required:
+                - message
+                properties:
+                  message:
+                    $ref: '#/components/schemas/BudgetReleaseAcknowledgement'
+        '400':
+          description: Invalid bounded request or missing explicit acknowledgement
+        '401':
+          description: Authentication required
+        '403':
+          description: Current role, source, field, scope, actor and same web-session
+            proof required
+        '404':
+          description: Reference or current matrix unavailable
+        '409':
+          description: Expired proof, changed policy, stale revision, consumed confirmation
+            or idempotency conflict
+      x-api-code: FIN-035
+      x-idempotency: Required for write
+      x-transaction-boundary: Single DB transaction
+      description: Preparation is an unposted intent. Confirmation requires cookie/CSRF
+        and explicit human acknowledgement, and atomically persists durable authorization
+        plus Pending Outbox. It does not post ledger entries; asynchronous financial
+        execution remains under development.
+      parameters:
+      - name: Idempotency-Key
+        in: header
+        required: true
+        schema:
+          type: string
+          minLength: 1
+          maxLength: 140
+      - name: X-Frappe-CSRF-Token
+        in: header
+        required: true
+        schema:
+          type: string
+          minLength: 1
+          maxLength: 140
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required:
+              - payload
+              properties:
+                payload:
+                  $ref: '#/components/schemas/BudgetReleaseCommand'
+                correlation_id:
+                  type: string
+                  minLength: 1
+                  maxLength: 140
+  /api/method/medops.api.v1.finance.release.create_reversal:
+    post:
+      operationId: fin_036
+      summary: 从已过账下达准备完整冲销意图
+      tags:
+      - medops
+      security:
+      - sessionAuth: []
+      responses:
+        '200':
+          description: Current authorized result
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: false
+                required:
+                - message
+                properties:
+                  message:
+                    $ref: '#/components/schemas/BudgetReleaseAcknowledgement'
+        '400':
+          description: Invalid bounded request or missing explicit acknowledgement
+        '401':
+          description: Authentication required
+        '403':
+          description: Current role, source, field, scope, actor and same web-session
+            proof required
+        '404':
+          description: Reference or current matrix unavailable
+        '409':
+          description: Expired proof, changed policy, stale revision, consumed confirmation
+            or idempotency conflict
+      x-api-code: FIN-036
+      x-idempotency: Required for write
+      x-transaction-boundary: Single DB transaction
+      description: Preparation is an unposted intent. Confirmation requires cookie/CSRF
+        and explicit human acknowledgement, and atomically persists durable authorization
+        plus Pending Outbox. It does not post ledger entries; asynchronous financial
+        execution remains under development.
+      parameters:
+      - name: Idempotency-Key
+        in: header
+        required: true
+        schema:
+          type: string
+          minLength: 1
+          maxLength: 140
+      - name: X-Frappe-CSRF-Token
+        in: header
+        required: true
+        schema:
+          type: string
+          minLength: 1
+          maxLength: 140
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required:
+              - payload
+              properties:
+                payload:
+                  $ref: '#/components/schemas/BudgetReleaseRevisionCommand'
+                correlation_id:
+                  type: string
+                  minLength: 1
+                  maxLength: 140
+  /api/method/medops.api.v1.finance.release.revise:
+    post:
+      operationId: fin_037
+      summary: 修订尚未授权的预算下达或冲销意图
+      tags:
+      - medops
+      security:
+      - sessionAuth: []
+      responses:
+        '200':
+          description: Current authorized result
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: false
+                required:
+                - message
+                properties:
+                  message:
+                    $ref: '#/components/schemas/BudgetReleaseAcknowledgement'
+        '400':
+          description: Invalid bounded request or missing explicit acknowledgement
+        '401':
+          description: Authentication required
+        '403':
+          description: Current role, source, field, scope, actor and same web-session
+            proof required
+        '404':
+          description: Reference or current matrix unavailable
+        '409':
+          description: Expired proof, changed policy, stale revision, consumed confirmation
+            or idempotency conflict
+      x-api-code: FIN-037
+      x-idempotency: Required for write
+      x-transaction-boundary: Single DB transaction
+      description: Preparation is an unposted intent. Confirmation requires cookie/CSRF
+        and explicit human acknowledgement, and atomically persists durable authorization
+        plus Pending Outbox. It does not post ledger entries; asynchronous financial
+        execution remains under development.
+      parameters:
+      - name: Idempotency-Key
+        in: header
+        required: true
+        schema:
+          type: string
+          minLength: 1
+          maxLength: 140
+      - name: X-Frappe-CSRF-Token
+        in: header
+        required: true
+        schema:
+          type: string
+          minLength: 1
+          maxLength: 140
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required:
+              - payload
+              properties:
+                payload:
+                  $ref: '#/components/schemas/BudgetReleaseRevisionCommand'
+                correlation_id:
+                  type: string
+                  minLength: 1
+                  maxLength: 140
+  /api/method/medops.api.v1.finance.release.prepare:
+    post:
+      operationId: fin_038
+      summary: 持久化预算下达或冲销的独立人工确认预览
+      tags:
+      - medops
+      security:
+      - sessionAuth: []
+      responses:
+        '200':
+          description: Current authorized result
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: false
+                required:
+                - message
+                properties:
+                  message:
+                    $ref: '#/components/schemas/BudgetReleaseHumanPreview'
+        '400':
+          description: Invalid bounded request or missing explicit acknowledgement
+        '401':
+          description: Authentication required
+        '403':
+          description: Current role, source, field, scope, actor and same web-session
+            proof required
+        '404':
+          description: Reference or current matrix unavailable
+        '409':
+          description: Expired proof, changed policy, stale revision, consumed confirmation
+            or idempotency conflict
+      x-api-code: FIN-038
+      x-idempotency: Required for write
+      x-transaction-boundary: Single DB transaction
+      description: Preparation is an unposted intent. Confirmation requires cookie/CSRF
+        and explicit human acknowledgement, and atomically persists durable authorization
+        plus Pending Outbox. It does not post ledger entries; asynchronous financial
+        execution remains under development.
+      parameters:
+      - name: Idempotency-Key
+        in: header
+        required: true
+        schema:
+          type: string
+          minLength: 1
+          maxLength: 140
+      - name: X-Frappe-CSRF-Token
+        in: header
+        required: true
+        schema:
+          type: string
+          minLength: 1
+          maxLength: 140
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required:
+              - payload
+              properties:
+                payload:
+                  $ref: '#/components/schemas/BudgetReleasePreviewCommand'
+                correlation_id:
+                  type: string
+                  minLength: 1
+                  maxLength: 140
+  /api/method/medops.api.v1.finance.release.confirm:
+    post:
+      operationId: fin_039
+      summary: 消费当前网页会话确认并原子保存授权和待执行消息
+      tags:
+      - medops
+      security:
+      - sessionAuth: []
+      responses:
+        '200':
+          description: Current authorized result
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: false
+                required:
+                - message
+                properties:
+                  message:
+                    $ref: '#/components/schemas/BudgetReleaseAuthorizationAcknowledgement'
+        '400':
+          description: Invalid bounded request or missing explicit acknowledgement
+        '401':
+          description: Authentication required
+        '403':
+          description: Current role, source, field, scope, actor and same web-session
+            proof required
+        '404':
+          description: Reference or current matrix unavailable
+        '409':
+          description: Expired proof, changed policy, stale revision, consumed confirmation
+            or idempotency conflict
+      x-api-code: FIN-039
+      x-idempotency: Required for write
+      x-transaction-boundary: Single DB transaction
+      description: Preparation is an unposted intent. Confirmation requires cookie/CSRF
+        and explicit human acknowledgement, and atomically persists durable authorization
+        plus Pending Outbox. It does not post ledger entries; asynchronous financial
+        execution remains under development.
+      parameters:
+      - name: Idempotency-Key
+        in: header
+        required: true
+        schema:
+          type: string
+          minLength: 1
+          maxLength: 140
+      - name: X-Frappe-CSRF-Token
+        in: header
+        required: true
+        schema:
+          type: string
+          minLength: 1
+          maxLength: 140
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required:
+              - payload
+              properties:
+                payload:
+                  $ref: '#/components/schemas/BudgetHumanConfirmation'
+                correlation_id:
+                  type: string
+                  minLength: 1
+                  maxLength: 140
+  /api/method/medops.api.v1.finance.release.get_record:
+    get:
+      operationId: fin_040
+      summary: 按当前完整来源及字段权限读取预算下达凭证
+      tags:
+      - medops
+      security:
+      - sessionAuth: []
+      responses:
+        '200':
+          description: Current authorized result
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: false
+                required:
+                - message
+                properties:
+                  message:
+                    $ref: '#/components/schemas/BudgetReleaseRecord'
+        '400':
+          description: Invalid bounded request or missing explicit acknowledgement
+        '401':
+          description: Authentication required
+        '403':
+          description: Current role, source, field, scope, actor and same web-session
+            proof required
+        '404':
+          description: Reference or current matrix unavailable
+        '409':
+          description: Expired proof, changed policy, stale revision, consumed confirmation
+            or idempotency conflict
+      x-api-code: FIN-040
+      x-idempotency: Not required (read-only)
+      x-transaction-boundary: Read-only
+      parameters:
+      - name: name
+        in: query
+        required: true
+        schema:
+          type: string
+          minLength: 1
+          maxLength: 140
+      description: Preparation is an unposted intent. Confirmation requires cookie/CSRF
+        and explicit human acknowledgement, and atomically persists durable authorization
+        plus Pending Outbox. It does not post ledger entries; asynchronous financial
+        execution remains under development.
 components:
   headers:
     CorrelationId:
@@ -7725,6 +8128,384 @@ components:
         maxLength: 140
         pattern: ^[A-Za-z0-9][A-Za-z0-9._:/-]{7,139}$
   schemas:
+    BudgetReleaseAcknowledgement:
+      type: object
+      additionalProperties: false
+      required:
+      - doctype
+      - name
+      - revision
+      - operation
+      - status
+      - idempotency_replayed
+      - correlation_id
+      - request_id
+      properties:
+        doctype:
+          type: string
+          const: HRP Budget Release
+        name:
+          type: string
+          pattern: ^[0-9a-f]{64}$
+        revision:
+          type: integer
+          minimum: 1
+        operation:
+          type: string
+          enum:
+          - Release
+          - Reverse
+        status:
+          type: string
+          enum:
+          - Prepared
+          - Authorized
+          - Posted
+        idempotency_replayed:
+          type: boolean
+        correlation_id:
+          type: string
+          minLength: 1
+          maxLength: 140
+        request_id:
+          type: string
+          minLength: 1
+          maxLength: 140
+    BudgetReleaseAuthorizationAcknowledgement:
+      type: object
+      additionalProperties: false
+      required:
+      - doctype
+      - name
+      - revision
+      - operation
+      - status
+      - idempotency_replayed
+      - correlation_id
+      - request_id
+      - decision
+      properties:
+        doctype:
+          type: string
+          const: HRP Budget Release
+        name:
+          type: string
+          pattern: ^[0-9a-f]{64}$
+        revision:
+          type: integer
+          minimum: 1
+        operation:
+          type: string
+          enum:
+          - Release
+          - Reverse
+        status:
+          type: string
+          enum:
+          - Prepared
+          - Authorized
+          - Posted
+        idempotency_replayed:
+          type: boolean
+        correlation_id:
+          type: string
+          minLength: 1
+          maxLength: 140
+        request_id:
+          type: string
+          minLength: 1
+          maxLength: 140
+        decision:
+          type: string
+          minLength: 1
+          maxLength: 140
+    BudgetReleaseCommand:
+      type: object
+      additionalProperties: false
+      required:
+      - approval_case
+      - expected_approval_revision
+      - posting_date
+      - reason
+      properties:
+        approval_case:
+          type: string
+          minLength: 1
+          maxLength: 140
+        expected_approval_revision:
+          type: integer
+          minimum: 2
+        posting_date:
+          type: string
+          format: date
+        reason:
+          type: string
+          minLength: 1
+          maxLength: 1000
+    BudgetReleaseRevisionCommand:
+      type: object
+      additionalProperties: false
+      required:
+      - release
+      - expected_revision
+      - posting_date
+      - reason
+      properties:
+        release:
+          type: string
+          minLength: 1
+          maxLength: 140
+        expected_revision:
+          type: integer
+          minimum: 1
+        posting_date:
+          type: string
+          format: date
+        reason:
+          type: string
+          minLength: 1
+          maxLength: 1000
+    BudgetReleasePreviewCommand:
+      type: object
+      additionalProperties: false
+      required:
+      - release
+      - expected_revision
+      properties:
+        release:
+          type: string
+          minLength: 1
+          maxLength: 140
+        expected_revision:
+          type: integer
+          minimum: 1
+    BudgetReleaseHumanPreview:
+      type: object
+      additionalProperties: false
+      required:
+      - confirmation
+      - proof
+      - expires_at
+      - release
+      - release_revision
+      - action
+      - reason
+      - posting_date
+      - total_amount
+      - currency
+      - line_count
+      - intent_digest
+      - idempotency_replayed
+      - correlation_id
+      - request_id
+      properties:
+        confirmation:
+          type: string
+          minLength: 1
+          maxLength: 140
+        proof:
+          type: string
+          pattern: ^[A-Za-z0-9_-]{32,128}$
+          description: Keep only in page memory; short-lived current actor and SID proof.
+        expires_at:
+          type: string
+        release:
+          type: string
+          pattern: ^[0-9a-f]{64}$
+        release_revision:
+          type: integer
+          minimum: 1
+        action:
+          type: string
+          enum:
+          - Release
+          - Reverse
+        reason:
+          type: string
+          minLength: 1
+          maxLength: 1000
+        posting_date:
+          type: string
+          format: date
+        total_amount:
+          type: string
+          pattern: ^-?(0|[1-9][0-9]{0,14})(\.[0-9]{1,9})?$
+        currency:
+          type: string
+          minLength: 1
+          maxLength: 140
+        line_count:
+          type: integer
+          minimum: 1
+          maximum: 50000
+        intent_digest:
+          type: string
+          pattern: ^[0-9a-f]{64}$
+        idempotency_replayed:
+          type: boolean
+        correlation_id:
+          type: string
+          minLength: 1
+          maxLength: 140
+        request_id:
+          type: string
+          minLength: 1
+          maxLength: 140
+    BudgetReleaseRecord:
+      type: object
+      additionalProperties: false
+      required:
+      - name
+      - operation
+      - subject
+      - company
+      - hospital
+      - organization_version
+      - organization_unit
+      - fiscal_year
+      - currency
+      - currency_precision
+      - amount_schema_version
+      - total_amount
+      - line_count
+      - source_submission
+      - source_approval
+      - source_approval_revision
+      - posting_date
+      - reason
+      - prepared_by
+      - prepared_at
+      - status
+      - revision
+      - authorized_by
+      - authorized_at
+      - authorization_decision
+      - posted_at
+      - ledger_count
+      - reversal_of
+      properties:
+        name:
+          type: string
+          pattern: ^[0-9a-f]{64}$
+        operation:
+          type: string
+          enum:
+          - Release
+          - Reverse
+        subject:
+          type:
+          - string
+          - 'null'
+          maxLength: 140
+        company:
+          type:
+          - string
+          - 'null'
+          maxLength: 140
+        hospital:
+          type:
+          - string
+          - 'null'
+          maxLength: 140
+        organization_version:
+          type:
+          - string
+          - 'null'
+          maxLength: 140
+        organization_unit:
+          type:
+          - string
+          - 'null'
+          maxLength: 140
+        fiscal_year:
+          type:
+          - string
+          - 'null'
+          maxLength: 140
+        currency:
+          type:
+          - string
+          - 'null'
+          maxLength: 140
+        currency_precision:
+          type: integer
+          minimum: 0
+          maximum: 9
+        amount_schema_version:
+          type: integer
+          const: 2
+        total_amount:
+          type: string
+          pattern: ^-?(0|[1-9][0-9]{0,14})(\.[0-9]{1,9})?$
+        line_count:
+          type: integer
+          minimum: 1
+          maximum: 50000
+        source_submission:
+          type:
+          - string
+          - 'null'
+          maxLength: 140
+        source_approval:
+          type:
+          - string
+          - 'null'
+          maxLength: 140
+        source_approval_revision:
+          type: integer
+          minimum: 2
+        posting_date:
+          type: string
+          format: date
+        reason:
+          type: string
+          minLength: 1
+          maxLength: 1000
+        prepared_by:
+          type:
+          - string
+          - 'null'
+          maxLength: 140
+        prepared_at:
+          type:
+          - string
+          - 'null'
+        status:
+          type: string
+          enum:
+          - Prepared
+          - Authorized
+          - Posted
+        revision:
+          type: integer
+          minimum: 1
+        authorized_by:
+          type:
+          - string
+          - 'null'
+          maxLength: 140
+        authorized_at:
+          type:
+          - string
+          - 'null'
+        authorization_decision:
+          type:
+          - string
+          - 'null'
+          maxLength: 140
+        posted_at:
+          type:
+          - string
+          - 'null'
+        ledger_count:
+          type: integer
+          minimum: 0
+          maximum: 50000
+        reversal_of:
+          type:
+          - string
+          - 'null'
+          maxLength: 140
     FrappeResponse:
       type: object
       properties:
