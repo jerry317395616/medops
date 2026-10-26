@@ -6,9 +6,11 @@ from contextvars import ContextVar
 import frappe
 
 from medops.common.budget_ledger import RELEASE, RELEASE_EVENT_PUBLIC_FIELDS, RELEASE_PUBLIC_FIELDS
+from medops.common.budget_release_control import release_mutation
 from medops.common.error_catalog import IoneApplicationError
 from medops.hrp_budget.services.access_graph import read_graph
 from medops.hrp_budget.services.planning_access import MANAGER_ROLES
+from medops.hrp_budget.services.release_documents import require_release_record
 from medops.hrp_budget.services.release_evidence import validate_release_evidence
 from medops.hrp_budget.services.release_sources import approved_release_source, stored_release_facts
 from medops.hrp_workflow_authorization.services.rule_contracts import can_read_named_fields
@@ -55,9 +57,18 @@ def release_permission(doc, user=None, ptype=None, debug=False):
 		or not RELEASE_READ_ROLES.intersection(frappe.get_roles(user))
 	):
 		return False
-	if not doc.name or not frappe.db.exists(RELEASE, doc.name):
+	if not doc.name:
 		return False
-	doc = frappe.get_doc(RELEASE, doc.name)
+	if not frappe.db.exists(RELEASE, doc.name):
+		mutation = release_mutation()
+		if not mutation or mutation.operation != "prepare" or mutation.facts.identity_key != doc.name:
+			return False
+		try:
+			require_release_record(doc, {"prepare"})
+		except IoneApplicationError:
+			return False
+	else:
+		doc = frappe.get_doc(RELEASE, doc.name)
 	export = ptype in {"export", "print"}
 	if not scope_allowed(doc, user=user, action="export" if export else "read") or not can_read_named_fields(
 		doc, set(RELEASE_PUBLIC_FIELDS) - {"name"}, user=user

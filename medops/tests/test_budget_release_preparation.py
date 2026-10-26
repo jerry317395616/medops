@@ -12,13 +12,53 @@ from medops.common.budget_ledger import (
 	build_release_request,
 	build_revise_release_request,
 )
+from medops.common.business_rules import rule_payload
+from medops.common.domain_service import idempotency_record_name
 from medops.common.error_catalog import IoneApplicationError
 from medops.common.integration_outbox import OUTBOX
 from medops.hrp_budget.services.link_titles import get_link_title
-from medops.hrp_budget.services.release import create_budget_release, revise_budget_release
+from medops.hrp_budget.services.release import (
+	CreateBudgetRelease,
+	create_budget_release,
+	revise_budget_release,
+)
 from medops.hrp_budget.services.release_access import get_release
+from medops.hrp_workflow_authorization.services.business_rules import UpsertBusinessRule
 from medops.tests import test_budget_consolidation as source_fixture
 from medops.tests.test_budget_submission import fixture_request
+
+
+def release_rule_fixtures():
+	assert frappe.session.user == "Administrator" and source_fixture.COMPANY.startswith("COD-")
+	for action in ("create", "amend", "release", "post"):
+		code = "COD033-RELEASE-" + action.upper()
+		if frappe.db.exists("HRP Business Rule", code):
+			continue
+		policy = rule_payload(
+			dict(
+				code=code,
+				display_name="合成测试预算执行规则",
+				target_doctype=RELEASE,
+				target_action=action,
+				company=source_fixture.COMPANY,
+				hospital=source_fixture.HOSPITAL,
+				organization_unit=None,
+				valid_from="2026-01-01",
+				severity="Block",
+				assertion_json={
+					"all": [
+						{"field": "amount_schema_version", "op": "eq", "value": "2"},
+						{"field": "line_count", "op": "gt", "value": "0"},
+						{"field": "total_amount", "op": "gte", "value": "-999999999999999.999999999"},
+						{"field": "total_amount", "op": "lte", "value": "999999999999999.999999999"},
+					]
+				},
+			)
+		)
+		UpsertBusinessRule().execute(
+			{"policy": policy, "expected_revision": 0}, idempotency_key=fixture_request("release-rule")
+		)
+	frappe.local.db.commit()
 
 
 class TestBudgetReleasePreparation(FrappeAPITestCase):
@@ -35,6 +75,7 @@ class TestBudgetReleasePreparation(FrappeAPITestCase):
 	def setUpClass(cls):
 		super().setUpClass()
 		cls.org, cls.units, cls.value, cls.fund = source_fixture.fixtures()
+		release_rule_fixtures()
 
 	def test_real_approved_source_creates_and_revises_only_a_prepared_intent(self):
 		self.sources = self.new_sources()
@@ -58,6 +99,33 @@ class TestBudgetReleasePreparation(FrappeAPITestCase):
 		)
 		key = fixture_request("release-prepare")
 		try:
+			frappe.set_user("Administrator")
+			rule = frappe.get_doc("HRP Business Rule", "COD033-RELEASE-CREATE")
+			original_policy, _ = rule.runtime_definition()
+			UpsertBusinessRule().execute(
+				{
+					"policy": rule_payload(dict(original_policy, enabled=False)),
+					"expected_revision": int(rule.revision),
+				},
+				idempotency_key=fixture_request("release-rule-disable"),
+			)
+			frappe.set_user(source_fixture.MANAGER)
+			blocked_key = fixture_request("release-missing-rule")
+			with self.assertRaises(IoneApplicationError) as raised:
+				create_budget_release(command, idempotency_key=blocked_key)
+			self.assertEqual(raised.exception.code, "IONE-CORE-0006")
+			self.assertFalse(
+				frappe.db.exists(
+					"HRP Service Idempotency",
+					idempotency_record_name(CreateBudgetRelease.definition.name, blocked_key),
+				)
+			)
+			frappe.set_user("Administrator")
+			UpsertBusinessRule().execute(
+				{"policy": original_policy, "expected_revision": int(rule.revision) + 1},
+				idempotency_key=fixture_request("release-rule-restore"),
+			)
+			frappe.set_user(source_fixture.MANAGER)
 			first = create_budget_release(command, idempotency_key=key)
 			second = create_budget_release(command, idempotency_key=key)
 			self.assertTrue(second["idempotency_replayed"])

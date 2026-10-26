@@ -282,7 +282,7 @@ class ReviseBudgetRelease(ReleasePreparationService[ReviseReleaseRequest]):
 			expected_release_record(RELEASE, values),
 		):
 			doc.update(values)
-			enforce_business_rules(doc, "update")
+			enforce_business_rules(doc, "amend")
 			doc.save(ignore_permissions=True)
 		return release_result(doc)
 
