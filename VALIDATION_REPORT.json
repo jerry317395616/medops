@@ -518,6 +518,15 @@
 			"first_optimized_profiled_seconds": 53.786,
 			"first_optimized_candidates": 252,
 			"document_keys": "SHA256 of all supplied document fields; explicit actor/type; no serialized private snapshot copy retained as key"
+		},
+		"confirmation_privacy": {
+			"source": "e8744e9a257aced034a3b38eb86080115dc42d63",
+			"status": "native_failed_fixture_contamination",
+			"native_tests": 8,
+			"existing_tests_passed": 7,
+			"failed_subtests": 3,
+			"repeat_migrations": 2,
+			"reason": "Native traceback expanded test closure preview containing deliberately invalid canary. Remove that closure and verify native v1 suffix/v2 aliases. No live secret values in test output."
 		}
 	},
 	"previous_verified_release": {

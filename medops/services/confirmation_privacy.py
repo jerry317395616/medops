@@ -17,7 +17,8 @@ def protect_confirmation_request() -> None:
 	path = request.path.rstrip("/")
 	command = form.get("cmd")
 	methods = {command} if isinstance(command, str) else set()
-	methods.update(path[len(prefix) :] for prefix in RPC_PREFIXES if path.startswith(prefix))
+	# Pinned v1 RPC strips any suffix after the first slash for compatibility.
+	methods.update(path[len(prefix) :].split("/")[0] for prefix in RPC_PREFIXES if path.startswith(prefix))
 	if methods.intersection(CONFIRM_METHODS) and "payload" in form:
 		if not isinstance(form["payload"], ConfirmationPayload):
 			form["payload"] = ConfirmationPayload(form["payload"])

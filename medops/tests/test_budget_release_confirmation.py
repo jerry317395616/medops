@@ -129,7 +129,9 @@ class TestBudgetReleaseConfirmation(FrappeAPITestCase):
 			del kwargs
 			# Exercise the native database diagnostic path before the exception
 			# unwinds, then the ordinary WSGI 508 error-snapshot path as well.
-			self.assertTrue(command.proof == preview["proof"], "Opaque RPC body lost proof bytes")
+			# Do not close over preview: native traceback printers include closure
+			# variables, which would inject the test's own raw canary into the trace.
+			self.assertTrue(command.proof == "diagnostic_" + "a" * 33, "Opaque RPC body lost proof bytes")
 			captured.append(frappe.as_json(sanitized_dict(frappe.form_dict)))
 			telemetry.append(
 				frappe.as_json(frappe.request.json if frappe.request.is_json else frappe.request.form)
@@ -140,8 +142,14 @@ class TestBudgetReleaseConfirmation(FrappeAPITestCase):
 				frappe.log_error("Query deadlocked", defer_insert=True)
 				raise
 
-		for endpoint, transport in (("release", "json"), ("release", "form"), ("approval", "json")):
-			with self.subTest(endpoint=endpoint, transport=transport):
+		for endpoint, transport, route in (
+			("release", "json", "default"),
+			("release", "form", "default"),
+			("approval", "json", "default"),
+			("release", "json", "v1_suffix"),
+			("approval", "json", "v2"),
+		):
+			with self.subTest(endpoint=endpoint, transport=transport, route=route):
 				captured.clear()
 				telemetry.clear()
 				payload = dict(confirmation=preview["confirmation"], proof=preview["proof"], acknowledge=True)
@@ -150,6 +158,11 @@ class TestBudgetReleaseConfirmation(FrappeAPITestCase):
 					if transport == "json"
 					else {"data": {"payload": json.dumps(payload)}}
 				)
+				path = self.method(source_fixture.PREFIX + endpoint + ".confirm")
+				if route == "v1_suffix":
+					path = path.replace("/api/method/", "/api/v1/method/") + "/legacy"
+				elif route == "v2":
+					path = path.replace("/api/method/", "/api/v2/method/")
 				with (
 					patch.object(ErrorLog, "deferred_insert", new=save_diagnostic),
 					patch(
@@ -164,7 +177,7 @@ class TestBudgetReleaseConfirmation(FrappeAPITestCase):
 				):
 					response = make_request(
 						target=self.TEST_CLIENT.post,
-						args=(self.method(source_fixture.PREFIX + endpoint + ".confirm"),),
+						args=(path,),
 						kwargs={
 							"headers": {"Idempotency-Key": fixture_request("confirmation-privacy")},
 							**options,
