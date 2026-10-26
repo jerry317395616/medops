@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 from contextlib import nullcontext
 from unittest.mock import patch
 
@@ -109,6 +110,74 @@ class TestBudgetReleaseConfirmation(FrappeAPITestCase):
 				"confirmation_hash",
 			}.intersection(public)
 		)
+		self.assert_unposted()
+
+	def test_native_retry_diagnostics_hide_confirmation_body_and_preserve_508(self):
+		from frappe.core.doctype.error_log.error_log import ErrorLog
+		from frappe.tests.test_api import make_request
+		from frappe.utils.logger import sanitized_dict
+
+		# The canary is deliberately not a valid persisted proof for any action.
+		preview = dict(confirmation="synthetic-confirmation-diagnostic", proof="diagnostic_" + "a" * 33)
+		captured = []
+		telemetry = []
+
+		def save_diagnostic(doc):
+			captured.append(frappe.as_json(doc.as_dict()))
+
+		def fail_after_validation(command, **kwargs):
+			del kwargs
+			# Exercise the native database diagnostic path before the exception
+			# unwinds, then the ordinary WSGI 508 error-snapshot path as well.
+			self.assertTrue(command.proof == preview["proof"], "Opaque RPC body lost proof bytes")
+			captured.append(frappe.as_json(sanitized_dict(frappe.form_dict)))
+			telemetry.append(
+				frappe.as_json(frappe.request.json if frappe.request.is_json else frappe.request.form)
+			)
+			try:
+				raise frappe.QueryDeadlockError("Synthetic confirmation retry diagnostic")
+			except frappe.QueryDeadlockError:
+				frappe.log_error("Query deadlocked", defer_insert=True)
+				raise
+
+		for endpoint, transport in (("release", "json"), ("release", "form"), ("approval", "json")):
+			with self.subTest(endpoint=endpoint, transport=transport):
+				captured.clear()
+				telemetry.clear()
+				payload = dict(confirmation=preview["confirmation"], proof=preview["proof"], acknowledge=True)
+				options = (
+					{"json": {"payload": payload}}
+					if transport == "json"
+					else {"data": {"payload": json.dumps(payload)}}
+				)
+				with (
+					patch.object(ErrorLog, "deferred_insert", new=save_diagnostic),
+					patch(
+						"frappe.utils.sentry.capture_exception", side_effect=lambda **kw: telemetry.append(kw)
+					),
+					patch(
+						"medops.hrp_budget.services.release_confirmation.confirm_release_authorization"
+						if endpoint == "release"
+						else "medops.hrp_budget.services.approval.confirm_decision",
+						side_effect=fail_after_validation,
+					),
+				):
+					response = make_request(
+						target=self.TEST_CLIENT.post,
+						args=(self.method(source_fixture.PREFIX + endpoint + ".confirm"),),
+						kwargs={
+							"headers": {"Idempotency-Key": fixture_request("confirmation-privacy")},
+							**options,
+						},
+					)
+				self.assertEqual(response.status_code, 508)
+				self.assertEqual(response.get_json()["exc_type"], "QueryDeadlockError")
+				self.assertGreaterEqual(len(captured), 3)
+				self.assertGreaterEqual(len(telemetry), 3)
+				for text in (*captured, frappe.as_json(telemetry), response.get_data(as_text=True)):
+					self.assertFalse(preview["proof"] in text, "Confirmation proof leaked into diagnostic")
+				self.assertTrue(any("QueryDeadlockError" in text for text in captured))
+		self.assertEqual(frappe.db.count(OUTBOX, {"reference_name": self.release}), 0)
 		self.assert_unposted()
 
 	def test_acknowledgement_proof_session_and_revision_are_all_required(self):

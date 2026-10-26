@@ -28,7 +28,10 @@ after_install = "medops.setup.install.after_install"
 after_migrate = "medops.setup.install.after_migrate"
 before_uninstall = "medops.setup.install.before_uninstall"
 
-before_request = ["medops.services.audit_context.start_http_audit_context"]
+before_request = [
+	"medops.services.confirmation_privacy.protect_confirmation_request",
+	"medops.services.audit_context.start_http_audit_context",
+]
 after_request = ["medops.services.audit_context.finish_http_audit_context"]
 before_job = ["medops.services.audit_context.start_job_audit_context"]
 after_job = ["medops.services.audit_context.finish_job_audit_context"]

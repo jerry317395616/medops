@@ -9,10 +9,10 @@
 		"ADR-0031",
 		"ADR-0032"
 	],
-	"current_scope": "Prior source0898b5d full441 quality passed. Same252 directory profiled254.195s at4f16f78 and53.786s at0898b5d; complete-source/permission checks retained. Further full-document-bound submission/plan/version read-phase memoization implemented; native51, UI, full437/remaining contention/release pending.",
+	"current_scope": "94be679 joint51 [14,7,9,9,12] and full441 quality passed; same252 directory profile43.574s (baseline254.195s), still no capacity acceptance. Transition execution-wins produced native508, requiring fresh whole-HTTP retry; original harness did not accept this native contract. Private native exception diagnostic proof leakage verified. Opaque confirmation request carriers and repr-safe commands implemented; canary native diagnostic test pending. Early session/pre-hook exceptions remain outside this hook boundary. UI/full438/CI/promotion pending.",
 	"checks": {
-		"pure_tests_expected": 441,
-		"complete_frappe_tests_expected": 437,
+		"pure_tests_expected": 444,
+		"complete_frappe_tests_expected": 438,
 		"exact_foundation_pure_tests_passed": 21,
 		"native_foundation": {
 			"status": "passed",
@@ -36,7 +36,7 @@
 		"protected_ci": "not run for COD-033",
 		"local_quality": "Full439 passed at 1c987df7293a7361a27332a73d8c5bd97793dd5c",
 		"pure_tests_passed": 439,
-		"complete_frappe_tests": "437 expected; complete suite pending",
+		"complete_frappe_tests": "438 expected; complete suite pending",
 		"current_protocol": {
 			"status": "full local quality passed",
 			"tests": 11,

@@ -2,10 +2,11 @@ from __future__ import annotations
 
 from contextlib import contextmanager
 from contextvars import ContextVar
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Any
 
 from medops.common.budget_planning import object_payload
+from medops.common.confirmation_privacy import ConfirmationPayload, ConfirmationProof
 from medops.common.domain_service import canonical_json, fingerprint_json, normalize_sha256
 from medops.common.exact_money import MAX_APPROVAL_AMOUNT, exact_decimal_amount
 from medops.common.organization import (
@@ -97,11 +98,16 @@ def build_review_intent(value: object) -> ReviewIntent:
 @dataclass(frozen=True, slots=True)
 class HumanConfirmation:
 	confirmation: str
-	proof: str
+	proof: str = field(repr=False)
 	acknowledge: bool
+
+	def __post_init__(self):
+		object.__setattr__(self, "proof", ConfirmationProof(self.proof))
 
 
 def build_human_confirmation(value: object) -> HumanConfirmation:
+	if isinstance(value, ConfirmationPayload):
+		value = value.unwrap()
 	data = object_payload(value, {"confirmation", "proof", "acknowledge"})
 	if data.get("acknowledge") is not True:
 		raise ValueError("explicit human acknowledgement required")
