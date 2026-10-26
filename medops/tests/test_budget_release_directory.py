@@ -369,8 +369,13 @@ class TestBudgetReleaseDirectory(FrappeAPITestCase):
 		before = self.TEST_CLIENT.get_cookie("sid").value
 		self.success(self.record())
 		self.assertTrue(compare_digest(before, self.TEST_CLIENT.get_cookie("sid").value))
-		first = self.success(self.confirm(self.success(self.preview())))
+		preview = self.success(self.preview())
+		key = "directory-confirm:" + self.release
+		first = self.success(self.confirm(preview, key=key))
 		self.assertEqual(first["revision"], 2)
+		replayed = self.success(self.confirm(preview, key=key))
+		self.assertTrue(replayed["idempotency_replayed"])
+		self.assertEqual(replayed["decision"], first["decision"])
 		self.assertEqual(self.success(self.record())["revision"], 2)
 		second = self.success(self.confirm(self.success(self.preview(revision=2))))
 		self.assertEqual(second["revision"], 3)
@@ -379,4 +384,5 @@ class TestBudgetReleaseDirectory(FrappeAPITestCase):
 			(current["status"], current["authorization_decision"]), ("Authorized", second["decision"])
 		)
 		self.assertNotEqual(first["decision"], second["decision"])
+		self.denied(self.confirm(preview, key=key), "IONE-CORE-0005", (409,))
 		self.assertEqual(frappe.db.count(LEDGER, {"voucher_no": self.release}), 0)
