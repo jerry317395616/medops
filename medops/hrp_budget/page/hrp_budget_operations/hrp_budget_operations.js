@@ -257,7 +257,7 @@ frappe.pages["hrp-budget-operations"].on_page_load = (wrapper) => {
 			for (const [label, value] of [
 				["凭证编号", doc.name],
 				["审批单", doc.source_approval],
-				["原始组织", doc.organization_unit],
+				["凭证所属组织", doc.organization_unit],
 				["凭证修订", doc.revision],
 			])
 				fact(source, label, value);

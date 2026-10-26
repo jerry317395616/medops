@@ -7,6 +7,7 @@ frappe.pages["hrp-budget-statements"].on_page_load = function (wrapper) {
 	let requestId = 0;
 	let busy = false;
 	let current = null;
+	let filterSignature = null;
 	const definitions = [
 		["organization_unit", "原始单位", "Link", "HRP Organization Unit"],
 		["fiscal_year", "会计年度", "Link", "Fiscal Year"],
@@ -54,11 +55,21 @@ frappe.pages["hrp-budget-statements"].on_page_load = function (wrapper) {
 		buttons();
 	}
 
+	function filterChanged() {
+		if (definitions.some(([fieldname]) => !controls[fieldname])) return;
+		const signature = JSON.stringify(payload());
+		// Native Link validation can finish after the query starts and emit
+		// onchange again for the same value. Only a different query invalidates it.
+		if (signature === filterSignature) return;
+		filterSignature = signature;
+		invalidate();
+	}
+
 	for (const [fieldname, label, fieldtype, options] of definitions) {
 		const parent = $("<div class='col-sm-6 col-lg-4'></div>").appendTo(filters);
 		controls[fieldname] = frappe.ui.form.make_control({
 			parent,
-			df: { fieldname, label: __(label), fieldtype, options, onchange: invalidate },
+			df: { fieldname, label: __(label), fieldtype, options, onchange: filterChanged },
 			render_input: true,
 		});
 	}
@@ -158,6 +169,7 @@ frappe.pages["hrp-budget-statements"].on_page_load = function (wrapper) {
 
 	async function load(offset = 0) {
 		const query = payload();
+		filterSignature = JSON.stringify(query);
 		if (!query.organization_unit || !query.fiscal_year || !query.currency) {
 			frappe.msgprint(__("请先选择原始单位、会计年度和币种。"));
 			return;

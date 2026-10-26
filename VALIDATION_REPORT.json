@@ -9,7 +9,7 @@
 		"ADR-0031",
 		"ADR-0032"
 	],
-	"current_scope": "94be679 joint51 [14,7,9,9,12] and full441 quality passed; same252 directory profile43.574s (baseline254.195s), still no capacity acceptance. Transition execution-wins produced native508, requiring fresh whole-HTTP retry; original harness did not accept this native contract. Private native exception diagnostic proof leakage verified. Opaque confirmation request carriers and repr-safe commands implemented; canary native diagnostic test pending. Early session/pre-hook exceptions remain outside this hook boundary. UI/full438/CI/promotion pending.",
+	"current_scope": "65f43ef full444 quality passed;7095a40 backend identical, scoped checks and native confirmation8 all passed, including5 diagnostic transport/route variants. Real two-process confirmation/execution orders, exact508 whole-HTTP same-key retry and duplicate/replay reversal passed; new419 native log bytes contain no proof/SID/CSRF. Actual private UI revision, unchecked denial, reconfirmation, standard RQ release and reversal passed. Statement139 rows/first50 and second51-100 displayed. Frontend guard now avoids invalidation from same-value native Link callbacks; fresh-page recheck pending. Early pre-hook privacy, remaining UI/export/performance, full438/CI/promotion remain pending.",
 	"checks": {
 		"pure_tests_expected": 444,
 		"complete_frappe_tests_expected": 438,
@@ -34,8 +34,8 @@
 			"migrations": 0
 		},
 		"protected_ci": "not run for COD-033",
-		"local_quality": "Full439 passed at 1c987df7293a7361a27332a73d8c5bd97793dd5c",
-		"pure_tests_passed": 439,
+		"local_quality": "Full444 passed at65f43efd7f9030d117a69025b903f9d40c2a0344;7095a40 test-only fix scoped checks passed; current frontend scoped style/type/repository/package checks passed;browser recheck pending",
+		"pure_tests_passed": 444,
 		"complete_frappe_tests": "438 expected; complete suite pending",
 		"current_protocol": {
 			"status": "full local quality passed",
@@ -533,6 +533,64 @@
 			"local_quality": "full444 passed",
 			"native_status": "8 run;7 existing passed;new canary first4 transport/route variants passed, v2 failed test schema assumption",
 			"reason": "Pinned v2 uses errors[0].type instead of v1 exc_type; assertion updated, production source unchanged. Requires native recheck."
+		},
+		"confirmation_privacy_latest": {
+			"source_commit": "7095a4092e5e03d96a6cdab28dae4f2d9ce69cc5",
+			"status": "passed",
+			"native_tests": 8,
+			"transport_and_route_variants": 5,
+			"complete_pre_hook_privacy_acceptance": false
+		},
+		"financial_transition_races": {
+			"source_commit": "7095a4092e5e03d96a6cdab28dae4f2d9ce69cc5",
+			"status": "passed",
+			"separate_os_processes": true,
+			"normal_cookie_csrf_http": true,
+			"frappe_test_mode": false,
+			"confirmation_wins": "old execution Failed;new authorization Posted2 rows;old message Dead Letter",
+			"execution_wins": "Posted2 rows;confirm native508 QueryDeadlockError;fresh whole HTTP same-key retry409;no new decision/message",
+			"duplicate_reversal_and_replay": "2 exact reverse rows;original rows unchanged",
+			"new_log_bytes": 419,
+			"proof_sid_csrf_absent_from_new_logs": true,
+			"queue_calls_intercepted": true,
+			"real_rq_for_this_race": false,
+			"default_queue_preserved": 386
+		},
+		"ui_synthetic_latest": {
+			"source_commit": "7095a4092e5e03d96a6cdab28dae4f2d9ce69cc5",
+			"status": "partial_passed",
+			"financial_flow": [
+				"revise reason",
+				"preview exact9 decimals and2 rows",
+				"unchecked denied",
+				"explicit confirm",
+				"independent reconfirmation defaultunchecked",
+				"standard RQ2 prompts =>one Posted2 row batch",
+				"UI Posted refresh",
+				"distinct complete reversal with negative exact net",
+				"standard RQ1 prompt =>2 reversal rows;original rows and dimensions unchanged",
+				"UI reverse Posted refresh"
+			],
+			"statement": [
+				"139 rows;page1 1-50",
+				"page2 51-100;precise totals retained",
+				"row detail200 shows original unitA,cost centerA,precision9,exact99999.999999999",
+				"manager export403;visible permission failure;no grants added"
+			],
+			"entry_and_export": "entry and manager403 accepted;positive browser file download pending",
+			"source_role_integrity_scope": "after revision/first preview to financial completion",
+			"financial_count_deltas": {
+				"HRP Budget Release": 1,
+				"HRP Budget Release Entry": 5,
+				"HRP Budget Ledger": 4,
+				"HRP Integration Outbox": 3
+			},
+			"old_budget_rows_and_roles_unchanged": true,
+			"default_queue_preserved": 386,
+			"long_after": 0,
+			"workers_after": 0,
+			"public_sites_untouched": true,
+			"known_ui_issue": "first query discarded by late same-value Link onchange;guard implemented,not yet browser rechecked"
 		}
 	},
 	"previous_verified_release": {
