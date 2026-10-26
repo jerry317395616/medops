@@ -527,6 +527,12 @@
 			"failed_subtests": 3,
 			"repeat_migrations": 2,
 			"reason": "Native traceback expanded test closure preview containing deliberately invalid canary. Remove that closure and verify native v1 suffix/v2 aliases. No live secret values in test output."
+		},
+		"confirmation_privacy_followup": {
+			"source": "65f43efd7f9030d117a69025b903f9d40c2a0344",
+			"local_quality": "full444 passed",
+			"native_status": "8 run;7 existing passed;new canary first4 transport/route variants passed, v2 failed test schema assumption",
+			"reason": "Pinned v2 uses errors[0].type instead of v1 exc_type; assertion updated, production source unchanged. Requires native recheck."
 		}
 	},
 	"previous_verified_release": {

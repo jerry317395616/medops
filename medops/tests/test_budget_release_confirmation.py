@@ -184,7 +184,10 @@ class TestBudgetReleaseConfirmation(FrappeAPITestCase):
 						},
 					)
 				self.assertEqual(response.status_code, 508)
-				self.assertEqual(response.get_json()["exc_type"], "QueryDeadlockError")
+				body = response.get_json()
+				self.assertEqual(
+					body["errors"][0]["type"] if route == "v2" else body["exc_type"], "QueryDeadlockError"
+				)
 				self.assertGreaterEqual(len(captured), 3)
 				self.assertGreaterEqual(len(telemetry), 3)
 				for text in (*captured, frappe.as_json(telemetry), response.get_data(as_text=True)):
