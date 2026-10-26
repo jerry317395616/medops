@@ -31,7 +31,6 @@ from medops.hrp_budget.services.planning import (
 from medops.hrp_budget.services.planning_access import MANAGER_ROLES, get_version
 from medops.hrp_budget.services.release_access import get_release
 from medops.hrp_budget.services.release_sources import approved_release_source, stored_release_facts
-from medops.hrp_master_data.services.budget_dimensions import require_effective
 from medops.hrp_workflow_authorization.services.business_rules import enforce_business_rules
 from medops.services.audit_context import emit_audit_event
 from medops.services.data_access import require_scope
@@ -63,6 +62,16 @@ def require_release_scope(facts, *actions):
 		)
 
 
+def require_operational_date(doc, posting_date):
+	# Hospital and organization dates are optional; budget-master dates are not.
+	if (
+		not doc.enabled
+		or (doc.valid_from and str(doc.valid_from) > posting_date)
+		or (doc.valid_to and str(doc.valid_to) < posting_date)
+	):
+		raise_ione_error("INVALID_STATE_TRANSITION")
+
+
 @read_graph
 def require_operational_release(facts):
 	context = facts.snapshot.context
@@ -80,7 +89,7 @@ def require_operational_release(facts):
 	)
 	if hospital.company != context.company:
 		raise_ione_error("CONFLICT")
-	require_effective(hospital, facts.posting_date, facts.posting_date)
+	require_operational_date(hospital, facts.posting_date)
 	# Reversal retains the exact original grain, including now-disabled masters.
 	# Both operations still require current read/scope grants and an open fiscal year.
 	if facts.operation == "Reverse":
@@ -94,7 +103,7 @@ def require_operational_release(facts):
 		rows = tuple(original_rows)
 		version = get_version(rows[0].origin_version)
 		unit, center = unit_context(version, rows[0].organization_unit)
-		require_effective(unit, facts.posting_date, facts.posting_date)
+		require_operational_date(unit, facts.posting_date)
 		if center.name != rows[0].cost_center or any(row.cost_center != center.name for row in rows):
 			raise_ione_error("CONFLICT")
 		# Use the frozen version's precision; never recapture the current default.

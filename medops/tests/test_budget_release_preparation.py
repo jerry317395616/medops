@@ -43,6 +43,7 @@ class TestBudgetReleasePreparation(FrappeAPITestCase):
 		self.login_actor(source_fixture.REVIEWER)
 		self.success(self.decide(case))
 		frappe.set_user(source_fixture.MANAGER)
+		self.assertIsNone(frappe.db.get_value("HRP Hospital", source_fixture.HOSPITAL, "valid_from"))
 		before = {
 			doctype: frappe.db.count(doctype)
 			for doctype in (LEDGER, RELEASE_ENTRY, OUTBOX, "GL Entry", "Stock Ledger Entry")
