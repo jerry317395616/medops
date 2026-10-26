@@ -9,7 +9,7 @@
 		"ADR-0031",
 		"ADR-0032"
 	],
-	"current_scope": "Complete original-unit statement, projected entry, XLSX and Page implemented; focused native and browser validation pending. Prior dispatch proofs retained with their original source SHAs. Whole native422, remaining races, protected CI and promotion pending.",
+	"current_scope": "Complete original-unit statement, projected entry, exact XLSX and distinct Page implemented. Source3f2aa21 full432 quality passed. Twelve statement cases passed in stages (11 at44cd57d plus corrected scope case at2619b22);33 backend regression cases passed at046d47a. Two repeated migrations and statement smoke passed at3f2aa21. Page renders; interaction acceptance incomplete after Computer Use stopped for URL confidence. Whole422 native, remaining contention, release/reversal operation UI, protected CI and promotion pending.",
 	"checks": {
 		"pure_tests_expected": 432,
 		"complete_frappe_tests_expected": 422,
@@ -34,9 +34,9 @@
 			"migrations": 0
 		},
 		"protected_ci": "not run for COD-033",
-		"local_quality": "all passed at 9a671b3d145816db66e12561283ad8aedf3b295f",
-		"pure_tests_passed": 422,
-		"complete_frappe_tests": "410 expected; current whole suite pending complete vertical slice",
+		"local_quality": "all passed at 3f2aa21226468a2d9cf9dafadac34745dac2fa76",
+		"pure_tests_passed": 432,
+		"complete_frappe_tests": "422 expected; complete suite pending complete vertical slice",
 		"current_protocol": {
 			"status": "full local quality passed",
 			"tests": 11,
@@ -59,7 +59,7 @@
 				"Outbox stale-snapshot full transaction retry"
 			]
 		},
-		"current_local_quality": "Full422 passed at 9a671b3d145816db66e12561283ad8aedf3b295f",
+		"current_local_quality": "Full432 passed at 3f2aa21226468a2d9cf9dafadac34745dac2fa76",
 		"runtime_native_partial": {
 			"source_commit": "daaed16f7765c0fb2e796fa100ca817970585499",
 			"passed_counts": [
@@ -322,10 +322,95 @@
 			"public_sites_untouched": true
 		},
 		"budget_statement": {
-			"status": "implemented; focused native and browser pending",
+			"status": "backend passed in stages; Page interaction incomplete",
+			"source_commit": "3f2aa21226468a2d9cf9dafadac34745dac2fa76",
 			"pure_tests": 10,
-			"native_tests": 12,
-			"public_sites_untouched": true
+			"full_quality_pure_tests": 432,
+			"native_summary": {
+				"status": "passed_in_stages",
+				"source_commit": "3f2aa21226468a2d9cf9dafadac34745dac2fa76",
+				"statement_distinct_cases": 12,
+				"whole_module_latest_run": false,
+				"full_module": {
+					"source": "44cd57d34ea6304785705486a4a9763cc716139e",
+					"run": 12,
+					"passed": 11,
+					"failed": 1,
+					"failing_case": "test_export_requires_current_scope_export_grant",
+					"reason": "Direct test used Administrator restored by login helper; no production bypass"
+				},
+				"failed_case_recheck": {
+					"source": "2619b224a997d8eb986adc8128564872497825d4",
+					"passed": 1,
+					"explicit_department_actor": true
+				},
+				"final_page_route_smoke": {
+					"source": "3f2aa21226468a2d9cf9dafadac34745dac2fa76",
+					"passed": 1,
+					"repeat_migrations": 2
+				},
+				"regression": {
+					"source": "046d47a98b58c82970dd25e4a11ea8c574c0fea3",
+					"counts": [
+						8,
+						9,
+						5,
+						11
+					],
+					"passed": 33
+				},
+				"distinct_focused_cases": 45,
+				"backend_services_identical_between_case_sources": true,
+				"latest_change_scope": "Distinct Page route, workspace link, explicit test identity only",
+				"public_sites_untouched": true,
+				"whole_native_inventory": 422,
+				"whole_native_suite_run": false
+			},
+			"browser": {
+				"status": "partial_not_accepted",
+				"source_commit": "3f2aa21226468a2d9cf9dafadac34745dac2fa76",
+				"route": "/desk/hrp-budget-statements",
+				"observed": [
+					"Correct Page title and controls rendered",
+					"Workspace link uses distinct Page route"
+				],
+				"incomplete": [
+					"organization autocomplete/advanced search interaction",
+					"whole-book query via Page",
+					"pagination",
+					"entry dialog",
+					"browser XLSX download"
+				],
+				"issue": "IAB input suggestions did not refresh reliably; root cause unconfirmed. Native Edge fallback stopped before page interaction because Computer Use could not determine browser URL confidently.",
+				"screenshot_artifact": null,
+				"private_loopback_service_stopped": true,
+				"ssh_tunnel_stopped": true,
+				"public_sites_untouched": true,
+				"recorded_utc": "2026-10-26T14:59:05.117097+00:00"
+			},
+			"repeat_migrations": {
+				"source": "3f2aa21226468a2d9cf9dafadac34745dac2fa76",
+				"count": 2,
+				"old_budget_rows_unchanged": true,
+				"user_profile_roles_unchanged": true,
+				"existing_financial_model_counts_unchanged": true
+			},
+			"original_primary_transaction_and_session_preserved": true,
+			"database_enforced_read_only": true,
+			"source_field_and_native_user_permission_revocation": true,
+			"poisoned_redis_rejected": true,
+			"final_graph_cache_revocation_detected": true,
+			"private_batch_and_other_leaf_not_projected": true,
+			"exact_opening_and_complete_reversal": true,
+			"missing_or_tampered_rows_rejected": true,
+			"pagination_digest_binds_complete_book": true,
+			"scope_export_guard_positive_then_revoked": true,
+			"xlsx_complete_rows_beyond_page": true,
+			"xlsx_all_values_literal_text": true,
+			"positive_xlsx_principal": "Existing Administrator; no new role grants. Does not certify ordinary department export configuration.",
+			"deployment_export_requirement": "Explicit current native master/source and scope export grants; Budget User ledger export flag alone is insufficient.",
+			"public_sites_untouched": true,
+			"raw_native_ledger_title_still_closed": true
 		}
 	},
 	"previous_verified_release": {
