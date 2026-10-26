@@ -81,24 +81,26 @@ class TestBudgetReleaseDispatch(FrappeAPITestCase):
 			primary = frappe.local.db
 			with self.secondary_connection():
 				self._secondary_connection.rollback()
-				observed.append(
-					frappe.db.get_value(RELEASE, self.release, ["status", "docstatus", "revision"])
-				)
-				self.assertEqual(frappe.db.get_value(OUTBOX, kwargs["message"], "status"), "Pending")
-			self.assertIs(frappe.local.db, primary)
-			self.assertEqual(method, jobs.CLAIM_JOB)
-			self.assertFalse(kwargs["enqueue_after_commit"])
-			self.assertTrue(kwargs["deduplicate"])
-			self.assertEqual(kwargs["queue"], "long")
-			self.assertEqual(kwargs["timeout"], 300)
-			self.assertEqual(
-				set(kwargs), {"queue", "timeout", "enqueue_after_commit", "job_id", "deduplicate", "message"}
-			)
+				parent = frappe.db.get_value(RELEASE, self.release, ["status", "docstatus", "revision"])
+				status = frappe.db.get_value(OUTBOX, kwargs["message"], "status")
+			# Assertions belong outside the production callback's error boundary;
+			# a swallowed AssertionError must never make this test look successful.
+			observed.append((method, kwargs, parent, status, frappe.local.db is primary))
 
 		with patch("frappe.enqueue", side_effect=enqueue) as queue:
 			self.success(self.confirm(preview, allow_dispatch=True))
 		self.assertEqual(queue.call_count, 1)
-		self.assertEqual(observed, [("Authorized", 0, 2)])
+		self.assertEqual(len(observed), 1)
+		method, kwargs, parent, status, restored = observed[0]
+		self.assertEqual((parent, status, restored), (("Authorized", 0, 2), "Pending", True))
+		self.assertEqual(method, jobs.CLAIM_JOB)
+		self.assertFalse(kwargs["enqueue_after_commit"])
+		self.assertTrue(kwargs["deduplicate"])
+		self.assertEqual(kwargs["queue"], "long")
+		self.assertEqual(kwargs["timeout"], 300)
+		self.assertEqual(
+			set(kwargs), {"queue", "timeout", "enqueue_after_commit", "job_id", "deduplicate", "message"}
+		)
 		self.assertEqual(frappe.db.count(LEDGER, {"voucher_no": self.release}), 0)
 
 	def test_savepoint_rollback_discards_financial_rows_even_when_callback_remains_registered(self):
