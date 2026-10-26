@@ -8,6 +8,7 @@ from typing import Literal
 
 import frappe
 from frappe.utils import get_datetime, now_datetime
+from frappe.utils.background_jobs import create_job_id, get_redis_conn
 
 from medops.common.budget_ledger import (
 	RELEASE,
@@ -94,6 +95,12 @@ def _message(hint):
 	return row
 
 
+def dispatch_lock(job_id):
+	# The pinned native deduplication checks then enqueues in separate Redis
+	# operations. Serialize that small window across commit callbacks/processes.
+	return get_redis_conn().lock("medops:release:dispatch:" + create_job_id(job_id), timeout=30)
+
+
 def _enqueue_committed(hint):
 	# Frappe enqueue(..., enqueue_after_commit=True) still contacts Redis for
 	# deduplication before registering its callback. Invoke it only here, after
@@ -109,15 +116,21 @@ def _enqueue_committed(hint):
 		else:
 			method, timeout = CLAIM_JOB, 300
 			job_id = "medops-release-claim-" + hint.message
-		frappe.enqueue(
-			method,
-			queue="long",
-			timeout=timeout,
-			enqueue_after_commit=False,
-			job_id=job_id,
-			deduplicate=True,
-			**kwargs,
-		)
+		lock = dispatch_lock(job_id)
+		if not lock.acquire(blocking=False):
+			return
+		try:
+			frappe.enqueue(
+				method,
+				queue="long",
+				timeout=timeout,
+				enqueue_after_commit=False,
+				job_id=job_id,
+				deduplicate=True,
+				**kwargs,
+			)
+		finally:
+			lock.release()
 	except Exception as error:
 		# Authority/outbox are already durable. Leave them for the bounded cron
 		# scan; neither queue nor audit failure may turn this into a fake rollback.

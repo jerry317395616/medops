@@ -9,10 +9,10 @@
 		"ADR-0031",
 		"ADR-0032"
 	],
-	"current_scope": "Operator Page and owned current-authority release record/directory/eligible-source reads implemented; new operator native/UI validation pending. Prior statement proofs retain original sources. Whole435 native, remaining contention, CI and promotion pending.",
+	"current_scope": "Joint49 and full439 quality passed at1c987df. Later real concurrent scheduler callbacks produced two identical queue entries; native worker still posted exactly one complete batch. Owned enqueue lock and native contention/retry test added, verification pending. Operator detail/directory render observed but directory latency is several minutes; full Page acceptance and performance work pending. Full436/remaining races/CI/promotion pending.",
 	"checks": {
 		"pure_tests_expected": 439,
-		"complete_frappe_tests_expected": 435,
+		"complete_frappe_tests_expected": 436,
 		"exact_foundation_pure_tests_passed": 21,
 		"native_foundation": {
 			"status": "passed",
@@ -34,9 +34,9 @@
 			"migrations": 0
 		},
 		"protected_ci": "not run for COD-033",
-		"local_quality": "all passed at 3f2aa21226468a2d9cf9dafadac34745dac2fa76",
-		"pure_tests_passed": 432,
-		"complete_frappe_tests": "422 expected; complete suite pending complete vertical slice",
+		"local_quality": "Full439 passed at 1c987df7293a7361a27332a73d8c5bd97793dd5c",
+		"pure_tests_passed": 439,
+		"complete_frappe_tests": "436 expected; complete suite pending",
 		"current_protocol": {
 			"status": "full local quality passed",
 			"tests": 11,
@@ -59,7 +59,7 @@
 				"Outbox stale-snapshot full transaction retry"
 			]
 		},
-		"current_local_quality": "Full432 passed at 3f2aa21226468a2d9cf9dafadac34745dac2fa76",
+		"current_local_quality": "Full439 passed at 1c987df7293a7361a27332a73d8c5bd97793dd5c",
 		"runtime_native_partial": {
 			"source_commit": "daaed16f7765c0fb2e796fa100ca817970585499",
 			"passed_counts": [
@@ -322,49 +322,23 @@
 			"public_sites_untouched": true
 		},
 		"budget_statement": {
-			"status": "backend passed in stages; Page interaction incomplete",
-			"source_commit": "3f2aa21226468a2d9cf9dafadac34745dac2fa76",
+			"status": "whole backend12 passed in joint49; Page interaction incomplete",
+			"source_commit": "1c987df7293a7361a27332a73d8c5bd97793dd5c",
 			"pure_tests": 10,
-			"full_quality_pure_tests": 432,
+			"full_quality_pure_tests": 439,
 			"native_summary": {
-				"status": "passed_in_stages",
-				"source_commit": "3f2aa21226468a2d9cf9dafadac34745dac2fa76",
+				"status": "passed",
+				"source_commit": "1c987df7293a7361a27332a73d8c5bd97793dd5c",
 				"statement_distinct_cases": 12,
-				"whole_module_latest_run": false,
-				"full_module": {
-					"source": "44cd57d34ea6304785705486a4a9763cc716139e",
-					"run": 12,
-					"passed": 11,
-					"failed": 1,
-					"failing_case": "test_export_requires_current_scope_export_grant",
-					"reason": "Direct test used Administrator restored by login helper; no production bypass"
-				},
-				"failed_case_recheck": {
-					"source": "2619b224a997d8eb986adc8128564872497825d4",
-					"passed": 1,
-					"explicit_department_actor": true
-				},
-				"final_page_route_smoke": {
-					"source": "3f2aa21226468a2d9cf9dafadac34745dac2fa76",
-					"passed": 1,
-					"repeat_migrations": 2
-				},
-				"regression": {
-					"source": "046d47a98b58c82970dd25e4a11ea8c574c0fea3",
-					"counts": [
-						8,
-						9,
-						5,
-						11
-					],
-					"passed": 33
-				},
-				"distinct_focused_cases": 45,
-				"backend_services_identical_between_case_sources": true,
-				"latest_change_scope": "Distinct Page route, workspace link, explicit test identity only",
-				"public_sites_untouched": true,
-				"whole_native_inventory": 422,
-				"whole_native_suite_run": false
+				"whole_module_latest_run": true,
+				"joint_counts": [
+					13,
+					7,
+					9,
+					8,
+					12
+				],
+				"full_native_suite": false
 			},
 			"browser": {
 				"status": "partial_not_accepted",
@@ -410,10 +384,50 @@
 			"positive_xlsx_principal": "Existing Administrator; no new role grants. Does not certify ordinary department export configuration.",
 			"deployment_export_requirement": "Explicit current native master/source and scope export grants; Budget User ledger export flag alone is insufficient.",
 			"public_sites_untouched": true,
-			"raw_native_ledger_title_still_closed": true
+			"raw_native_ledger_title_still_closed": true,
+			"previous_staged_native_summary": {
+				"status": "passed_in_stages",
+				"source_commit": "3f2aa21226468a2d9cf9dafadac34745dac2fa76",
+				"statement_distinct_cases": 12,
+				"whole_module_latest_run": false,
+				"full_module": {
+					"source": "44cd57d34ea6304785705486a4a9763cc716139e",
+					"run": 12,
+					"passed": 11,
+					"failed": 1,
+					"failing_case": "test_export_requires_current_scope_export_grant",
+					"reason": "Direct test used Administrator restored by login helper; no production bypass"
+				},
+				"failed_case_recheck": {
+					"source": "2619b224a997d8eb986adc8128564872497825d4",
+					"passed": 1,
+					"explicit_department_actor": true
+				},
+				"final_page_route_smoke": {
+					"source": "3f2aa21226468a2d9cf9dafadac34745dac2fa76",
+					"passed": 1,
+					"repeat_migrations": 2
+				},
+				"regression": {
+					"source": "046d47a98b58c82970dd25e4a11ea8c574c0fea3",
+					"counts": [
+						8,
+						9,
+						5,
+						11
+					],
+					"passed": 33
+				},
+				"distinct_focused_cases": 45,
+				"backend_services_identical_between_case_sources": true,
+				"latest_change_scope": "Distinct Page route, workspace link, explicit test identity only",
+				"public_sites_untouched": true,
+				"whole_native_inventory": 422,
+				"whole_native_suite_run": false
+			}
 		},
 		"release_operator": {
-			"status": "implemented; validation pending",
+			"status": "backend13 passed in joint49; actual Page acceptance pending",
 			"pure_tests": 7,
 			"native_tests": 13,
 			"page": "hrp-budget-operations",
@@ -421,7 +435,68 @@
 				"FIN-044",
 				"FIN-045"
 			],
-			"model_and_user_grants_added": false
+			"model_and_user_grants_added": false,
+			"source_commit": "1c987df7293a7361a27332a73d8c5bd97793dd5c",
+			"native_tests_passed": 13,
+			"full_local_quality_pure": 439,
+			"repeat_migrations": {
+				"source_commit": "307a9e8e0d142ae0c6d74c6b14d3ab2a0a487cd2",
+				"count": 2,
+				"old_budget_hashes_unchanged": true,
+				"user_profile_roles_unchanged": true,
+				"existing_financial_row_counts_unchanged": true
+			},
+			"fixture_regression": {
+				"first_source": "ceeb412af72207ef154dad575212c300f40a14e1",
+				"first_status": "failed",
+				"cause": "Old primary repeatable-read snapshot could not see committed secondary fixture setter for cleanup; subsequent creates denied",
+				"repair": "Exact synthetic setter removed by native controller; fresh secondary fixture cleanup and deletion assertions added",
+				"production_permissions_widened": false,
+				"financial_rows_unchanged_during_repair": true,
+				"latest_joint_passed": true
+			},
+			"page_observation": {
+				"status": "partial",
+				"detail_exact_amount": true,
+				"directory_first50_rendered": true,
+				"next_page_button_visible": true,
+				"directory_latency": "multi-minute observed, profiling pending",
+				"writes_reconfirmation_reversal_statement_page_download_accepted": false
+			}
+		},
+		"current_joint_native": {
+			"status": "passed",
+			"source_commit": "1c987df7293a7361a27332a73d8c5bd97793dd5c",
+			"counts": [
+				13,
+				7,
+				9,
+				8,
+				12
+			],
+			"total": 49,
+			"modules": [
+				"medops.tests.test_budget_release_directory",
+				"medops.tests.test_budget_release_confirmation",
+				"medops.tests.test_budget_release_execution",
+				"medops.tests.test_budget_release_dispatch",
+				"medops.tests.test_budget_statement"
+			],
+			"proof": "cod033-1c987df-runtime-operator-regression.json",
+			"full_native_suite": false,
+			"public_sites_untouched": true
+		},
+		"concurrent_scheduler": {
+			"status": "failure reproduced; fix implemented pending verification",
+			"source_commit": "1c987df7293a7361a27332a73d8c5bd97793dd5c",
+			"duplicate_queue_entries": 2,
+			"standard_worker_ledger_rows": 2,
+			"duplicate_financial_posting": false,
+			"default_queue_preserved": 386,
+			"long_queue_after_owned_drain": 0,
+			"workers_after": 0,
+			"old_budget_roles_gl_stock_error_unchanged": true,
+			"native_test_added": 1
 		}
 	},
 	"previous_verified_release": {

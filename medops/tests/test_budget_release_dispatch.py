@@ -197,6 +197,40 @@ class TestBudgetReleaseDispatch(FrappeAPITestCase):
 		self.assertEqual(frappe.db.count(OUTBOX, {"reference_name": self.release}), 0)
 		self.assertEqual(frappe.db.get_value(RELEASE, self.release, "status"), "Prepared")
 
+	def test_held_native_dispatch_lock_defers_without_losing_authority_and_scan_retries(self):
+		self.authorize()
+		queue = get_queue("long")
+		before = queue.count
+		self.assertFalse(Worker.all(connection=get_redis_conn()))
+		job_id = "medops-release-claim-" + self.message
+		identifier = create_job_id(job_id)
+		lock = dispatch.dispatch_lock(job_id)
+		self.assertTrue(lock.acquire(blocking=False))
+		try:
+			with patch.object(jobs, "due_release_messages", return_value=[self.message]):
+				self.assertEqual(self.run_job(SCHEDULER), {"dispatched": 1})
+			self.assertTrue(lock.locked())
+			self.assertEqual(queue.count, before)
+			self.assertEqual(frappe.db.get_value(OUTBOX, self.message, "status"), "Pending")
+			self.assertEqual(frappe.db.get_value(RELEASE, self.release, "status"), "Authorized")
+			self.assertEqual(frappe.db.count(LEDGER, {"voucher_no": self.release}), 0)
+		finally:
+			lock.release()
+		try:
+			with patch.object(jobs, "due_release_messages", return_value=[self.message]):
+				self.assertEqual(self.run_job(SCHEDULER), {"dispatched": 1})
+			self.assertEqual(queue.count, before + 1)
+			job = Job.fetch(identifier, connection=get_redis_conn())
+			self.assertEqual(job.kwargs["method"], jobs.CLAIM_JOB)
+			self.assertEqual(job.kwargs["kwargs"], {"message": self.message})
+		finally:
+			if identifier in queue.job_ids:
+				job = Job.fetch(identifier, connection=get_redis_conn())
+				self.assertEqual(job.get_status(), "queued")
+				self.assertEqual(job.kwargs["kwargs"], {"message": self.message})
+				job.delete()
+			self.assertEqual(queue.count, before)
+
 	def test_superseded_authorization_hint_is_skipped_and_only_current_epoch_is_enqueued(self):
 		self.authorize()
 		old = self.message
