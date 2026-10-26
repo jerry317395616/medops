@@ -1,7 +1,7 @@
 {
 	"doctype": "Page",
-	"name": "hrp-budget-approval",
-	"page_name": "hrp-budget-approval",
+	"name": "hrp-budget-approvals",
+	"page_name": "hrp-budget-approvals",
 	"title": "预算审批",
 	"module": "HRP Budget",
 	"standard": "Yes",

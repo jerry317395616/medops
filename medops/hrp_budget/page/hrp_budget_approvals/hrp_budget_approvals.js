@@ -1,4 +1,4 @@
-frappe.pages["hrp-budget-approval"].on_page_load = (wrapper) => {
+frappe.pages["hrp-budget-approvals"].on_page_load = (wrapper) => {
 	const page = frappe.ui.make_app_page({ parent: wrapper, title: __("预算审批"), single_column: true });
 	const filters = $("<div class='row mt-3'>").appendTo(page.body);
 	const body = $("<div class='mt-3'>").appendTo(page.body);
@@ -199,7 +199,18 @@ frappe.pages["hrp-budget-approval"].on_page_load = (wrapper) => {
 		const result = await call("list_records", { filters: selected, offset, limit: 50 });
 		if (current !== generation) return;
 		$("<p>").text(__("仅列出当前有权读取全部来源的审批单。请按法人、医院和状态筛选。")).appendTo(body);
-		if (!result.items.length) return $("<p>").text(__("暂无可见待审批单。")).appendTo(body);
+		if (!result.items.length) {
+			$("<p>").text(__("暂无可见审批单。")).appendTo(body);
+			if (offset > 0)
+				$("<button class='btn btn-default'>")
+					.text(__("返回第一页"))
+					.on("click", () => {
+						offset = 0;
+						refresh();
+					})
+					.appendTo(body);
+			return;
+		}
 		const rows = table(body, ["申报", "金额", "发起人", "操作"]);
 		for (const item of result.items) {
 			const row = $("<tr>").appendTo(rows);
@@ -207,7 +218,7 @@ frappe.pages["hrp-budget-approval"].on_page_load = (wrapper) => {
 				$("<td>").text(text).appendTo(row);
 			$("<button class='btn btn-sm btn-default'>")
 				.text(__("核对与审批"))
-				.on("click", () => frappe.set_route("hrp-budget-approval", item.name))
+				.on("click", () => frappe.set_route("hrp-budget-approvals", item.name))
 				.appendTo($("<td>").appendTo(row));
 		}
 		if (offset > 0)
@@ -261,9 +272,9 @@ frappe.pages["hrp-budget-approval"].on_page_load = (wrapper) => {
 	}
 	ready = true;
 	page.add_inner_button(__("审批列表"), () =>
-		frappe.get_route()[1] ? frappe.set_route("hrp-budget-approval") : refresh(),
+		frappe.get_route()[1] ? frappe.set_route("hrp-budget-approvals") : refresh(),
 	);
 	page.add_inner_button(__("刷新"), refresh);
 	wrapper.budgetApprovalRefresh = refresh;
 };
-frappe.pages["hrp-budget-approval"].on_page_show = (wrapper) => wrapper.budgetApprovalRefresh?.();
+frappe.pages["hrp-budget-approvals"].on_page_show = (wrapper) => wrapper.budgetApprovalRefresh?.();

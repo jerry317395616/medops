@@ -101,7 +101,7 @@ frappe.pages["hrp-budget-planning"].on_page_load = (wrapper) => {
 				const latest = existing.items[0];
 				if (latest && ["Pending", "Approved"].includes(latest.status)) {
 					dialog.hide();
-					return frappe.set_route("hrp-budget-approval", latest.name);
+					return frappe.set_route("hrp-budget-approvals", latest.name);
 				}
 				if (!writer) return frappe.msgprint(__("当前没有可见审批单。"));
 				const key = `budget-approval-${frappe.utils.get_random(24)}`;
@@ -116,7 +116,7 @@ frappe.pages["hrp-budget-planning"].on_page_load = (wrapper) => {
 						})
 					).message;
 					dialog.hide();
-					frappe.set_route("hrp-budget-approval", result.name);
+					frappe.set_route("hrp-budget-approvals", result.name);
 				});
 			});
 		approvalButton.appendTo(content);
