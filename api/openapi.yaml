@@ -8084,6 +8084,173 @@ paths:
         and explicit human acknowledgement, and atomically persists durable authorization
         plus Pending Outbox. It does not post ledger entries; asynchronous financial
         execution remains under development.
+  /api/method/medops.api.v1.finance.ledger.statement:
+    get:
+      operationId: fin_041
+      summary: 按原始单位核验完整预算下达与冲销账簿后分页
+      tags:
+      - medops
+      security:
+      - sessionAuth: []
+      responses:
+        '200':
+          description: Current authorized result
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: false
+                required:
+                - message
+                properties:
+                  message:
+                    $ref: '#/components/schemas/BudgetStatement'
+        '400':
+          description: Invalid bounded request or missing explicit acknowledgement
+        '401':
+          description: Authentication required
+        '403':
+          description: Current role, complete own-source, field, scope and native
+            permissions required; export also requires current source export grants
+        '404':
+          description: Reference or current matrix unavailable
+        '409':
+          description: Book or current authority changed; requery the whole book
+      x-api-code: FIN-041
+      x-idempotency: Not required (read-only)
+      x-transaction-boundary: Owned READ COMMITTED READ ONLY connection; caller transaction
+        preserved
+      parameters:
+      - name: payload
+        in: query
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BudgetStatementQuery'
+      - name: expected_digest
+        in: query
+        required: false
+        schema:
+          type: string
+          pattern: ^[0-9a-f]{64}$
+      - name: offset
+        in: query
+        schema:
+          type: integer
+          minimum: 0
+          maximum: 50000
+          default: 0
+      - name: limit
+        in: query
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 50
+          default: 50
+      description: 'Whole original-unit book is proved before pagination or export.
+        No descendant expansion. Any source, scope, field or current permission failure
+        rejects all rows and totals. Subsequent pages and exports bind the complete
+        statement digest; changed books require requery. Bounds: 50000 own entries,
+        1000 posted batches, 1000000 proof lines; overflow rejects the request.'
+  /api/method/medops.api.v1.finance.ledger.export_statement:
+    get:
+      operationId: fin_042
+      summary: 按当前全部来源及导出权限导出完整精确预算账簿
+      tags:
+      - medops
+      security:
+      - sessionAuth: []
+      responses:
+        '200':
+          description: Current authorized result
+          content:
+            application/vnd.openxmlformats-officedocument.spreadsheetml.sheet:
+              schema:
+                $ref: '#/components/schemas/BudgetStatementXlsx'
+        '400':
+          description: Invalid bounded request or missing explicit acknowledgement
+        '401':
+          description: Authentication required
+        '403':
+          description: Current role, complete own-source, field, scope and native
+            permissions required; export also requires current source export grants
+        '404':
+          description: Reference or current matrix unavailable
+        '409':
+          description: Book or current authority changed; requery the whole book
+      x-api-code: FIN-042
+      x-idempotency: Not required (read-only)
+      x-transaction-boundary: Owned READ COMMITTED READ ONLY connection; caller transaction
+        preserved
+      parameters:
+      - name: payload
+        in: query
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BudgetStatementQuery'
+      - name: expected_digest
+        in: query
+        required: true
+        schema:
+          type: string
+          pattern: ^[0-9a-f]{64}$
+      description: 'Whole original-unit book is proved before pagination or export.
+        No descendant expansion. Any source, scope, field or current permission failure
+        rejects all rows and totals. Subsequent pages and exports bind the complete
+        statement digest; changed books require requery. Bounds: 50000 own entries,
+        1000 posted batches, 1000000 proof lines; overflow rejects the request.'
+  /api/method/medops.api.v1.finance.ledger.get_entry:
+    get:
+      operationId: fin_043
+      summary: 按当前来源权限读取原始单位单笔分录投影
+      tags:
+      - medops
+      security:
+      - sessionAuth: []
+      responses:
+        '200':
+          description: Current authorized result
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: false
+                required:
+                - message
+                properties:
+                  message:
+                    $ref: '#/components/schemas/BudgetLedgerEntry'
+        '400':
+          description: Invalid bounded request or missing explicit acknowledgement
+        '401':
+          description: Authentication required
+        '403':
+          description: Current role, complete own-source, field, scope and native
+            permissions required; export also requires current source export grants
+        '404':
+          description: Reference or current matrix unavailable
+        '409':
+          description: Book or current authority changed; requery the whole book
+      x-api-code: FIN-043
+      x-idempotency: Not required (read-only)
+      x-transaction-boundary: Owned READ COMMITTED READ ONLY connection; caller transaction
+        preserved
+      parameters:
+      - name: name
+        in: query
+        required: true
+        schema:
+          type: string
+          minLength: 1
+          maxLength: 140
+      description: 'Whole original-unit book is proved before pagination or export.
+        No descendant expansion. Any source, scope, field or current permission failure
+        rejects all rows and totals. Subsequent pages and exports bind the complete
+        statement digest; changed books require requery. Bounds: 50000 own entries,
+        1000 posted batches, 1000000 proof lines; overflow rejects the request.'
 components:
   headers:
     CorrelationId:
@@ -12157,3 +12324,532 @@ components:
           type: integer
           minimum: 1
           maximum: 100
+    BudgetStatementQuery:
+      type: object
+      additionalProperties: false
+      required:
+      - organization_unit
+      - fiscal_year
+      - currency
+      properties:
+        organization_unit:
+          type: string
+          minLength: 1
+          maxLength: 140
+        fiscal_year:
+          type: string
+          minLength: 1
+          maxLength: 140
+        currency:
+          type: string
+          minLength: 1
+          maxLength: 140
+        from_date:
+          type: string
+          format: date
+        to_date:
+          type: string
+          format: date
+    BudgetLedgerEntry:
+      type: object
+      additionalProperties: false
+      required:
+      - name
+      - company
+      - hospital
+      - organization_version
+      - organization_unit
+      - fiscal_year
+      - currency
+      - currency_precision
+      - amount_schema_version
+      - cost_center
+      - budget_subject
+      - funding_source
+      - account
+      - project
+      - period_index
+      - period_start
+      - period_end
+      - posting_date
+      - posting_time
+      - amount
+      - debit
+      - credit
+      - is_reversal
+      - reversal_of
+      - origin_plan
+      - origin_version
+      - origin_line_key
+      - fact_key
+      - description
+      - source_submission
+      - source_approval
+      - source_final_review
+      - entry_type
+      properties:
+        name:
+          type: string
+          pattern: ^[0-9a-f]{64}$
+        company:
+          type:
+          - string
+          - 'null'
+          maxLength: 140
+        hospital:
+          type:
+          - string
+          - 'null'
+          maxLength: 140
+        organization_version:
+          type:
+          - string
+          - 'null'
+          maxLength: 140
+        organization_unit:
+          type:
+          - string
+          - 'null'
+          maxLength: 140
+        fiscal_year:
+          type:
+          - string
+          - 'null'
+          maxLength: 140
+        currency:
+          type:
+          - string
+          - 'null'
+          maxLength: 140
+        currency_precision:
+          type: integer
+          minimum: 0
+          maximum: 9
+        amount_schema_version:
+          type: integer
+          const: 2
+        cost_center:
+          type:
+          - string
+          - 'null'
+          maxLength: 140
+        budget_subject:
+          type:
+          - string
+          - 'null'
+          maxLength: 140
+        funding_source:
+          type:
+          - string
+          - 'null'
+          maxLength: 140
+        account:
+          type:
+          - string
+          - 'null'
+          maxLength: 140
+        project:
+          type:
+          - string
+          - 'null'
+          maxLength: 140
+        period_index:
+          type: integer
+          minimum: 1
+        period_start:
+          type: string
+          format: date
+        period_end:
+          type: string
+          format: date
+        posting_date:
+          type: string
+          format: date
+        posting_time:
+          type: string
+        amount:
+          type: string
+          pattern: ^-?(0|[1-9][0-9]{0,14})(\.[0-9]{1,9})?$
+        debit:
+          type: string
+          pattern: ^-?(0|[1-9][0-9]{0,14})(\.[0-9]{1,9})?$
+        credit:
+          type: string
+          pattern: ^-?(0|[1-9][0-9]{0,14})(\.[0-9]{1,9})?$
+        is_reversal:
+          type: integer
+          enum:
+          - 0
+          - 1
+        reversal_of:
+          type:
+          - string
+          - 'null'
+          maxLength: 140
+        origin_plan:
+          type:
+          - string
+          - 'null'
+          maxLength: 140
+        origin_version:
+          type:
+          - string
+          - 'null'
+          maxLength: 140
+        origin_line_key:
+          type:
+          - string
+          - 'null'
+          maxLength: 140
+        fact_key:
+          type:
+          - string
+          - 'null'
+          maxLength: 140
+        description:
+          type:
+          - string
+          - 'null'
+        source_submission:
+          type:
+          - string
+          - 'null'
+          maxLength: 140
+        source_approval:
+          type:
+          - string
+          - 'null'
+          maxLength: 140
+        source_final_review:
+          type:
+          - string
+          - 'null'
+          maxLength: 140
+        entry_type:
+          type:
+          - string
+          - 'null'
+          maxLength: 140
+    BudgetStatementRow:
+      type: object
+      additionalProperties: false
+      required:
+      - name
+      - company
+      - hospital
+      - organization_version
+      - organization_unit
+      - fiscal_year
+      - currency
+      - currency_precision
+      - amount_schema_version
+      - cost_center
+      - budget_subject
+      - funding_source
+      - account
+      - project
+      - period_index
+      - period_start
+      - period_end
+      - posting_date
+      - posting_time
+      - amount
+      - debit
+      - credit
+      - is_reversal
+      - reversal_of
+      - origin_plan
+      - origin_version
+      - origin_line_key
+      - fact_key
+      - description
+      - source_submission
+      - source_approval
+      - source_final_review
+      - entry_type
+      - running_balance
+      properties:
+        name:
+          type: string
+          pattern: ^[0-9a-f]{64}$
+        company:
+          type:
+          - string
+          - 'null'
+          maxLength: 140
+        hospital:
+          type:
+          - string
+          - 'null'
+          maxLength: 140
+        organization_version:
+          type:
+          - string
+          - 'null'
+          maxLength: 140
+        organization_unit:
+          type:
+          - string
+          - 'null'
+          maxLength: 140
+        fiscal_year:
+          type:
+          - string
+          - 'null'
+          maxLength: 140
+        currency:
+          type:
+          - string
+          - 'null'
+          maxLength: 140
+        currency_precision:
+          type: integer
+          minimum: 0
+          maximum: 9
+        amount_schema_version:
+          type: integer
+          const: 2
+        cost_center:
+          type:
+          - string
+          - 'null'
+          maxLength: 140
+        budget_subject:
+          type:
+          - string
+          - 'null'
+          maxLength: 140
+        funding_source:
+          type:
+          - string
+          - 'null'
+          maxLength: 140
+        account:
+          type:
+          - string
+          - 'null'
+          maxLength: 140
+        project:
+          type:
+          - string
+          - 'null'
+          maxLength: 140
+        period_index:
+          type: integer
+          minimum: 1
+        period_start:
+          type: string
+          format: date
+        period_end:
+          type: string
+          format: date
+        posting_date:
+          type: string
+          format: date
+        posting_time:
+          type: string
+        amount:
+          type: string
+          pattern: ^-?(0|[1-9][0-9]{0,14})(\.[0-9]{1,9})?$
+        debit:
+          type: string
+          pattern: ^-?(0|[1-9][0-9]{0,14})(\.[0-9]{1,9})?$
+        credit:
+          type: string
+          pattern: ^-?(0|[1-9][0-9]{0,14})(\.[0-9]{1,9})?$
+        is_reversal:
+          type: integer
+          enum:
+          - 0
+          - 1
+        reversal_of:
+          type:
+          - string
+          - 'null'
+          maxLength: 140
+        origin_plan:
+          type:
+          - string
+          - 'null'
+          maxLength: 140
+        origin_version:
+          type:
+          - string
+          - 'null'
+          maxLength: 140
+        origin_line_key:
+          type:
+          - string
+          - 'null'
+          maxLength: 140
+        fact_key:
+          type:
+          - string
+          - 'null'
+          maxLength: 140
+        description:
+          type:
+          - string
+          - 'null'
+        source_submission:
+          type:
+          - string
+          - 'null'
+          maxLength: 140
+        source_approval:
+          type:
+          - string
+          - 'null'
+          maxLength: 140
+        source_final_review:
+          type:
+          - string
+          - 'null'
+          maxLength: 140
+        entry_type:
+          type:
+          - string
+          - 'null'
+          maxLength: 140
+        running_balance:
+          type: string
+          pattern: ^-?(0|[1-9][0-9]*)(\.[0-9]{1,9})?$
+    BudgetStatement:
+      type: object
+      additionalProperties: false
+      required:
+      - schema_version
+      - context
+      - statement_digest
+      - total_rows
+      - totals
+      - offset
+      - limit
+      - next_offset
+      - columns
+      - rows
+      properties:
+        schema_version:
+          type: integer
+          const: 1
+        context:
+          type: object
+          additionalProperties: false
+          required:
+          - company
+          - hospital
+          - organization_version
+          - organization_unit
+          - organization_unit_label
+          - fiscal_year
+          - currency
+          - from_date
+          - to_date
+          - fiscal_year_start
+          - fiscal_year_end
+          properties:
+            company:
+              type: string
+              minLength: 1
+              maxLength: 140
+            hospital:
+              type: string
+              minLength: 1
+              maxLength: 140
+            organization_version:
+              type: string
+              minLength: 1
+              maxLength: 140
+            organization_unit:
+              type: string
+              minLength: 1
+              maxLength: 140
+            organization_unit_label:
+              type: string
+              minLength: 1
+              maxLength: 140
+            fiscal_year:
+              type: string
+              minLength: 1
+              maxLength: 140
+            currency:
+              type: string
+              minLength: 1
+              maxLength: 140
+            from_date:
+              type: string
+              format: date
+            to_date:
+              type: string
+              format: date
+            fiscal_year_start:
+              type: string
+              format: date
+            fiscal_year_end:
+              type: string
+              format: date
+        statement_digest:
+          type: string
+          pattern: ^[0-9a-f]{64}$
+        total_rows:
+          type: integer
+          minimum: 0
+          maximum: 50000
+        totals:
+          type: object
+          additionalProperties: false
+          required:
+          - opening
+          - debit
+          - credit
+          - net
+          - closing
+          - precision
+          properties:
+            opening:
+              type: string
+              pattern: ^-?(0|[1-9][0-9]*)(\.[0-9]{1,9})?$
+            debit:
+              type: string
+              pattern: ^-?(0|[1-9][0-9]*)(\.[0-9]{1,9})?$
+            credit:
+              type: string
+              pattern: ^-?(0|[1-9][0-9]*)(\.[0-9]{1,9})?$
+            net:
+              type: string
+              pattern: ^-?(0|[1-9][0-9]*)(\.[0-9]{1,9})?$
+            closing:
+              type: string
+              pattern: ^-?(0|[1-9][0-9]*)(\.[0-9]{1,9})?$
+            precision:
+              type: integer
+              minimum: 0
+              maximum: 9
+        offset:
+          type: integer
+          minimum: 0
+          maximum: 50000
+        limit:
+          type: integer
+          minimum: 1
+          maximum: 50
+        next_offset:
+          type:
+          - integer
+          - 'null'
+          minimum: 1
+          maximum: 50000
+        columns:
+          type: array
+          items:
+            type: string
+        rows:
+          type: array
+          maxItems: 50
+          items:
+            $ref: '#/components/schemas/BudgetStatementRow'
+    BudgetStatementXlsx:
+      type: string
+      format: binary
+      description: Complete original-unit book; amounts and formula-like text are
+        literal spreadsheet text.

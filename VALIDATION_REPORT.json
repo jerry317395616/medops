@@ -6,12 +6,13 @@
 	"runtime_namespace": "medops",
 	"architecture_decisions": [
 		"ADR-0030",
-		"ADR-0031"
+		"ADR-0031",
+		"ADR-0032"
 	],
-	"current_scope": "Automatic confirmation/claim/execution commit-only queue dispatch and minute recovery cron verified. Source9a671b3 full422 quality and strengthened8 native passed; production-identical3caa957 passed60 joint native plus2 migrations. Actual HTTP-to-standard-RQ and two real OS-process claim/execution races passed. Department statements/export/UI, further races, full410 native/protected CI and promotion pending.",
+	"current_scope": "Complete original-unit statement, projected entry, XLSX and Page implemented; focused native and browser validation pending. Prior dispatch proofs retained with their original source SHAs. Whole native422, remaining races, protected CI and promotion pending.",
 	"checks": {
-		"pure_tests_expected": 422,
-		"complete_frappe_tests_expected": 410,
+		"pure_tests_expected": 432,
+		"complete_frappe_tests_expected": 422,
 		"exact_foundation_pure_tests_passed": 21,
 		"native_foundation": {
 			"status": "passed",
@@ -318,6 +319,12 @@
 			"existing_financial_model_counts_unchanged": true,
 			"scheduler_metadata_synchronized": true,
 			"no_zero_row_assumption": true,
+			"public_sites_untouched": true
+		},
+		"budget_statement": {
+			"status": "implemented; focused native and browser pending",
+			"pure_tests": 10,
+			"native_tests": 12,
 			"public_sites_untouched": true
 		}
 	},

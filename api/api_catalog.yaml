@@ -2148,3 +2148,54 @@
   version: v1
   domain_group: Finance
   async: 'No'
+- api_code: FIN-041
+  app: medops
+  method: GET
+  path: /api/method/medops.api.v1.finance.ledger.statement
+  description: 按原始单位核验完整预算下达与冲销账簿后分页
+  request_schema: payload,offset,limit,expected_digest
+  response_schema: BudgetStatement
+  required_role: Budget reader; current complete own-source, field and scope permissions;
+    export also requires all current export grants
+  idempotency: Not required (read-only)
+  transaction_boundary: Owned READ COMMITTED READ ONLY connection; caller transaction
+    preserved
+  audit: Redacted operation and counts; no financial values, private batch facts or
+    authority digest
+  version: v1
+  domain_group: Finance
+  async: 'No'
+- api_code: FIN-042
+  app: medops
+  method: GET
+  path: /api/method/medops.api.v1.finance.ledger.export_statement
+  description: 按当前全部来源及导出权限导出完整精确预算账簿
+  request_schema: payload,expected_digest
+  response_schema: BudgetStatementXlsx
+  required_role: Budget reader; current complete own-source, field and scope permissions;
+    export also requires all current export grants
+  idempotency: Not required (read-only)
+  transaction_boundary: Owned READ COMMITTED READ ONLY connection; caller transaction
+    preserved
+  audit: Redacted operation and counts; no financial values, private batch facts or
+    authority digest
+  version: v1
+  domain_group: Finance
+  async: 'No'
+- api_code: FIN-043
+  app: medops
+  method: GET
+  path: /api/method/medops.api.v1.finance.ledger.get_entry
+  description: 按当前来源权限读取原始单位单笔分录投影
+  request_schema: name
+  response_schema: BudgetLedgerEntry
+  required_role: Budget reader; current complete own-source, field and scope permissions;
+    export also requires all current export grants
+  idempotency: Not required (read-only)
+  transaction_boundary: Owned READ COMMITTED READ ONLY connection; caller transaction
+    preserved
+  audit: Redacted operation and counts; no financial values, private batch facts or
+    authority digest
+  version: v1
+  domain_group: Finance
+  async: 'No'

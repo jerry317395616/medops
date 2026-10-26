@@ -95,6 +95,12 @@ def event_permission(doc, user=None, ptype=None, debug=False):
 
 
 def ledger_permission(doc, user=None, ptype=None, debug=False):
+	from medops.common.budget_statement_access import use_native_ledger_defaults
+
+	if use_native_ledger_defaults():
+		# Private in-memory base check retains native role/share/User Permission
+		# decisions; the controlled reader adds source, scope and field guards.
+		return True
 	# Original-leaf statement service will own projection and private batch proof.
 	# Generic native records cannot serialize private batch links or version digests.
 	del doc, user, ptype, debug
