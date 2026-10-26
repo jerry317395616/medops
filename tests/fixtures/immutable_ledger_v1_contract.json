@@ -1,0 +1,124 @@
+{
+	"source_commit": "0d3d395f3f09efb24b792f1abd963d9177e37c27",
+	"public_contract": {
+		"schema_version": 1,
+		"base_fields": [
+			{
+				"fieldname": "company",
+				"fieldtype": "Link",
+				"required": true
+			},
+			{
+				"fieldname": "organization_unit",
+				"fieldtype": "Link",
+				"required": true
+			},
+			{
+				"fieldname": "posting_date",
+				"fieldtype": "Date",
+				"required": true
+			},
+			{
+				"fieldname": "posting_time",
+				"fieldtype": "Time",
+				"required": true
+			},
+			{
+				"fieldname": "voucher_type",
+				"fieldtype": "Link",
+				"required": true
+			},
+			{
+				"fieldname": "voucher_no",
+				"fieldtype": "Dynamic Link",
+				"required": true
+			},
+			{
+				"fieldname": "reference_type",
+				"fieldtype": "Link",
+				"required": false
+			},
+			{
+				"fieldname": "reference_name",
+				"fieldtype": "Dynamic Link",
+				"required": false
+			},
+			{
+				"fieldname": "quantity",
+				"fieldtype": "Float",
+				"required": false
+			},
+			{
+				"fieldname": "debit",
+				"fieldtype": "Currency",
+				"required": false
+			},
+			{
+				"fieldname": "credit",
+				"fieldtype": "Currency",
+				"required": false
+			},
+			{
+				"fieldname": "amount",
+				"fieldtype": "Currency",
+				"required": false
+			},
+			{
+				"fieldname": "currency",
+				"fieldtype": "Link",
+				"required": false
+			},
+			{
+				"fieldname": "is_reversal",
+				"fieldtype": "Check",
+				"required": false
+			},
+			{
+				"fieldname": "reversal_of",
+				"fieldtype": "Link",
+				"required": false
+			},
+			{
+				"fieldname": "dimensions_json",
+				"fieldtype": "Code",
+				"required": false
+			},
+			{
+				"fieldname": "source_hash",
+				"fieldtype": "Data",
+				"required": false
+			}
+		],
+		"mutation_policy": {
+			"append_only": true,
+			"update": false,
+			"delete": false,
+			"rename": false,
+			"cancel": false,
+			"direct_insert": false
+		},
+		"reversal_policy": {
+			"equal_and_opposite": true,
+			"requires_reversal_of": true,
+			"one_reversal_per_entry": true,
+			"row_lock": true
+		},
+		"http_write_enabled": false
+	},
+	"definition": {
+		"schema_version": 1,
+		"doctype": "HRP Legacy Exactness Ledger",
+		"append_only": true,
+		"reversal_only": true,
+		"negated_fields": [
+			"amount"
+		],
+		"swapped_field_pairs": [
+			[
+				"debit",
+				"credit"
+			]
+		],
+		"reversal_override_fields": []
+	}
+}

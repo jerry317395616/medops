@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from decimal import Decimal, InvalidOperation
+from decimal import Decimal, InvalidOperation, localcontext
 
 MAX_BUDGET_AMOUNT = Decimal("999999999999.999999999")
 MAX_APPROVAL_AMOUNT = Decimal("999999999999999.999999999")
@@ -10,6 +10,25 @@ MAX_APPROVAL_AMOUNT = Decimal("999999999999999.999999999")
 
 class ExactMoneyError(ValueError):
 	"""An amount cannot be represented by the captured exact money contract."""
+
+
+def signed_decimal_amount(
+	value: object,
+	precision: int,
+	*,
+	maximum: Decimal = MAX_APPROVAL_AMOUNT,
+) -> str:
+	"""Exact signed deltas for immutable ledgers; budget inputs remain nonnegative."""
+	if isinstance(value, bool) or not isinstance(value, (str, int, Decimal)) or len(str(value)) > 64:
+		raise ExactMoneyError("decimal amount required")
+	try:
+		amount = Decimal(str(value))
+		with localcontext() as context:
+			context.prec = 48
+			text = exact_decimal_amount(amount.copy_abs(), precision, maximum=maximum)
+		return "-" + text if amount < 0 else text
+	except InvalidOperation as exc:
+		raise ExactMoneyError("invalid decimal amount") from exc
 
 
 def canonical_decimal(amount: Decimal) -> str:

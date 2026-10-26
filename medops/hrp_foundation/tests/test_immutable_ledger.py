@@ -72,7 +72,7 @@ class ReverseTestLedgerService(ReverseImmutableLedgerService):
 	)
 
 
-def _test_doctype_payload() -> dict[str, object]:
+def ledger_test_doctype_payload() -> dict[str, object]:
 	return {
 		"doctype": "DocType",
 		"name": TEST_DOCTYPE,
@@ -213,7 +213,7 @@ def _test_doctype_payload() -> dict[str, object]:
 	}
 
 
-def _entry_values(*, amount: float = 60.0) -> dict[str, object]:
+def ledger_entry_values(*, amount: float = 60.0) -> dict[str, object]:
 	return {
 		"company": "Administrator",
 		"organization_unit": "Administrator",
@@ -232,7 +232,7 @@ def _entry_values(*, amount: float = 60.0) -> dict[str, object]:
 	}
 
 
-def _reversal_overrides(label: str) -> dict[str, object]:
+def ledger_reversal_overrides(label: str) -> dict[str, object]:
 	return {
 		"posting_date": nowdate(),
 		"posting_time": nowtime(),
@@ -261,7 +261,7 @@ class TestImmutableLedger(IntegrationTestCase):
 				force=True,
 				delete_permanently=True,
 			)
-		frappe.get_doc(_test_doctype_payload()).insert(ignore_permissions=True)
+		frappe.get_doc(ledger_test_doctype_payload()).insert(ignore_permissions=True)
 		frappe.local.db.commit()
 		frappe.controllers.setdefault(frappe.local.site, {})[TEST_DOCTYPE] = TestImmutableLedgerEntry
 		cls.addClassCleanup(cls._drop_test_doctype)
@@ -293,7 +293,7 @@ class TestImmutableLedger(IntegrationTestCase):
 		amount: float = 60.0,
 		values: dict[str, object] | None = None,
 	) -> dict[str, Any]:
-		command_values = _entry_values(amount=amount) if values is None else values
+		command_values = ledger_entry_values(amount=amount) if values is None else values
 		return (
 			AppendTestLedgerService()
 			.execute(
@@ -308,7 +308,7 @@ class TestImmutableLedger(IntegrationTestCase):
 		return (
 			ReverseTestLedgerService()
 			.execute(
-				ReverseLedgerEntry(entry_name, _reversal_overrides(key)),
+				ReverseLedgerEntry(entry_name, ledger_reversal_overrides(key)),
 				idempotency_key=key,
 				correlation_id=key,
 			)
@@ -317,7 +317,7 @@ class TestImmutableLedger(IntegrationTestCase):
 
 	def test_append_is_service_only_idempotent_and_audited(self) -> None:
 		key = _test_idempotency_key("append-idempotent")
-		values = _entry_values()
+		values = ledger_entry_values()
 		with patch("medops.services.audit_context.frappe.logger") as logger:
 			first = self._append(key, values=values)
 			second = self._append(key, values=values)
@@ -338,7 +338,7 @@ class TestImmutableLedger(IntegrationTestCase):
 		self.assertNotIn(first["result"]["entry"], str(events))
 
 	def test_direct_insert_update_db_set_delete_and_rename_are_rejected(self) -> None:
-		direct = frappe.get_doc({"doctype": TEST_DOCTYPE, **_entry_values()})
+		direct = frappe.get_doc({"doctype": TEST_DOCTYPE, **ledger_entry_values()})
 		with self.assertRaises(IoneApplicationError) as raised:
 			direct.insert(ignore_permissions=True)
 		self.assertEqual(raised.exception.code, "IONE-CORE-0008")
@@ -435,8 +435,33 @@ class TestImmutableLedger(IntegrationTestCase):
 		self.assertEqual(reversal["result"]["reversal_of"], entry_name)
 		self.assertEqual(frappe.db.count(TEST_DOCTYPE, {"reversal_of": entry_name}), 1)
 
+	def test_committed_reversal_is_visible_after_an_older_consistent_snapshot(self) -> None:
+		entry_name = self._append("COD-033-stale-snapshot-source")["result"]["entry"]
+		self._primary_connection.commit()
+		with self.secondary_connection():
+			self.assertFalse(frappe.db.get_value(TEST_DOCTYPE, {"reversal_of": entry_name}, "name"))
+		with self.primary_connection():
+			self._reverse(entry_name, "COD-033-stale-snapshot-first")
+			self._primary_connection.commit()
+		with self.secondary_connection():
+			# Confirm this is a genuinely stale snapshot before exercising the writer.
+			self.assertFalse(frappe.db.get_value(TEST_DOCTYPE, {"reversal_of": entry_name}, "name"))
+			with self.assertRaises(IoneApplicationError) as raised:
+				self._reverse(entry_name, "COD-033-stale-snapshot-second")
+			self.assertEqual(raised.exception.code, "IONE-CORE-0006")
+			self.assertFalse(
+				frappe.db.exists(
+					"HRP Service Idempotency",
+					idempotency_record_name(
+						ReverseTestLedgerService.definition.name, "COD-033-stale-snapshot-second"
+					),
+				)
+			)
+		self._secondary_connection.rollback()
+		self.assertEqual(frappe.db.count(TEST_DOCTYPE, {"reversal_of": entry_name}), 1)
+
 	def test_invalid_hash_and_unknown_entry_fail_without_ledger_write(self) -> None:
-		values = _entry_values()
+		values = ledger_entry_values()
 		values["source_hash"] = "not-a-hash"
 		before = frappe.db.count(TEST_DOCTYPE)
 		with self.assertRaises(IoneApplicationError) as raised:

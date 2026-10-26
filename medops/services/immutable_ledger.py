@@ -12,14 +12,16 @@ from frappe.utils import cint
 
 from medops.common.domain_service import DomainServiceDefinition
 from medops.common.immutable_ledger import (
-	BASE_LEDGER_FIELDS,
+	EXACT_LEDGER_AMOUNT_FIELDS,
 	ImmutableLedgerContractError,
 	ImmutableLedgerDefinition,
 	ImmutableLedgerPublicContract,
 	assert_reversal_matches,
 	build_reversal_values,
 	get_immutable_ledger_public_contract,
+	ledger_field_contracts,
 	normalize_dimensions_json,
+	normalize_exact_ledger_money,
 	normalize_ledger_name,
 	normalize_ledger_values,
 	normalize_optional_source_hash,
@@ -91,7 +93,7 @@ def validate_immutable_ledger_doctype(definition: ImmutableLedgerDefinition) -> 
 			_raise_configuration_error(f"immutable ledger property must be disabled: {property_name}")
 
 	fields = {field.fieldname: field for field in meta.fields if field.fieldname}
-	for contract in BASE_LEDGER_FIELDS:
+	for contract in ledger_field_contracts(definition):
 		field = fields.get(contract.fieldname)
 		if field is None or field.fieldtype != contract.fieldtype:
 			_raise_configuration_error(f"immutable ledger field contract is invalid: {contract.fieldname}")
@@ -109,7 +111,10 @@ def validate_immutable_ledger_doctype(definition: ImmutableLedgerDefinition) -> 
 	all_fieldnames = frozenset(fields)
 	for fieldname in definition.transformed_fields:
 		field = fields.get(fieldname)
-		if field is None or field.fieldtype not in NUMERIC_FIELDTYPES:
+		exact = definition.amount_schema_version == 2 and fieldname in EXACT_LEDGER_AMOUNT_FIELDS
+		if field is None or (
+			field.fieldtype != "Data" if exact else field.fieldtype not in NUMERIC_FIELDTYPES
+		):
 			_raise_configuration_error(f"immutable ledger reversal field must be numeric: {fieldname}")
 	missing_overrides = definition.reversal_override_fields - all_fieldnames
 	if missing_overrides:
@@ -180,6 +185,8 @@ class ImmutableLedgerDocument(Document):
 		self.is_reversal = cint(self.get("is_reversal"))
 		self.dimensions_json = normalize_dimensions_json(self.get("dimensions_json"))
 		self.source_hash = normalize_optional_source_hash(self.get("source_hash"))
+		if self.ledger_definition.amount_schema_version == 2:
+			self.update(normalize_exact_ledger_money(self.as_dict()))
 
 	def before_insert(self) -> None:
 		context = _require_write_context(self)
@@ -246,7 +253,9 @@ class AppendImmutableLedgerService(DomainService[AppendLedgerEntry]):
 
 	def validate(self, command: AppendLedgerEntry) -> None:
 		fieldnames = self._validate_configuration()
-		values = normalize_ledger_values(command.values, allowed_fields=fieldnames)
+		values = normalize_ledger_values(
+			command.values, allowed_fields=fieldnames, definition=self.ledger_definition
+		)
 		if "is_reversal" in values or "reversal_of" in values:
 			raise ImmutableLedgerContractError("append command cannot set reversal fields")
 
@@ -254,31 +263,13 @@ class AppendImmutableLedgerService(DomainService[AppendLedgerEntry]):
 		fieldnames = _fieldnames(self.ledger_definition.doctype)
 		return {
 			"doctype": self.ledger_definition.doctype,
-			"values": normalize_ledger_values(command.values, allowed_fields=fieldnames),
+			"values": normalize_ledger_values(
+				command.values, allowed_fields=fieldnames, definition=self.ledger_definition
+			),
 		}
 
 	def perform(self, command: AppendLedgerEntry) -> dict[str, object]:
-		fieldnames = _fieldnames(self.ledger_definition.doctype)
-		values = normalize_ledger_values(command.values, allowed_fields=fieldnames)
-		values["is_reversal"] = 0
-		values["reversal_of"] = None
-		with _ledger_write_scope(self.ledger_definition, "append"):
-			document = frappe.get_doc(
-				{
-					"doctype": self.ledger_definition.doctype,
-					**values,
-				}
-			).insert(ignore_permissions=True)
-		emit_audit_event(
-			"immutable_ledger_appended",
-			logger_name="medops.immutable_ledger",
-			ledger_doctype=self.ledger_definition.doctype,
-		)
-		return {
-			"doctype": self.ledger_definition.doctype,
-			"entry": document.name,
-			"is_reversal": False,
-		}
+		return append_immutable_entry(self.ledger_definition, command.values)
 
 
 class ReverseImmutableLedgerService(DomainService[ReverseLedgerEntry]):
@@ -313,62 +304,76 @@ class ReverseImmutableLedgerService(DomainService[ReverseLedgerEntry]):
 		}
 
 	def perform(self, command: ReverseLedgerEntry) -> dict[str, object]:
-		entry_name = normalize_ledger_name(command.entry_name)
-		try:
-			locked_name = frappe.db.get_value(
-				self.ledger_definition.doctype,
-				entry_name,
-				"name",
-				for_update=True,
-				wait=False,
-			)
-		except (frappe.QueryTimeoutError, frappe.QueryDeadlockError) as exc:
-			raise_ione_error("CONFLICT", cause=exc)
-		if not locked_name:
-			raise_ione_error("RESOURCE_NOT_FOUND")
+		return reverse_immutable_entry(self.ledger_definition, command.entry_name, command.overrides)
 
-		original = frappe.get_doc(self.ledger_definition.doctype, entry_name)
-		if cint(original.get("is_reversal")):
-			raise_ione_error("INVALID_STATE_TRANSITION")
-		if frappe.db.get_value(
-			self.ledger_definition.doctype,
-			{"reversal_of": entry_name},
-			"name",
-		):
-			raise_ione_error("INVALID_STATE_TRANSITION")
 
-		fieldnames = self._validate_configuration()
-		try:
-			values = build_reversal_values(
-				original.as_dict(),
-				definition=self.ledger_definition,
-				fieldnames=fieldnames,
-				overrides=command.overrides,
-			)
-		except ImmutableLedgerContractError as exc:
-			raise_ione_error("INVALID_REQUEST", cause=exc)
-		with _ledger_write_scope(
-			self.ledger_definition,
-			"reverse",
-			original=original.as_dict(),
-		):
-			reversal = frappe.get_doc(
-				{
-					"doctype": self.ledger_definition.doctype,
-					**values,
-				}
-			).insert(ignore_permissions=True)
-		emit_audit_event(
-			"immutable_ledger_reversed",
-			logger_name="medops.immutable_ledger",
-			ledger_doctype=self.ledger_definition.doctype,
+def append_immutable_entry(
+	definition: ImmutableLedgerDefinition, values: Mapping[str, object]
+) -> dict[str, object]:
+	"""For owned services inside their transaction, idempotency and business authority.
+
+	Concrete controllers must enforce their domain capability. No generic HTTP
+	writer or transaction commit is provided here.
+	"""
+	require_roles(definition.required_roles)
+	fieldnames = validate_immutable_ledger_doctype(definition)
+	values = normalize_ledger_values(values, allowed_fields=fieldnames, definition=definition)
+	if "is_reversal" in values or "reversal_of" in values:
+		raise ImmutableLedgerContractError("append command cannot set reversal fields")
+	with _ledger_write_scope(definition, "append"):
+		document = frappe.get_doc(
+			dict(doctype=definition.doctype, **values, is_reversal=0, reversal_of=None)
+		).insert(ignore_permissions=True)
+	emit_audit_event(
+		"immutable_ledger_appended", logger_name="medops.immutable_ledger", ledger_doctype=definition.doctype
+	)
+	return {"doctype": definition.doctype, "entry": document.name, "is_reversal": False}
+
+
+def reverse_immutable_entry(
+	definition: ImmutableLedgerDefinition, entry_name: str, overrides: Mapping[str, object]
+) -> dict[str, object]:
+	"""Equal-and-opposite append within an already-authorized owned transaction."""
+	require_roles(definition.required_roles)
+	validate_immutable_ledger_doctype(definition)
+	entry_name = normalize_ledger_name(entry_name)
+	try:
+		locked_name = frappe.db.get_value(definition.doctype, entry_name, "name", for_update=True, wait=False)
+	except (frappe.QueryTimeoutError, frappe.QueryDeadlockError) as exc:
+		raise_ione_error("CONFLICT", cause=exc)
+	if not locked_name:
+		raise_ione_error("RESOURCE_NOT_FOUND")
+	original = frappe.get_doc(definition.doctype, entry_name)
+	if cint(original.get("is_reversal")):
+		raise_ione_error("INVALID_STATE_TRANSITION")
+	try:
+		# Locking reads see committed reversals even when earlier authorization
+		# queries established an older repeatable-read snapshot in this transaction.
+		existing_reversal = frappe.db.get_value(
+			definition.doctype, {"reversal_of": entry_name}, "name", for_update=True, wait=False
 		)
-		return {
-			"doctype": self.ledger_definition.doctype,
-			"entry": reversal.name,
-			"is_reversal": True,
-			"reversal_of": entry_name,
-		}
+	except (frappe.QueryTimeoutError, frappe.QueryDeadlockError) as exc:
+		raise_ione_error("CONFLICT", cause=exc)
+	if existing_reversal:
+		raise_ione_error("INVALID_STATE_TRANSITION")
+	fieldnames = _fieldnames(definition.doctype)
+	try:
+		values = build_reversal_values(
+			original.as_dict(), definition=definition, fieldnames=fieldnames, overrides=overrides
+		)
+	except ImmutableLedgerContractError as exc:
+		raise_ione_error("INVALID_REQUEST", cause=exc)
+	with _ledger_write_scope(definition, "reverse", original=original.as_dict()):
+		reversal = frappe.get_doc(dict(doctype=definition.doctype, **values)).insert(ignore_permissions=True)
+	emit_audit_event(
+		"immutable_ledger_reversed", logger_name="medops.immutable_ledger", ledger_doctype=definition.doctype
+	)
+	return {
+		"doctype": definition.doctype,
+		"entry": reversal.name,
+		"is_reversal": True,
+		"reversal_of": entry_name,
+	}
 
 
 def get_immutable_ledger_contract_status() -> ImmutableLedgerPublicContract:
@@ -390,6 +395,8 @@ __all__ = [
 	"ImmutableLedgerDocument",
 	"ReverseImmutableLedgerService",
 	"ReverseLedgerEntry",
+	"append_immutable_entry",
 	"get_immutable_ledger_contract_status",
+	"reverse_immutable_entry",
 	"validate_immutable_ledger_doctype",
 ]
