@@ -48,6 +48,15 @@ class TestBudgetReleaseExecution(FrappeAPITestCase):
 		super().setUp()
 		self.new_release()
 		self.authorize()
+		# The pinned lazy secondary_connection creates its connection before
+		# capturing current_conn. Initialize while explicitly retaining the real
+		# HTTP/job primary, so later revocation callbacks restore that connection.
+		primary = frappe.local.db
+		try:
+			with self.secondary_connection():
+				self._secondary_connection.rollback()
+		finally:
+			frappe.local.db = primary
 
 	def tearDown(self):
 		frappe.set_user("Administrator")
@@ -239,10 +248,12 @@ class TestBudgetReleaseExecution(FrappeAPITestCase):
 			result = append_immutable_entry(*args, **kwargs)
 			calls += 1
 			if calls == 1:
+				primary = frappe.local.db
 				with self.secondary_connection():
 					frappe.set_user("Administrator")
 					revoke()
 					self._secondary_connection.commit()
+				self.assertIs(frappe.local.db, primary)
 				frappe.set_user(source_fixture.MANAGER)
 			return result
 
