@@ -2,7 +2,7 @@
 	"schema_version": 1,
 	"status": "IN_PROGRESS_COD_032",
 	"task_id": "COD-032",
-	"recorded_on": "2026-10-25",
+	"recorded_on": "2026-10-26",
 	"runtime_namespace": "medops",
 	"architecture_decisions": [
 		"ADR-0029"
@@ -113,20 +113,35 @@
 		"cod032_promoted": false
 	},
 	"human_approval_candidate": {
-		"status": "verification_in_progress",
+		"status": "focused_verified_full_ci_pending",
 		"models_added": 2,
 		"pure_tests_passed": 9,
 		"native_tests_defined": 18,
 		"public_deployment": "none",
 		"remaining": [
-			"native HTTP verification",
-			"current permission and delegation regressions",
-			"browser and concurrent decisions",
+			"concurrent human decisions",
 			"approved department consolidation",
-			"full quality and protected CI"
+			"latest full protected CI",
+			"hospital-specific performance/interfaces/UAT/DR"
 		],
 		"first_native_candidate": "2a71be7293e987e4f4c655b57887fdb636109ce7",
 		"repeat_migrations": 2,
-		"first_native_result": "11 run; 4 failed assertions and 2 errors; fixing parent repeatable-read snapshot and same-session test setup"
+		"first_native_result": "11 run; 4 failed assertions and 2 errors; fixing parent repeatable-read snapshot and same-session test setup",
+		"native_tests_passed": 18,
+		"focused_native_total": 113,
+		"native_commit": "d29e75023087172ab8552ef679c59a3eeb0f793a",
+		"full_local_quality": "passed363 pure and all checks at7c26fbe",
+		"repeat_migrations_commit": "7c26fbe476ab96e76234f1c50c679de25ca8d720",
+		"browser": {
+			"status": "passed",
+			"commit": "7c26fbe476ab96e76234f1c50c679de25ca8d720",
+			"case": "29bf7e751f76d444ee8362012baa59a00d1cc9aab8c9614ca6de00f2c4b807e5",
+			"amount": "100000.000000001",
+			"independent_actors": 2,
+			"first_vote": "Pending",
+			"second_vote": "Approved",
+			"normal_csrf_and_session": true,
+			"remaining": "Recheck minor status-default and breadcrumb presentation after normal migration"
+		}
 	}
 }

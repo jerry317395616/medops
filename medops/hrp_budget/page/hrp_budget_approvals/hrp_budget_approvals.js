@@ -29,7 +29,7 @@ frappe.pages["hrp-budget-approvals"].on_page_load = (wrapper) => {
 			$("<div class='table-responsive'>").appendTo(parent),
 		);
 		const header = $("<tr>").appendTo($("<thead>").appendTo(table));
-		for (const title of headings) $("<th>").text(__(title)).appendTo(header);
+		for (const title of headings) $("<th class='text-nowrap'>").text(__(title)).appendTo(header);
 		return $("<tbody>").appendTo(table);
 	}
 	function fact(parent, label, value) {
@@ -170,14 +170,17 @@ frappe.pages["hrp-budget-approvals"].on_page_load = (wrapper) => {
 			const history = table(body, ["步骤", "审批人", "决定", "理由", "时间"]);
 			for (const event of doc.reviews) {
 				const row = $("<tr>").appendTo(history);
-				for (const text of [
+				for (const [index, text] of [
 					event.sequence_no,
 					event.actor,
 					actionLabel(event.action),
 					event.reason,
 					event.recorded_at,
-				])
-					$("<td>").text(text).appendTo(row);
+				].entries())
+					$("<td>")
+						.toggleClass("text-nowrap", index === 0 || index === 2)
+						.text(text)
+						.appendTo(row);
 			}
 		}
 	}
@@ -270,6 +273,7 @@ frappe.pages["hrp-budget-approvals"].on_page_load = (wrapper) => {
 			render_input: true,
 		});
 	}
+	controls.status.set_value(status("Pending"));
 	ready = true;
 	page.add_inner_button(__("审批列表"), () =>
 		frappe.get_route()[1] ? frappe.set_route("hrp-budget-approvals") : refresh(),
@@ -277,4 +281,11 @@ frappe.pages["hrp-budget-approvals"].on_page_load = (wrapper) => {
 	page.add_inner_button(__("刷新"), refresh);
 	wrapper.budgetApprovalRefresh = refresh;
 };
-frappe.pages["hrp-budget-approvals"].on_page_show = (wrapper) => wrapper.budgetApprovalRefresh?.();
+frappe.pages["hrp-budget-approvals"].on_page_show = (wrapper) => {
+	frappe.breadcrumbs.add({
+		type: "Custom",
+		label: __("预算审批"),
+		route: frappe.router.make_url(["hrp-budget-approvals"]),
+	});
+	return wrapper.budgetApprovalRefresh?.();
+};
