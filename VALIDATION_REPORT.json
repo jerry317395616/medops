@@ -8,7 +8,7 @@
 		"ADR-0030",
 		"ADR-0031"
 	],
-	"current_scope": "Owned release/reversal batch execution and explicit job transaction boundary implemented, pending focused native verification. No automatic queue hook or scheduler yet; statements/UI/full native/RQ/races/CI incomplete.",
+	"current_scope": "Runtime models, human authority and owned batch release/reversal jobs implemented. Source836a8c7 passed full420 quality,26 combined native and a real standard RQ two-job posting. Automatic dispatch/cron, terminal recovery, statements/UI, races and full389 native/CI/release remain unfinished.",
 	"checks": {
 		"pure_tests_expected": 420,
 		"complete_frappe_tests_expected": 389,
@@ -33,9 +33,9 @@
 			"migrations": 0
 		},
 		"protected_ci": "not run for COD-033",
-		"local_quality": "all passed at a50b750bdf1e42bfb8829b4f0b91af1accc9abfc",
-		"pure_tests_passed": 415,
-		"complete_frappe_tests": "382 expected; full current suite pending complete vertical slice",
+		"local_quality": "all passed at 836a8c74a5c3cdf057f977298d2442986aa5f494",
+		"pure_tests_passed": 420,
+		"complete_frappe_tests": "389 expected; full current suite pending complete vertical slice",
 		"current_protocol": {
 			"status": "full local quality passed",
 			"tests": 11,
@@ -58,7 +58,7 @@
 				"Outbox stale-snapshot full transaction retry"
 			]
 		},
-		"current_local_quality": "Full415 passed at a50b750bdf1e42bfb8829b4f0b91af1accc9abfc",
+		"current_local_quality": "Full420 passed at 836a8c74a5c3cdf057f977298d2442986aa5f494",
 		"runtime_native_partial": {
 			"source_commit": "daaed16f7765c0fb2e796fa100ca817970585499",
 			"passed_counts": [
@@ -89,12 +89,49 @@
 			]
 		},
 		"owned_execution": {
-			"status": "implemented; real framework/native verification pending",
-			"native_tests_expected": 7,
+			"status": "passed focused native and real RQ",
+			"source_commit": "836a8c74a5c3cdf057f977298d2442986aa5f494",
+			"native_counts": [
+				12,
+				7,
+				7
+			],
 			"automatic_enqueue_enabled": false,
 			"cron_wired": false,
-			"real_rq_verified": false,
-			"public_deployment": false
+			"real_rq_verified": true,
+			"real_rq_jobs": 2,
+			"real_rq_batches": 1,
+			"real_rq_ledger_rows": 2,
+			"public_deployment": false,
+			"coverage": [
+				"complete exact release and reversal",
+				"same authorization idempotent replay and stale epoch rejection",
+				"second append failure atomic rollback and retry",
+				"mid-transaction separate connection share/role/field revocation",
+				"post-commit poisoned Redis role cache; both rows written then final validation rollback",
+				"foreign claim receipt, missing capability and repeatable-read rejection",
+				"real RQ enqueue-after-commit and reference-only job args"
+			],
+			"rq_isolation": {
+				"old_budget_unchanged": true,
+				"user_roles_unchanged": true,
+				"gl_stock_unchanged": true,
+				"error_logs_unchanged": true,
+				"default_queue_before": 384,
+				"default_queue_after": 384,
+				"long_queue_before": 0,
+				"long_queue_after": 0,
+				"worker_exited": true
+			},
+			"pending": [
+				"automatic dispatch and recovery before enabling scheduling",
+				"last-attempt crash terminal state",
+				"superseded messages and scheduler fairness",
+				"current scope/User Permission race tests",
+				"full races/process termination/lease recovery",
+				"department statements/export/UI",
+				"full389+ native and protected release"
+			]
 		}
 	},
 	"previous_verified_release": {
