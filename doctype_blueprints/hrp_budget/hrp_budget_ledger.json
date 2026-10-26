@@ -4,266 +4,507 @@
   "module": "HRP Budget",
   "custom": 0,
   "engine": "InnoDB",
-  "autoname": "format:FIN-.YYYY.-.#####",
-  "title_field": "subject",
+  "autoname": "field:entry_key",
+  "title_field": "entry_key",
   "is_submittable": 0,
   "istable": 0,
   "issingle": 0,
   "track_changes": 0,
   "allow_rename": 0,
   "editable_grid": 0,
-  "sort_field": "modified",
+  "sort_field": "creation",
   "sort_order": "DESC",
   "index_web_pages_for_search": 0,
-  "description": "全面预算领域的HRP预算台账对象；用于支撑业务闭环、权限、审计与对账。",
+  "description": "保留完整原始粒度和捕获精度的预算不可变分录，仅允许受控追加与完整反向。",
   "fields": [
+    {
+      "fieldname": "entry_key",
+      "label": "分录身份",
+      "fieldtype": "Data",
+      "read_only": 1,
+      "reqd": 1,
+      "unique": 1
+    },
+    {
+      "fieldname": "entry_type",
+      "label": "分录类型",
+      "fieldtype": "Select",
+      "read_only": 1,
+      "reqd": 1,
+      "options": "Allocation"
+    },
     {
       "fieldname": "company",
       "label": "法人",
       "fieldtype": "Link",
-      "options": "Company",
+      "read_only": 1,
       "reqd": 1,
-      "search_index": 1,
-      "in_list_view": 1,
-      "description": "法人"
+      "options": "Company"
+    },
+    {
+      "fieldname": "hospital",
+      "label": "医院",
+      "fieldtype": "Link",
+      "read_only": 1,
+      "reqd": 1,
+      "options": "HRP Hospital"
+    },
+    {
+      "fieldname": "organization_version",
+      "label": "组织快照",
+      "fieldtype": "Link",
+      "read_only": 1,
+      "reqd": 1,
+      "options": "HRP Organization Version"
     },
     {
       "fieldname": "organization_unit",
-      "label": "组织单元",
+      "label": "原始科室",
       "fieldtype": "Link",
-      "options": "HRP Organization Unit",
+      "read_only": 1,
       "reqd": 1,
-      "search_index": 1,
-      "description": "组织单元"
+      "options": "HRP Organization Unit"
     },
     {
-      "fieldname": "posting_date",
-      "label": "记账日期",
-      "fieldtype": "Date",
-      "reqd": 1,
-      "search_index": 1,
-      "in_list_view": 1,
-      "description": "记账日期"
-    },
-    {
-      "fieldname": "posting_time",
-      "label": "记账时间",
-      "fieldtype": "Time",
-      "reqd": 1,
-      "description": "记账时间"
-    },
-    {
-      "fieldname": "voucher_type",
-      "label": "凭证类型",
+      "fieldname": "fiscal_year",
+      "label": "财政年度",
       "fieldtype": "Link",
-      "options": "DocType",
+      "read_only": 1,
       "reqd": 1,
-      "search_index": 1,
-      "description": "凭证类型"
-    },
-    {
-      "fieldname": "voucher_no",
-      "label": "凭证号",
-      "fieldtype": "Dynamic Link",
-      "options": "voucher_type",
-      "reqd": 1,
-      "search_index": 1,
-      "in_list_view": 1,
-      "description": "凭证号"
-    },
-    {
-      "fieldname": "reference_type",
-      "label": "业务对象类型",
-      "fieldtype": "Link",
-      "options": "DocType",
-      "description": "业务对象类型"
-    },
-    {
-      "fieldname": "reference_name",
-      "label": "业务对象",
-      "fieldtype": "Dynamic Link",
-      "options": "reference_type",
-      "search_index": 1,
-      "description": "业务对象"
-    },
-    {
-      "fieldname": "quantity",
-      "label": "数量",
-      "fieldtype": "Float",
-      "precision": "6",
-      "description": "数量"
-    },
-    {
-      "fieldname": "debit",
-      "label": "借方",
-      "fieldtype": "Currency",
-      "options": "currency",
-      "precision": "2",
-      "description": "借方"
-    },
-    {
-      "fieldname": "credit",
-      "label": "贷方",
-      "fieldtype": "Currency",
-      "options": "currency",
-      "precision": "2",
-      "description": "贷方"
-    },
-    {
-      "fieldname": "amount",
-      "label": "发生额",
-      "fieldtype": "Currency",
-      "options": "currency",
-      "in_list_view": 1,
-      "precision": "2",
-      "description": "发生额"
+      "options": "Fiscal Year"
     },
     {
       "fieldname": "currency",
-      "label": "币种",
+      "label": "捕获币种",
       "fieldtype": "Link",
-      "options": "Currency",
-      "default": "CNY",
-      "description": "币种"
+      "read_only": 1,
+      "reqd": 1,
+      "options": "Currency"
     },
     {
-      "fieldname": "is_reversal",
-      "label": "是否冲销",
-      "fieldtype": "Check",
-      "default": "0",
-      "description": "是否冲销"
+      "fieldname": "currency_precision",
+      "label": "捕获精度",
+      "fieldtype": "Int",
+      "read_only": 1,
+      "reqd": 1
     },
     {
-      "fieldname": "reversal_of",
-      "label": "被冲销记录",
+      "fieldname": "amount_schema_version",
+      "label": "金额版本",
+      "fieldtype": "Int",
+      "read_only": 1,
+      "reqd": 1
+    },
+    {
+      "fieldname": "cost_center",
+      "label": "原始成本中心",
       "fieldtype": "Link",
-      "options": "HRP Budget Ledger",
-      "description": "被冲销记录"
+      "read_only": 1,
+      "reqd": 1,
+      "options": "Cost Center"
     },
     {
-      "fieldname": "dimensions_json",
-      "label": "维度快照",
-      "fieldtype": "Code",
-      "options": "JSON",
-      "description": "维度快照"
-    },
-    {
-      "fieldname": "source_hash",
-      "label": "来源哈希",
-      "fieldtype": "Data",
-      "search_index": 1,
-      "description": "来源哈希"
-    },
-    {
-      "fieldname": "budget_version",
-      "label": "预算版本",
+      "fieldname": "account",
+      "label": "原始科目",
       "fieldtype": "Link",
-      "options": "HRP Budget Version",
-      "search_index": 1,
-      "description": "预算版本"
+      "read_only": 1,
+      "reqd": 1,
+      "options": "Account"
     },
     {
       "fieldname": "budget_subject",
       "label": "预算科目",
       "fieldtype": "Link",
-      "options": "HRP Dimension Value",
-      "search_index": 1,
-      "description": "预算科目"
+      "read_only": 1,
+      "reqd": 1,
+      "options": "HRP Dimension Value"
     },
     {
       "fieldname": "funding_source",
       "label": "资金来源",
       "fieldtype": "Link",
-      "options": "HRP Funding Source",
-      "search_index": 1,
-      "description": "资金来源"
-    },
-    {
-      "fieldname": "approved_amount",
-      "label": "批准金额",
-      "fieldtype": "Currency",
-      "options": "currency",
-      "precision": "2",
-      "description": "批准金额"
-    },
-    {
-      "fieldname": "reserved_amount",
-      "label": "预占金额",
-      "fieldtype": "Currency",
-      "options": "currency",
       "read_only": 1,
-      "precision": "2",
-      "description": "预占金额"
+      "reqd": 1,
+      "options": "HRP Funding Source"
     },
     {
-      "fieldname": "committed_amount",
-      "label": "承诺金额",
-      "fieldtype": "Currency",
-      "options": "currency",
+      "fieldname": "project",
+      "label": "原始项目",
+      "fieldtype": "Link",
       "read_only": 1,
-      "precision": "2",
-      "description": "承诺金额"
+      "reqd": 0,
+      "options": "Project"
     },
     {
-      "fieldname": "actual_amount",
-      "label": "实际金额",
-      "fieldtype": "Currency",
-      "options": "currency",
+      "fieldname": "period_index",
+      "label": "期间序号",
+      "fieldtype": "Int",
       "read_only": 1,
-      "precision": "2",
-      "description": "实际金额"
-    },
-    {
-      "fieldname": "available_amount",
-      "label": "可用金额",
-      "fieldtype": "Currency",
-      "options": "currency",
-      "read_only": 1,
-      "in_list_view": 1,
-      "precision": "2",
-      "description": "可用金额"
-    },
-    {
-      "fieldname": "control_mode",
-      "label": "控制模式",
-      "fieldtype": "Select",
-      "options": "Hard\nSoft\nAlert\nNone",
-      "default": "Hard",
-      "description": "控制模式"
+      "reqd": 1
     },
     {
       "fieldname": "period_start",
       "label": "期间开始",
       "fieldtype": "Date",
-      "description": "期间开始"
+      "read_only": 1,
+      "reqd": 1
     },
     {
       "fieldname": "period_end",
       "label": "期间结束",
       "fieldtype": "Date",
-      "description": "期间结束"
+      "read_only": 1,
+      "reqd": 1
+    },
+    {
+      "fieldname": "posting_date",
+      "label": "记账日期",
+      "fieldtype": "Date",
+      "read_only": 1,
+      "reqd": 1,
+      "search_index": 1
+    },
+    {
+      "fieldname": "posting_time",
+      "label": "记账时间",
+      "fieldtype": "Time",
+      "read_only": 1,
+      "reqd": 1
+    },
+    {
+      "fieldname": "voucher_type",
+      "label": "凭证类型",
+      "fieldtype": "Link",
+      "read_only": 1,
+      "reqd": 1,
+      "options": "DocType",
+      "hidden": 1,
+      "permlevel": 1
+    },
+    {
+      "fieldname": "voucher_no",
+      "label": "批次凭证",
+      "fieldtype": "Dynamic Link",
+      "read_only": 1,
+      "reqd": 1,
+      "options": "voucher_type",
+      "hidden": 1,
+      "permlevel": 1
+    },
+    {
+      "fieldname": "reference_type",
+      "label": "原始业务类型",
+      "fieldtype": "Link",
+      "read_only": 1,
+      "reqd": 0,
+      "options": "DocType"
+    },
+    {
+      "fieldname": "reference_name",
+      "label": "原始业务对象",
+      "fieldtype": "Dynamic Link",
+      "read_only": 1,
+      "reqd": 0,
+      "options": "reference_type"
+    },
+    {
+      "fieldname": "quantity",
+      "label": "保留数量",
+      "fieldtype": "Float",
+      "read_only": 1,
+      "reqd": 0,
+      "hidden": 1,
+      "default": "0",
+      "precision": "6"
+    },
+    {
+      "fieldname": "amount",
+      "label": "精确变动金额",
+      "fieldtype": "Data",
+      "read_only": 1,
+      "reqd": 1
+    },
+    {
+      "fieldname": "debit",
+      "label": "精确下达金额",
+      "fieldtype": "Data",
+      "read_only": 1,
+      "reqd": 1
+    },
+    {
+      "fieldname": "credit",
+      "label": "精确冲销金额",
+      "fieldtype": "Data",
+      "read_only": 1,
+      "reqd": 1
+    },
+    {
+      "fieldname": "is_reversal",
+      "label": "是否冲销",
+      "fieldtype": "Check",
+      "read_only": 1,
+      "reqd": 0,
+      "default": "0"
+    },
+    {
+      "fieldname": "reversal_of",
+      "label": "原分录",
+      "fieldtype": "Link",
+      "read_only": 1,
+      "reqd": 0,
+      "options": "HRP Budget Ledger",
+      "unique": 1
+    },
+    {
+      "fieldname": "dimensions_json",
+      "label": "原始维度",
+      "fieldtype": "Code",
+      "read_only": 1,
+      "reqd": 0,
+      "options": "JSON",
+      "hidden": 1,
+      "permlevel": 1
+    },
+    {
+      "fieldname": "source_hash",
+      "label": "分录来源摘要",
+      "fieldtype": "Data",
+      "read_only": 1,
+      "reqd": 1,
+      "hidden": 1,
+      "permlevel": 1
+    },
+    {
+      "fieldname": "release_digest",
+      "label": "财务意图摘要",
+      "fieldtype": "Data",
+      "read_only": 1,
+      "reqd": 1,
+      "hidden": 1,
+      "permlevel": 1
+    },
+    {
+      "fieldname": "origin_plan",
+      "label": "原预算计划",
+      "fieldtype": "Link",
+      "read_only": 1,
+      "reqd": 1,
+      "options": "HRP Budget Plan"
+    },
+    {
+      "fieldname": "origin_line_key",
+      "label": "原计划明细身份",
+      "fieldtype": "Data",
+      "read_only": 1,
+      "reqd": 1
+    },
+    {
+      "fieldname": "origin_version",
+      "label": "原预算版本",
+      "fieldtype": "Link",
+      "read_only": 1,
+      "reqd": 1,
+      "options": "HRP Budget Version"
+    },
+    {
+      "fieldname": "origin_version_digest",
+      "label": "整版事实摘要",
+      "fieldtype": "Data",
+      "read_only": 1,
+      "reqd": 1,
+      "hidden": 1,
+      "permlevel": 1
+    },
+    {
+      "fieldname": "origin_plan_digest",
+      "label": "原计划事实摘要",
+      "fieldtype": "Data",
+      "read_only": 1,
+      "reqd": 1,
+      "hidden": 1,
+      "permlevel": 1
+    },
+    {
+      "fieldname": "fact_key",
+      "label": "原始预算事实身份",
+      "fieldtype": "Data",
+      "read_only": 1,
+      "reqd": 1
+    },
+    {
+      "fieldname": "description",
+      "label": "原明细说明",
+      "fieldtype": "Small Text",
+      "read_only": 1,
+      "reqd": 0
+    },
+    {
+      "fieldname": "source_submission",
+      "label": "原科室申报",
+      "fieldtype": "Link",
+      "read_only": 1,
+      "reqd": 1,
+      "options": "HRP Budget Submission"
+    },
+    {
+      "fieldname": "source_approval",
+      "label": "原科室审批",
+      "fieldtype": "Link",
+      "read_only": 1,
+      "reqd": 1,
+      "options": "HRP Budget Approval"
+    },
+    {
+      "fieldname": "source_snapshot_digest",
+      "label": "原科室事实摘要",
+      "fieldtype": "Data",
+      "read_only": 1,
+      "reqd": 1,
+      "hidden": 1,
+      "permlevel": 1
+    },
+    {
+      "fieldname": "source_decision_digest",
+      "label": "原科室审批摘要",
+      "fieldtype": "Data",
+      "read_only": 1,
+      "reqd": 1,
+      "hidden": 1,
+      "permlevel": 1
+    },
+    {
+      "fieldname": "source_final_review",
+      "label": "原科室决定证据",
+      "fieldtype": "Link",
+      "read_only": 1,
+      "reqd": 1,
+      "options": "HRP Budget Review"
+    },
+    {
+      "fieldname": "source_event_digest",
+      "label": "原科室证据摘要",
+      "fieldtype": "Data",
+      "read_only": 1,
+      "reqd": 1,
+      "hidden": 1,
+      "permlevel": 1
     }
   ],
   "permissions": [
     {
-      "role": "HRP Finance User",
+      "role": "System Manager",
       "read": 1,
-      "write": 0,
+      "report": 1,
+      "export": 1,
+      "print": 1,
+      "select": 1,
       "create": 0,
+      "write": 0,
       "delete": 0,
       "submit": 0,
       "cancel": 0,
-      "amend": 0
+      "amend": 0,
+      "import": 0
+    },
+    {
+      "role": "HRP System Manager",
+      "read": 1,
+      "report": 1,
+      "export": 1,
+      "print": 1,
+      "select": 1,
+      "create": 0,
+      "write": 0,
+      "delete": 0,
+      "submit": 0,
+      "cancel": 0,
+      "amend": 0,
+      "import": 0
     },
     {
       "role": "HRP Budget Manager",
       "read": 1,
-      "write": 0,
+      "report": 1,
+      "export": 1,
+      "print": 1,
+      "select": 1,
       "create": 0,
+      "write": 0,
       "delete": 0,
       "submit": 0,
       "cancel": 0,
-      "amend": 0
+      "amend": 0,
+      "import": 0
+    },
+    {
+      "role": "HRP Budget User",
+      "read": 1,
+      "report": 1,
+      "export": 1,
+      "print": 1,
+      "select": 1,
+      "create": 0,
+      "write": 0,
+      "delete": 0,
+      "submit": 0,
+      "cancel": 0,
+      "amend": 0,
+      "import": 0
+    },
+    {
+      "role": "HRP Finance User",
+      "read": 1,
+      "report": 1,
+      "export": 1,
+      "print": 1,
+      "select": 1,
+      "create": 0,
+      "write": 0,
+      "delete": 0,
+      "submit": 0,
+      "cancel": 0,
+      "amend": 0,
+      "import": 0
+    },
+    {
+      "role": "HRP Budget Approver",
+      "read": 1,
+      "report": 1,
+      "export": 1,
+      "print": 1,
+      "select": 1,
+      "create": 0,
+      "write": 0,
+      "delete": 0,
+      "submit": 0,
+      "cancel": 0,
+      "amend": 0,
+      "import": 0
+    },
+    {
+      "role": "HRP Auditor",
+      "read": 1,
+      "report": 1,
+      "export": 1,
+      "print": 1,
+      "select": 1,
+      "create": 0,
+      "write": 0,
+      "delete": 0,
+      "submit": 0,
+      "cancel": 0,
+      "amend": 0,
+      "import": 0
+    },
+    {
+      "role": "System Manager",
+      "permlevel": 1,
+      "read": 1
+    },
+    {
+      "role": "HRP System Manager",
+      "permlevel": 1,
+      "read": 1
     }
   ],
   "links": [],
@@ -281,5 +522,54 @@
     "standard_references": [],
     "domain_group": "Finance",
     "module_package": "hrp_budget"
-  }
+  },
+  "field_order": [
+    "entry_key",
+    "entry_type",
+    "company",
+    "hospital",
+    "organization_version",
+    "organization_unit",
+    "fiscal_year",
+    "currency",
+    "currency_precision",
+    "amount_schema_version",
+    "cost_center",
+    "account",
+    "budget_subject",
+    "funding_source",
+    "project",
+    "period_index",
+    "period_start",
+    "period_end",
+    "posting_date",
+    "posting_time",
+    "voucher_type",
+    "voucher_no",
+    "reference_type",
+    "reference_name",
+    "quantity",
+    "amount",
+    "debit",
+    "credit",
+    "is_reversal",
+    "reversal_of",
+    "dimensions_json",
+    "source_hash",
+    "release_digest",
+    "origin_plan",
+    "origin_line_key",
+    "origin_version",
+    "origin_version_digest",
+    "origin_plan_digest",
+    "fact_key",
+    "description",
+    "source_submission",
+    "source_approval",
+    "source_snapshot_digest",
+    "source_decision_digest",
+    "source_final_review",
+    "source_event_digest"
+  ],
+  "states": []
 }

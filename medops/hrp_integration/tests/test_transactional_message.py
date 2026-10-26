@@ -415,6 +415,39 @@ class TestTransactionalMessage(IntegrationTestCase):
 		self.assertFalse(document.processing_token_hash)
 		self.assertTrue(document.completed_at)
 
+	def test_outbox_current_state_survives_an_older_consistent_snapshot(self) -> None:
+		message = _result(self._publish("stale-state"))["message"]
+		self._primary_connection.commit()
+		with self.primary_connection():
+			with self.secondary_connection():
+				self.assertEqual(frappe.db.get_value(TEST_OUTBOX, message, "status"), "Pending")
+			with self.primary_connection():
+				self._claim(message, "stale-first")
+				self._primary_connection.commit()
+			with self.secondary_connection():
+				self.assertEqual(frappe.db.get_value(TEST_OUTBOX, message, "status"), "Pending")
+				try:
+					self._claim(message, "stale-second")
+				except frappe.QueryDeadlockError:
+					self._secondary_connection.rollback()
+				except IoneApplicationError as error:
+					self.assertEqual(error.code, "IONE-CORE-0005")
+				else:
+					self.fail("A current processing lease was overwritten using an old snapshot")
+				with self.assertRaises(IoneApplicationError) as raised:
+					self._claim(message, "stale-second")
+				self.assertEqual(raised.exception.code, "IONE-CORE-0005")
+				self.assertEqual(frappe.db.get_value(TEST_OUTBOX, message, "attempt_count"), 1)
+				self.assertFalse(
+					frappe.db.exists(
+						"HRP Service Idempotency",
+						idempotency_record_name(
+							ClaimTestOutboxService.definition.name, _key("claim-stale-second")
+						),
+					)
+				)
+				self._secondary_connection.rollback()
+
 	def test_outbox_failure_retries_then_dead_letters_without_payload_audit(self) -> None:
 		message = _result(self._publish("dead-letter"))["message"]
 		with patch("medops.services.audit_context.frappe.logger") as logger:

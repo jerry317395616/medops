@@ -67,6 +67,20 @@ def resign(value):
 
 
 class TestBudgetHumanWorkflow(unittest.TestCase):
+	def test_consolidated_amount_and_threshold_keep_fifteen_integer_places(self):
+		value = decision()
+		value["amount"] = "999999999999999.000000001"
+		value["steps"][0]["threshold_amount"] = value["amount"]
+		self.assertEqual(parse_decision(resign(value))["amount"], value["amount"])
+		for key in ("amount", "threshold_amount"):
+			bad = deepcopy(value)
+			if key == "amount":
+				bad[key] = "1000000000000000.000000000"
+			else:
+				bad["steps"][0][key] = "1000000000000000.000000000"
+			with self.subTest(key=key), self.assertRaises(ValueError):
+				parse_decision(resign(bad))
+
 	def test_all_votes_advance_sequentially_and_complete_exactly_once(self):
 		policy = decision()
 		a = Vote(1, "a@example.com", "Approve")

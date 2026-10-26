@@ -312,7 +312,7 @@ class TestBudgetConsolidationAPI(FrappeAPITestCase):
 			dict(confirmation=preview["confirmation"], proof=preview["proof"], acknowledge=True),
 		)
 
-	def new_sources(self):
+	def new_sources(self, amounts=None):
 		frappe.set_user("Administrator")
 		precision = frappe.db.get_default("currency_precision")
 		frappe.db.set_default("currency_precision", "9")
@@ -334,7 +334,8 @@ class TestBudgetConsolidationAPI(FrappeAPITestCase):
 			"name",
 		)
 		plans = []
-		for code, user, amount in (("A", MAKERS[0], "99999.999999999"), ("B", MAKERS[1], "0.000000002")):
+		amounts = ("99999.999999999", "0.000000002") if amounts is None else amounts
+		for code, user, amount in zip(("A", "B"), MAKERS, amounts, strict=True):
 			frappe.set_user(user)
 			plans.append(
 				save_budget_plan(
@@ -411,6 +412,19 @@ class TestBudgetConsolidationAPI(FrappeAPITestCase):
 		self.assertNotIn("sources_snapshot", item)
 		self.assertEqual(self.seal().status_code, 409)
 		self.assertEqual(before, {dt: frappe.db.count(dt) for dt in before})
+
+	def test_large_consolidated_amount_can_complete_real_human_approval_without_rounding(self):
+		sources = self.new_sources(("999999999999.000000001", "999999999999.000000001"))
+		name = self.success(self.seal(sources=sources))["name"]
+		case = self.request_approval(name)
+		self.login_actor(REVIEWER)
+		self.success(self.decide(case))
+		self.login_actor(MANAGER)
+		approved = self.success(self.get(self.method(PREFIX + "approval.get_record"), {"name": case}))
+		self.assertEqual(approved["total_amount"], "1999999999998.000000002")
+		self.assertEqual((approved["status"], approved["docstatus"]), ("Approved", 1))
+		frappe.set_user("Administrator")
+		self.assertEqual(get_case(case).total_amount, "1999999999998.000000002")
 
 	def test_eligible_sources_are_approved_department_leaves_and_bounded(self):
 		name = self.base_aggregate()

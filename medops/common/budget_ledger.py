@@ -28,6 +28,87 @@ from medops.common.organization import (
 LEDGER = "HRP Budget Ledger"
 RELEASE = "HRP Budget Release"
 RELEASE_ENTRY = "HRP Budget Release Entry"
+RELEASE_PUBLIC_FIELDS = (
+	"name",
+	"operation",
+	"subject",
+	"company",
+	"hospital",
+	"organization_version",
+	"organization_unit",
+	"fiscal_year",
+	"currency",
+	"currency_precision",
+	"amount_schema_version",
+	"total_amount",
+	"line_count",
+	"source_submission",
+	"source_approval",
+	"source_approval_revision",
+	"posting_date",
+	"reason",
+	"prepared_by",
+	"prepared_at",
+	"status",
+	"revision",
+	"authorized_by",
+	"authorized_at",
+	"authorization_decision",
+	"posted_at",
+	"ledger_count",
+	"reversal_of",
+)
+RELEASE_EVENT_PUBLIC_FIELDS = (
+	"name",
+	"release",
+	"company",
+	"hospital",
+	"organization_unit",
+	"event_kind",
+	"action",
+	"actor",
+	"release_revision",
+	"reason",
+	"recorded_at",
+	"expires_at",
+	"confirmation",
+	"event_digest",
+)
+LEDGER_PUBLIC_FIELDS = (
+	"name",
+	"company",
+	"hospital",
+	"organization_version",
+	"organization_unit",
+	"fiscal_year",
+	"currency",
+	"currency_precision",
+	"amount_schema_version",
+	"cost_center",
+	"budget_subject",
+	"funding_source",
+	"account",
+	"project",
+	"period_index",
+	"period_start",
+	"period_end",
+	"posting_date",
+	"posting_time",
+	"amount",
+	"debit",
+	"credit",
+	"is_reversal",
+	"reversal_of",
+	"origin_plan",
+	"origin_version",
+	"origin_line_key",
+	"fact_key",
+	"description",
+	"source_submission",
+	"source_approval",
+	"source_final_review",
+	"entry_type",
+)
 LEDGER_WRITER_ROLES = frozenset({"System Manager", "HRP System Manager", "HRP Budget Manager"})
 BUDGET_LEDGER_DEFINITION = ImmutableLedgerDefinition(
 	doctype=LEDGER,
@@ -101,6 +182,15 @@ def build_reverse_request(value: object) -> ReverseRequest:
 		posting_date=normalize_required_date(data.get("posting_date"), label="posting_date"),
 		reason=normalize_required_text(data.get("reason"), label="reason", maximum=1000),
 	)
+
+
+@dataclass(frozen=True, slots=True)
+class ReviseReleaseRequest(ReverseRequest):
+	"""Revise a prepared intent; completed financial authority is never edited."""
+
+
+def build_revise_release_request(value: object) -> ReviseReleaseRequest:
+	return ReviseReleaseRequest(**asdict(build_reverse_request(value)))
 
 
 @dataclass(frozen=True, slots=True)

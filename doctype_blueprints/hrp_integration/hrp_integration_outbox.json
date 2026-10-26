@@ -4,173 +4,294 @@
   "module": "HRP Integration",
   "custom": 0,
   "engine": "InnoDB",
-  "autoname": "format:PLT-.YYYY.-.#####",
-  "title_field": "subject",
+  "autoname": "Prompt",
+  "title_field": "event_id",
   "is_submittable": 0,
   "istable": 0,
   "issingle": 0,
   "track_changes": 0,
   "allow_rename": 0,
   "editable_grid": 0,
-  "sort_field": "modified",
+  "sort_field": "creation",
   "sort_order": "DESC",
   "index_web_pages_for_search": 0,
-  "description": "集成领域的HRP集成发件箱对象；用于支撑业务闭环、权限、审计与对账。",
+  "description": "持久化事务消息、认领租约、失败重试与死信；业务域授权和记账由独立受控服务承担。",
   "fields": [
     {
-      "fieldname": "event_time",
-      "label": "发生时间",
+      "fieldname": "event_id",
+      "label": "事件身份",
+      "fieldtype": "Data",
+      "read_only": 1,
+      "reqd": 1,
+      "hidden": 0,
+      "search_index": 1,
+      "unique": 1
+    },
+    {
+      "fieldname": "event_type",
+      "label": "事件类型",
+      "fieldtype": "Data",
+      "read_only": 1,
+      "reqd": 1,
+      "hidden": 0,
+      "search_index": 1
+    },
+    {
+      "fieldname": "source",
+      "label": "发布来源",
+      "fieldtype": "Data",
+      "read_only": 1,
+      "reqd": 1,
+      "hidden": 0,
+      "search_index": 1
+    },
+    {
+      "fieldname": "destination",
+      "label": "固定消费者",
+      "fieldtype": "Data",
+      "read_only": 1,
+      "reqd": 1,
+      "hidden": 0,
+      "search_index": 1
+    },
+    {
+      "fieldname": "occurred_at",
+      "label": "事件时间",
       "fieldtype": "Datetime",
+      "read_only": 1,
       "reqd": 1,
-      "search_index": 1,
-      "in_list_view": 1,
-      "description": "发生时间"
+      "hidden": 0,
+      "search_index": 1
     },
     {
-      "fieldname": "status",
-      "label": "状态",
-      "fieldtype": "Select",
-      "options": "Pending\nProcessing\nSuccess\nFailed\nIgnored",
+      "fieldname": "payload_schema_version",
+      "label": "载荷版本",
+      "fieldtype": "Int",
+      "read_only": 1,
       "reqd": 1,
-      "search_index": 1,
-      "in_list_view": 1,
-      "description": "状态"
+      "hidden": 0,
+      "search_index": 0
     },
     {
-      "fieldname": "correlation_id",
-      "label": "关联ID",
-      "fieldtype": "Data",
-      "search_index": 1,
-      "in_list_view": 1,
-      "description": "关联ID"
-    },
-    {
-      "fieldname": "idempotency_key",
-      "label": "幂等键",
-      "fieldtype": "Data",
-      "search_index": 1,
-      "description": "幂等键"
-    },
-    {
-      "fieldname": "reference_doctype",
-      "label": "引用类型",
-      "fieldtype": "Link",
-      "options": "DocType",
-      "description": "引用类型"
-    },
-    {
-      "fieldname": "reference_name",
-      "label": "引用单据",
-      "fieldtype": "Dynamic Link",
-      "options": "reference_doctype",
-      "search_index": 1,
-      "description": "引用单据"
+      "fieldname": "payload_json",
+      "label": "持久化载荷",
+      "fieldtype": "Code",
+      "read_only": 1,
+      "reqd": 1,
+      "hidden": 1,
+      "search_index": 0,
+      "permlevel": 1,
+      "options": "JSON"
     },
     {
       "fieldname": "payload_hash",
-      "label": "报文哈希",
+      "label": "载荷摘要",
       "fieldtype": "Data",
-      "description": "报文哈希"
+      "read_only": 1,
+      "reqd": 0,
+      "hidden": 1,
+      "search_index": 0,
+      "permlevel": 1
     },
     {
-      "fieldname": "payload",
-      "label": "报文",
-      "fieldtype": "Long Text",
-      "description": "报文"
-    },
-    {
-      "fieldname": "error_code",
-      "label": "错误码",
+      "fieldname": "correlation_id",
+      "label": "关联身份",
       "fieldtype": "Data",
-      "description": "错误码"
+      "read_only": 1,
+      "reqd": 1,
+      "hidden": 0,
+      "search_index": 1
     },
     {
-      "fieldname": "error_message",
-      "label": "错误信息",
-      "fieldtype": "Long Text",
-      "description": "错误信息"
+      "fieldname": "causation_id",
+      "label": "上游事件",
+      "fieldtype": "Data",
+      "read_only": 1,
+      "reqd": 0,
+      "hidden": 0,
+      "search_index": 1
     },
     {
-      "fieldname": "retry_count",
-      "label": "重试次数",
-      "fieldtype": "Int",
-      "default": "0",
-      "description": "重试次数"
-    },
-    {
-      "fieldname": "next_retry_at",
-      "label": "下次重试",
-      "fieldtype": "Datetime",
-      "description": "下次重试"
-    },
-    {
-      "fieldname": "external_system",
-      "label": "外部系统",
+      "fieldname": "reference_doctype",
+      "label": "业务对象类型",
       "fieldtype": "Link",
-      "options": "HRP External System",
+      "read_only": 1,
+      "reqd": 0,
+      "hidden": 0,
+      "search_index": 0,
+      "options": "DocType"
+    },
+    {
+      "fieldname": "reference_name",
+      "label": "业务对象",
+      "fieldtype": "Dynamic Link",
+      "read_only": 1,
+      "reqd": 0,
+      "hidden": 0,
       "search_index": 1,
-      "description": "外部系统"
+      "options": "reference_doctype"
     },
     {
-      "fieldname": "interface_code",
-      "label": "接口编码",
-      "fieldtype": "Data",
+      "fieldname": "status",
+      "label": "执行状态",
+      "fieldtype": "Select",
+      "read_only": 1,
+      "reqd": 1,
+      "hidden": 0,
       "search_index": 1,
-      "description": "接口编码"
+      "options": "Pending\nProcessing\nDelivered\nFailed\nDead Letter"
     },
     {
-      "fieldname": "direction",
-      "label": "方向",
-      "fieldtype": "Select",
-      "options": "Inbound\nOutbound\nBidirectional",
-      "description": "方向"
-    },
-    {
-      "fieldname": "protocol",
-      "label": "协议",
-      "fieldtype": "Select",
-      "options": "REST\nSOAP\nSFTP\nDatabase\nMessage Queue\nFile",
-      "description": "协议"
-    },
-    {
-      "fieldname": "request_payload",
-      "label": "请求报文",
-      "fieldtype": "Long Text",
-      "description": "请求报文"
-    },
-    {
-      "fieldname": "response_payload",
-      "label": "响应报文",
-      "fieldtype": "Long Text",
-      "description": "响应报文"
-    },
-    {
-      "fieldname": "http_status",
-      "label": "HTTP状态",
+      "fieldname": "attempt_count",
+      "label": "尝试次数",
       "fieldtype": "Int",
-      "description": "HTTP状态"
+      "read_only": 1,
+      "reqd": 1,
+      "hidden": 0,
+      "search_index": 0
+    },
+    {
+      "fieldname": "available_at",
+      "label": "可执行时间",
+      "fieldtype": "Datetime",
+      "read_only": 1,
+      "reqd": 1,
+      "hidden": 0,
+      "search_index": 1
+    },
+    {
+      "fieldname": "claim_owner",
+      "label": "认领者",
+      "fieldtype": "Data",
+      "read_only": 1,
+      "reqd": 0,
+      "hidden": 1,
+      "search_index": 0,
+      "permlevel": 1
+    },
+    {
+      "fieldname": "processing_token_hash",
+      "label": "租约凭证摘要",
+      "fieldtype": "Data",
+      "read_only": 1,
+      "reqd": 0,
+      "hidden": 1,
+      "search_index": 0,
+      "permlevel": 1
+    },
+    {
+      "fieldname": "lease_expires_at",
+      "label": "租约截止",
+      "fieldtype": "Datetime",
+      "read_only": 1,
+      "reqd": 0,
+      "hidden": 0,
+      "search_index": 1
+    },
+    {
+      "fieldname": "completed_at",
+      "label": "结束时间",
+      "fieldtype": "Datetime",
+      "read_only": 1,
+      "reqd": 0,
+      "hidden": 0,
+      "search_index": 1
+    },
+    {
+      "fieldname": "result_json",
+      "label": "结果载荷",
+      "fieldtype": "Code",
+      "read_only": 1,
+      "reqd": 0,
+      "hidden": 1,
+      "search_index": 0,
+      "permlevel": 1,
+      "options": "JSON"
+    },
+    {
+      "fieldname": "result_hash",
+      "label": "结果摘要",
+      "fieldtype": "Data",
+      "read_only": 1,
+      "reqd": 0,
+      "hidden": 1,
+      "search_index": 0,
+      "permlevel": 1
+    },
+    {
+      "fieldname": "last_error_code",
+      "label": "受控错误代码",
+      "fieldtype": "Data",
+      "read_only": 1,
+      "reqd": 0,
+      "hidden": 0,
+      "search_index": 0
+    },
+    {
+      "fieldname": "last_error_message",
+      "label": "受控错误说明",
+      "fieldtype": "Small Text",
+      "read_only": 1,
+      "reqd": 0,
+      "hidden": 0,
+      "search_index": 0
     }
   ],
   "permissions": [
     {
-      "role": "HRP Integration Operator",
+      "role": "System Manager",
       "read": 1,
-      "write": 0,
+      "report": 1,
+      "export": 1,
+      "print": 1,
+      "select": 1,
       "create": 0,
+      "write": 0,
       "delete": 0,
       "submit": 0,
       "cancel": 0,
-      "amend": 0
+      "amend": 0,
+      "import": 0
     },
     {
-      "role": "HRP Data Analyst",
+      "role": "HRP System Manager",
       "read": 1,
-      "write": 0,
+      "report": 1,
+      "export": 1,
+      "print": 1,
+      "select": 1,
       "create": 0,
+      "write": 0,
       "delete": 0,
       "submit": 0,
       "cancel": 0,
-      "amend": 0
+      "amend": 0,
+      "import": 0
+    },
+    {
+      "role": "HRP Budget Manager",
+      "read": 1,
+      "report": 1,
+      "export": 1,
+      "print": 1,
+      "select": 1,
+      "create": 0,
+      "write": 0,
+      "delete": 0,
+      "submit": 0,
+      "cancel": 0,
+      "amend": 0,
+      "import": 0
+    },
+    {
+      "role": "System Manager",
+      "permlevel": 1,
+      "read": 1
+    },
+    {
+      "role": "HRP System Manager",
+      "permlevel": 1,
+      "read": 1
     }
   ],
   "links": [],
@@ -190,5 +311,31 @@
     "standard_references": [],
     "domain_group": "Platform",
     "module_package": "hrp_integration"
-  }
+  },
+  "field_order": [
+    "event_id",
+    "event_type",
+    "source",
+    "destination",
+    "occurred_at",
+    "payload_schema_version",
+    "payload_json",
+    "payload_hash",
+    "correlation_id",
+    "causation_id",
+    "reference_doctype",
+    "reference_name",
+    "status",
+    "attempt_count",
+    "available_at",
+    "claim_owner",
+    "processing_token_hash",
+    "lease_expires_at",
+    "completed_at",
+    "result_json",
+    "result_hash",
+    "last_error_code",
+    "last_error_message"
+  ],
+  "states": []
 }

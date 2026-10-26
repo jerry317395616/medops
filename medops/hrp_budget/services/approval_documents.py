@@ -14,7 +14,7 @@ from medops.common.budget_workflow import (
 	vote_identity,
 )
 from medops.common.domain_service import fingerprint_json
-from medops.common.exact_money import exact_decimal_amount
+from medops.common.exact_money import MAX_APPROVAL_AMOUNT, exact_decimal_amount
 from medops.hrp_budget.services.approval_evidence import decision_history, progress_for, validate_evidence
 from medops.services.budget_documents import ControlledBudgetDocument
 from medops.services.errors import raise_ione_error
@@ -59,7 +59,10 @@ class BudgetApprovalDocument(ControlledBudgetDocument):
 				raise ValueError("invalid policy snapshot")
 			if (
 				decision["amount_precision"] != int(self.currency_precision)
-				or exact_decimal_amount(decision["amount"], int(self.currency_precision)) != self.total_amount
+				or exact_decimal_amount(
+					decision["amount"], int(self.currency_precision), maximum=MAX_APPROVAL_AMOUNT
+				)
+				!= self.total_amount
 			):
 				raise ValueError("invalid case money")
 			if self.workflow_state != STATES[self.status] or int(self.docstatus) != (

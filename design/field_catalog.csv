@@ -1163,47 +1163,6 @@ Alert
 None",0,0,0,0,0,,Hard,,控制模式,Finance
 medops,HRP Budget,HRP Budget Target,39,period_start,期间开始,Date,,0,0,0,0,0,,,,期间开始,Finance
 medops,HRP Budget,HRP Budget Target,40,period_end,期间结束,Date,,0,0,0,0,0,,,,期间结束,Finance
-medops,HRP Budget,HRP Budget Release,10,company,法人,Link,Company,1,0,1,0,1,,,,法人,Finance
-medops,HRP Budget,HRP Budget Release,11,hospital,医院,Link,HRP Hospital,1,0,1,0,0,,,,医院,Finance
-medops,HRP Budget,HRP Budget Release,12,campus,院区,Link,HRP Campus,0,0,1,0,0,,,,院区,Finance
-medops,HRP Budget,HRP Budget Release,13,organization_unit,组织单元,Link,HRP Organization Unit,1,0,1,0,1,,,,组织单元,Finance
-medops,HRP Budget,HRP Budget Release,14,cost_center,成本中心,Link,Cost Center,0,0,1,0,0,,,,成本中心,Finance
-medops,HRP Budget,HRP Budget Release,15,fiscal_year,财政年度,Link,Fiscal Year,0,0,1,0,0,,,,财政年度,Finance
-medops,HRP Budget,HRP Budget Release,16,currency,币种,Link,Currency,0,0,0,0,0,,CNY,,币种,Finance
-medops,HRP Budget,HRP Budget Release,17,status,业务状态,Select,"Draft
-Under Review
-Approved
-Rejected
-In Progress
-Completed
-Cancelled
-Closed",0,0,1,0,1,,Draft,,业务状态,Finance
-medops,HRP Budget,HRP Budget Release,18,workflow_state,工作流状态,Link,Workflow State,0,0,1,1,0,,,,工作流状态,Finance
-medops,HRP Budget,HRP Budget Release,19,posting_date,业务日期,Date,,1,0,1,0,1,,,,业务日期,Finance
-medops,HRP Budget,HRP Budget Release,20,applicant,申请人,Link,User,1,0,1,0,0,,,,申请人,Finance
-medops,HRP Budget,HRP Budget Release,21,employee,员工,Link,Employee,0,0,1,0,0,,,,员工,Finance
-medops,HRP Budget,HRP Budget Release,22,subject,主题,Data,,1,0,0,0,1,,,,主题,Finance
-medops,HRP Budget,HRP Budget Release,23,total_amount,总金额,Currency,currency,0,0,0,0,1,2,,,总金额,Finance
-medops,HRP Budget,HRP Budget Release,24,external_id,外部ID,Data,,0,0,1,0,0,,,,外部ID,Finance
-medops,HRP Budget,HRP Budget Release,25,source_doctype,来源类型,Link,DocType,0,0,0,0,0,,,,来源类型,Finance
-medops,HRP Budget,HRP Budget Release,26,source_name,来源单据,Dynamic Link,source_doctype,0,0,1,0,0,,,,来源单据,Finance
-medops,HRP Budget,HRP Budget Release,27,submitted_at,提交时间,Datetime,,0,0,0,1,0,,,,提交时间,Finance
-medops,HRP Budget,HRP Budget Release,28,approved_at,批准时间,Datetime,,0,0,0,1,0,,,,批准时间,Finance
-medops,HRP Budget,HRP Budget Release,29,remarks,备注,Small Text,,0,0,0,0,0,,,,备注,Finance
-medops,HRP Budget,HRP Budget Release,30,budget_version,预算版本,Link,HRP Budget Version,0,0,1,0,0,,,,预算版本,Finance
-medops,HRP Budget,HRP Budget Release,31,budget_subject,预算科目,Link,HRP Dimension Value,0,0,1,0,0,,,,预算科目,Finance
-medops,HRP Budget,HRP Budget Release,32,funding_source,资金来源,Link,HRP Funding Source,0,0,1,0,0,,,,资金来源,Finance
-medops,HRP Budget,HRP Budget Release,33,approved_amount,批准金额,Currency,currency,0,0,0,0,0,2,,,批准金额,Finance
-medops,HRP Budget,HRP Budget Release,34,reserved_amount,预占金额,Currency,currency,0,0,0,1,0,2,,,预占金额,Finance
-medops,HRP Budget,HRP Budget Release,35,committed_amount,承诺金额,Currency,currency,0,0,0,1,0,2,,,承诺金额,Finance
-medops,HRP Budget,HRP Budget Release,36,actual_amount,实际金额,Currency,currency,0,0,0,1,0,2,,,实际金额,Finance
-medops,HRP Budget,HRP Budget Release,37,available_amount,可用金额,Currency,currency,0,0,0,1,1,2,,,可用金额,Finance
-medops,HRP Budget,HRP Budget Release,38,control_mode,控制模式,Select,"Hard
-Soft
-Alert
-None",0,0,0,0,0,,Hard,,控制模式,Finance
-medops,HRP Budget,HRP Budget Release,39,period_start,期间开始,Date,,0,0,0,0,0,,,,期间开始,Finance
-medops,HRP Budget,HRP Budget Release,40,period_end,期间结束,Date,,0,0,0,0,0,,,,期间结束,Finance
 medops,HRP Budget,HRP Budget Control Policy,10,company,法人,Link,Company,1,0,1,0,1,,,,法人,Finance
 medops,HRP Budget,HRP Budget Control Policy,11,hospital,医院,Link,HRP Hospital,1,0,1,0,0,,,,医院,Finance
 medops,HRP Budget,HRP Budget Control Policy,12,campus,院区,Link,HRP Campus,0,0,1,0,0,,,,院区,Finance
@@ -1306,37 +1265,6 @@ medops,HRP Budget,HRP Budget Control Rule,42,evidence_required,要求证据,Chec
 medops,HRP Budget,HRP Budget Control Rule,43,root_cause,根因,Long Text,,0,0,0,0,0,,,,根因,Finance
 medops,HRP Budget,HRP Budget Control Rule,44,corrective_action,纠正措施,Long Text,,0,0,0,0,0,,,,纠正措施,Finance
 medops,HRP Budget,HRP Budget Control Rule,45,verification_result,验证结果,Small Text,,0,0,0,0,0,,,,验证结果,Finance
-medops,HRP Budget,HRP Budget Ledger,10,company,法人,Link,Company,1,0,1,0,1,,,,法人,Finance
-medops,HRP Budget,HRP Budget Ledger,11,organization_unit,组织单元,Link,HRP Organization Unit,1,0,1,0,0,,,,组织单元,Finance
-medops,HRP Budget,HRP Budget Ledger,12,posting_date,记账日期,Date,,1,0,1,0,1,,,,记账日期,Finance
-medops,HRP Budget,HRP Budget Ledger,13,posting_time,记账时间,Time,,1,0,0,0,0,,,,记账时间,Finance
-medops,HRP Budget,HRP Budget Ledger,14,voucher_type,凭证类型,Link,DocType,1,0,1,0,0,,,,凭证类型,Finance
-medops,HRP Budget,HRP Budget Ledger,15,voucher_no,凭证号,Dynamic Link,voucher_type,1,0,1,0,1,,,,凭证号,Finance
-medops,HRP Budget,HRP Budget Ledger,16,reference_type,业务对象类型,Link,DocType,0,0,0,0,0,,,,业务对象类型,Finance
-medops,HRP Budget,HRP Budget Ledger,17,reference_name,业务对象,Dynamic Link,reference_type,0,0,1,0,0,,,,业务对象,Finance
-medops,HRP Budget,HRP Budget Ledger,18,quantity,数量,Float,,0,0,0,0,0,6,,,数量,Finance
-medops,HRP Budget,HRP Budget Ledger,19,debit,借方,Currency,currency,0,0,0,0,0,2,,,借方,Finance
-medops,HRP Budget,HRP Budget Ledger,20,credit,贷方,Currency,currency,0,0,0,0,0,2,,,贷方,Finance
-medops,HRP Budget,HRP Budget Ledger,21,amount,发生额,Currency,currency,0,0,0,0,1,2,,,发生额,Finance
-medops,HRP Budget,HRP Budget Ledger,22,currency,币种,Link,Currency,0,0,0,0,0,,CNY,,币种,Finance
-medops,HRP Budget,HRP Budget Ledger,23,is_reversal,是否冲销,Check,,0,0,0,0,0,,0,,是否冲销,Finance
-medops,HRP Budget,HRP Budget Ledger,24,reversal_of,被冲销记录,Link,HRP Budget Ledger,0,0,0,0,0,,,,被冲销记录,Finance
-medops,HRP Budget,HRP Budget Ledger,25,dimensions_json,维度快照,Code,JSON,0,0,0,0,0,,,,维度快照,Finance
-medops,HRP Budget,HRP Budget Ledger,26,source_hash,来源哈希,Data,,0,0,1,0,0,,,,来源哈希,Finance
-medops,HRP Budget,HRP Budget Ledger,27,budget_version,预算版本,Link,HRP Budget Version,0,0,1,0,0,,,,预算版本,Finance
-medops,HRP Budget,HRP Budget Ledger,28,budget_subject,预算科目,Link,HRP Dimension Value,0,0,1,0,0,,,,预算科目,Finance
-medops,HRP Budget,HRP Budget Ledger,29,funding_source,资金来源,Link,HRP Funding Source,0,0,1,0,0,,,,资金来源,Finance
-medops,HRP Budget,HRP Budget Ledger,30,approved_amount,批准金额,Currency,currency,0,0,0,0,0,2,,,批准金额,Finance
-medops,HRP Budget,HRP Budget Ledger,31,reserved_amount,预占金额,Currency,currency,0,0,0,1,0,2,,,预占金额,Finance
-medops,HRP Budget,HRP Budget Ledger,32,committed_amount,承诺金额,Currency,currency,0,0,0,1,0,2,,,承诺金额,Finance
-medops,HRP Budget,HRP Budget Ledger,33,actual_amount,实际金额,Currency,currency,0,0,0,1,0,2,,,实际金额,Finance
-medops,HRP Budget,HRP Budget Ledger,34,available_amount,可用金额,Currency,currency,0,0,0,1,1,2,,,可用金额,Finance
-medops,HRP Budget,HRP Budget Ledger,35,control_mode,控制模式,Select,"Hard
-Soft
-Alert
-None",0,0,0,0,0,,Hard,,控制模式,Finance
-medops,HRP Budget,HRP Budget Ledger,36,period_start,期间开始,Date,,0,0,0,0,0,,,,期间开始,Finance
-medops,HRP Budget,HRP Budget Ledger,37,period_end,期间结束,Date,,0,0,0,0,0,,,,期间结束,Finance
 medops,HRP Budget,HRP Budget Reservation,10,company,法人,Link,Company,1,0,1,0,1,,,,法人,Finance
 medops,HRP Budget,HRP Budget Reservation,11,hospital,医院,Link,HRP Hospital,1,0,1,0,0,,,,医院,Finance
 medops,HRP Budget,HRP Budget Reservation,12,campus,院区,Link,HRP Campus,0,0,1,0,0,,,,院区,Finance
@@ -1460,47 +1388,6 @@ Alert
 None",0,0,0,0,0,,Hard,,控制模式,Finance
 medops,HRP Budget,HRP Budget Actualization,39,period_start,期间开始,Date,,0,0,0,0,0,,,,期间开始,Finance
 medops,HRP Budget,HRP Budget Actualization,40,period_end,期间结束,Date,,0,0,0,0,0,,,,期间结束,Finance
-medops,HRP Budget,HRP Budget Release Entry,10,company,法人,Link,Company,1,0,1,0,1,,,,法人,Finance
-medops,HRP Budget,HRP Budget Release Entry,11,hospital,医院,Link,HRP Hospital,1,0,1,0,0,,,,医院,Finance
-medops,HRP Budget,HRP Budget Release Entry,12,campus,院区,Link,HRP Campus,0,0,1,0,0,,,,院区,Finance
-medops,HRP Budget,HRP Budget Release Entry,13,organization_unit,组织单元,Link,HRP Organization Unit,1,0,1,0,1,,,,组织单元,Finance
-medops,HRP Budget,HRP Budget Release Entry,14,cost_center,成本中心,Link,Cost Center,0,0,1,0,0,,,,成本中心,Finance
-medops,HRP Budget,HRP Budget Release Entry,15,fiscal_year,财政年度,Link,Fiscal Year,0,0,1,0,0,,,,财政年度,Finance
-medops,HRP Budget,HRP Budget Release Entry,16,currency,币种,Link,Currency,0,0,0,0,0,,CNY,,币种,Finance
-medops,HRP Budget,HRP Budget Release Entry,17,status,业务状态,Select,"Draft
-Under Review
-Approved
-Rejected
-In Progress
-Completed
-Cancelled
-Closed",0,0,1,0,1,,Draft,,业务状态,Finance
-medops,HRP Budget,HRP Budget Release Entry,18,workflow_state,工作流状态,Link,Workflow State,0,0,1,1,0,,,,工作流状态,Finance
-medops,HRP Budget,HRP Budget Release Entry,19,posting_date,业务日期,Date,,1,0,1,0,1,,,,业务日期,Finance
-medops,HRP Budget,HRP Budget Release Entry,20,applicant,申请人,Link,User,1,0,1,0,0,,,,申请人,Finance
-medops,HRP Budget,HRP Budget Release Entry,21,employee,员工,Link,Employee,0,0,1,0,0,,,,员工,Finance
-medops,HRP Budget,HRP Budget Release Entry,22,subject,主题,Data,,1,0,0,0,1,,,,主题,Finance
-medops,HRP Budget,HRP Budget Release Entry,23,total_amount,总金额,Currency,currency,0,0,0,0,1,2,,,总金额,Finance
-medops,HRP Budget,HRP Budget Release Entry,24,external_id,外部ID,Data,,0,0,1,0,0,,,,外部ID,Finance
-medops,HRP Budget,HRP Budget Release Entry,25,source_doctype,来源类型,Link,DocType,0,0,0,0,0,,,,来源类型,Finance
-medops,HRP Budget,HRP Budget Release Entry,26,source_name,来源单据,Dynamic Link,source_doctype,0,0,1,0,0,,,,来源单据,Finance
-medops,HRP Budget,HRP Budget Release Entry,27,submitted_at,提交时间,Datetime,,0,0,0,1,0,,,,提交时间,Finance
-medops,HRP Budget,HRP Budget Release Entry,28,approved_at,批准时间,Datetime,,0,0,0,1,0,,,,批准时间,Finance
-medops,HRP Budget,HRP Budget Release Entry,29,remarks,备注,Small Text,,0,0,0,0,0,,,,备注,Finance
-medops,HRP Budget,HRP Budget Release Entry,30,budget_version,预算版本,Link,HRP Budget Version,0,0,1,0,0,,,,预算版本,Finance
-medops,HRP Budget,HRP Budget Release Entry,31,budget_subject,预算科目,Link,HRP Dimension Value,0,0,1,0,0,,,,预算科目,Finance
-medops,HRP Budget,HRP Budget Release Entry,32,funding_source,资金来源,Link,HRP Funding Source,0,0,1,0,0,,,,资金来源,Finance
-medops,HRP Budget,HRP Budget Release Entry,33,approved_amount,批准金额,Currency,currency,0,0,0,0,0,2,,,批准金额,Finance
-medops,HRP Budget,HRP Budget Release Entry,34,reserved_amount,预占金额,Currency,currency,0,0,0,1,0,2,,,预占金额,Finance
-medops,HRP Budget,HRP Budget Release Entry,35,committed_amount,承诺金额,Currency,currency,0,0,0,1,0,2,,,承诺金额,Finance
-medops,HRP Budget,HRP Budget Release Entry,36,actual_amount,实际金额,Currency,currency,0,0,0,1,0,2,,,实际金额,Finance
-medops,HRP Budget,HRP Budget Release Entry,37,available_amount,可用金额,Currency,currency,0,0,0,1,1,2,,,可用金额,Finance
-medops,HRP Budget,HRP Budget Release Entry,38,control_mode,控制模式,Select,"Hard
-Soft
-Alert
-None",0,0,0,0,0,,Hard,,控制模式,Finance
-medops,HRP Budget,HRP Budget Release Entry,39,period_start,期间开始,Date,,0,0,0,0,0,,,,期间开始,Finance
-medops,HRP Budget,HRP Budget Release Entry,40,period_end,期间结束,Date,,0,0,0,0,0,,,,期间结束,Finance
 medops,HRP Budget,HRP Budget Adjustment,10,company,法人,Link,Company,1,0,1,0,1,,,,法人,Finance
 medops,HRP Budget,HRP Budget Adjustment,11,hospital,医院,Link,HRP Hospital,1,0,1,0,0,,,,医院,Finance
 medops,HRP Budget,HRP Budget Adjustment,12,campus,院区,Link,HRP Campus,0,0,1,0,0,,,,院区,Finance
@@ -12118,36 +12005,6 @@ medops,HRP Integration,HRP Integration Credential,47,request_payload,请求报�
 medops,HRP Integration,HRP Integration Credential,48,response_payload,响应报文,Long Text,,0,0,0,0,0,,,,响应报文,Platform
 medops,HRP Integration,HRP Integration Credential,49,http_status,HTTP状态,Int,,0,0,0,0,0,,,,HTTP状态,Platform
 medops,HRP Integration,HRP Integration Credential,50,retry_count,重试次数,Int,,0,0,0,0,0,,0,,重试次数,Platform
-medops,HRP Integration,HRP Integration Outbox,10,event_time,发生时间,Datetime,,1,0,1,0,1,,,,发生时间,Platform
-medops,HRP Integration,HRP Integration Outbox,11,status,状态,Select,"Pending
-Processing
-Success
-Failed
-Ignored",1,0,1,0,1,,,,状态,Platform
-medops,HRP Integration,HRP Integration Outbox,12,correlation_id,关联ID,Data,,0,0,1,0,1,,,,关联ID,Platform
-medops,HRP Integration,HRP Integration Outbox,13,idempotency_key,幂等键,Data,,0,0,1,0,0,,,,幂等键,Platform
-medops,HRP Integration,HRP Integration Outbox,14,reference_doctype,引用类型,Link,DocType,0,0,0,0,0,,,,引用类型,Platform
-medops,HRP Integration,HRP Integration Outbox,15,reference_name,引用单据,Dynamic Link,reference_doctype,0,0,1,0,0,,,,引用单据,Platform
-medops,HRP Integration,HRP Integration Outbox,16,payload_hash,报文哈希,Data,,0,0,0,0,0,,,,报文哈希,Platform
-medops,HRP Integration,HRP Integration Outbox,17,payload,报文,Long Text,,0,0,0,0,0,,,,报文,Platform
-medops,HRP Integration,HRP Integration Outbox,18,error_code,错误码,Data,,0,0,0,0,0,,,,错误码,Platform
-medops,HRP Integration,HRP Integration Outbox,19,error_message,错误信息,Long Text,,0,0,0,0,0,,,,错误信息,Platform
-medops,HRP Integration,HRP Integration Outbox,20,retry_count,重试次数,Int,,0,0,0,0,0,,0,,重试次数,Platform
-medops,HRP Integration,HRP Integration Outbox,21,next_retry_at,下次重试,Datetime,,0,0,0,0,0,,,,下次重试,Platform
-medops,HRP Integration,HRP Integration Outbox,22,external_system,外部系统,Link,HRP External System,0,0,1,0,0,,,,外部系统,Platform
-medops,HRP Integration,HRP Integration Outbox,23,interface_code,接口编码,Data,,0,0,1,0,0,,,,接口编码,Platform
-medops,HRP Integration,HRP Integration Outbox,24,direction,方向,Select,"Inbound
-Outbound
-Bidirectional",0,0,0,0,0,,,,方向,Platform
-medops,HRP Integration,HRP Integration Outbox,25,protocol,协议,Select,"REST
-SOAP
-SFTP
-Database
-Message Queue
-File",0,0,0,0,0,,,,协议,Platform
-medops,HRP Integration,HRP Integration Outbox,26,request_payload,请求报文,Long Text,,0,0,0,0,0,,,,请求报文,Platform
-medops,HRP Integration,HRP Integration Outbox,27,response_payload,响应报文,Long Text,,0,0,0,0,0,,,,响应报文,Platform
-medops,HRP Integration,HRP Integration Outbox,28,http_status,HTTP状态,Int,,0,0,0,0,0,,,,HTTP状态,Platform
 medops,HRP Integration,HRP Integration Inbox,10,event_time,发生时间,Datetime,,1,0,1,0,1,,,,发生时间,Platform
 medops,HRP Integration,HRP Integration Inbox,11,status,状态,Select,"Pending
 Processing
@@ -13626,3 +13483,138 @@ medops,HRP Budget,HRP Budget Approval,280,revision,案例修订,Int,,1,0,0,1,0,,
 medops,HRP Budget,HRP Budget Approval,290,requested_at,申请时间,Datetime,,1,0,0,1,0,,,,申请时间,Finance
 medops,HRP Budget,HRP Budget Approval,300,completed_at,结束时间,Datetime,,0,0,0,1,0,,,,结束时间,Finance
 medops,HRP Budget,HRP Budget Approval,310,final_review,最终决定,Link,HRP Budget Review,0,0,0,1,0,,,,最终决定,Finance
+medops,HRP Budget,HRP Budget Release,10,identity_key,凭证身份,Data,,1,1,0,1,0,,,,凭证身份,Finance
+medops,HRP Budget,HRP Budget Release,20,subject,凭证名称,Data,,1,0,0,1,0,,,,凭证名称,Finance
+medops,HRP Budget,HRP Budget Release,30,schema_version,凭证版本,Int,,1,0,0,1,0,,,,凭证版本,Finance
+medops,HRP Budget,HRP Budget Release,40,operation,财务操作,Select,"Release
+Reverse",1,0,0,1,0,,,,财务操作,Finance
+medops,HRP Budget,HRP Budget Release,50,company,法人,Link,Company,1,0,0,1,0,,,,法人,Finance
+medops,HRP Budget,HRP Budget Release,60,hospital,医院,Link,HRP Hospital,1,0,0,1,0,,,,医院,Finance
+medops,HRP Budget,HRP Budget Release,70,organization_version,组织快照,Link,HRP Organization Version,1,0,0,1,0,,,,组织快照,Finance
+medops,HRP Budget,HRP Budget Release,80,organization_unit,原始科室,Link,HRP Organization Unit,1,0,0,1,0,,,,原始科室,Finance
+medops,HRP Budget,HRP Budget Release,90,fiscal_year,财政年度,Link,Fiscal Year,1,0,0,1,0,,,,财政年度,Finance
+medops,HRP Budget,HRP Budget Release,100,currency,捕获币种,Link,Currency,1,0,0,1,0,,,,捕获币种,Finance
+medops,HRP Budget,HRP Budget Release,110,currency_precision,捕获精度,Int,,1,0,0,1,0,,,,捕获精度,Finance
+medops,HRP Budget,HRP Budget Release,120,amount_schema_version,金额版本,Int,,1,0,0,1,0,,,,金额版本,Finance
+medops,HRP Budget,HRP Budget Release,130,source_submission,已批准汇总,Link,HRP Budget Submission,1,0,0,1,0,,,,已批准汇总,Finance
+medops,HRP Budget,HRP Budget Release,140,source_snapshot_digest,汇总事实摘要,Data,,1,0,0,1,0,,,,汇总事实摘要,Finance
+medops,HRP Budget,HRP Budget Release,150,source_approval,最终汇总审批,Link,HRP Budget Approval,1,0,0,1,0,,,,最终汇总审批,Finance
+medops,HRP Budget,HRP Budget Release,160,source_approval_round,审批轮次,Int,,1,0,0,1,0,,,,审批轮次,Finance
+medops,HRP Budget,HRP Budget Release,170,source_approval_revision,最终审批修订,Int,,1,0,0,1,0,,,,最终审批修订,Finance
+medops,HRP Budget,HRP Budget Release,180,source_decision_digest,审批决定摘要,Data,,1,0,0,1,0,,,,审批决定摘要,Finance
+medops,HRP Budget,HRP Budget Release,190,source_final_review,最终审批证据,Link,HRP Budget Review,1,0,0,1,0,,,,最终审批证据,Finance
+medops,HRP Budget,HRP Budget Release,200,source_event_digest,最终证据摘要,Data,,1,0,0,1,0,,,,最终证据摘要,Finance
+medops,HRP Budget,HRP Budget Release,210,posting_date,记账日期,Date,,1,0,1,1,0,,,,记账日期,Finance
+medops,HRP Budget,HRP Budget Release,220,reason,下达或冲销理由,Small Text,,1,0,0,1,0,,,,下达或冲销理由,Finance
+medops,HRP Budget,HRP Budget Release,230,prepared_by,准备人,Link,User,1,0,0,1,0,,,,准备人,Finance
+medops,HRP Budget,HRP Budget Release,240,total_amount,精确记账金额,Data,,1,0,0,1,0,,,,精确记账金额,Finance
+medops,HRP Budget,HRP Budget Release,250,line_count,原始明细数,Int,,1,0,0,1,0,,,,原始明细数,Finance
+medops,HRP Budget,HRP Budget Release,260,reversal_of,原下达凭证,Link,HRP Budget Release,0,1,0,1,0,,,,原下达凭证,Finance
+medops,HRP Budget,HRP Budget Release,270,original_intent_digest,原下达意图摘要,Data,,0,0,0,1,0,,,,原下达意图摘要,Finance
+medops,HRP Budget,HRP Budget Release,280,intent_digest,财务意图摘要,Data,,1,0,0,1,0,,,,财务意图摘要,Finance
+medops,HRP Budget,HRP Budget Release,290,status,执行状态,Select,"Prepared
+Authorized
+Posted",1,0,1,1,1,,,,执行状态,Finance
+medops,HRP Budget,HRP Budget Release,300,revision,凭证修订,Int,,1,0,0,1,0,,,,凭证修订,Finance
+medops,HRP Budget,HRP Budget Release,310,prepared_at,准备时间,Datetime,,1,0,0,1,0,,,,准备时间,Finance
+medops,HRP Budget,HRP Budget Release,320,authorized_by,确认执行人,Link,User,0,0,0,1,0,,,,确认执行人,Finance
+medops,HRP Budget,HRP Budget Release,330,authorized_at,确认时间,Datetime,,0,0,0,1,0,,,,确认时间,Finance
+medops,HRP Budget,HRP Budget Release,340,authorization_revision,授权修订,Int,,0,0,0,1,0,,,,授权修订,Finance
+medops,HRP Budget,HRP Budget Release,350,authorization_decision,人工决定,Link,HRP Budget Release Entry,0,0,0,1,0,,,,人工决定,Finance
+medops,HRP Budget,HRP Budget Release,360,outbox_message,持久化执行任务,Link,HRP Integration Outbox,0,0,0,1,0,,,,持久化执行任务,Finance
+medops,HRP Budget,HRP Budget Release,370,posted_at,记账完成时间,Datetime,,0,0,0,1,0,,,,记账完成时间,Finance
+medops,HRP Budget,HRP Budget Release,380,ledger_count,已记分录数,Int,,0,0,0,1,0,,,,已记分录数,Finance
+medops,HRP Budget,HRP Budget Release,390,execution_digest,完整分录摘要,Data,,0,0,0,1,0,,,,完整分录摘要,Finance
+medops,HRP Budget,HRP Budget Release Entry,10,release,下达或冲销凭证,Link,HRP Budget Release,1,0,0,1,0,,,,下达或冲销凭证,Finance
+medops,HRP Budget,HRP Budget Release Entry,20,company,法人,Link,Company,1,0,0,1,0,,,,法人,Finance
+medops,HRP Budget,HRP Budget Release Entry,30,hospital,医院,Link,HRP Hospital,1,0,0,1,0,,,,医院,Finance
+medops,HRP Budget,HRP Budget Release Entry,40,organization_unit,汇总组织,Link,HRP Organization Unit,1,0,0,1,0,,,,汇总组织,Finance
+medops,HRP Budget,HRP Budget Release Entry,50,event_kind,证据类别,Select,"Confirmation
+Decision",1,0,0,1,0,,,,证据类别,Finance
+medops,HRP Budget,HRP Budget Release Entry,60,action,财务操作,Select,"Release
+Reverse",1,0,0,1,0,,,,财务操作,Finance
+medops,HRP Budget,HRP Budget Release Entry,70,actor,确认人,Link,User,1,0,0,1,0,,,,确认人,Finance
+medops,HRP Budget,HRP Budget Release Entry,80,release_revision,确认的凭证修订,Int,,1,0,0,1,0,,,,确认的凭证修订,Finance
+medops,HRP Budget,HRP Budget Release Entry,90,intent_digest,确认的意图摘要,Data,,1,0,0,1,0,,,,确认的意图摘要,Finance
+medops,HRP Budget,HRP Budget Release Entry,100,source_snapshot_digest,汇总事实摘要,Data,,1,0,0,1,0,,,,汇总事实摘要,Finance
+medops,HRP Budget,HRP Budget Release Entry,110,reason,下达或冲销理由,Small Text,,1,0,0,1,0,,,,下达或冲销理由,Finance
+medops,HRP Budget,HRP Budget Release Entry,120,recorded_at,证据时间,Datetime,,1,0,0,1,0,,,,证据时间,Finance
+medops,HRP Budget,HRP Budget Release Entry,130,expires_at,人工确认有效期,Datetime,,1,0,0,1,0,,,,人工确认有效期,Finance
+medops,HRP Budget,HRP Budget Release Entry,140,confirmation_hash,确认凭证摘要,Data,,1,0,0,1,0,,,,确认凭证摘要,Finance
+medops,HRP Budget,HRP Budget Release Entry,150,session_digest,会话摘要,Data,,1,0,0,1,0,,,,会话摘要,Finance
+medops,HRP Budget,HRP Budget Release Entry,160,confirmation,原确认记录,Link,HRP Budget Release Entry,0,1,0,1,0,,,,原确认记录,Finance
+medops,HRP Budget,HRP Budget Release Entry,170,revision_key,决定修订身份,Data,,0,1,0,1,0,,,,决定修订身份,Finance
+medops,HRP Budget,HRP Budget Release Entry,180,event_digest,证据摘要,Data,,1,0,0,1,0,,,,证据摘要,Finance
+medops,HRP Budget,HRP Budget Ledger,10,entry_key,分录身份,Data,,1,1,0,1,0,,,,分录身份,Finance
+medops,HRP Budget,HRP Budget Ledger,20,entry_type,分录类型,Select,Allocation,1,0,0,1,0,,,,分录类型,Finance
+medops,HRP Budget,HRP Budget Ledger,30,company,法人,Link,Company,1,0,0,1,0,,,,法人,Finance
+medops,HRP Budget,HRP Budget Ledger,40,hospital,医院,Link,HRP Hospital,1,0,0,1,0,,,,医院,Finance
+medops,HRP Budget,HRP Budget Ledger,50,organization_version,组织快照,Link,HRP Organization Version,1,0,0,1,0,,,,组织快照,Finance
+medops,HRP Budget,HRP Budget Ledger,60,organization_unit,原始科室,Link,HRP Organization Unit,1,0,0,1,0,,,,原始科室,Finance
+medops,HRP Budget,HRP Budget Ledger,70,fiscal_year,财政年度,Link,Fiscal Year,1,0,0,1,0,,,,财政年度,Finance
+medops,HRP Budget,HRP Budget Ledger,80,currency,捕获币种,Link,Currency,1,0,0,1,0,,,,捕获币种,Finance
+medops,HRP Budget,HRP Budget Ledger,90,currency_precision,捕获精度,Int,,1,0,0,1,0,,,,捕获精度,Finance
+medops,HRP Budget,HRP Budget Ledger,100,amount_schema_version,金额版本,Int,,1,0,0,1,0,,,,金额版本,Finance
+medops,HRP Budget,HRP Budget Ledger,110,cost_center,原始成本中心,Link,Cost Center,1,0,0,1,0,,,,原始成本中心,Finance
+medops,HRP Budget,HRP Budget Ledger,120,account,原始科目,Link,Account,1,0,0,1,0,,,,原始科目,Finance
+medops,HRP Budget,HRP Budget Ledger,130,budget_subject,预算科目,Link,HRP Dimension Value,1,0,0,1,0,,,,预算科目,Finance
+medops,HRP Budget,HRP Budget Ledger,140,funding_source,资金来源,Link,HRP Funding Source,1,0,0,1,0,,,,资金来源,Finance
+medops,HRP Budget,HRP Budget Ledger,150,project,原始项目,Link,Project,0,0,0,1,0,,,,原始项目,Finance
+medops,HRP Budget,HRP Budget Ledger,160,period_index,期间序号,Int,,1,0,0,1,0,,,,期间序号,Finance
+medops,HRP Budget,HRP Budget Ledger,170,period_start,期间开始,Date,,1,0,0,1,0,,,,期间开始,Finance
+medops,HRP Budget,HRP Budget Ledger,180,period_end,期间结束,Date,,1,0,0,1,0,,,,期间结束,Finance
+medops,HRP Budget,HRP Budget Ledger,190,posting_date,记账日期,Date,,1,0,1,1,0,,,,记账日期,Finance
+medops,HRP Budget,HRP Budget Ledger,200,posting_time,记账时间,Time,,1,0,0,1,0,,,,记账时间,Finance
+medops,HRP Budget,HRP Budget Ledger,210,voucher_type,凭证类型,Link,DocType,1,0,0,1,0,,,,凭证类型,Finance
+medops,HRP Budget,HRP Budget Ledger,220,voucher_no,批次凭证,Dynamic Link,voucher_type,1,0,0,1,0,,,,批次凭证,Finance
+medops,HRP Budget,HRP Budget Ledger,230,reference_type,原始业务类型,Link,DocType,0,0,0,1,0,,,,原始业务类型,Finance
+medops,HRP Budget,HRP Budget Ledger,240,reference_name,原始业务对象,Dynamic Link,reference_type,0,0,0,1,0,,,,原始业务对象,Finance
+medops,HRP Budget,HRP Budget Ledger,250,quantity,保留数量,Float,,0,0,0,1,0,6,0,,保留数量,Finance
+medops,HRP Budget,HRP Budget Ledger,260,amount,精确变动金额,Data,,1,0,0,1,0,,,,精确变动金额,Finance
+medops,HRP Budget,HRP Budget Ledger,270,debit,精确下达金额,Data,,1,0,0,1,0,,,,精确下达金额,Finance
+medops,HRP Budget,HRP Budget Ledger,280,credit,精确冲销金额,Data,,1,0,0,1,0,,,,精确冲销金额,Finance
+medops,HRP Budget,HRP Budget Ledger,290,is_reversal,是否冲销,Check,,0,0,0,1,0,,0,,是否冲销,Finance
+medops,HRP Budget,HRP Budget Ledger,300,reversal_of,原分录,Link,HRP Budget Ledger,0,1,0,1,0,,,,原分录,Finance
+medops,HRP Budget,HRP Budget Ledger,310,dimensions_json,原始维度,Code,JSON,0,0,0,1,0,,,,原始维度,Finance
+medops,HRP Budget,HRP Budget Ledger,320,source_hash,分录来源摘要,Data,,1,0,0,1,0,,,,分录来源摘要,Finance
+medops,HRP Budget,HRP Budget Ledger,330,release_digest,财务意图摘要,Data,,1,0,0,1,0,,,,财务意图摘要,Finance
+medops,HRP Budget,HRP Budget Ledger,340,origin_plan,原预算计划,Link,HRP Budget Plan,1,0,0,1,0,,,,原预算计划,Finance
+medops,HRP Budget,HRP Budget Ledger,350,origin_line_key,原计划明细身份,Data,,1,0,0,1,0,,,,原计划明细身份,Finance
+medops,HRP Budget,HRP Budget Ledger,360,origin_version,原预算版本,Link,HRP Budget Version,1,0,0,1,0,,,,原预算版本,Finance
+medops,HRP Budget,HRP Budget Ledger,370,origin_version_digest,整版事实摘要,Data,,1,0,0,1,0,,,,整版事实摘要,Finance
+medops,HRP Budget,HRP Budget Ledger,380,origin_plan_digest,原计划事实摘要,Data,,1,0,0,1,0,,,,原计划事实摘要,Finance
+medops,HRP Budget,HRP Budget Ledger,390,fact_key,原始预算事实身份,Data,,1,0,0,1,0,,,,原始预算事实身份,Finance
+medops,HRP Budget,HRP Budget Ledger,400,description,原明细说明,Small Text,,0,0,0,1,0,,,,原明细说明,Finance
+medops,HRP Budget,HRP Budget Ledger,410,source_submission,原科室申报,Link,HRP Budget Submission,1,0,0,1,0,,,,原科室申报,Finance
+medops,HRP Budget,HRP Budget Ledger,420,source_approval,原科室审批,Link,HRP Budget Approval,1,0,0,1,0,,,,原科室审批,Finance
+medops,HRP Budget,HRP Budget Ledger,430,source_snapshot_digest,原科室事实摘要,Data,,1,0,0,1,0,,,,原科室事实摘要,Finance
+medops,HRP Budget,HRP Budget Ledger,440,source_decision_digest,原科室审批摘要,Data,,1,0,0,1,0,,,,原科室审批摘要,Finance
+medops,HRP Budget,HRP Budget Ledger,450,source_final_review,原科室决定证据,Link,HRP Budget Review,1,0,0,1,0,,,,原科室决定证据,Finance
+medops,HRP Budget,HRP Budget Ledger,460,source_event_digest,原科室证据摘要,Data,,1,0,0,1,0,,,,原科室证据摘要,Finance
+medops,HRP Integration,HRP Integration Outbox,10,event_id,事件身份,Data,,1,1,1,1,0,,,,事件身份,Platform
+medops,HRP Integration,HRP Integration Outbox,20,event_type,事件类型,Data,,1,0,1,1,0,,,,事件类型,Platform
+medops,HRP Integration,HRP Integration Outbox,30,source,发布来源,Data,,1,0,1,1,0,,,,发布来源,Platform
+medops,HRP Integration,HRP Integration Outbox,40,destination,固定消费者,Data,,1,0,1,1,0,,,,固定消费者,Platform
+medops,HRP Integration,HRP Integration Outbox,50,occurred_at,事件时间,Datetime,,1,0,1,1,0,,,,事件时间,Platform
+medops,HRP Integration,HRP Integration Outbox,60,payload_schema_version,载荷版本,Int,,1,0,0,1,0,,,,载荷版本,Platform
+medops,HRP Integration,HRP Integration Outbox,70,payload_json,持久化载荷,Code,JSON,1,0,0,1,0,,,,持久化载荷,Platform
+medops,HRP Integration,HRP Integration Outbox,80,payload_hash,载荷摘要,Data,,0,0,0,1,0,,,,载荷摘要,Platform
+medops,HRP Integration,HRP Integration Outbox,90,correlation_id,关联身份,Data,,1,0,1,1,0,,,,关联身份,Platform
+medops,HRP Integration,HRP Integration Outbox,100,causation_id,上游事件,Data,,0,0,1,1,0,,,,上游事件,Platform
+medops,HRP Integration,HRP Integration Outbox,110,reference_doctype,业务对象类型,Link,DocType,0,0,0,1,0,,,,业务对象类型,Platform
+medops,HRP Integration,HRP Integration Outbox,120,reference_name,业务对象,Dynamic Link,reference_doctype,0,0,1,1,0,,,,业务对象,Platform
+medops,HRP Integration,HRP Integration Outbox,130,status,执行状态,Select,"Pending
+Processing
+Delivered
+Failed
+Dead Letter",1,0,1,1,0,,,,执行状态,Platform
+medops,HRP Integration,HRP Integration Outbox,140,attempt_count,尝试次数,Int,,1,0,0,1,0,,,,尝试次数,Platform
+medops,HRP Integration,HRP Integration Outbox,150,available_at,可执行时间,Datetime,,1,0,1,1,0,,,,可执行时间,Platform
+medops,HRP Integration,HRP Integration Outbox,160,claim_owner,认领者,Data,,0,0,0,1,0,,,,认领者,Platform
+medops,HRP Integration,HRP Integration Outbox,170,processing_token_hash,租约凭证摘要,Data,,0,0,0,1,0,,,,租约凭证摘要,Platform
+medops,HRP Integration,HRP Integration Outbox,180,lease_expires_at,租约截止,Datetime,,0,0,1,1,0,,,,租约截止,Platform
+medops,HRP Integration,HRP Integration Outbox,190,completed_at,结束时间,Datetime,,0,0,1,1,0,,,,结束时间,Platform
+medops,HRP Integration,HRP Integration Outbox,200,result_json,结果载荷,Code,JSON,0,0,0,1,0,,,,结果载荷,Platform
+medops,HRP Integration,HRP Integration Outbox,210,result_hash,结果摘要,Data,,0,0,0,1,0,,,,结果摘要,Platform
+medops,HRP Integration,HRP Integration Outbox,220,last_error_code,受控错误代码,Data,,0,0,0,1,0,,,,受控错误代码,Platform
+medops,HRP Integration,HRP Integration Outbox,230,last_error_message,受控错误说明,Small Text,,0,0,0,1,0,,,,受控错误说明,Platform

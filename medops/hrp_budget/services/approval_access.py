@@ -6,7 +6,7 @@ from contextvars import ContextVar
 import frappe
 
 from medops.common.budget_workflow import APPROVER_ROLE, CASE, REVIEW, approval_mutation, parse_decision
-from medops.common.exact_money import exact_decimal_amount
+from medops.common.exact_money import MAX_APPROVAL_AMOUNT, exact_decimal_amount
 from medops.hrp_budget.services.access_graph import read_graph
 from medops.hrp_budget.services.planning_access import READ_ROLES
 from medops.hrp_budget.services.submission_access import submission_permission
@@ -137,7 +137,10 @@ def case_permission(doc, user=None, ptype=None, debug=False):
 				or decision["policy_digest"] != doc.policy_digest
 				or decision["decision_digest"] != doc.decision_digest
 				or decision["amount_precision"] != int(doc.currency_precision)
-				or exact_decimal_amount(decision["amount"], int(doc.currency_precision)) != doc.total_amount
+				or exact_decimal_amount(
+					decision["amount"], int(doc.currency_precision), maximum=MAX_APPROVAL_AMOUNT
+				)
+				!= doc.total_amount
 			):
 				return False
 		except (ValueError, TypeError, KeyError):

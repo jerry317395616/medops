@@ -7,7 +7,7 @@ from typing import Any
 
 from medops.common.budget_planning import object_payload
 from medops.common.domain_service import canonical_json, fingerprint_json, normalize_sha256
-from medops.common.exact_money import exact_decimal_amount
+from medops.common.exact_money import MAX_APPROVAL_AMOUNT, exact_decimal_amount
 from medops.common.organization import (
 	normalize_positive_integer,
 	normalize_reference,
@@ -178,7 +178,7 @@ def parse_decision(value: object) -> dict[str, Any]:
 	precision = decision.get("amount_precision")
 	if type(precision) is not int or not 0 <= precision <= 9:
 		raise ValueError("invalid approval precision")
-	exact_decimal_amount(decision.get("amount"), precision)
+	exact_decimal_amount(decision.get("amount"), precision, maximum=MAX_APPROVAL_AMOUNT)
 	steps = decision.get("steps")
 	if not isinstance(steps, list) or not 1 <= len(steps) <= 100:
 		raise ValueError("invalid approval steps")
@@ -196,7 +196,7 @@ def parse_decision(value: object) -> dict[str, Any]:
 		normalize_required_text(step.get("step_name"), label="step_name", maximum=140)
 		if not isinstance(step.get("threshold_amount"), str):
 			raise ValueError("exact step threshold required")
-		exact_decimal_amount(step["threshold_amount"])
+		exact_decimal_amount(step["threshold_amount"], maximum=MAX_APPROVAL_AMOUNT)
 		users = step.get("approvers")
 		sources = step.get("source_assignments")
 		if (

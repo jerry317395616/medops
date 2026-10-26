@@ -28,6 +28,7 @@ from medops.common.approval_matrix import (
 	APPROVAL_MODES,
 	APPROVER_TYPES,
 )
+from medops.common.budget_ledger import BUDGET_LEDGER_DEFINITION
 from medops.common.change_governance import (
 	ChangeGovernanceError,
 	inspect_change_governance,
@@ -64,7 +65,7 @@ from medops.common.fixture_policy import (
 	inspect_fixture_repository,
 	load_fixture_policy,
 )
-from medops.common.immutable_ledger import BASE_LEDGER_FIELDS
+from medops.common.immutable_ledger import BASE_LEDGER_FIELDS, ledger_field_contracts
 from medops.common.master_data import (
 	MASTER_DATA_CHANGE_ITEM_DOCTYPE,
 	MASTER_DATA_DOMAIN_DOCTYPE,
@@ -1210,9 +1211,14 @@ def validate_immutable_ledger_contract(root: Path) -> list[str]:
 	if "frappe.db.commit" in service_text:
 		violations.append("immutable ledger service must not own the transaction commit")
 
-	expected_fields = {field.fieldname: (field.fieldtype, field.required) for field in BASE_LEDGER_FIELDS}
 	for blueprint_path in blueprint_paths:
 		payload = json.loads(blueprint_path.read_text(encoding="utf-8"))
+		contract = (
+			ledger_field_contracts(BUDGET_LEDGER_DEFINITION)
+			if payload.get("name") == BUDGET_LEDGER_DEFINITION.doctype
+			else BASE_LEDGER_FIELDS
+		)
+		expected_fields = {field.fieldname: (field.fieldtype, field.required) for field in contract}
 		fields = {
 			str(field.get("fieldname")): field
 			for field in payload.get("fields", [])

@@ -85,6 +85,10 @@ doc_events = {
 }
 
 permission_query_conditions = {
+	"HRP Budget Release": "medops.hrp_budget.services.release_access.release_query",
+	"HRP Budget Release Entry": "medops.hrp_budget.services.release_access.event_query",
+	"HRP Budget Ledger": "medops.hrp_budget.services.release_access.ledger_query",
+	"HRP Integration Outbox": "medops.hrp_budget.services.release_access.outbox_query",
 	"HRP Budget Approval": "medops.hrp_budget.services.approval_access.case_query",
 	"HRP Budget Review": "medops.hrp_budget.services.approval_access.review_query",
 	"ToDo": "medops.hrp_budget.services.approval_native.todo_query",
@@ -114,6 +118,10 @@ permission_query_conditions = {
 	"HRP Numbering Scheme": "medops.hrp_foundation.permissions.numbering_scheme_query",
 }
 has_permission = {
+	"HRP Budget Release": "medops.hrp_budget.services.release_access.release_permission",
+	"HRP Budget Release Entry": "medops.hrp_budget.services.release_access.event_permission",
+	"HRP Budget Ledger": "medops.hrp_budget.services.release_access.ledger_permission",
+	"HRP Integration Outbox": "medops.hrp_budget.services.release_access.outbox_permission",
 	"HRP Budget Approval": "medops.hrp_budget.services.approval_access.case_permission",
 	"HRP Budget Review": "medops.hrp_budget.services.approval_access.review_permission",
 	"ToDo": "medops.hrp_budget.services.approval_native.todo_permission",

@@ -1,0 +1,432 @@
+{
+	"doctype": "DocType",
+	"name": "HRP Budget Release",
+	"module": "HRP Budget",
+	"custom": 0,
+	"engine": "InnoDB",
+	"autoname": "field:identity_key",
+	"title_field": "subject",
+	"is_submittable": 1,
+	"istable": 0,
+	"issingle": 0,
+	"track_changes": 0,
+	"allow_rename": 0,
+	"editable_grid": 0,
+	"field_order": [
+		"identity_key",
+		"subject",
+		"schema_version",
+		"operation",
+		"company",
+		"hospital",
+		"organization_version",
+		"organization_unit",
+		"fiscal_year",
+		"currency",
+		"currency_precision",
+		"amount_schema_version",
+		"source_submission",
+		"source_snapshot_digest",
+		"source_approval",
+		"source_approval_round",
+		"source_approval_revision",
+		"source_decision_digest",
+		"source_final_review",
+		"source_event_digest",
+		"posting_date",
+		"reason",
+		"prepared_by",
+		"total_amount",
+		"line_count",
+		"reversal_of",
+		"original_intent_digest",
+		"intent_digest",
+		"status",
+		"revision",
+		"prepared_at",
+		"authorized_by",
+		"authorized_at",
+		"authorization_revision",
+		"authorization_decision",
+		"outbox_message",
+		"posted_at",
+		"ledger_count",
+		"execution_digest"
+	],
+	"fields": [
+		{
+			"fieldname": "identity_key",
+			"label": "凭证身份",
+			"fieldtype": "Data",
+			"read_only": 1,
+			"reqd": 1,
+			"hidden": 1,
+			"permlevel": 1,
+			"unique": 1
+		},
+		{
+			"fieldname": "subject",
+			"label": "凭证名称",
+			"fieldtype": "Data",
+			"read_only": 1,
+			"reqd": 1
+		},
+		{
+			"fieldname": "schema_version",
+			"label": "凭证版本",
+			"fieldtype": "Int",
+			"read_only": 1,
+			"reqd": 1
+		},
+		{
+			"fieldname": "operation",
+			"label": "财务操作",
+			"fieldtype": "Select",
+			"read_only": 1,
+			"reqd": 1,
+			"options": "Release\nReverse"
+		},
+		{
+			"fieldname": "company",
+			"label": "法人",
+			"fieldtype": "Link",
+			"read_only": 1,
+			"reqd": 1,
+			"options": "Company"
+		},
+		{
+			"fieldname": "hospital",
+			"label": "医院",
+			"fieldtype": "Link",
+			"read_only": 1,
+			"reqd": 1,
+			"options": "HRP Hospital"
+		},
+		{
+			"fieldname": "organization_version",
+			"label": "组织快照",
+			"fieldtype": "Link",
+			"read_only": 1,
+			"reqd": 1,
+			"options": "HRP Organization Version"
+		},
+		{
+			"fieldname": "organization_unit",
+			"label": "原始科室",
+			"fieldtype": "Link",
+			"read_only": 1,
+			"reqd": 1,
+			"options": "HRP Organization Unit"
+		},
+		{
+			"fieldname": "fiscal_year",
+			"label": "财政年度",
+			"fieldtype": "Link",
+			"read_only": 1,
+			"reqd": 1,
+			"options": "Fiscal Year"
+		},
+		{
+			"fieldname": "currency",
+			"label": "捕获币种",
+			"fieldtype": "Link",
+			"read_only": 1,
+			"reqd": 1,
+			"options": "Currency"
+		},
+		{
+			"fieldname": "currency_precision",
+			"label": "捕获精度",
+			"fieldtype": "Int",
+			"read_only": 1,
+			"reqd": 1
+		},
+		{
+			"fieldname": "amount_schema_version",
+			"label": "金额版本",
+			"fieldtype": "Int",
+			"read_only": 1,
+			"reqd": 1
+		},
+		{
+			"fieldname": "source_submission",
+			"label": "已批准汇总",
+			"fieldtype": "Link",
+			"read_only": 1,
+			"reqd": 1,
+			"options": "HRP Budget Submission"
+		},
+		{
+			"fieldname": "source_snapshot_digest",
+			"label": "汇总事实摘要",
+			"fieldtype": "Data",
+			"read_only": 1,
+			"reqd": 1
+		},
+		{
+			"fieldname": "source_approval",
+			"label": "最终汇总审批",
+			"fieldtype": "Link",
+			"read_only": 1,
+			"reqd": 1,
+			"options": "HRP Budget Approval"
+		},
+		{
+			"fieldname": "source_approval_round",
+			"label": "审批轮次",
+			"fieldtype": "Int",
+			"read_only": 1,
+			"reqd": 1
+		},
+		{
+			"fieldname": "source_approval_revision",
+			"label": "最终审批修订",
+			"fieldtype": "Int",
+			"read_only": 1,
+			"reqd": 1
+		},
+		{
+			"fieldname": "source_decision_digest",
+			"label": "审批决定摘要",
+			"fieldtype": "Data",
+			"read_only": 1,
+			"reqd": 1
+		},
+		{
+			"fieldname": "source_final_review",
+			"label": "最终审批证据",
+			"fieldtype": "Link",
+			"read_only": 1,
+			"reqd": 1,
+			"options": "HRP Budget Review"
+		},
+		{
+			"fieldname": "source_event_digest",
+			"label": "最终证据摘要",
+			"fieldtype": "Data",
+			"read_only": 1,
+			"reqd": 1
+		},
+		{
+			"fieldname": "posting_date",
+			"label": "记账日期",
+			"fieldtype": "Date",
+			"read_only": 1,
+			"reqd": 1,
+			"search_index": 1
+		},
+		{
+			"fieldname": "reason",
+			"label": "下达或冲销理由",
+			"fieldtype": "Small Text",
+			"read_only": 1,
+			"reqd": 1
+		},
+		{
+			"fieldname": "prepared_by",
+			"label": "准备人",
+			"fieldtype": "Link",
+			"read_only": 1,
+			"reqd": 1,
+			"options": "User"
+		},
+		{
+			"fieldname": "total_amount",
+			"label": "精确记账金额",
+			"fieldtype": "Data",
+			"read_only": 1,
+			"reqd": 1
+		},
+		{
+			"fieldname": "line_count",
+			"label": "原始明细数",
+			"fieldtype": "Int",
+			"read_only": 1,
+			"reqd": 1
+		},
+		{
+			"fieldname": "reversal_of",
+			"label": "原下达凭证",
+			"fieldtype": "Link",
+			"read_only": 1,
+			"reqd": 0,
+			"options": "HRP Budget Release",
+			"unique": 1
+		},
+		{
+			"fieldname": "original_intent_digest",
+			"label": "原下达意图摘要",
+			"fieldtype": "Data",
+			"read_only": 1,
+			"reqd": 0
+		},
+		{
+			"fieldname": "intent_digest",
+			"label": "财务意图摘要",
+			"fieldtype": "Data",
+			"read_only": 1,
+			"reqd": 1
+		},
+		{
+			"fieldname": "status",
+			"label": "执行状态",
+			"fieldtype": "Select",
+			"read_only": 1,
+			"reqd": 1,
+			"options": "Prepared\nAuthorized\nPosted",
+			"search_index": 1,
+			"in_list_view": 1
+		},
+		{
+			"fieldname": "revision",
+			"label": "凭证修订",
+			"fieldtype": "Int",
+			"read_only": 1,
+			"reqd": 1
+		},
+		{
+			"fieldname": "prepared_at",
+			"label": "准备时间",
+			"fieldtype": "Datetime",
+			"read_only": 1,
+			"reqd": 1
+		},
+		{
+			"fieldname": "authorized_by",
+			"label": "确认执行人",
+			"fieldtype": "Link",
+			"read_only": 1,
+			"reqd": 0,
+			"options": "User"
+		},
+		{
+			"fieldname": "authorized_at",
+			"label": "确认时间",
+			"fieldtype": "Datetime",
+			"read_only": 1,
+			"reqd": 0
+		},
+		{
+			"fieldname": "authorization_revision",
+			"label": "授权修订",
+			"fieldtype": "Int",
+			"read_only": 1,
+			"reqd": 0
+		},
+		{
+			"fieldname": "authorization_decision",
+			"label": "人工决定",
+			"fieldtype": "Link",
+			"read_only": 1,
+			"reqd": 0,
+			"options": "HRP Budget Release Entry"
+		},
+		{
+			"fieldname": "outbox_message",
+			"label": "持久化执行任务",
+			"fieldtype": "Link",
+			"read_only": 1,
+			"reqd": 0,
+			"options": "HRP Integration Outbox"
+		},
+		{
+			"fieldname": "posted_at",
+			"label": "记账完成时间",
+			"fieldtype": "Datetime",
+			"read_only": 1,
+			"reqd": 0
+		},
+		{
+			"fieldname": "ledger_count",
+			"label": "已记分录数",
+			"fieldtype": "Int",
+			"read_only": 1,
+			"reqd": 0
+		},
+		{
+			"fieldname": "execution_digest",
+			"label": "完整分录摘要",
+			"fieldtype": "Data",
+			"read_only": 1,
+			"reqd": 0
+		}
+	],
+	"permissions": [
+		{
+			"role": "System Manager",
+			"read": 1,
+			"report": 1,
+			"export": 1,
+			"print": 1,
+			"select": 1,
+			"create": 0,
+			"write": 0,
+			"delete": 0,
+			"submit": 0,
+			"cancel": 0,
+			"amend": 0,
+			"import": 0
+		},
+		{
+			"role": "HRP System Manager",
+			"read": 1,
+			"report": 1,
+			"export": 1,
+			"print": 1,
+			"select": 1,
+			"create": 0,
+			"write": 0,
+			"delete": 0,
+			"submit": 0,
+			"cancel": 0,
+			"amend": 0,
+			"import": 0
+		},
+		{
+			"role": "HRP Budget Manager",
+			"read": 1,
+			"report": 1,
+			"export": 1,
+			"print": 1,
+			"select": 1,
+			"create": 0,
+			"write": 0,
+			"delete": 0,
+			"submit": 0,
+			"cancel": 0,
+			"amend": 0,
+			"import": 0
+		},
+		{
+			"role": "HRP Auditor",
+			"read": 1,
+			"report": 1,
+			"export": 1,
+			"print": 1,
+			"select": 1,
+			"create": 0,
+			"write": 0,
+			"delete": 0,
+			"submit": 0,
+			"cancel": 0,
+			"amend": 0,
+			"import": 0
+		},
+		{
+			"role": "System Manager",
+			"permlevel": 1,
+			"read": 1
+		},
+		{
+			"role": "HRP System Manager",
+			"permlevel": 1,
+			"read": 1
+		}
+	],
+	"sort_field": "creation",
+	"sort_order": "DESC",
+	"description": "受控精确预算下达和整批冲销凭证；独立人工授权后由持久化任务执行。",
+	"actions": [],
+	"links": [],
+	"states": []
+}

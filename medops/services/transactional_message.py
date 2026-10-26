@@ -578,13 +578,13 @@ def _lock_message(
 			for_update=True,
 			wait=False,
 		)
-	except (frappe.QueryTimeoutError, frappe.QueryDeadlockError) as exc:
+	except frappe.QueryTimeoutError as exc:
 		raise_ione_error("CONFLICT", cause=exc)
 	if not locked_name:
 		raise_ione_error("RESOURCE_NOT_FOUND")
 	return cast(
 		TransactionalMessageDocument,
-		frappe.get_doc(definition.doctype, message_name),
+		frappe.get_doc(definition.doctype, message_name, for_update=True),
 	)
 
 
