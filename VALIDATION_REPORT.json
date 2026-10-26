@@ -113,10 +113,10 @@
 		"cod032_promoted": false
 	},
 	"human_approval_candidate": {
-		"status": "implemented_unverified",
+		"status": "verification_in_progress",
 		"models_added": 2,
 		"pure_tests_passed": 9,
-		"native_tests_defined": 11,
+		"native_tests_defined": 18,
 		"public_deployment": "none",
 		"remaining": [
 			"native HTTP verification",
@@ -124,6 +124,9 @@
 			"browser and concurrent decisions",
 			"approved department consolidation",
 			"full quality and protected CI"
-		]
+		],
+		"first_native_candidate": "2a71be7293e987e4f4c655b57887fdb636109ce7",
+		"repeat_migrations": 2,
+		"first_native_result": "11 run; 4 failed assertions and 2 errors; fixing parent repeatable-read snapshot and same-session test setup"
 	}
 }

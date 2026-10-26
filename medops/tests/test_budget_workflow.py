@@ -1,21 +1,25 @@
 from __future__ import annotations
 
 from datetime import timedelta
+from unittest.mock import patch
 
 import frappe
 from frappe.model.workflow import apply_workflow
 from frappe.tests.test_api import FrappeAPITestCase
-from frappe.utils import now_datetime
+from frappe.utils import now_datetime, nowdate
 
 from medops.common.approval_matrix import build_approval_matrix_steps, build_approval_matrix_upsert
 from medops.common.budget_workflow import APPROVER_ROLE, CASE, REVIEW, WORKFLOW, WORKFLOW_ACTIONS
+from medops.common.delegation import build_delegation_create
 from medops.common.domain_service import fingerprint_json
 from medops.common.error_catalog import IoneApplicationError
 from medops.common.segregation import build_segregation_rule_upsert
 from medops.hrp_budget.services.approval_evidence import evidence_values
 from medops.hrp_budget.services.approval_native import require_workflow_integrity
 from medops.hrp_budget.services.submission import seal_department_submission
+from medops.hrp_workflow_authorization.services.access_scope import grants_for
 from medops.hrp_workflow_authorization.services.approval_matrix import upsert_approval_matrix
+from medops.hrp_workflow_authorization.services.delegation import create_delegation
 from medops.hrp_workflow_authorization.services.segregation import upsert_segregation_rule
 from medops.setup.budget_approval import ensure_budget_approval
 from medops.tests.scope_fixtures import grant_test_scope, share_test_records
@@ -112,14 +116,14 @@ class TestBudgetWorkflowAPI(FrappeAPITestCase):
 		frappe.local.db.commit()
 		self.login_actor(PLANNER)
 
-	def configure(self, *, mode="All", sequential=False):
+	def configure(self, *, mode="All", sequential=False, precision=2):
 		if hasattr(self, "matrix"):
 			frappe.db.set_value("HRP Approval Matrix", self.matrix["name"], "enabled", 0)
 		steps = [
 			dict(
 				sequence_no=index if sequential else 1,
 				step_name="财务复核" + str(index) if sequential else "财务复核",
-				threshold_amount="0.00",
+				threshold_amount="0." + "0" * precision if precision else "0",
 				approver_type="User",
 				approver_user=user,
 				approval_mode=mode,
@@ -138,8 +142,8 @@ class TestBudgetWorkflowAPI(FrappeAPITestCase):
 				priority=50,
 				dimensions={"fiscal_year": YEAR, "currency": "CNY"},
 				schema_version=2,
-				amount_precision=2,
-				steps=build_approval_matrix_steps(steps, schema_version=2, amount_precision=2),
+				amount_precision=precision,
+				steps=build_approval_matrix_steps(steps, schema_version=2, amount_precision=precision),
 			),
 			idempotency_key=fixture_request("matrix-save"),
 		)
@@ -162,11 +166,15 @@ class TestBudgetWorkflowAPI(FrappeAPITestCase):
 		return sid
 
 	def command(self, method, payload, *, request_key=None):
-		return self.post(
+		response = self.post(
 			self.method(PREFIX + method),
 			{"payload": payload},
 			headers={"Idempotency-Key": request_key or fixture_request(method)},
 		)
+		# HTTP owns a separate committed transaction. End the parent test's
+		# repeatable-read snapshot before inspecting its persisted result.
+		frappe.db.rollback()
+		return response
 
 	def success(self, response):
 		self.assertEqual(response.status_code, 200, response.get_data(as_text=True))
@@ -253,9 +261,10 @@ class TestBudgetWorkflowAPI(FrappeAPITestCase):
 		case = self.open_case()["name"]
 		self.login_actor(ACTORS[1])
 		old = self.success(self.prepare(case))
+		old_sid = self.TEST_CLIENT.get_cookie("sid").value
 		self.login_actor(ACTORS[0])
 		self.assertEqual(self.success(self.confirm(self.success(self.prepare(case))))["status"], "Approved")
-		self.login_actor(ACTORS[1])
+		self.TEST_CLIENT.set_cookie(key="sid", value=old_sid)
 		self.assertEqual(self.confirm(old).status_code, 409)
 
 	def test_rejection_and_withdrawal_require_confirmation_and_create_new_rounds(self):
@@ -370,3 +379,151 @@ class TestBudgetWorkflowAPI(FrappeAPITestCase):
 		self.login_actor(ACTORS[0])
 		self.assertNotEqual(self.prepare(case).status_code, 200)
 		self.assertEqual(frappe.db.count(REVIEW, {"case": case}), 0)
+
+	def test_current_role_revocation_denies_an_existing_preview(self):
+		case = self.open_case()["name"]
+		self.login_actor(ACTORS[0])
+		preview = self.success(self.prepare(case))
+		frappe.set_user("Administrator")
+		frappe.get_doc("User", ACTORS[0]).remove_roles(APPROVER_ROLE)
+		frappe.local.db.commit()
+		try:
+			self.assertEqual(self.confirm(preview).status_code, 403)
+			self.assertEqual(frappe.db.count(REVIEW, {"case": case, "event_kind": "Decision"}), 0)
+		finally:
+			frappe.set_user("Administrator")
+			frappe.get_doc("User", ACTORS[0]).add_roles(APPROVER_ROLE)
+			frappe.local.db.commit()
+
+	def test_valid_api_credentials_cannot_make_a_financial_decision(self):
+		from frappe.core.doctype.user.user import generate_keys
+
+		case = self.open_case()["name"]
+		frappe.set_user("Administrator")
+		secret = generate_keys(ACTORS[0])["api_secret"]
+		api_key = frappe.db.get_value("User", ACTORS[0], "api_key")
+		frappe.local.db.commit()
+		self.TEST_CLIENT.set_cookie(key="sid", value="Guest")
+		response = self.post(
+			self.method(PREFIX + "prepare"),
+			{
+				"payload": {
+					"case": case,
+					"expected_revision": 1,
+					"action": "Approve",
+					"reason": "credential must not replace human confirmation",
+				}
+			},
+			headers={
+				"Authorization": "token " + api_key + ":" + secret,
+				"Idempotency-Key": fixture_request("token-denied"),
+			},
+		)
+		self.assertEqual(response.status_code, 403)
+		self.assertEqual(frappe.db.count(REVIEW, {"case": case}), 0)
+
+	def test_current_source_field_restriction_denies_read_and_prepared_decision(self):
+		from frappe.custom.doctype.property_setter.property_setter import make_property_setter
+
+		case = self.open_case()["name"]
+		self.login_actor(ACTORS[0])
+		preview = self.success(self.prepare(case))
+		frappe.set_user("Administrator")
+		setter = make_property_setter(
+			"HRP Budget Plan", "total_amount", "permlevel", 1, "Int", validate_fields_for_doctype=False
+		)
+		frappe.local.db.commit()
+		try:
+			self.assertEqual(self.read_case(case).status_code, 403)
+			self.assertEqual(self.confirm(preview).status_code, 403)
+		finally:
+			frappe.set_user("Administrator")
+			frappe.delete_doc("Property Setter", setter.name, ignore_permissions=True)
+			frappe.clear_cache(doctype="HRP Budget Plan")
+			frappe.local.db.commit()
+
+	def test_scope_expiry_uses_site_calendar_on_both_sides_of_midnight(self):
+		scope = "COD032W-scope-" + ACTORS[0].split("@")[0]
+		frappe.set_user("Administrator")
+		frappe.db.set_value("HRP Access Scope", scope, {"valid_from": "2026-10-25", "valid_to": "2026-10-25"})
+		try:
+			with patch(
+				"medops.hrp_workflow_authorization.services.access_scope.nowdate", return_value="2026-10-25"
+			):
+				self.assertTrue(grants_for(ACTORS[0], CASE, "write"))
+			with patch(
+				"medops.hrp_workflow_authorization.services.access_scope.nowdate", return_value="2026-10-26"
+			):
+				self.assertEqual(grants_for(ACTORS[0], CASE, "write"), ())
+		finally:
+			frappe.db.rollback()
+
+	def test_shared_delegate_retains_two_sources_and_needs_only_one_actual_vote(self):
+		frappe.set_user("Administrator")
+		create_delegation(
+			build_delegation_create(
+				matrix=self.matrix["name"],
+				from_user=ACTORS[0],
+				to_user=ACTORS[1],
+				valid_from=nowdate(),
+				valid_to=nowdate(),
+				reason="同日受控委托",
+			),
+			idempotency_key=fixture_request("delegation"),
+		)
+		frappe.local.db.commit()
+		case = self.open_case()["name"]
+		self.login_actor(ACTORS[0])
+		self.assertEqual(self.prepare(case).status_code, 403)
+		self.login_actor(ACTORS[1])
+		item = self.success(self.read_case(case))
+		self.assertEqual(item["steps"][0]["approvers"], [ACTORS[1]])
+		self.assertEqual(self.success(self.confirm(self.success(self.prepare(case))))["status"], "Approved")
+
+	def test_over_one_hundred_unrelated_policies_do_not_exhaust_relevant_candidate_limit(self):
+		frappe.set_user("Administrator")
+		root = frappe.db.get_value(
+			"HRP Organization Unit", {"organization_version": self.org, "code": HOSPITAL}, "name"
+		)
+		for _ in range(101):
+			# Native validated configuration documents, never fabricated financial evidence.
+			matrix = frappe.copy_doc(frappe.get_doc("HRP Approval Matrix", self.matrix["name"]))
+			matrix.code = fixture_request("usd-matrix")
+			matrix.dimensions_json = frappe.as_json({"fiscal_year": YEAR, "currency": "USD"})
+			matrix.insert(ignore_permissions=True)
+			rule = frappe.copy_doc(frappe.get_doc("HRP Segregation Rule", self.rule["name"]))
+			rule.code = fixture_request("other-unit-sod")
+			rule.organization_unit = root
+			rule.include_descendants = 0
+			rule.flags.segregation_rule_service_write = True
+			rule.insert(ignore_permissions=True)
+		frappe.local.db.commit()
+		case = self.open_case()["name"]
+		self.login_actor(ACTORS[0])
+		self.success(self.prepare(case))
+
+	def test_nine_decimal_large_amount_survives_native_approval_and_read(self):
+		frappe.set_user("Administrator")
+		original = frappe.db.get_default("currency_precision")
+		frappe.db.set_default("currency_precision", "9")
+		try:
+			_, self.plan = new_frozen_plan(
+				self.org, self.unit, self.value["name"], self.fund["name"], amount="999999999999.000000001"
+			)
+			frappe.set_user(PLANNER)
+			self.submission = seal_department_submission(
+				submission_command(self.plan), idempotency_key=fixture_request("nine-seal")
+			)
+			frappe.set_user("Administrator")
+			self.matrix = self.configure(mode="Any", precision=9)
+			frappe.local.db.commit()
+			case = self.open_case()["name"]
+			self.login_actor(ACTORS[0])
+			preview = self.success(self.prepare(case))
+			self.assertEqual(preview["total_amount"], "999999999999.000000001")
+			self.assertEqual(self.success(self.confirm(preview))["status"], "Approved")
+			self.assertEqual(self.success(self.read_case(case))["total_amount"], "999999999999.000000001")
+		finally:
+			frappe.set_user("Administrator")
+			frappe.db.set_default("currency_precision", original)
+			frappe.local.db.commit()
