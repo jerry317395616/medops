@@ -173,7 +173,7 @@
 		},
 		{
 			"label": "预算账簿",
-			"link_to": "hrp-budget-ledger",
+			"link_to": "hrp-budget-statements",
 			"type": "Page"
 		},
 		{
@@ -639,7 +639,7 @@
 			"type": "Link",
 			"label": "预算账簿",
 			"link_type": "Page",
-			"link_to": "hrp-budget-ledger",
+			"link_to": "hrp-budget-statements",
 			"child": 1,
 			"indent": 0,
 			"default_workspace": 1

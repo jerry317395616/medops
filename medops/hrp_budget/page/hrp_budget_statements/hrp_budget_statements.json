@@ -1,7 +1,7 @@
 {
 	"doctype": "Page",
-	"name": "hrp-budget-ledger",
-	"page_name": "hrp-budget-ledger",
+	"name": "hrp-budget-statements",
+	"page_name": "hrp-budget-statements",
 	"title": "预算账簿",
 	"module": "HRP Budget",
 	"standard": "Yes",

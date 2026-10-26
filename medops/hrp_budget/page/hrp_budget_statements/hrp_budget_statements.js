@@ -1,4 +1,4 @@
-frappe.pages["hrp-budget-ledger"].on_page_load = function (wrapper) {
+frappe.pages["hrp-budget-statements"].on_page_load = function (wrapper) {
 	const page = frappe.ui.make_app_page({ parent: wrapper, title: __("预算账簿"), single_column: true });
 	const body = $("<div class='p-3'></div>").appendTo(page.main);
 	$("<p class='text-muted'></p>").text(__("按原始申报单位列账。净下达额反映预算下达及冲销。")).appendTo(body);
