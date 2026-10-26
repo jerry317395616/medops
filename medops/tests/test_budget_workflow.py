@@ -14,6 +14,7 @@ from medops.common.error_catalog import IoneApplicationError
 from medops.common.segregation import build_segregation_rule_upsert
 from medops.hrp_budget.services.approval_evidence import evidence_values
 from medops.hrp_budget.services.approval_native import require_workflow_integrity
+from medops.hrp_budget.services.submission import seal_department_submission
 from medops.hrp_workflow_authorization.services.approval_matrix import upsert_approval_matrix
 from medops.hrp_workflow_authorization.services.segregation import upsert_segregation_rule
 from medops.setup.budget_approval import ensure_budget_approval
@@ -29,7 +30,6 @@ from medops.tests.test_budget_planning import (
 from medops.tests.test_budget_submission import (
 	fixture_request,
 	new_frozen_plan,
-	seal_department_submission,
 	submission_command,
 )
 

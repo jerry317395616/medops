@@ -53,5 +53,7 @@ def ensure_budget_approval():
 		if name.startswith("uniq_"):
 			frappe.db.add_unique(doctype, fields, name)
 		else:
-			frappe.db.add_index(doctype, fields, name)
+			# The fixed field `case` is a SQL keyword; this pinned MariaDB helper
+			# interpolates field identifiers without quoting them itself.
+			frappe.db.add_index(doctype, [f"`{field}`" for field in fields], name)
 	return {"schema_version": 1}
