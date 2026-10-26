@@ -8,10 +8,10 @@
 		"ADR-0030",
 		"ADR-0031"
 	],
-	"current_scope": "Owned message retirement, bounded recovery scans, commit-time posted audit and scope/User Permission race tests implemented; awaiting422 full quality and36 focused native. Prior836 quality420/native26/real RQ remain verified evidence. Automatic dispatch, process kill, contention, statements/UI/full399 native/protected release pending.",
+	"current_scope": "Sourcea7e1b3a full422 quality and52 focused native passed. Owned recovery, current scope/User Permission revocation, nested transaction rollback and legacy scope save proven. Real RQ first-row SIGKILL rolls back; virtual lease/backoff recovery posts exactly one batch. Automatic confirmation enqueue/cron, contention, statements/UI/full402 native/protected release pending.",
 	"checks": {
 		"pure_tests_expected": 422,
-		"complete_frappe_tests_expected": 399,
+		"complete_frappe_tests_expected": 402,
 		"exact_foundation_pure_tests_passed": 21,
 		"native_foundation": {
 			"status": "passed",
@@ -33,9 +33,9 @@
 			"migrations": 0
 		},
 		"protected_ci": "not run for COD-033",
-		"local_quality": "all passed at 836a8c74a5c3cdf057f977298d2442986aa5f494",
-		"pure_tests_passed": 420,
-		"complete_frappe_tests": "389 expected; full current suite pending complete vertical slice",
+		"local_quality": "all passed at a7e1b3a2785eecb0fb819b08c8e8942fe8b1c0c1",
+		"pure_tests_passed": 422,
+		"complete_frappe_tests": "402 expected; full current suite pending complete vertical slice",
 		"current_protocol": {
 			"status": "full local quality passed",
 			"tests": 11,
@@ -58,7 +58,7 @@
 				"Outbox stale-snapshot full transaction retry"
 			]
 		},
-		"current_local_quality": "Full420 passed at 836a8c74a5c3cdf057f977298d2442986aa5f494",
+		"current_local_quality": "Full422 passed at a7e1b3a2785eecb0fb819b08c8e8942fe8b1c0c1",
 		"runtime_native_partial": {
 			"source_commit": "daaed16f7765c0fb2e796fa100ca817970585499",
 			"passed_counts": [
@@ -74,7 +74,7 @@
 		},
 		"current_human_authorization": {
 			"status": "seven private native HTTP tests passed",
-			"source_commit": "a50b750bdf1e42bfb8829b4f0b91af1accc9abfc",
+			"source_commit": "a7e1b3a2785eecb0fb819b08c8e8942fe8b1c0c1",
 			"native_tests_passed": 7,
 			"public_deployment": false,
 			"asynchronous_posting": false,
@@ -89,17 +89,17 @@
 			]
 		},
 		"owned_execution": {
-			"status": "passed focused native and real RQ",
-			"source_commit": "836a8c74a5c3cdf057f977298d2442986aa5f494",
+			"status": "passed52 focused native and real RQ SIGKILL recovery",
+			"source_commit": "a7e1b3a2785eecb0fb819b08c8e8942fe8b1c0c1",
 			"native_counts": [
-				12,
+				13,
 				7,
+				9,
 				7
 			],
 			"automatic_enqueue_enabled": false,
 			"cron_wired": false,
 			"real_rq_verified": true,
-			"real_rq_jobs": 2,
 			"real_rq_batches": 1,
 			"real_rq_ledger_rows": 2,
 			"public_deployment": false,
@@ -110,7 +110,12 @@
 				"mid-transaction separate connection share/role/field revocation",
 				"post-commit poisoned Redis role cache; both rows written then final validation rollback",
 				"foreign claim receipt, missing capability and repeatable-read rejection",
-				"real RQ enqueue-after-commit and reference-only job args"
+				"real RQ enqueue-after-commit and reference-only job args",
+				"current scope and native User Permission separate-connection mid-batch revocation",
+				"poisoned Redis User Permission after commit; both writes rolled back by final authorization",
+				"legacy mixed-case scope can be disabled without identity mutation",
+				"nested parent/child write and reservation rollback preserves earlier caller write",
+				"real SIGKILL after first uncommitted row; virtual lease/backoff recovery; stale receipt cannot change attempt2"
 			],
 			"rq_isolation": {
 				"old_budget_unchanged": true,
@@ -124,22 +129,95 @@
 				"worker_exited": true
 			},
 			"pending": [
-				"automatic dispatch and recovery before enabling scheduling",
-				"last-attempt crash terminal state",
-				"superseded messages and scheduler fairness",
-				"current scope/User Permission race tests",
-				"full races/process termination/lease recovery",
+				"automatic confirmation-after-commit enqueue and cron wiring",
+				"real contention and repeated scheduling concurrency",
 				"department statements/export/UI",
-				"full389+ native and protected release"
-			]
+				"full402+ native, protected CI, repeat migration, backup and protected release"
+			],
+			"combined_transaction_scope_counts": [
+				5,
+				11
+			],
+			"total_focused_native": 52,
+			"previous_real_rq": {
+				"source_commit": "836a8c74a5c3cdf057f977298d2442986aa5f494",
+				"jobs": 2,
+				"batches": 1,
+				"ledger_rows": 2
+			},
+			"real_sigkill_recovery": {
+				"status": "passed",
+				"source_commit": "a7e1b3a2785eecb0fb819b08c8e8942fe8b1c0c1",
+				"site": "cod030-828dab0.localhost",
+				"db_port": 13360,
+				"real_sigkill": true,
+				"first_uncommitted_row_observed": true,
+				"independent_connection_rows_before_and_after_kill": 0,
+				"database_rollback_verified": true,
+				"virtual_clock_only_for_lease_expiry": true,
+				"lease_attempts": 2,
+				"old_receipt_cannot_post": true,
+				"posted_batches": 1,
+				"ledger_rows": 2,
+				"exact_precision": 9,
+				"outbox": "Delivered",
+				"old_budget_unchanged": true,
+				"user_roles_unchanged": true,
+				"gl_stock_unchanged": true,
+				"error_log_unchanged": true,
+				"queues_before": {
+					"short": 0,
+					"default": 384,
+					"long": 0
+				},
+				"queues_after": {
+					"short": 0,
+					"default": 384,
+					"long": 0
+				},
+				"source_clean": true,
+				"public_sites_untouched": true,
+				"backoff_recovery_verified": true,
+				"first_phase_driver_log": "cod033-a7e1b3a-rq-kill-retry2-driver.log",
+				"real_clock_lease_wait": false
+			}
 		},
 		"message_recovery": {
-			"status": "implemented; native verification pending",
-			"new_native_expected": 10,
-			"new_pure_expected": 2,
+			"status": "passed",
+			"source_commit": "a7e1b3a2785eecb0fb819b08c8e8942fe8b1c0c1",
+			"new_native_added": 13,
+			"new_pure_added": 2,
+			"focused_counts": [
+				5,
+				11,
+				13,
+				7,
+				9,
+				7
+			],
+			"total": 52,
+			"terminal_cases": [
+				"superseded Pending",
+				"superseded Processing",
+				"expired Processing at attempt10"
+			],
+			"current_capability_required": true,
+			"receipts_not_unsealed_or_renewed_for_retirement": true,
+			"scan_quotas": {
+				"pending_failed": 60,
+				"expired_processing": 20,
+				"active_processing": 20
+			},
+			"commit_audit_verified_on_independent_connection": true,
 			"automatic_enqueue_enabled": false,
 			"cron_wired": false,
 			"public_deployment": false
+		},
+		"proofs": {
+			"quality": "cod033-a7e1b3a-quality.json",
+			"focused_native": "cod033-a7e1b3a-runtime-recovery-regression.json",
+			"real_sigkill": "cod033-a7e1b3a-rq-kill-completed.json",
+			"nested_database": "cod033-a7e1b3a-nested-savepoint.json"
 		}
 	},
 	"previous_verified_release": {
