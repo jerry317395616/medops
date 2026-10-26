@@ -1,0 +1,150 @@
+{
+	"schema_version": 1,
+	"task_id": "COD-032",
+	"status": "verified_development_release",
+	"recorded_on_utc": "2026-10-26",
+	"application": "medops",
+	"name": "医衡 MedOps 医院运营与资源管理",
+	"merge_commit": "22dc042d3a52effd54986fc136575ae0de31a1a9",
+	"validated_candidate": "818f9e4ed9b54ffc61e64da29d00346d4184c7b3",
+	"merged_tree_identical_to_validated_candidate": true,
+	"pull_request": "https://github.com/jerry317395616/medops/pull/45",
+	"ci": "https://github.com/jerry317395616/medops/actions/runs/40263234479",
+	"ci_required_jobs": [
+		"Quality",
+		"Security",
+		"Integration",
+		"Required"
+	],
+	"tests": {
+		"pure": 380,
+		"frappe": 360,
+		"focused_native": 121,
+		"focused_counts": [
+			8,
+			18,
+			13,
+			20,
+			9,
+			9,
+			7,
+			8,
+			9,
+			20
+		],
+		"real_dual_process_races": 7,
+		"private_repeat_migrations": 2,
+		"fresh_ci_sites_error_logs": [
+			{
+				"error_log_count": 0,
+				"error_log_summaries": [],
+				"site": "hrp-test.localhost"
+			},
+			{
+				"error_log_count": 0,
+				"error_log_summaries": [],
+				"site": "hrp-dev.localhost"
+			},
+			{
+				"error_log_count": 0,
+				"error_log_summaries": [],
+				"site": "hrp-demo.localhost"
+			}
+		]
+	},
+	"browser": {
+		"runtime_commit": "818f9e4ed9b54ffc61e64da29d00346d4184c7b3",
+		"scope": "synthetic development acceptance",
+		"workflow": [
+			"approved two-department source selection",
+			"full-grain consolidation seal",
+			"request independent approval",
+			"persisted preview, explicit checkbox and decision",
+			"requestor refresh and post-approval source trace"
+		],
+		"exact_total": "100000.000000001",
+		"original_units": 2,
+		"original_cost_centers": 2,
+		"confirmations": 1,
+		"decisions": 1,
+		"case_shares": 0,
+		"global_workflow_actions": 0,
+		"normal_csrf": true
+	},
+	"deployment": {
+		"scope": [
+			"medical-dev.localhost",
+			"test-medops.localhost"
+		],
+		"database_config_and_files_backup": true,
+		"backup_manifest_verified": true,
+		"migrations_per_site": 2,
+		"new_models": 4,
+		"new_financial_seeds": 0,
+		"original_business_and_auth_tables_per_site": {
+			"medical-dev.localhost": 67,
+			"test-medops.localhost": 67
+		},
+		"original_business_columns_values_and_times_preserved": true,
+		"legacy_matrix_counts": {
+			"medical-dev.localhost": 0,
+			"test-medops.localhost": 1
+		},
+		"legacy_matrix_public_payload_preserved": true,
+		"guest_budget_api_count": 21,
+		"guest_budget_api_status": 401,
+		"authenticated_pages_lists_versions_core_and_workbench": 200,
+		"public_https_and_socketio": 200,
+		"other_service_pids_and_states_unchanged": 41,
+		"other_site_http_unchanged": true,
+		"error_logs_not_increased": true,
+		"application_and_dependencies_clean": true
+	},
+	"permissions": {
+		"user_and_role_profile_assignment_full_rows_unchanged": true,
+		"user_profile_assignment_rows": {
+			"medical-dev.localhost": 67,
+			"test-medops.localhost": 76
+		},
+		"new_user_grants": 0,
+		"new_scopes": 0,
+		"new_shares": 0,
+		"owned_page_workspace_role_sets_match_source": true,
+		"metadata_reimport": {
+			"backup_reconstruction_verified": true,
+			"has_role_recreated_metadata_rows_per_site": 45,
+			"allowed_parents": "eight existing MedOps reports and I-ONE AI/Mobile workspaces only",
+			"has_role_normalized_fields": [
+				"name",
+				"creation",
+				"modified"
+			],
+			"ione_role_timestamp_rows_per_site": 4,
+			"ione_role_normalized_fields": [
+				"creation",
+				"modified"
+			],
+			"all_permission_values_and_other_fields_preserved": true
+		}
+	},
+	"delivered": [
+		"four controlled financial snapshot/case/review models",
+		"exact schema2 matrix thresholds with legacy schema1 compatibility",
+		"full-grain approved department consolidation and one final approval per original plan",
+		"session-bound persisted human confirmation, All/Any, delegation and segregation",
+		"ten new authenticated budget facades and two new pages",
+		"read/source/field/replay fencing and v17 workspace entry points"
+	],
+	"rollback": {
+		"previous_commit": "4c6b0b89118b34f4a8ece3128001c453c5ef4925",
+		"database_config_and_files_backup_retained_on_server": true,
+		"procedure": "Maintenance and pause only medical tasks; preserve exact columns, new models, sealed facts, confirmations and decisions. Never delete financial evidence or interpret schema2 with an old two-decimal path. Keep incompatible actions closed until a verified recovery."
+	},
+	"next_task": "COD-033",
+	"pending": [
+		"exact immutable budget ledger and execution COD033-035",
+		"remaining36-module functionality and complete business loops",
+		"hospital scale, actual interfaces, UAT and disaster recovery"
+	],
+	"overall_hospital_production_readiness": "not_established"
+}
