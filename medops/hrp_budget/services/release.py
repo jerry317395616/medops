@@ -171,8 +171,10 @@ def insert_prepared_release(facts):
 	with release_write("prepare", facts, 0), expected_release_record(RELEASE, values):
 		doc = frappe.get_doc(dict(doctype=RELEASE, name=facts.identity_key, **values))
 		doc.set("__islocal", 1)
-		enforce_business_rules(doc, "create")
 		doc.insert(ignore_permissions=True)
+		# Rule evidence has a real Dynamic Link. Both the prepared record and its
+		# guard evidence are rolled back by the owned service savepoint on denial.
+		enforce_business_rules(doc, "create")
 	return doc
 
 
@@ -282,8 +284,8 @@ class ReviseBudgetRelease(ReleasePreparationService[ReviseReleaseRequest]):
 			expected_release_record(RELEASE, values),
 		):
 			doc.update(values)
-			enforce_business_rules(doc, "amend")
 			doc.save(ignore_permissions=True)
+			enforce_business_rules(doc, "amend")
 		return release_result(doc)
 
 

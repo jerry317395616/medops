@@ -98,6 +98,7 @@ class TestBudgetReleasePreparation(FrappeAPITestCase):
 			)
 		)
 		key = fixture_request("release-prepare")
+		prepared_before = frappe.db.count(RELEASE)
 		try:
 			frappe.set_user("Administrator")
 			rule = frappe.get_doc("HRP Business Rule", "COD033-RELEASE-CREATE")
@@ -114,6 +115,7 @@ class TestBudgetReleasePreparation(FrappeAPITestCase):
 			with self.assertRaises(IoneApplicationError) as raised:
 				create_budget_release(command, idempotency_key=blocked_key)
 			self.assertEqual(raised.exception.code, "IONE-CORE-0006")
+			self.assertEqual(prepared_before, frappe.db.count(RELEASE))
 			self.assertFalse(
 				frappe.db.exists(
 					"HRP Service Idempotency",
