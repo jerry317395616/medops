@@ -8,7 +8,7 @@
 		"ADR-0030",
 		"ADR-0031"
 	],
-	"current_scope": "Commit-only authorization/claim/execution dispatch and minute cron implemented; eight new native dispatch cases including actual HTTP-to-standard-RQ. Await full422 local quality,60 focused native and repeated isolated migration. Priora7e1b3a verified52/real SIGKILL retained; full410 native, contention, statements/UI/protected release pending.",
+	"current_scope": "Automatic confirmation/claim/execution commit-only queue dispatch and minute recovery cron verified. Source9a671b3 full422 quality and strengthened8 native passed; production-identical3caa957 passed60 joint native plus2 migrations. Actual HTTP-to-standard-RQ and two real OS-process claim/execution races passed. Department statements/export/UI, further races, full410 native/protected CI and promotion pending.",
 	"checks": {
 		"pure_tests_expected": 422,
 		"complete_frappe_tests_expected": 410,
@@ -33,9 +33,9 @@
 			"migrations": 0
 		},
 		"protected_ci": "not run for COD-033",
-		"local_quality": "all passed at a7e1b3a2785eecb0fb819b08c8e8942fe8b1c0c1",
+		"local_quality": "all passed at 9a671b3d145816db66e12561283ad8aedf3b295f",
 		"pure_tests_passed": 422,
-		"complete_frappe_tests": "410 expected; full current suite pending complete vertical slice",
+		"complete_frappe_tests": "410 expected; current whole suite pending complete vertical slice",
 		"current_protocol": {
 			"status": "full local quality passed",
 			"tests": 11,
@@ -58,7 +58,7 @@
 				"Outbox stale-snapshot full transaction retry"
 			]
 		},
-		"current_local_quality": "Full422 passed at a7e1b3a2785eecb0fb819b08c8e8942fe8b1c0c1",
+		"current_local_quality": "Full422 passed at 9a671b3d145816db66e12561283ad8aedf3b295f",
 		"runtime_native_partial": {
 			"source_commit": "daaed16f7765c0fb2e796fa100ca817970585499",
 			"passed_counts": [
@@ -89,16 +89,16 @@
 			]
 		},
 		"owned_execution": {
-			"status": "passed52 focused native and real RQ SIGKILL recovery",
-			"source_commit": "a7e1b3a2785eecb0fb819b08c8e8942fe8b1c0c1",
+			"status": "passed60 joint native, strengthened8 recheck, automatic real RQ and2 process races",
+			"source_commit": "9a671b3d145816db66e12561283ad8aedf3b295f",
 			"native_counts": [
 				13,
 				7,
 				9,
 				7
 			],
-			"automatic_enqueue_enabled": false,
-			"cron_wired": false,
+			"automatic_enqueue_enabled": true,
+			"cron_wired": true,
 			"real_rq_verified": true,
 			"real_rq_batches": 1,
 			"real_rq_ledger_rows": 2,
@@ -115,7 +115,14 @@
 				"poisoned Redis User Permission after commit; both writes rolled back by final authorization",
 				"legacy mixed-case scope can be disabled without identity mutation",
 				"nested parent/child write and reservation rollback preserves earlier caller write",
-				"real SIGKILL after first uncommitted row; virtual lease/backoff recovery; stale receipt cannot change attempt2"
+				"real SIGKILL after first uncommitted row; virtual lease/backoff recovery; stale receipt cannot change attempt2",
+				"Redis is contacted only after independent DB connection sees durable authority",
+				"savepoint rollback leaves no queue job even when after_commit hint survives",
+				"queue outage preserves durable authorization; bounded scheduler can retry",
+				"real Redis rollback and duplicate commit callback deduplication",
+				"failed confirmation result and superseded hint do not enqueue",
+				"native HTTP confirmation to real standard long RQ worker; exact batch and replay",
+				"two independent process standard execute_job claim and execution contention with barrier"
 			],
 			"rq_isolation": {
 				"old_budget_unchanged": true,
@@ -129,16 +136,15 @@
 				"worker_exited": true
 			},
 			"pending": [
-				"automatic confirmation-after-commit enqueue and cron wiring",
-				"real contention and repeated scheduling concurrency",
-				"department statements/export/UI",
-				"full402+ native, protected CI, repeat migration, backup and protected release"
+				"further concurrent reconfirmation/reversal and repeated scheduler contention",
+				"department statements/export/API/UI",
+				"full410+ native, protected CI, backup and protected promotion"
 			],
 			"combined_transaction_scope_counts": [
 				5,
 				11
 			],
-			"total_focused_native": 52,
+			"total_focused_native": 60,
 			"previous_real_rq": {
 				"source_commit": "836a8c74a5c3cdf057f977298d2442986aa5f494",
 				"jobs": 2,
@@ -180,7 +186,14 @@
 				"backoff_recovery_verified": true,
 				"first_phase_driver_log": "cod033-a7e1b3a-rq-kill-retry2-driver.log",
 				"real_clock_lease_wait": false
-			}
+			},
+			"dispatch_native_counts": [
+				8
+			],
+			"joint_native_source": "3caa9570844d127da09eb31778e65ed756e70eef",
+			"business_source_identical_to_joint": true,
+			"permanent_real_rq_test": "medops.tests.test_budget_release_dispatch.TestBudgetReleaseDispatch.test_real_http_confirmation_and_standard_rq_worker_post_exactly_one_complete_batch",
+			"real_rq_scope": "Two standard CLI long-queue jobs from actual native HTTP authorization; source9a671b3. The separate process races intercept queue calls and are not concurrent RQ worker evidence."
 		},
 		"message_recovery": {
 			"status": "passed",
@@ -214,19 +227,98 @@
 			"public_deployment": false
 		},
 		"proofs": {
-			"quality": "cod033-a7e1b3a-quality.json",
+			"quality": "cod033-9a671b3-quality.json",
 			"focused_native": "cod033-a7e1b3a-runtime-recovery-regression.json",
 			"real_sigkill": "cod033-a7e1b3a-rq-kill-completed.json",
-			"nested_database": "cod033-a7e1b3a-nested-savepoint.json"
+			"nested_database": "cod033-a7e1b3a-nested-savepoint.json",
+			"joint_native": "cod033-3caa957-runtime-dispatch-regression.json",
+			"dispatch_recheck": "cod033-9a671b3-runtime-dispatch-only.json",
+			"process_contention": "cod033-9a671b3-job-races.json"
 		},
 		"automatic_dispatch": {
-			"status": "implemented; verification pending",
-			"new_native_expected": 8,
+			"status": "passed",
+			"source_commit": "9a671b3d145816db66e12561283ad8aedf3b295f",
+			"new_native_tests": 8,
 			"commit_only_redis": true,
 			"persisted_hint_recheck": true,
 			"queue_outage_preserves_authority": true,
+			"full_joint_source": "3caa9570844d127da09eb31778e65ed756e70eef",
+			"full_joint_counts": [
+				8,
+				5,
+				11,
+				13,
+				7,
+				9,
+				7
+			],
+			"strengthened_recheck_counts": [
+				8
+			],
+			"business_code_identical_between_sources": true,
 			"cron": "* * * * *",
-			"public_deployment": false
+			"public_deployment": false,
+			"proof": "cod033-9a671b3-runtime-dispatch-only.json"
+		},
+		"process_contention": {
+			"status": "passed",
+			"source_commit": "9a671b3d145816db66e12561283ad8aedf3b295f",
+			"site": "cod030-828dab0.localhost",
+			"db_port": 13360,
+			"modes": [
+				{
+					"kind": "claim",
+					"statuses": [
+						"Dispatched",
+						"Deferred"
+					],
+					"both_entered_before_release": true,
+					"attempts": 1
+				},
+				{
+					"kind": "execute",
+					"statuses": [
+						"Posted",
+						"Posted"
+					],
+					"both_entered_before_release": true,
+					"attempts": 1
+				}
+			],
+			"separate_os_processes": true,
+			"standard_execute_job": true,
+			"exact_rows_per_source": 2,
+			"exact_precision": 9,
+			"replay_after_execution_race_posts_no_additional_rows": true,
+			"old_budget_unchanged": true,
+			"user_roles_unchanged": true,
+			"gl_stock_unchanged": true,
+			"error_log_unchanged": true,
+			"queues_before": {
+				"short": 0,
+				"default": 384,
+				"long": 0
+			},
+			"queues_after": {
+				"short": 0,
+				"default": 384,
+				"long": 0
+			},
+			"workers_after": 0,
+			"public_sites_untouched": true,
+			"real_rq_worker_for_races": false,
+			"financial_queue_calls_intercepted_in_synthetic_race": true
+		},
+		"repeat_dispatch_migrations": {
+			"source_commit": "3caa9570844d127da09eb31778e65ed756e70eef",
+			"count": 2,
+			"status": "passed",
+			"old_budget_hashes_unchanged": true,
+			"user_role_hashes_unchanged": true,
+			"existing_financial_model_counts_unchanged": true,
+			"scheduler_metadata_synchronized": true,
+			"no_zero_row_assumption": true,
+			"public_sites_untouched": true
 		}
 	},
 	"previous_verified_release": {
