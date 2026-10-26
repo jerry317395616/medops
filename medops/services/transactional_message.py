@@ -55,7 +55,7 @@ FORBIDDEN_MESSAGE_PERMISSIONS = (
 	"amend",
 	"import",
 )
-MessageOperation = Literal["publish", "claim", "deliver", "fail", "begin", "complete"]
+MessageOperation = Literal["publish", "claim", "deliver", "fail", "begin", "complete", "retire"]
 CommandT = TypeVar("CommandT")
 
 _TRANSITIONS = {
@@ -69,6 +69,9 @@ _TRANSITIONS = {
 			}
 		),
 		"deliver": frozenset({("Processing", "Delivered")}),
+		"retire": frozenset(
+			{("Pending", "Dead Letter"), ("Failed", "Dead Letter"), ("Processing", "Dead Letter")}
+		),
 		"fail": frozenset(
 			{
 				("Processing", "Failed"),
@@ -153,6 +156,17 @@ _OPERATION_MUTABLE_FIELDS = {
 			"last_error_message",
 		}
 	),
+	"retire": frozenset(
+		{
+			"status",
+			"claim_owner",
+			"processing_token_hash",
+			"lease_expires_at",
+			"completed_at",
+			"last_error_code",
+			"last_error_message",
+		}
+	),
 	"fail": frozenset(
 		{
 			"status",
@@ -207,6 +221,13 @@ class FailMessage:
 
 
 @dataclass(frozen=True, slots=True)
+class RetireOutboxMessage:
+	message_name: str
+	expected_payload_hash: str
+	reason_code: str
+
+
+@dataclass(frozen=True, slots=True)
 class _MessageWriteContext:
 	definition: MessageBoxDefinition
 	operation: MessageOperation
@@ -246,6 +267,11 @@ def _require_write_context(
 	):
 		raise_ione_error("OPERATION_NOT_ALLOWED")
 	return context
+
+
+def message_write_operation(document: Document) -> MessageOperation:
+	"""For concrete controllers that enforce additional owned capabilities."""
+	return _require_write_context(document).operation
 
 
 @contextmanager
@@ -612,6 +638,39 @@ def read_message_document(
 	return cast(TransactionalMessageDocument, frappe.get_doc(definition.doctype, name))
 
 
+def select_outbox_work(definition: MessageBoxDefinition, event_type: str, now) -> list[str]:
+	"""Bounded infrastructure scan only; never returns payloads or grants authority."""
+	require_roles(MESSAGE_CONTRACT_ROLES)
+	if definition.kind != "outbox":
+		raise_ione_error("CONFIGURATION_INVALID")
+	validate_message_box_doctype(definition)
+	base = {"event_type": normalize_event_type(event_type), "available_at": ["<=", get_datetime(now)]}
+	groups = (
+		({"status": ["in", ["Pending", "Failed"]]}, "available_at asc, name asc", 60),
+		(
+			{"status": "Processing", "lease_expires_at": ["<=", get_datetime(now)]},
+			"lease_expires_at asc, name asc",
+			20,
+		),
+		(
+			{"status": "Processing", "lease_expires_at": [">", get_datetime(now)]},
+			"lease_expires_at asc, name asc",
+			20,
+		),
+	)
+	return [
+		row.name
+		for filters, order, limit in groups
+		for row in frappe.get_all(
+			definition.doctype,
+			filters=base | filters,
+			fields=["name"],
+			order_by=order,
+			limit_page_length=limit,
+		)
+	]
+
+
 def _assert_processing_token(
 	document: TransactionalMessageDocument,
 	processing_token: object,
@@ -804,6 +863,59 @@ class CompleteOutboxService(_MessageBoxService[CompleteMessage]):
 			"status": document.status,
 			"attempt_count": cint(document.attempt_count),
 		}
+
+
+class RetireOutboxService(_MessageBoxService[RetireOutboxMessage]):
+	"""Terminal lifecycle only; concrete adapters must prove their domain predicate.
+
+	Never renews or recovers a secret lease, modifies immutable envelope facts,
+	counts artificial attempts or supplies financial authority.
+	"""
+
+	expected_kind = "outbox"
+
+	def validate(self, command: RetireOutboxMessage) -> None:
+		self._validate_configuration()
+		_validate_message_name(command.message_name)
+		normalize_sha256(command.expected_payload_hash, label="payload_hash")
+		normalize_error_details(command.reason_code, "Message retired by its owning domain.")
+
+	def request_payload(self, command: RetireOutboxMessage) -> dict[str, object]:
+		return dict(
+			message_name=command.message_name,
+			expected_payload_hash=command.expected_payload_hash,
+			reason_code=command.reason_code,
+		)
+
+	def authorize_retirement(
+		self, document: TransactionalMessageDocument, command: RetireOutboxMessage
+	) -> str:
+		raise_ione_error("OPERATION_NOT_ALLOWED")
+
+	def perform(self, command: RetireOutboxMessage) -> dict[str, object]:
+		document = _lock_message(self.message_box_definition, command.message_name)
+		if document.payload_hash != command.expected_payload_hash:
+			raise_ione_error("CONFLICT")
+		message = self.authorize_retirement(document, command)
+		code, message = normalize_error_details(command.reason_code, message)
+		if document.status not in {"Pending", "Failed", "Processing"}:
+			raise_ione_error("INVALID_STATE_TRANSITION")
+		document.status = "Dead Letter"
+		document.completed_at = now_datetime()
+		document.last_error_code, document.last_error_message = code, message
+		_clear_processing_lease(document)
+		with _message_write_scope(self.message_box_definition, "retire"):
+			document.save(ignore_permissions=True)
+		emit_audit_event(
+			"transactional_outbox_retired",
+			logger_name="medops.transactional_message",
+			box_kind="outbox",
+			box_doctype=self.message_box_definition.doctype,
+			box_status="Dead Letter",
+			attempt_count=cint(document.attempt_count),
+			error_code=code,
+		)
+		return dict(message=document.name, status="Dead Letter", attempt_count=cint(document.attempt_count))
 
 
 class FailOutboxService(_MessageBoxService[FailMessage]):
@@ -1122,7 +1234,11 @@ __all__ = [
 	"FailOutboxService",
 	"MessageEnvelope",
 	"PublishOutboxService",
+	"RetireOutboxMessage",
+	"RetireOutboxService",
 	"TransactionalMessageDocument",
 	"get_transactional_message_contract_status",
+	"message_write_operation",
+	"select_outbox_work",
 	"validate_message_box_doctype",
 ]

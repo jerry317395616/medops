@@ -1,11 +1,14 @@
 from __future__ import annotations
 
+from dataclasses import replace
+from datetime import timedelta
 from typing import Any, cast
 from unittest.mock import patch
 
 import frappe
 from frappe.tests import IntegrationTestCase
 from frappe.tests.test_api import FrappeAPITestCase
+from frappe.utils import now_datetime
 
 from medops.common.domain_service import (
 	DomainServiceDefinition,
@@ -31,6 +34,7 @@ from medops.services.transactional_message import (
 	PublishOutboxService,
 	TransactionalMessageDocument,
 	get_transactional_message_contract_status,
+	select_outbox_work,
 )
 
 TEST_OUTBOX = "HRP Test Transactional Outbox"
@@ -229,6 +233,39 @@ def _result(execution: dict[str, Any]) -> dict[str, Any]:
 
 
 class TestTransactionalMessage(IntegrationTestCase):
+	def test_due_selector_reserves_space_for_new_and_expired_work_under_active_lease_saturation(self):
+		frappe.set_user("Administrator")
+		now = now_datetime()
+		event_type = "medops.tests.recovery." + frappe.generate_hash(length=12)
+
+		def publish(label):
+			envelope = replace(_envelope(label), event_type=event_type, payload={"synthetic": True})
+			return str(
+				PublishTestOutboxService().execute(envelope, idempotency_key=_key(label)).result["message"]
+			)
+
+		with patch(
+			"medops.services.transactional_message.now_datetime", return_value=now - timedelta(hours=2)
+		):
+			expired = publish("scan-expired")
+			ClaimTestOutboxService().execute(
+				ClaimOutboxMessage(expired, "worker-scan", 3600), idempotency_key=_key("scan-expired-claim")
+			)
+		active = []
+		for number in range(101):
+			name = publish(f"scan-active-{number}")
+			ClaimTestOutboxService().execute(
+				ClaimOutboxMessage(name, "worker-scan", 3600),
+				idempotency_key=_key(f"scan-active-claim-{number}"),
+			)
+			active.append(name)
+		pending = publish("scan-pending")
+		selected = select_outbox_work(OUTBOX_DEFINITION, event_type, now_datetime())
+		self.assertIn(pending, selected)
+		self.assertIn(expired, selected)
+		self.assertEqual(len(set(selected) & set(active)), 20)
+		self.assertEqual(len(selected), 22)
+
 	@classmethod
 	def setUpClass(cls) -> None:
 		super().setUpClass()

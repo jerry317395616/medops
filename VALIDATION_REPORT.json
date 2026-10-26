@@ -8,10 +8,10 @@
 		"ADR-0030",
 		"ADR-0031"
 	],
-	"current_scope": "Runtime models, human authority and owned batch release/reversal jobs implemented. Source836a8c7 passed full420 quality,26 combined native and a real standard RQ two-job posting. Automatic dispatch/cron, terminal recovery, statements/UI, races and full389 native/CI/release remain unfinished.",
+	"current_scope": "Owned message retirement, bounded recovery scans, commit-time posted audit and scope/User Permission race tests implemented; awaiting422 full quality and36 focused native. Prior836 quality420/native26/real RQ remain verified evidence. Automatic dispatch, process kill, contention, statements/UI/full399 native/protected release pending.",
 	"checks": {
-		"pure_tests_expected": 420,
-		"complete_frappe_tests_expected": 389,
+		"pure_tests_expected": 422,
+		"complete_frappe_tests_expected": 399,
 		"exact_foundation_pure_tests_passed": 21,
 		"native_foundation": {
 			"status": "passed",
@@ -132,6 +132,14 @@
 				"department statements/export/UI",
 				"full389+ native and protected release"
 			]
+		},
+		"message_recovery": {
+			"status": "implemented; native verification pending",
+			"new_native_expected": 10,
+			"new_pure_expected": 2,
+			"automatic_enqueue_enabled": false,
+			"cron_wired": false,
+			"public_deployment": false
 		}
 	},
 	"previous_verified_release": {

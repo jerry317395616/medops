@@ -288,6 +288,9 @@ class ExecuteBudgetRelease(DomainService[ExecuteRelease]):
 				doc.flags.ignore_permissions = True
 				doc.submit()
 		emit_audit_event(
-			"budget_release_posted", logger_name="medops.budget", line_count=count, revision=int(doc.revision)
+			"budget_release_batch_written",
+			logger_name="medops.budget",
+			line_count=count,
+			revision=int(doc.revision),
 		)
 		return release_result(doc)

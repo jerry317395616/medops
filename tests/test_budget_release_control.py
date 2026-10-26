@@ -21,7 +21,13 @@ from medops.common.budget_release_control import (
 	release_record,
 	release_write,
 )
-from medops.common.integration_outbox import outbox_publication, publication_values
+from medops.common.integration_outbox import (
+	OutboxRetirement,
+	outbox_publication,
+	outbox_retirement,
+	publication_values,
+	retirement_values,
+)
 from medops.common.transactional_message import message_record_name
 from tests.test_budget_ledger import approved_release
 
@@ -39,6 +45,31 @@ def current_mutation():
 
 
 class TestBudgetReleaseControl(unittest.TestCase):
+	def test_terminal_capability_is_bounded_and_does_not_accept_a_secret_or_delivered_state(self):
+		value = OutboxRetirement("out-message", "a" * 64, 10, "Processing", "MEDOPS-RELEASE-LEASE-EXHAUSTED")
+		for changes in (
+			dict(payload_hash="bad"),
+			dict(attempt=True),
+			dict(attempt=11),
+			dict(status="Delivered"),
+			dict(reason_code="arbitrary"),
+		):
+			with self.subTest(changes=list(changes)), self.assertRaises(ValueError):
+				with outbox_retirement(replace(value, **changes)):
+					self.fail("invalid retirement capability accepted")
+		self.assertFalse({"processing_token", "actor", "amount"}.intersection(value.__dataclass_fields__))
+
+	def test_nested_terminal_capability_restores_its_immutable_parent_on_failure(self):
+		value = OutboxRetirement(
+			"out-message", "a" * 64, 0, "Pending", "MEDOPS-RELEASE-AUTHORIZATION-SUPERSEDED"
+		)
+		with outbox_retirement(value):
+			with self.assertRaises(RuntimeError):
+				with outbox_retirement(replace(value, attempt=1, status="Processing")):
+					raise RuntimeError("synthetic recovery failure")
+			self.assertEqual(retirement_values(), value)
+		self.assertIsNone(retirement_values())
+
 	def test_execution_lease_is_ephemeral_restored_and_does_not_repr_the_secret(self):
 		authority = ReleaseExecutionAuthorization.from_payload(
 			dict(

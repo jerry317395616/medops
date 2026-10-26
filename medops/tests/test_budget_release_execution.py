@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from contextlib import contextmanager
+from copy import deepcopy
 from datetime import timedelta
 from decimal import Decimal, localcontext
 from unittest.mock import patch
@@ -320,3 +321,93 @@ class TestBudgetReleaseExecution(FrappeAPITestCase):
 				frappe.delete_doc("Property Setter", name, ignore_permissions=True)
 			frappe.clear_cache(doctype="HRP Budget Plan")
 			frappe.local.db.commit()
+
+	def test_current_data_scope_revocation_after_two_writes_rolls_back_the_complete_batch(self):
+		receipt = self.claim()
+		scope_name = "COD032C-scope-" + source_fixture.MANAGER.split("@")[0]
+
+		def revoke():
+			scope = frappe.get_doc("HRP Access Scope", scope_name)
+			self.assertEqual(scope.company, source_fixture.COMPANY)
+			self.assertEqual(scope.hospital, source_fixture.HOSPITAL)
+			scope.enabled = 0
+			scope.save(ignore_permissions=True)
+
+		try:
+			with self.revoke_after_first_row(revoke) as appended:
+				self.assert_failed_atomic(self.execute(receipt))
+				self.assertEqual(appended(), 2)
+		finally:
+			frappe.set_user("Administrator")
+			scope = frappe.get_doc("HRP Access Scope", scope_name)
+			scope.enabled = 1
+			scope.save(ignore_permissions=True)
+			frappe.local.db.commit()
+
+	def test_current_native_user_permission_wins_over_poisoned_redis_permissions_after_two_writes(self):
+		from frappe.core.doctype.user_permission.user_permission import get_user_permissions
+
+		frappe.set_user("Administrator")
+		centers = tuple(
+			frappe.db.get_value(
+				"HRP Organization Mapping", {"organization_unit": self.units[code]}, "cost_center"
+			)
+			for code in ("A", "B")
+		)
+		permissions = []
+		had_role = "Accounts User" in frappe.get_roles(source_fixture.MANAGER)
+		try:
+			frappe.get_doc("User", source_fixture.MANAGER).add_roles("Accounts User")
+			for center in centers:
+				permissions.append(
+					frappe.get_doc(
+						dict(
+							doctype="User Permission",
+							user=source_fixture.MANAGER,
+							allow="Cost Center",
+							for_value=center,
+							apply_to_all_doctypes=1,
+							hide_descendants=1,
+						)
+					)
+					.insert(ignore_permissions=True)
+					.name
+				)
+				frappe.share.remove("Cost Center", center, source_fixture.MANAGER)
+			frappe.local.db.commit()
+			frappe.set_user(source_fixture.MANAGER)
+			get_release(self.release)
+			self.assertTrue(
+				frappe.has_permission("Cost Center", "read", doc=frappe.get_doc("Cost Center", centers[1]))
+			)
+			old_permissions = deepcopy(get_user_permissions(source_fixture.MANAGER))
+			receipt = self.claim()
+
+			def revoke():
+				frappe.delete_doc("User Permission", permissions[1], ignore_permissions=True)
+				frappe.cache.hdel("user_permissions", source_fixture.MANAGER)
+				self.assertFalse(
+					frappe.has_permission(
+						"Cost Center",
+						"read",
+						doc=frappe.get_doc("Cost Center", centers[1]),
+						user=source_fixture.MANAGER,
+					)
+				)
+				frappe.db.after_commit.add(
+					lambda: frappe.cache.hset("user_permissions", source_fixture.MANAGER, old_permissions)
+				)
+
+			with self.revoke_after_first_row(revoke) as appended:
+				self.assert_failed_atomic(self.execute(receipt))
+				self.assertEqual(appended(), 2)
+		finally:
+			frappe.set_user("Administrator")
+			for name in permissions:
+				if frappe.db.exists("User Permission", name):
+					frappe.delete_doc("User Permission", name, ignore_permissions=True)
+			share_test_records("Cost Center", centers, (source_fixture.MANAGER,))
+			if not had_role:
+				frappe.get_doc("User", source_fixture.MANAGER).remove_roles("Accounts User")
+			frappe.local.db.commit()
+			frappe.cache.hdel("user_permissions", source_fixture.MANAGER)
