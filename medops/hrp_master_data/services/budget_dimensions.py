@@ -29,7 +29,13 @@ from medops.services.domain_service import DomainService
 from medops.services.errors import raise_ione_error, require_authenticated_user, require_roles
 
 WRITE_ROLES = frozenset({"System Manager", "HRP System Manager", "HRP Data Steward"})
-READ_ROLES = WRITE_ROLES | {"HRP Budget User", "HRP Budget Manager", "HRP Finance User", "HRP Auditor"}
+READ_ROLES = WRITE_ROLES | {
+	"HRP Budget User",
+	"HRP Budget Manager",
+	"HRP Finance User",
+	"HRP Auditor",
+	"HRP Budget Approver",
+}
 _query: ContextVar[bool] = ContextVar("medops_budget_master_query", default=False)
 
 

@@ -1,12 +1,11 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from datetime import date
 from typing import cast
 
 import frappe
 from frappe.model.document import Document
-from frappe.utils import now_datetime
+from frappe.utils import now_datetime, nowdate
 
 from medops.common.approval_matrix import ApprovalMatrixStep, ResolvedApprover
 from medops.common.delegation import (
@@ -20,8 +19,11 @@ from medops.hrp_workflow_authorization.doctype.hrp_approval_matrix.hrp_approval_
 	HRPApprovalMatrix,
 )
 from medops.hrp_workflow_authorization.doctype.hrp_delegation.hrp_delegation import HRPDelegation
-from medops.hrp_workflow_authorization.permissions import has_scoped_permission
 from medops.hrp_workflow_authorization.services.access_scope import dimension_fields_for
+from medops.hrp_workflow_authorization.services.approval_capability import (
+	can_approve_target,
+	can_delegate_target_scope,
+)
 from medops.services.audit_context import emit_audit_event, service_audit_scope
 from medops.services.domain_service import DomainService
 from medops.services.errors import raise_ione_error, require_roles
@@ -97,10 +99,7 @@ def _has_scope(user: str, matrix: HRPApprovalMatrix) -> bool:
 		doctype=matrix.target_doctype,
 		values={fieldname: logical_values[dimension] for dimension, fieldname in dimensions.items()},
 	)
-	return bool(
-		frappe.has_permission(matrix.target_doctype, ptype="write", user=user)
-		and has_scoped_permission(context, user=user, ptype="write")
-	)
+	return can_delegate_target_scope(user, context)
 
 
 def _owns_matrix_step(user: str, matrix: HRPApprovalMatrix, step_sequence: int | None) -> bool:
@@ -176,7 +175,7 @@ class CreateDelegationService(DomainService[DelegationCreate]):
 
 	def validate(self, command: DelegationCreate) -> None:
 		matrix = _matrix_doc(command.matrix)
-		today = date.today().isoformat()
+		today = nowdate()
 		if command.valid_from < today or command.valid_to < today:
 			raise_ione_error("INVALID_REQUEST")
 		if not bool(matrix.enabled):
@@ -195,7 +194,7 @@ class CreateDelegationService(DomainService[DelegationCreate]):
 	def perform(self, command: DelegationCreate) -> dict[str, object]:
 		matrix = _lock_matrix(command.matrix)
 		_assert_no_conflict(command, matrix)
-		status = "Active" if command.valid_from <= date.today().isoformat() else "Scheduled"
+		status = "Active" if command.valid_from <= nowdate() else "Scheduled"
 		doc = cast(
 			HRPDelegation,
 			frappe.get_doc(
@@ -333,7 +332,14 @@ def apply_active_delegations(
 	target_doc: Document,
 	resolved_rows: list[tuple[ApprovalMatrixStep, list[ResolvedApprover]]],
 ) -> list[tuple[ApprovalMatrixStep, list[ResolvedApprover]]]:
-	today = date.today().isoformat()
+	today = nowdate()
+	from medops.common.budget_workflow import CASE
+
+	case_filters = (
+		{"from_user": ("in", sorted({entry["user"] for _, entries in resolved_rows for entry in entries}))}
+		if target_doc.doctype == CASE
+		else {}
+	)
 	rows = frappe.get_all(
 		"HRP Delegation",
 		filters={
@@ -343,6 +349,7 @@ def apply_active_delegations(
 			"status": ("in", ["Scheduled", "Active"]),
 			"valid_from": ("<=", today),
 			"valid_to": (">=", today),
+			**case_filters,
 		},
 		fields=["name", "from_user", "to_user", "step_sequence"],
 		order_by="name asc",
@@ -353,10 +360,7 @@ def apply_active_delegations(
 	grants: list[DelegationGrant] = []
 	for row in rows:
 		delegate = str(row.to_user)
-		if not _user_is_active(delegate) or not (
-			frappe.has_permission(target_doc.doctype, ptype="write", doc=target_doc, user=delegate)
-			and has_scoped_permission(target_doc, user=delegate, ptype="write")
-		):
+		if not _user_is_active(delegate) or not can_approve_target(delegate, target_doc):
 			raise_ione_error("CONFIGURATION_INVALID")
 		grants.append(
 			DelegationGrant(
@@ -383,7 +387,7 @@ def apply_active_delegations(
 def sync_delegation_statuses() -> dict[str, int]:
 	if not frappe.db.table_exists("HRP Delegation"):
 		return {"activated": 0, "expired": 0}
-	today = date.today().isoformat()
+	today = nowdate()
 	activated = 0
 	expired = 0
 	for row in frappe.get_all(

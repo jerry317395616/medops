@@ -47,7 +47,9 @@
 		"medops/tests/**",
 		"tests/**",
 		"scripts/repository_contract.py",
-		"medops/hrp_foundation/tests/test_change_governance.py"
+		"medops/hrp_foundation/tests/test_change_governance.py",
+		"medops/common/budget_workflow.py",
+		"medops/hrp_master_data/services/budget_dimensions.py"
 	],
 	"permissions_impact": "受控审批能力、人工确认、职责分离与全部来源/字段读取；不自动分配用户角色、范围、DocShare或原生写权限。",
 	"migration_impact": "保留旧矩阵阈值与摘要，增加金额版本/精度/精确阈值；后续新增四个既有预算蓝图运行模型和索引，无财务种子。",

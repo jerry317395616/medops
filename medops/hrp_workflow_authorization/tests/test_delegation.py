@@ -8,6 +8,7 @@ import frappe
 from frappe.boot import build_default_workspace_map, get_sidebar_items
 from frappe.tests import IntegrationTestCase
 from frappe.tests.test_api import FrappeAPITestCase
+from frappe.utils import getdate, nowdate
 
 from medops.common.delegation import build_delegation_create, build_delegation_revoke
 from medops.common.error_catalog import IoneApplicationError
@@ -49,7 +50,7 @@ def test_request_id(purpose: str) -> str:
 class _FutureDate(date):
 	@classmethod
 	def today(cls) -> _FutureDate:
-		future = date.today() + timedelta(days=31)
+		future = getdate(nowdate()) + timedelta(days=31)
 		return cls(future.year, future.month, future.day)
 
 
@@ -76,7 +77,7 @@ def reset_delegation_state() -> None:
 
 
 def delegation_command(*, to_user: str = TEST_USER, step_sequence: int | None = None):
-	today = date.today()
+	today = getdate(nowdate())
 	return build_delegation_create(
 		matrix=TEST_MATRIX,
 		from_user="Administrator",
@@ -260,7 +261,10 @@ class TestDelegation(IntegrationTestCase):
 			decision = evaluate_approval_matrix(evaluation_command())
 		self.assertEqual(decision["approvers"], [TEST_USER])
 		self.assertEqual(sync_delegation_statuses()["activated"], 1)
-		with patch("medops.hrp_workflow_authorization.services.delegation.date", _FutureDate):
+		with patch(
+			"medops.hrp_workflow_authorization.services.delegation.nowdate",
+			return_value=_FutureDate.today().isoformat(),
+		):
 			self.assertEqual(sync_delegation_statuses()["expired"], 1)
 		self.assertEqual(frappe.db.get_value("HRP Delegation", created["name"], "status"), "Expired")
 
@@ -278,7 +282,7 @@ class TestDelegationAPI(FrappeAPITestCase):
 		self.TEST_CLIENT.set_cookie(key="sid", value=self.sid)
 
 	def test_http_create_get_revoke_require_idempotency_for_writes(self) -> None:
-		today = date.today()
+		today = getdate(nowdate())
 		payload = {
 			"matrix": TEST_MATRIX,
 			"from_user": "Administrator",

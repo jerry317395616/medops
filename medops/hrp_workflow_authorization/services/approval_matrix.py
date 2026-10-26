@@ -23,6 +23,7 @@ from medops.hrp_workflow_authorization.doctype.hrp_approval_matrix.hrp_approval_
 )
 from medops.hrp_workflow_authorization.permissions import has_scoped_permission
 from medops.hrp_workflow_authorization.services.access_scope import dimension_fields_for
+from medops.hrp_workflow_authorization.services.approval_capability import can_approve_target
 from medops.hrp_workflow_authorization.services.delegation import apply_active_delegations
 from medops.hrp_workflow_authorization.services.rule_contracts import can_read_named_fields
 from medops.services.audit_context import emit_audit_event
@@ -149,6 +150,14 @@ class UpsertApprovalMatrixService(DomainService[ApprovalMatrixUpsert]):
 
 	def validate(self, command: ApprovalMatrixUpsert) -> None:
 		definition = command.definition
+		from medops.common.budget_workflow import CASE
+
+		if definition.target_doctype == CASE:
+			if set(definition.dimensions) != {"fiscal_year", "currency"}:
+				raise_ione_error("INVALID_REQUEST")
+			for dt, key in (("Fiscal Year", "fiscal_year"), ("Currency", "currency")):
+				if not frappe.db.exists(dt, definition.dimensions[key]):
+					raise_ione_error("RESOURCE_NOT_FOUND")
 		for doctype, name in (
 			("Company", definition.company),
 			("DocType", definition.target_doctype),
@@ -384,9 +393,17 @@ def _select_matrix(command: ApprovalEvaluation) -> HRPApprovalMatrix:
 	# Filter incompatible amount profiles before the bounded candidate scan.
 	# Version1 callers keep selecting only their original policy contract.
 	rows = frappe.db.sql(
-		"""SELECT name FROM `tabHRP Approval Matrix`
+		"""SELECT name FROM `tabHRP Approval Matrix` policy
 		WHERE target_doctype=%s AND company=%s AND hospital=%s
 		AND enabled=1 AND valid_from<=%s
+		AND (valid_to IS NULL OR valid_to>=%s)
+		AND (COALESCE(organization_unit,'')='' OR organization_unit=%s
+		OR (include_descendants=1 AND EXISTS (
+		SELECT 1 FROM `tabHRP Organization Unit` root
+		JOIN `tabHRP Organization Unit` target ON target.organization_version=root.organization_version
+		WHERE root.name=policy.organization_unit AND target.name=%s
+		AND root.lft<=target.lft AND target.rgt<=root.rgt)))
+		AND JSON_EQUALS(COALESCE(NULLIF(dimensions_json,''),'{}'),%s)
 		AND (COALESCE(amount_schema_version,1)=1
 		OR (%s=2 AND amount_schema_version=2 AND amount_precision=%s))
 		ORDER BY priority DESC, revision DESC, name ASC LIMIT %s""",
@@ -395,6 +412,10 @@ def _select_matrix(command: ApprovalEvaluation) -> HRPApprovalMatrix:
 			command.company,
 			command.hospital,
 			command.effective_on,
+			command.effective_on,
+			command.organization_unit,
+			command.organization_unit,
+			json.dumps(command.dimensions, ensure_ascii=False, separators=(",", ":"), sort_keys=True),
 			command.schema_version,
 			command.amount_precision,
 			MAX_MATRIX_CANDIDATES + 1,
@@ -423,11 +444,7 @@ def _select_matrix(command: ApprovalEvaluation) -> HRPApprovalMatrix:
 
 
 def _can_approve(user: str, target_doc: Document) -> bool:
-	target_doctype = target_doc.doctype
-	return bool(
-		frappe.has_permission(target_doctype, ptype="write", doc=target_doc, user=user)
-		and has_scoped_permission(target_doc, user=user, ptype="write")
-	)
+	return can_approve_target(user, target_doc)
 
 
 def _role_approvers(role: str, target_doc: Document) -> list[ResolvedApprover]:
@@ -559,38 +576,77 @@ class EvaluateApprovalMatrixService(DomainService[ApprovalEvaluation]):
 			raise_ione_error("CONFLICT")
 
 	def perform(self, command: ApprovalEvaluation) -> dict[str, object]:
-		matrix = _select_matrix(command)
-		definition = matrix.as_definition(revision=matrix.revision)
-		steps = active_steps(definition, command.amount)
-		if not steps:
-			raise_ione_error("CONFIGURATION_INVALID")
-		target_doc = frappe.get_doc(command.target_doctype, command.docname)
-		resolved = [(step, _resolve_approvers(step, target_doc)) for step in steps]
-		resolved = apply_active_delegations(
-			matrix=matrix,
-			target_doc=target_doc,
+		return _resolve_document_approval(command, frappe.get_doc(command.target_doctype, command.docname))
+
+
+def _resolve_document_approval(command: ApprovalEvaluation, target_doc: Document) -> dict[str, object]:
+	matrix = _select_matrix(command)
+	from medops.common.budget_workflow import CASE, approval_mutation
+
+	if target_doc.doctype == CASE and approval_mutation():
+		matrix = cast(HRPApprovalMatrix, frappe.get_doc("HRP Approval Matrix", matrix.name, for_update=True))
+	definition = matrix.as_definition(revision=matrix.revision)
+	steps = active_steps(definition, command.amount)
+	if not steps:
+		raise_ione_error("CONFIGURATION_INVALID")
+	resolved = [(step, _resolve_approvers(step, target_doc)) for step in steps]
+	resolved = apply_active_delegations(
+		matrix=matrix,
+		target_doc=target_doc,
+		resolved_rows=resolved,
+	)
+	try:
+		decision = build_approval_decision(
+			evaluation=command,
+			matrix=matrix.name,
+			definition=definition,
 			resolved_rows=resolved,
 		)
-		try:
-			decision = build_approval_decision(
-				evaluation=command,
-				matrix=matrix.name,
-				definition=definition,
-				resolved_rows=resolved,
-			)
-		except ValueError as exc:
-			raise_ione_error("CONFIGURATION_INVALID", cause=exc)
-		emit_audit_event(
-			"approval_matrix_evaluated",
-			logger_name="medops.approval_matrix",
-			decision_digest=decision["decision_digest"],
-			policy_digest=decision["policy_digest"],
-			policy_version=decision["policy_version"],
-			step_count=len(decision["steps"]),
-			approver_count=len(decision["approvers"]),
-			delegation_count=len(decision["delegations"]),
-		)
-		return cast(dict[str, object], decision)
+	except ValueError as exc:
+		raise_ione_error("CONFIGURATION_INVALID", cause=exc)
+	emit_audit_event(
+		"approval_matrix_evaluated",
+		logger_name="medops.approval_matrix",
+		decision_digest=decision["decision_digest"],
+		policy_digest=decision["policy_digest"],
+		policy_version=decision["policy_version"],
+		step_count=len(decision["steps"]),
+		approver_count=len(decision["approvers"]),
+		delegation_count=len(decision["delegations"]),
+	)
+	return cast(dict[str, object], decision)
+
+
+def resolve_budget_case_approval(doc: Document) -> dict[str, object]:
+	"""Fixed owned adapter also accepts an authorized, not-yet-persisted case."""
+	from medops.common.approval_matrix import build_approval_evaluation
+	from medops.common.budget_workflow import CASE
+	from medops.hrp_budget.services.approval_access import case_permission
+
+	if doc.doctype != CASE or not case_permission(doc, ptype="read"):
+		raise_ione_error("PERMISSION_DENIED")
+	command = build_approval_evaluation(
+		doctype=CASE,
+		docname=doc.name,
+		amount=doc.total_amount,
+		schema_version=2,
+		amount_precision=int(doc.currency_precision),
+		dimensions={
+			"company": doc.company,
+			"hospital": doc.hospital,
+			"organization_unit": doc.organization_unit,
+			"effective_on": str(doc.posting_date),
+			"fiscal_year": doc.fiscal_year,
+			"currency": doc.currency,
+		},
+	)
+	_assert_organization_scope(
+		company=command.company,
+		hospital=command.hospital,
+		organization_unit=command.organization_unit,
+		effective_on=command.effective_on,
+	)
+	return _resolve_document_approval(command, doc)
 
 
 def evaluate_approval_matrix(

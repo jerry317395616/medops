@@ -5,6 +5,19 @@ import frappe
 from medops.services.errors import raise_ione_error
 
 REFERENCES = {
+	"User": (
+		("HRP Budget Version", "frozen_by"),
+		("HRP Budget Plan", "applicant"),
+		("HRP Budget Submission", "applicant"),
+		("HRP Budget Submission", "sealed_by"),
+		("HRP Budget Approval", "applicant"),
+		("HRP Budget Approval", "source_applicant"),
+		("HRP Budget Approval", "requested_by"),
+		("HRP Budget Review", "actor"),
+		("HRP Approval Matrix Row", "approver_user"),
+		("HRP Delegation", "from_user"),
+		("HRP Delegation", "to_user"),
+	),
 	"Company": (
 		("HRP Budget Version", "company"),
 		("HRP Budget Plan", "company"),

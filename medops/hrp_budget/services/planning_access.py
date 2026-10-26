@@ -14,7 +14,7 @@ from medops.services.errors import raise_ione_error
 
 MANAGER_ROLES = frozenset({"System Manager", "HRP System Manager", "HRP Budget Manager"})
 WRITE_ROLES = MANAGER_ROLES | {"HRP Budget User", "HRP Finance User"}
-READ_ROLES = WRITE_ROLES | {"HRP Auditor"}
+READ_ROLES = WRITE_ROLES | {"HRP Auditor", "HRP Budget Approver"}
 _query: ContextVar[bool] = ContextVar("medops_budget_query", default=False)
 
 

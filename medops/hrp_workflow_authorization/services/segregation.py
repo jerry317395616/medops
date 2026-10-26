@@ -410,23 +410,29 @@ def _applicable_rules(
 	command: SegregationEvaluation,
 	context: _DocumentContext,
 ) -> list[tuple[str, SegregationRuleDefinition]]:
-	rows = frappe.get_all(
-		"HRP Segregation Rule",
-		filters={
-			"target_doctype": command.target_doctype,
-			"target_action": command.action,
-			"company": context.company,
-			"hospital": context.hospital,
-			"enabled": 1,
-			"valid_from": ("<=", context.effective_on),
-		},
-		or_filters=[
-			["valid_to", "is", "not set"],
-			["valid_to", ">=", context.effective_on],
-		],
-		fields=["name"],
-		order_by="name asc",
-		limit=MAX_SEGREGATION_RULE_CANDIDATES + 1,
+	rows = frappe.db.sql(
+		"""SELECT name FROM `tabHRP Segregation Rule` policy
+		WHERE target_doctype=%s AND target_action=%s AND company=%s AND hospital=%s
+		AND enabled=1 AND valid_from<=%s AND (valid_to IS NULL OR valid_to>=%s)
+		AND (COALESCE(organization_unit,'')='' OR organization_unit=%s
+		OR (include_descendants=1 AND EXISTS (
+		SELECT 1 FROM `tabHRP Organization Unit` root
+		JOIN `tabHRP Organization Unit` target ON target.organization_version=root.organization_version
+		WHERE root.name=policy.organization_unit AND target.name=%s
+		AND root.lft<=target.lft AND target.rgt<=root.rgt)))
+		ORDER BY name ASC LIMIT %s""",
+		(
+			command.target_doctype,
+			command.action,
+			context.company,
+			context.hospital,
+			context.effective_on,
+			context.effective_on,
+			context.organization_unit,
+			context.organization_unit,
+			MAX_SEGREGATION_RULE_CANDIDATES + 1,
+		),
+		as_dict=True,
 	)
 	if len(rows) > MAX_SEGREGATION_RULE_CANDIDATES:
 		raise_ione_error("CONFIGURATION_INVALID")
@@ -476,30 +482,50 @@ class ValidateSegregationService(DomainService[SegregationEvaluation]):
 		_document_context(doc)
 
 	def perform(self, command: SegregationEvaluation) -> dict[str, object]:
-		doc = frappe.get_doc(command.target_doctype, command.docname)
-		context = _document_context(doc)
-		user_roles = set(frappe.get_roles(command.user))
-		evaluated: list[tuple[str, SegregationRuleDefinition, tuple[str, ...], tuple[str, ...]]] = []
-		for name, definition in _applicable_rules(command, context):
-			matched_fields = tuple(
-				fieldname
-				for fieldname in definition.actor_fields
-				if str(doc.get(fieldname) or "") == command.user
-			)
-			matched_roles = tuple(role for role in definition.conflicting_roles if role in user_roles)
-			evaluated.append((name, definition, matched_fields, matched_roles))
-		decision = build_segregation_decision(evaluation=command, evaluated_rules=evaluated)
-		emit_audit_event(
-			"segregation_validated",
-			logger_name="medops.segregation",
-			target_doctype=command.target_doctype,
-			action=command.action,
-			allowed=decision["allowed"],
-			rule_count=decision["rules_evaluated"],
-			conflict_count=len(decision["conflicts"]),
-			decision_digest=decision["decision_digest"],
+		return _evaluate_document_segregation(
+			command, frappe.get_doc(command.target_doctype, command.docname)
 		)
-		return cast(dict[str, object], decision)
+
+
+def _evaluate_document_segregation(command: SegregationEvaluation, doc: Document) -> dict[str, object]:
+	context = _document_context(doc)
+	user_roles = set(frappe.get_roles(command.user))
+	evaluated: list[tuple[str, SegregationRuleDefinition, tuple[str, ...], tuple[str, ...]]] = []
+	for name, definition in _applicable_rules(command, context):
+		matched_fields = tuple(
+			fieldname
+			for fieldname in definition.actor_fields
+			if str(doc.get(fieldname) or "") == command.user
+		)
+		matched_roles = tuple(role for role in definition.conflicting_roles if role in user_roles)
+		evaluated.append((name, definition, matched_fields, matched_roles))
+	decision = build_segregation_decision(evaluation=command, evaluated_rules=evaluated)
+	emit_audit_event(
+		"segregation_validated",
+		logger_name="medops.segregation",
+		target_doctype=command.target_doctype,
+		action=command.action,
+		allowed=decision["allowed"],
+		rule_count=decision["rules_evaluated"],
+		conflict_count=len(decision["conflicts"]),
+		decision_digest=decision["decision_digest"],
+	)
+	return cast(dict[str, object], decision)
+
+
+def evaluate_budget_case_segregation(doc: Document, user: str) -> dict[str, object]:
+	from medops.common.budget_workflow import CASE
+	from medops.common.segregation import build_segregation_evaluation
+	from medops.hrp_workflow_authorization.services.approval_capability import can_approve_target
+
+	if (
+		doc.doctype != CASE
+		or not frappe.has_permission(CASE, "read", doc=doc)
+		or not can_approve_target(user, doc)
+	):
+		raise_ione_error("PERMISSION_DENIED")
+	command = build_segregation_evaluation(user=user, action="approve", doctype=CASE, docname=doc.name)
+	return _evaluate_document_segregation(command, doc)
 
 
 def validate_segregation(

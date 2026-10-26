@@ -87,6 +87,39 @@ frappe.pages["hrp-budget-planning"].on_page_load = (wrapper) => {
 					.appendTo(tr);
 			}
 		}
+		const approvalButton = $("<button class='btn btn-primary mt-3'>")
+			.text(__("查看审批 / 发起审批"))
+			.on("click", async () => {
+				const method = "medops.api.v1.finance.approval.";
+				const existing = (
+					await frappe.call({
+						method: method + "list_records",
+						args: { filters: { submission: doc.name }, limit: 1 },
+						type: "GET",
+					})
+				).message;
+				const latest = existing.items[0];
+				if (latest && ["Pending", "Approved"].includes(latest.status)) {
+					dialog.hide();
+					return frappe.set_route("hrp-budget-approval", latest.name);
+				}
+				if (!writer) return frappe.msgprint(__("当前没有可见审批单。"));
+				const key = `budget-approval-${frappe.utils.get_random(24)}`;
+				frappe.confirm(__("将当前封存申报提交独立审批，确认发起？"), async () => {
+					const result = (
+						await frappe.call({
+							method: method + "request_case",
+							args: { payload: { submission: doc.name, expected_revision: doc.revision } },
+							headers: { "Idempotency-Key": key },
+							type: "POST",
+							freeze: true,
+						})
+					).message;
+					dialog.hide();
+					frappe.set_route("hrp-budget-approval", result.name);
+				});
+			});
+		approvalButton.appendTo(content);
 		dialog.show();
 	}
 	async function openSubmission(plan) {

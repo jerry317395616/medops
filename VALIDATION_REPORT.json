@@ -111,5 +111,19 @@
 		"medical_units_active": 7,
 		"medical_child_rehab_health": 200,
 		"cod032_promoted": false
+	},
+	"human_approval_candidate": {
+		"status": "implemented_unverified",
+		"models_added": 2,
+		"pure_tests_passed": 9,
+		"native_tests_defined": 11,
+		"public_deployment": "none",
+		"remaining": [
+			"native HTTP verification",
+			"current permission and delegation regressions",
+			"browser and concurrent decisions",
+			"approved department consolidation",
+			"full quality and protected CI"
+		]
 	}
 }

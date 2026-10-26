@@ -1944,3 +1944,83 @@
   version: v1
   domain_group: Finance
   async: 'No'
+- api_code: FIN-028
+  app: medops
+  method: POST
+  path: /api/method/medops.api.v1.finance.approval.request_case
+  description: 为封存申报发起独立审批轮次
+  request_schema: payload
+  response_schema: BudgetApprovalAcknowledgement
+  required_role: Budget writer or assigned Budget approver; current source, field
+    and scope permissions
+  idempotency: Required for write
+  transaction_boundary: Single DB transaction
+  audit: Redacted event, status, revision and counts; no financial facts or confirmation
+    proof
+  version: v1
+  domain_group: Finance
+  async: 'No'
+- api_code: FIN-029
+  app: medops
+  method: POST
+  path: /api/method/medops.api.v1.finance.approval.prepare
+  description: 持久化当前审批人的短时确认预览
+  request_schema: payload
+  response_schema: BudgetHumanPreview
+  required_role: Budget writer or assigned Budget approver; current source, field
+    and scope permissions
+  idempotency: Required for write
+  transaction_boundary: Single DB transaction
+  audit: Redacted event, status, revision and counts; no financial facts or confirmation
+    proof
+  version: v1
+  domain_group: Finance
+  async: 'No'
+- api_code: FIN-030
+  app: medops
+  method: POST
+  path: /api/method/medops.api.v1.finance.approval.confirm
+  description: 消费同一网页会话中的明确确认并记录决定
+  request_schema: payload
+  response_schema: BudgetApprovalDecisionAcknowledgement
+  required_role: Budget writer or assigned Budget approver; current source, field
+    and scope permissions
+  idempotency: Required for write
+  transaction_boundary: Single DB transaction
+  audit: Redacted event, status, revision and counts; no financial facts or confirmation
+    proof
+  version: v1
+  domain_group: Finance
+  async: 'No'
+- api_code: FIN-031
+  app: medops
+  method: GET
+  path: /api/method/medops.api.v1.finance.approval.get_record
+  description: 按全部来源和字段权限读取审批事实及决定
+  request_schema: name
+  response_schema: BudgetApprovalRecord
+  required_role: Budget writer or assigned Budget approver; current source, field
+    and scope permissions
+  idempotency: Not required (read-only)
+  transaction_boundary: Read-only
+  audit: Redacted event, status, revision and counts; no financial facts or confirmation
+    proof
+  version: v1
+  domain_group: Finance
+  async: 'No'
+- api_code: FIN-032
+  app: medops
+  method: GET
+  path: /api/method/medops.api.v1.finance.approval.list_records
+  description: 按当前完整权限分页读取审批单
+  request_schema: filters,offset,limit
+  response_schema: BudgetApprovalList
+  required_role: Budget writer or assigned Budget approver; current source, field
+    and scope permissions
+  idempotency: Not required (read-only)
+  transaction_boundary: Read-only
+  audit: Redacted event, status, revision and counts; no financial facts or confirmation
+    proof
+  version: v1
+  domain_group: Finance
+  async: 'No'

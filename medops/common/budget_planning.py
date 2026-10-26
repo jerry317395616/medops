@@ -40,7 +40,9 @@ MAX_AMOUNT = Decimal("999999999999.999999999")
 # The exact decimal wire/storage fields are reviewed numeric sources, even though
 # Frappe's Currency persistence converts to binary float. No arbitrary Data field
 # becomes a numeric business-rule source.
-DECIMAL_DATA_FIELDS = frozenset({(PLAN, "total_amount"), (LINE, "amount")})
+DECIMAL_DATA_FIELDS = frozenset(
+	{(PLAN, "total_amount"), (LINE, "amount"), ("HRP Budget Approval", "total_amount")}
+)
 _master_write: ContextVar[bool] = ContextVar("medops_budget_master_write", default=False)
 _planning_write: ContextVar[str | None] = ContextVar("medops_budget_planning_write", default=None)
 

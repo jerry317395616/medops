@@ -6,6 +6,7 @@ from medops.common.constants import CORE_ROLES
 from medops.services.errors import raise_ione_error
 from medops.setup.access_scope import ensure_access_scope_governance
 from medops.setup.approval_matrix import ensure_approval_matrix_governance
+from medops.setup.budget_approval import ensure_budget_approval
 from medops.setup.budget_planning import ensure_budget_planning
 from medops.setup.budget_submission import ensure_budget_submission
 from medops.setup.business_rules import ensure_business_rule_governance
@@ -64,6 +65,7 @@ def after_install() -> None:
 	ensure_core_reports()
 	ensure_budget_planning()
 	ensure_budget_submission()
+	ensure_budget_approval()
 	sync_owned_workspaces()
 
 
@@ -86,6 +88,7 @@ def after_migrate() -> None:
 	ensure_core_reports()
 	ensure_budget_planning()
 	ensure_budget_submission()
+	ensure_budget_approval()
 	sync_owned_workspaces()
 
 
