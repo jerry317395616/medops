@@ -209,7 +209,10 @@ class TestAuditContextAPI(FrappeAPITestCase):
 					self.assertEqual(framework.level, framework_level)
 					self.assertEqual(frappe.log_level, global_level)
 					self.assertTrue(marker in text, "Normalized audit event did not reach the real file sink")
-					self.assertTrue(payload["request_id"] in text, "Audit request identity was lost")
+					request_id = payload["request_id"]
+					self.assertTrue(
+						isinstance(request_id, str) and request_id in text, "Audit request identity was lost"
+					)
 					self.assertTrue("audit_persistence_probe" in text, "Audit event type was lost")
 					self.assertFalse("Form Dict" in text, "Request form data reached the audit sink")
 				finally:
