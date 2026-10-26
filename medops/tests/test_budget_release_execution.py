@@ -258,7 +258,7 @@ class TestBudgetReleaseExecution(FrappeAPITestCase):
 			return result
 
 		with patch.object(execution, "append_immutable_entry", side_effect=append_then_revoke):
-			yield
+			yield lambda: calls
 		self.assertGreaterEqual(calls, 1)
 
 	def test_current_share_revocation_after_first_write_rolls_back_the_whole_transaction(self):
@@ -281,11 +281,12 @@ class TestBudgetReleaseExecution(FrappeAPITestCase):
 
 		def revoke():
 			frappe.get_doc("User", source_fixture.MANAGER).remove_roles("HRP Budget Manager")
-			frappe.cache.hset("roles", source_fixture.MANAGER, roles)
+			frappe.db.after_commit.add(lambda: frappe.cache.hset("roles", source_fixture.MANAGER, roles))
 
 		try:
-			with self.revoke_after_first_row(revoke):
+			with self.revoke_after_first_row(revoke) as appended:
 				self.assert_failed_atomic(self.execute(receipt))
+				self.assertEqual(appended(), 2)
 		finally:
 			frappe.set_user("Administrator")
 			frappe.get_doc("User", source_fixture.MANAGER).add_roles("HRP Budget Manager")
