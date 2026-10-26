@@ -182,6 +182,7 @@
 		"architecture/releases/COD-031.json",
 		"backlog/COD-032.md",
 		"architecture/budget_approval.md",
-		"architecture/adr/ADR-0029-exact-budget-submission-and-human-approval.md"
+		"architecture/adr/ADR-0029-exact-budget-submission-and-human-approval.md",
+		"architecture/releases/COD-032.json"
 	]
 }

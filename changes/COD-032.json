@@ -2,7 +2,7 @@
 	"schema_version": 1,
 	"task_id": "COD-032",
 	"title": "实现预算申报汇总审批",
-	"status": "In Progress",
+	"status": "Implemented",
 	"risk_level": "critical",
 	"change_types": [
 		"application",
@@ -58,7 +58,7 @@
 		"medops/common/budget_consolidation.py"
 	],
 	"permissions_impact": "受控审批能力、人工确认、职责分离与全部来源/字段读取；不自动分配用户角色、范围、DocShare或原生写权限。",
-	"migration_impact": "保留旧矩阵阈值与摘要，增加金额版本/精度/精确阈值；后续新增四个既有预算蓝图运行模型和索引，无财务种子。",
+	"migration_impact": "已新增四个既有预算运行模型、精确金额/汇总字段和索引；保留旧矩阵阈值、摘要及历史收据，无财务种子。",
 	"rollback_plan": "维护模式保留精确金额、申报、确认和Review证据；禁止用旧两位路径解释新版记录或删除新表。",
 	"security_impact": "当前角色/范围/字段/来源与持久化人工确认；不自批，不写会计库存或可用预算。",
 	"test_plan": [

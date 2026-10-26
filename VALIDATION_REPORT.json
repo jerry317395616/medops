@@ -1,259 +1,142 @@
 {
 	"schema_version": 1,
-	"status": "IN_PROGRESS_COD_032",
+	"status": "VERIFIED_DEVELOPMENT_RELEASE_COD_032",
 	"task_id": "COD-032",
 	"recorded_on": "2026-10-26",
 	"runtime_namespace": "medops",
 	"architecture_decisions": [
 		"ADR-0029"
 	],
-	"prior_verified_release": {
-		"merge_commit": "4c6b0b89118b34f4a8ece3128001c453c5ef4925",
-		"feature_pr": 43,
-		"closure_pr": 44,
-		"runtime_tests": 312,
-		"evidence": "architecture/releases/COD-031.json"
-	},
-	"current_scope": "Department sealing and human approval verified at 8631a5b (CI40256899688 passed). Consolidation implementation is a new unverified candidate; no public promotion.",
+	"current_scope": "Verified department submission, complete-source consolidation and persisted human approval; isolated development/test deployment. Full HRP production remains incomplete.",
 	"checks": {
-		"new_pure_tests_passed": 23,
-		"pure_tests_expected": 354,
-		"new_frappe_tests_defined": 22,
-		"frappe_tests_total_expected": 334,
-		"native_migration_baseline": {
+		"local_quality": "all passed",
+		"pure_tests_passed": 380,
+		"complete_frappe_tests_passed": 360,
+		"protected_ci": {
 			"status": "passed",
-			"old_source": "d9cf20c7b56cfc8fdc1e443ea2d3f880959283c2",
-			"upgraded_source": "e74fce16146731211b37244ad59dd7c99c3881bb",
-			"sites_repeated_migrations": 2,
-			"migrations_each": 2,
-			"canonical_request": "unchanged",
-			"policy_digest_and_revision": "unchanged",
-			"decision": "unchanged",
-			"pre_migration_durable_receipt": "replayed unchanged",
-			"legacy_column_defaults": "version1 precision2"
-		},
-		"native_tests": {
-			"exact_amount_tests": 9,
-			"exact_test_commit": "e006a4911e12915b073fcf25fe787d23ebf57a64",
-			"prior_regressions": 41,
-			"prior_regression_commit": "e74fce16146731211b37244ad59dd7c99c3881bb",
-			"runtime_code_identical_between_commits": true,
-			"components": [
-				"approval matrix9",
-				"delegation7",
-				"budget planning20",
-				"governance5"
-			]
-		},
-		"local_quality": "all passed354 pure, package, lint/format, bandit, checksums, types and frontend; department snapshot contract included",
-		"pure_tests_passed": 354,
-		"shared_delegate_source_order": "Regression reproduced different v2 decision digests when two principals share the same delegate and role; full provenance now breaks ties deterministically while version1 stays unchanged.",
-		"department_snapshot": {
-			"pure_tests_passed": 8,
-			"native_tests_defined": 13,
-			"native_status": "passed",
-			"models_added": 2,
-			"public_deployment": "none",
-			"native_passed_commit": "250be50e1e062d4b9e3f1c7267d84a2949ce42eb",
-			"native_tests_passed": 13,
-			"repeat_migrations": 2,
-			"schema_migration_commit": "250be50e1e062d4b9e3f1c7267d84a2949ce42eb",
-			"native_regressions": 29,
-			"total_focused": 42,
-			"browser": {
-				"status": "passed",
-				"created_commit": "69741331c3ecce40fd6a15ecbb1fe52c994501fe",
-				"refreshed_commit": "250be50e1e062d4b9e3f1c7267d84a2949ce42eb",
-				"total": "100000.000000001",
-				"digest_unchanged": true,
-				"friendly_names_and_period_order": true
-			},
-			"races": {
-				"status": "passed",
-				"count": 2,
-				"commit": "69741331c3ecce40fd6a15ecbb1fe52c994501fe",
-				"write_ast_and_dependencies_identical_in_250be50": true,
-				"same_key": "one created one replay after one outer retry",
-				"different_keys": "one created one409",
-				"financial_counts_unchanged": true
-			}
-		},
-		"exact_foundation_ci": {
-			"head": "5f3e3ed30a2de758f9a6ea93e1c657dfd0f261e0",
-			"quality": "passed",
-			"security": "passed",
-			"integration": "passed",
-			"required": "passed"
-		},
-		"new_pure_components": {
-			"exact_amount": 13,
-			"transaction_guard": 2,
-			"department_snapshot": 8
-		},
-		"full_ci": {
-			"commit": "250be50e1e062d4b9e3f1c7267d84a2949ce42eb",
-			"run": 40245494299,
-			"quality": "passed354",
-			"security": "passed",
-			"integration": "passed334",
-			"required": "passed",
-			"fresh_site_error_logs": {
-				"hrp-test.localhost": 0,
-				"hrp-dev.localhost": 0,
-				"hrp-demo.localhost": 0
-			}
-		},
-		"consolidation_candidate": {
-			"status": "initial native run interrupted for performance; read-graph optimization pending verification",
-			"pure_tests_defined": 12,
-			"native_tests_defined": 8,
-			"repeat_migration": "passed twice at307a497",
-			"browser": "pending",
-			"concurrency": "pending",
-			"initial_candidate": "307a497f6b7cdfa9867d190d475aab584ab25972",
-			"initial_local_quality": "passed375 pure and all checks",
-			"source_revocation": "passed at307a497",
-			"access_graph_pure_tests": 5
-		}
-	},
-	"overall_hospital_production_readiness": "not_established",
-	"public_state": {
-		"commit": "4c6b0b89118b34f4a8ece3128001c453c5ef4925",
-		"source_clean": true,
-		"medical_units_active": 7,
-		"medical_child_rehab_health": 200,
-		"cod032_promoted": false
-	},
-	"human_approval_candidate": {
-		"status": "verified_development_milestone",
-		"models_added": 2,
-		"pure_tests_passed": 9,
-		"native_tests_defined": 18,
-		"public_deployment": "none",
-		"remaining": [
-			"approved department consolidation and its acceptance",
-			"hospital-specific performance/interfaces/UAT/DR"
-		],
-		"repeat_migrations": 2,
-		"native_tests_passed": 18,
-		"focused_native_total": 113,
-		"native_commit": "d29e75023087172ab8552ef679c59a3eeb0f793a",
-		"full_local_quality": "passed363 pure and all checks at7c26fbe",
-		"repeat_migrations_commit": "d5fb5101658a44131fb6bc5462f3be1a4d7b806b",
-		"browser": {
-			"status": "passed",
-			"commit": "7c26fbe476ab96e76234f1c50c679de25ca8d720",
-			"case": "29bf7e751f76d444ee8362012baa59a00d1cc9aab8c9614ca6de00f2c4b807e5",
-			"amount": "100000.000000001",
-			"independent_actors": 2,
-			"first_vote": "Pending",
-			"second_vote": "Approved",
-			"normal_csrf_and_session": true,
-			"refreshed_commit": "d5fb5101658a44131fb6bc5462f3be1a4d7b806b",
-			"default_filter_breadcrumb_sidebar_and_columns": "passed",
-			"native_evidence": "2 confirmations, 2 decisions, revision3/docstatus1, no open ToDo/shares/global Workflow Action"
-		},
-		"scope": "department sealing and human approval; consolidation unfinished",
-		"races": {
-			"status": "passed",
-			"commit": "7c26fbe476ab96e76234f1c50c679de25ca8d720",
-			"cases": [
+			"run": 40263234479,
+			"head": "818f9e4ed9b54ffc61e64da29d00346d4184c7b3",
+			"pure": 380,
+			"frappe": 360,
+			"fresh_sites": [
 				{
-					"mode": "same-key",
-					"statuses": [
-						200,
-						200
-					],
-					"attempts": [
-						[
-							508,
-							200
-						],
-						[
-							200
-						]
-					],
-					"decisions": 1,
-					"revision": 2,
-					"overlap": true,
-					"replays": 1
+					"error_log_count": 0,
+					"error_log_summaries": [],
+					"site": "hrp-test.localhost"
 				},
 				{
-					"mode": "different-keys",
-					"statuses": [
-						200,
-						409
-					],
-					"attempts": [
-						[
-							508,
-							409
-						],
-						[
-							200
-						]
-					],
-					"decisions": 1,
-					"revision": 2,
-					"overlap": true,
-					"replays": 0
+					"error_log_count": 0,
+					"error_log_summaries": [],
+					"site": "hrp-dev.localhost"
 				},
 				{
-					"mode": "different-actors",
-					"statuses": [
-						200,
-						409
-					],
-					"attempts": [
-						[
-							508,
-							409
-						],
-						[
-							200
-						]
-					],
-					"decisions": 1,
-					"revision": 2,
-					"overlap": true,
-					"replays": 0
-				},
-				{
-					"mode": "request-different-keys",
-					"statuses": [
-						200,
-						409
-					],
-					"attempts": [
-						[
-							508,
-							409
-						],
-						[
-							200
-						]
-					],
-					"cases": 1,
-					"overlap": true
+					"error_log_count": 0,
+					"error_log_summaries": [],
+					"site": "hrp-demo.localhost"
 				}
 			],
-			"normal_csrf": true,
-			"isolated_site": "cod030-828dab0.localhost",
-			"financial_and_share_counts_unchanged": true,
-			"retry_boundary": "Whole fresh HTTP request, preserving original confirmation and idempotency key; no application transaction retry."
+			"all_test_counts": [
+				380,
+				360
+			]
 		},
-		"protected_ci": {
-			"run": 40254559180,
-			"commit": "d5fb5101658a44131fb6bc5462f3be1a4d7b806b",
-			"all_required_jobs": "passed",
-			"pure_tests_passed": 363,
-			"complete_frappe_tests_passed": 352,
-			"fresh_site_error_logs": {
-				"hrp-test.localhost": 0,
-				"hrp-dev.localhost": 0,
-				"hrp-demo.localhost": 0
+		"focused_native": [
+			8,
+			18,
+			13,
+			20,
+			9,
+			9,
+			7,
+			8,
+			9,
+			20
+		],
+		"focused_native_total": 121,
+		"actual_browser": {
+			"runtime_commit": "818f9e4ed9b54ffc61e64da29d00346d4184c7b3",
+			"scope": "synthetic development acceptance",
+			"workflow": [
+				"approved two-department source selection",
+				"full-grain consolidation seal",
+				"request independent approval",
+				"persisted preview, explicit checkbox and decision",
+				"requestor refresh and post-approval source trace"
+			],
+			"exact_total": "100000.000000001",
+			"original_units": 2,
+			"original_cost_centers": 2,
+			"confirmations": 1,
+			"decisions": 1,
+			"case_shares": 0,
+			"global_workflow_actions": 0,
+			"normal_csrf": true
+		},
+		"real_dual_process_races": 7,
+		"legacy_upgrade_contract": "request, policy, decision and durable receipt unchanged; running test site matrix payload unchanged",
+		"deployment": {
+			"scope": [
+				"medical-dev.localhost",
+				"test-medops.localhost"
+			],
+			"database_config_and_files_backup": true,
+			"backup_manifest_verified": true,
+			"migrations_per_site": 2,
+			"new_models": 4,
+			"new_financial_seeds": 0,
+			"original_business_and_auth_tables_per_site": {
+				"medical-dev.localhost": 67,
+				"test-medops.localhost": 67
+			},
+			"original_business_columns_values_and_times_preserved": true,
+			"legacy_matrix_counts": {
+				"medical-dev.localhost": 0,
+				"test-medops.localhost": 1
+			},
+			"legacy_matrix_public_payload_preserved": true,
+			"guest_budget_api_count": 21,
+			"guest_budget_api_status": 401,
+			"authenticated_pages_lists_versions_core_and_workbench": 200,
+			"public_https_and_socketio": 200,
+			"other_service_pids_and_states_unchanged": 41,
+			"other_site_http_unchanged": true,
+			"error_logs_not_increased": true,
+			"application_and_dependencies_clean": true
+		},
+		"permissions": {
+			"user_and_role_profile_assignment_full_rows_unchanged": true,
+			"user_profile_assignment_rows": {
+				"medical-dev.localhost": 67,
+				"test-medops.localhost": 76
+			},
+			"new_user_grants": 0,
+			"new_scopes": 0,
+			"new_shares": 0,
+			"owned_page_workspace_role_sets_match_source": true,
+			"metadata_reimport": {
+				"backup_reconstruction_verified": true,
+				"has_role_recreated_metadata_rows_per_site": 45,
+				"allowed_parents": "eight existing MedOps reports and I-ONE AI/Mobile workspaces only",
+				"has_role_normalized_fields": [
+					"name",
+					"creation",
+					"modified"
+				],
+				"ione_role_timestamp_rows_per_site": 4,
+				"ione_role_normalized_fields": [
+					"creation",
+					"modified"
+				],
+				"all_permission_values_and_other_fields_preserved": true
 			}
-		},
-		"public_isolation": "Public4c6b0b8 clean; 7 medical service PIDs/states and medical/child/rehab HTTP unchanged; private browser helper and tunnel closed"
-	}
+		}
+	},
+	"evidence": "architecture/releases/COD-032.json",
+	"prior_verified_release": "architecture/releases/COD-031.json",
+	"remaining": [
+		"exact immutable budget ledger and execution COD033-035",
+		"remaining36-module functionality and complete business loops",
+		"hospital scale, actual interfaces, UAT and disaster recovery"
+	],
+	"overall_hrp_goal": "active and incomplete"
 }
