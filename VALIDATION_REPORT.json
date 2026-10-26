@@ -7,7 +7,7 @@
 	"architecture_decisions": [
 		"ADR-0030"
 	],
-	"current_scope": "Runtime models migrated twice and real preparation verified privately. Independent human confirmation, durable authorization, atomic Pending Outbox and six APIs implemented, awaiting focused native verification. Queued financial execution, department statements and UI remain unfinished.",
+	"current_scope": "Four runtime models and real preparation verified privately. Independent human confirmation, durable authorization, atomic Pending Outbox and six APIs passed focused native tests. Queued financial execution, department statements and UI remain unfinished.",
 	"checks": {
 		"pure_tests_expected": 415,
 		"complete_frappe_tests_expected": 382,
@@ -32,8 +32,8 @@
 			"migrations": 0
 		},
 		"protected_ci": "not run for COD-033",
-		"local_quality": "all passed at 5ef0fa3e2ead0fb50f938077b565dc4031ab2d2f",
-		"pure_tests_passed": 405,
+		"local_quality": "all passed at a50b750bdf1e42bfb8829b4f0b91af1accc9abfc",
+		"pure_tests_passed": 415,
 		"complete_frappe_tests": "382 expected; full current suite pending complete vertical slice",
 		"current_protocol": {
 			"status": "full local quality passed",
@@ -57,7 +57,7 @@
 				"Outbox stale-snapshot full transaction retry"
 			]
 		},
-		"current_local_quality": "Full412 passed at daaed16; current415 quality pending",
+		"current_local_quality": "Full415 passed at a50b750bdf1e42bfb8829b4f0b91af1accc9abfc",
 		"runtime_native_partial": {
 			"source_commit": "daaed16f7765c0fb2e796fa100ca817970585499",
 			"passed_counts": [
@@ -72,10 +72,20 @@
 			"public_sites_untouched": true
 		},
 		"current_human_authorization": {
-			"status": "implemented; focused native verification pending",
-			"native_tests_expected": 7,
+			"status": "seven private native HTTP tests passed",
+			"source_commit": "a50b750bdf1e42bfb8829b4f0b91af1accc9abfc",
+			"native_tests_passed": 7,
 			"public_deployment": false,
-			"asynchronous_posting": false
+			"asynchronous_posting": false,
+			"coverage": [
+				"same-cookie durable confirmation and exact amount",
+				"idempotent replay and consumed-proof rejection",
+				"proof, acknowledgement, SID and revision checks",
+				"prepared intent revision invalidates preview",
+				"source share and financial field revocation between requests",
+				"valid API credentials denied",
+				"mandatory release rules; no budget, GL or stock postings"
+			]
 		}
 	},
 	"previous_verified_release": {
