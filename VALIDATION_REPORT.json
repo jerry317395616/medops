@@ -7,7 +7,7 @@
 	"architecture_decisions": [
 		"ADR-0030"
 	],
-	"current_scope": "Exact ledger foundation plus release/reversal intent and complete original-grain allocation mapping. Runtime models, persisted human authority, async execution, department statements and UI remain pending.",
+	"current_scope": "Exact ledger foundation plus release/reversal intent and complete original-grain allocation mapping. Runtime models, persisted human authority, async execution, department statements and UI remain pending. Existing integration Outbox base has no runtime model; also materialize its existing blueprint, four runtime models in total pending.",
 	"checks": {
 		"pure_tests_expected": 405,
 		"complete_frappe_tests_expected": 367,
@@ -32,13 +32,14 @@
 			"migrations": 0
 		},
 		"protected_ci": "not run for COD-033",
-		"local_quality": "Foundation passed at77da19b; full check for current protocol pending",
-		"pure_tests_passed": 394,
+		"local_quality": "all passed at 5ef0fa3e2ead0fb50f938077b565dc4031ab2d2f",
+		"pure_tests_passed": 405,
 		"complete_frappe_tests": "367 expected; full current suite pending concrete release slice",
 		"current_protocol": {
-			"status": "focused tests passed; full current quality pending",
+			"status": "full local quality passed",
 			"tests": 11,
-			"combined_ledger_pure": 32
+			"combined_ledger_pure": 32,
+			"source_commit": "5ef0fa3e2ead0fb50f938077b565dc4031ab2d2f"
 		}
 	},
 	"previous_verified_release": {
