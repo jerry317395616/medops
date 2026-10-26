@@ -9,7 +9,11 @@ from medops.common.budget_workflow import APPROVER_ROLE, CASE, REVIEW, approval_
 from medops.common.exact_money import MAX_APPROVAL_AMOUNT, exact_decimal_amount
 from medops.hrp_budget.services.access_graph import read_graph
 from medops.hrp_budget.services.planning_access import READ_ROLES
-from medops.hrp_budget.services.statement_cache import cached_statement_value, statement_document_key
+from medops.hrp_budget.services.statement_cache import (
+	cached_statement_value,
+	read_statement_document,
+	statement_document_key,
+)
 from medops.hrp_budget.services.submission_access import submission_permission
 from medops.hrp_workflow_authorization.services.rule_contracts import can_read_named_fields
 from medops.services.data_access import scope_allowed, scope_permission_query
@@ -40,7 +44,7 @@ def review_query(user=None):
 def forbidden_actors(doc) -> set[str]:
 	actors = {str(doc.get(key)) for key in ("applicant", "source_applicant", "requested_by") if doc.get(key)}
 	if doc.submission and frappe.db.exists("HRP Budget Submission", doc.submission):
-		source = frappe.get_doc("HRP Budget Submission", doc.submission)
+		source = read_statement_document("HRP Budget Submission", doc.submission)
 		if source.submission_type == "Consolidated":
 			from medops.common.budget_consolidation import source_references
 
@@ -70,7 +74,7 @@ def approver_role_active(user: str) -> bool:
 def case_source(doc, user: str, *, export=False):
 	if not doc.submission or not frappe.db.exists("HRP Budget Submission", doc.submission):
 		return None
-	source = frappe.get_doc("HRP Budget Submission", doc.submission)
+	source = read_statement_document("HRP Budget Submission", doc.submission)
 	if (
 		not frappe.has_permission(source.doctype, "read", doc=source, user=user)
 		or (export and not frappe.has_permission(source.doctype, "export", doc=source, user=user))
@@ -123,7 +127,7 @@ def _case_permission(doc, user, ptype):
 	require_workflow_integrity()
 	exists = bool(doc.name and frappe.db.exists(CASE, doc.name))
 	if exists and doc.get("decision_snapshot") is None:
-		doc = frappe.get_doc(CASE, doc.name)
+		doc = read_statement_document(CASE, doc.name)
 	if not exists:
 		mutation = approval_mutation()
 		if not mutation or mutation.operation != "open" or mutation.case != doc.name:
@@ -188,7 +192,7 @@ def review_permission(doc, user=None, ptype=None, debug=False):
 		or not frappe.db.exists(CASE, doc.case)
 	):
 		return False
-	case = frappe.get_doc(CASE, doc.case)
+	case = read_statement_document(CASE, doc.case)
 	if not frappe.has_permission(CASE, "read", doc=case, user=user) or not case_permission(
 		case, user=user, ptype=ptype
 	):
@@ -212,7 +216,7 @@ def review_permission(doc, user=None, ptype=None, debug=False):
 def get_case(name: str, *, lock=False):
 	if not frappe.db.exists(CASE, name):
 		raise_ione_error("RESOURCE_NOT_FOUND")
-	doc = frappe.get_doc(CASE, name, for_update=lock)
+	doc = read_statement_document(CASE, name, for_update=lock)
 	if not frappe.has_permission(CASE, "read", doc=doc) or not case_permission(doc, ptype="read"):
 		raise_ione_error("PERMISSION_DENIED")
 	return doc

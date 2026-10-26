@@ -2,7 +2,6 @@ from __future__ import annotations
 
 from dataclasses import asdict
 
-import frappe
 from frappe.utils import get_datetime
 
 from medops.common.budget_ledger import (
@@ -16,6 +15,7 @@ from medops.common.budget_ledger import (
 from medops.common.domain_service import fingerprint_json, normalize_sha256
 from medops.common.integration_outbox import OUTBOX
 from medops.common.transactional_message import message_record_name, normalize_payload
+from medops.hrp_budget.services.statement_cache import read_statement_document
 from medops.services.errors import raise_ione_error
 
 RELEASE_EVIDENCE_FIELDS = (
@@ -63,7 +63,7 @@ def validate_release_evidence(doc):
 
 def validate_new_release_evidence(doc):
 	validate_release_evidence(doc)
-	parent = frappe.get_doc(RELEASE, doc.release)
+	parent = read_statement_document(RELEASE, doc.release)
 	if (
 		parent.docstatus
 		or parent.status not in {"Prepared", "Authorized"}
@@ -90,7 +90,7 @@ def validate_new_release_evidence(doc):
 			[doc.release, int(doc.release_revision)]
 		):
 			raise_ione_error("CONFIGURATION_INVALID")
-		original = frappe.get_doc(RELEASE_ENTRY, doc.confirmation)
+		original = read_statement_document(RELEASE_ENTRY, doc.confirmation)
 		validate_release_evidence(original)
 		if original.event_kind != "Confirmation" or any(
 			original.get(key) != doc.get(key)
@@ -121,7 +121,7 @@ def validate_new_release_evidence(doc):
 def release_authorization(doc):
 	if doc.status not in {"Authorized", "Posted"} or not doc.authorization_decision or not doc.outbox_message:
 		raise_ione_error("INVALID_STATE_TRANSITION")
-	decision = frappe.get_doc(RELEASE_ENTRY, doc.authorization_decision)
+	decision = read_statement_document(RELEASE_ENTRY, doc.authorization_decision)
 	validate_release_evidence(decision)
 	if (
 		decision.event_kind != "Decision"
@@ -145,7 +145,7 @@ def release_authorization(doc):
 		)
 	):
 		raise_ione_error("CONFIGURATION_INVALID")
-	confirmation = frappe.get_doc(RELEASE_ENTRY, decision.confirmation)
+	confirmation = read_statement_document(RELEASE_ENTRY, decision.confirmation)
 	validate_release_evidence(confirmation)
 	if (
 		confirmation.event_kind != "Confirmation"
@@ -178,7 +178,7 @@ def release_authorization(doc):
 def validate_authorization_message(doc, decision):
 	# Internal integrity proof only. Never return private payloads or leases from
 	# this adapter, and never treat it as a grant to read a financial source.
-	message = frappe.get_doc(OUTBOX, doc.outbox_message)
+	message = read_statement_document(OUTBOX, doc.outbox_message)
 	try:
 		authority = ReleaseExecutionAuthorization.from_payload(
 			dict(

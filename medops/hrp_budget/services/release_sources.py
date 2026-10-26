@@ -13,7 +13,7 @@ from medops.hrp_budget.services.approval_access import case_permission, review_p
 from medops.hrp_budget.services.approval_evidence import decision_history, progress_for
 from medops.hrp_budget.services.release_documents import same_value
 from medops.hrp_budget.services.release_evidence import release_authorization
-from medops.hrp_budget.services.statement_cache import cached_statement_value
+from medops.hrp_budget.services.statement_cache import cached_statement_value, read_statement_document
 from medops.hrp_budget.services.submission_documents import snapshot_from_document
 from medops.services.errors import raise_ione_error
 
@@ -26,8 +26,8 @@ def stored_final_source(case_name, *, lock=False):
 
 
 def _stored_final_source(case_name, *, lock=False):
-	case = frappe.get_doc(CASE, case_name, for_update=lock)
-	source = frappe.get_doc(SUBMISSION, case.submission, for_update=lock)
+	case = read_statement_document(CASE, case_name, for_update=lock)
+	source = read_statement_document(SUBMISSION, case.submission, for_update=lock)
 	if (
 		case.status != "Approved"
 		or case.docstatus != 1
@@ -104,7 +104,7 @@ def approved_release_source(case_name, *, user=None, export=False, lock=False):
 
 def _approved_release_source(case_name, *, user, export=False, lock=False):
 	ptype = "export" if export else "read"
-	probe = frappe.get_doc(CASE, case_name)
+	probe = read_statement_document(CASE, case_name)
 	if not frappe.has_permission(CASE, ptype, doc=probe, user=user) or not case_permission(
 		probe, user=user, ptype=ptype
 	):
@@ -134,7 +134,7 @@ def stored_release_facts(doc):
 			prepared_by=doc.prepared_by,
 		)
 	elif doc.operation == "Reverse" and doc.reversal_of:
-		original = frappe.get_doc(RELEASE, doc.reversal_of)
+		original = read_statement_document(RELEASE, doc.reversal_of)
 		if original.operation != "Release" or original.status != "Posted" or original.docstatus != 1:
 			raise_ione_error("INVALID_STATE_TRANSITION")
 		facts = reversal_facts(

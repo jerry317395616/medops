@@ -9,10 +9,10 @@
 		"ADR-0031",
 		"ADR-0032"
 	],
-	"current_scope": "1627858 full453 local quality and1447 committed blobs passed; all58 focused native passed [2,5,13,10,19,9]. Normal Cookie/CSRF, non-test seven-phase diagnostic probe passed:14 native deferred Error Logs,14 actual SDK memory-transport events and12748 new native file-log bytes contain no public canary or actual SID/CSRF;native fingerprint/frame/type/timestamp identity retained. Existing protected data/counts/roles/default386 preserved;session logged out,no telemetry opt-in/network change. Probe tests the boundary after normal HTTPRequest construction and before application hooks, including JSON/form/v1/v2/legacy cmd. Full443 initial attempt stopped after7 tests when isolated1.5GiB database hit confirmed cgroup OOM;all preserved-state recovery checks passed. Isolated db live limit raised to4GiB without restart;host had64GiB available,compose persisted,public unchanged. Full443 same source rerun active,PID2330748; full result, UI/performance/backup/CI/promotion incomplete.",
+	"current_scope": "1627858 full453 local quality and1447 committed blobs passed; all58 focused native passed [2,5,13,10,19,9]. Normal Cookie/CSRF, non-test seven-phase diagnostic probe passed:14 native deferred Error Logs,14 actual SDK memory-transport events and12748 new native file-log bytes contain no public canary or actual SID/CSRF;native fingerprint/frame/type/timestamp identity retained. Existing protected data/counts/roles/default386 preserved;session logged out,no telemetry opt-in/network change. Probe tests the boundary after normal HTTPRequest construction and before application hooks, including JSON/form/v1/v2/legacy cmd. Full443 initial attempt stopped after7 tests when isolated1.5GiB database hit confirmed cgroup OOM;all preserved-state recovery checks passed. Isolated db live limit raised to4GiB without restart;host had64GiB available,compose persisted,public unchanged. Full443 same source rerun active,PID2330748; full result, UI/performance/backup/CI/promotion incomplete. New candidate adds bounded stored-document snapshots to avoid repeated native source loads within one actor/owned-RO-connection/graph phase. Independent native controllers/children returned;locks and non-owned reads bypass cache, explicit authority refresh clears it. Seven budget source types only,no physical ledger cache;8MiB conservative snapshot budget,2000 child-row per-doc cache limit,cache misses/oversize retain full native reading. Two real-SQL boundary cases added;new445 native inventory and performance still pending. Running443 at162 stays untouched.",
 	"checks": {
 		"pure_tests_expected": 453,
-		"complete_frappe_tests_expected": 443,
+		"complete_frappe_tests_expected": 445,
 		"exact_foundation_pure_tests_passed": 21,
 		"native_foundation": {
 			"status": "passed",
@@ -36,7 +36,7 @@
 		"protected_ci": "not run for COD-033",
 		"local_quality": "Full444 passed at65f43ef;production backend unchanged at709/e311;709 test-only ande311 frontend scoped checks passed;no new full suite at UI-only source",
 		"pure_tests_passed": 444,
-		"complete_frappe_tests": "443 expected; complete suite pending",
+		"complete_frappe_tests": "445 expected for new source;443 at1627858 still running",
 		"current_protocol": {
 			"status": "full local quality passed",
 			"tests": 11,
@@ -824,5 +824,26 @@
 		"proof_when_complete": "cod033-1627858-full-native-suite-memory4g.json",
 		"first_attempt": "failed after7 tests/73 cascading errors due confirmed isolated-database cgroup OOM; nine recovery integrity checks passed",
 		"resource_change": "private database memory limit1.5GiB to4GiB,live update,compose persisted;no restart or public service change"
+	},
+	"pending_read_optimization": {
+		"status": "implemented, native validation and profiling pending",
+		"scope": "same-owned-read-only-connection, same actor, one access graph phase",
+		"reviewed_document_types": 7,
+		"source_document_cache_bytes": 8388608,
+		"maximum_cached_child_rows_per_document": 2000,
+		"mutable_document_instances_shared": false,
+		"cache_skipped_documents_still_fully_read": true,
+		"locks_other_actors_connections_and_framework_documents_use_native_reads": true,
+		"explicit_authority_refresh_clears_graph": true,
+		"native_cases_added": 2,
+		"native_tests_expected_for_candidate": 445,
+		"prior_profile": {
+			"source": "94be679",
+			"candidates": 252,
+			"seconds": 43.574,
+			"sql_calls": 48811
+		},
+		"database_permission_api_or_model_changes": false,
+		"performance_improvement_not_yet_proven": true
 	}
 }

@@ -11,7 +11,7 @@ from medops.hrp_budget.services.access_graph import read_graph
 from medops.hrp_budget.services.planning_access import MANAGER_ROLES
 from medops.hrp_budget.services.release_evidence import validate_release_evidence
 from medops.hrp_budget.services.release_sources import approved_release_source, stored_release_facts
-from medops.hrp_budget.services.statement_cache import cached_statement_value
+from medops.hrp_budget.services.statement_cache import cached_statement_value, read_statement_document
 from medops.hrp_workflow_authorization.services.rule_contracts import can_read_named_fields
 from medops.services.data_access import scope_allowed, scope_permission_query
 from medops.services.errors import raise_ione_error
@@ -64,7 +64,7 @@ def _release_permission(doc, user, ptype):
 		return False
 	if not doc.name or not frappe.db.exists(RELEASE, doc.name):
 		return False
-	doc = frappe.get_doc(RELEASE, doc.name)
+	doc = read_statement_document(RELEASE, doc.name)
 	export = ptype in {"export", "print"}
 	if not scope_allowed(doc, user=user, action="export" if export else "read") or not can_read_named_fields(
 		doc, set(RELEASE_PUBLIC_FIELDS) - {"name"}, user=user
@@ -86,7 +86,7 @@ def event_permission(doc, user=None, ptype=None, debug=False):
 		return False
 	if not frappe.db.exists(RELEASE, doc.release):
 		return False
-	parent = frappe.get_doc(RELEASE, doc.release)
+	parent = read_statement_document(RELEASE, doc.release)
 	if not release_permission(parent, user=user, ptype=ptype):
 		return False
 	if (
@@ -123,13 +123,13 @@ def outbox_permission(doc, user=None, ptype=None, debug=False):
 		or not frappe.db.exists(RELEASE, doc.reference_name)
 	):
 		return False
-	return release_permission(frappe.get_doc(RELEASE, doc.reference_name), user=user, ptype=ptype)
+	return release_permission(read_statement_document(RELEASE, doc.reference_name), user=user, ptype=ptype)
 
 
 def get_release(name, *, lock=False, export=False):
 	if not frappe.db.exists(RELEASE, name):
 		raise_ione_error("RESOURCE_NOT_FOUND")
-	doc = frappe.get_doc(RELEASE, name, for_update=lock)
+	doc = read_statement_document(RELEASE, name, for_update=lock)
 	ptype = "export" if export else "read"
 	if not frappe.has_permission(RELEASE, ptype, doc=doc) or not release_permission(doc, ptype=ptype):
 		raise_ione_error("PERMISSION_DENIED")

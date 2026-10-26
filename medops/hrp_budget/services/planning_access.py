@@ -8,7 +8,11 @@ import frappe
 
 from medops.common.budget_planning import DIMENSION, FUND, PLAN, VALUE, VERSION
 from medops.hrp_budget.services.access_graph import access_graph_cache, read_graph
-from medops.hrp_budget.services.statement_cache import cached_statement_value, statement_document_key
+from medops.hrp_budget.services.statement_cache import (
+	cached_statement_value,
+	read_statement_document,
+	statement_document_key,
+)
 from medops.hrp_master_data.services.budget_dimensions import native_read
 from medops.hrp_workflow_authorization.services.rule_contracts import can_read_named_fields
 from medops.services.data_access import require_scope, scope_allowed, scope_permission_query
@@ -52,7 +56,7 @@ def native_source(doctype: str, name: str | None, fields: set[str], *, user=None
 		return cache[key]
 	result = None
 	if name and frappe.db.exists(doctype, name):
-		doc = frappe.get_doc(doctype, name)
+		doc = read_statement_document(doctype, name)
 		if native_read(doc, fields, user=user, export=export):
 			result = doc
 	if cache is not None:
@@ -201,7 +205,7 @@ def line_permission(doc, user=None, ptype=None, debug=False):
 	del debug
 	if not doc.parent or doc.parenttype != PLAN or not frappe.db.exists(PLAN, doc.parent):
 		return False
-	parent = frappe.get_doc(PLAN, doc.parent)
+	parent = read_statement_document(PLAN, doc.parent)
 	return frappe.has_permission(PLAN, "read", doc=parent, user=user) and plan_permission(
 		parent, user=user, ptype=ptype
 	)
@@ -211,7 +215,7 @@ def line_permission(doc, user=None, ptype=None, debug=False):
 def get_version(name: str, *, lock=False, export=False):
 	if not frappe.db.exists(VERSION, name):
 		raise_ione_error("RESOURCE_NOT_FOUND")
-	doc = frappe.get_doc(VERSION, name, for_update=lock)
+	doc = read_statement_document(VERSION, name, for_update=lock)
 	if export and not frappe.has_permission(VERSION, "export", doc=doc):
 		raise_ione_error("PERMISSION_DENIED")
 	if not frappe.has_permission(VERSION, "read", doc=doc) or not version_permission(
@@ -225,7 +229,7 @@ def get_version(name: str, *, lock=False, export=False):
 def get_plan(name: str, *, lock=False, export=False):
 	if not frappe.db.exists(PLAN, name):
 		raise_ione_error("RESOURCE_NOT_FOUND")
-	doc = frappe.get_doc(PLAN, name, for_update=lock)
+	doc = read_statement_document(PLAN, name, for_update=lock)
 	if export and not frappe.has_permission(PLAN, "export", doc=doc):
 		raise_ione_error("PERMISSION_DENIED")
 	if not frappe.has_permission(PLAN, "read", doc=doc) or not plan_permission(
