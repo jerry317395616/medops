@@ -113,25 +113,21 @@
 		"cod032_promoted": false
 	},
 	"human_approval_candidate": {
-		"status": "focused_verified_full_ci_pending",
+		"status": "verified_development_milestone",
 		"models_added": 2,
 		"pure_tests_passed": 9,
 		"native_tests_defined": 18,
 		"public_deployment": "none",
 		"remaining": [
-			"concurrent human decisions",
-			"approved department consolidation",
-			"latest full protected CI",
+			"approved department consolidation and its acceptance",
 			"hospital-specific performance/interfaces/UAT/DR"
 		],
-		"first_native_candidate": "2a71be7293e987e4f4c655b57887fdb636109ce7",
 		"repeat_migrations": 2,
-		"first_native_result": "11 run; 4 failed assertions and 2 errors; fixing parent repeatable-read snapshot and same-session test setup",
 		"native_tests_passed": 18,
 		"focused_native_total": 113,
 		"native_commit": "d29e75023087172ab8552ef679c59a3eeb0f793a",
 		"full_local_quality": "passed363 pure and all checks at7c26fbe",
-		"repeat_migrations_commit": "7c26fbe476ab96e76234f1c50c679de25ca8d720",
+		"repeat_migrations_commit": "d5fb5101658a44131fb6bc5462f3be1a4d7b806b",
 		"browser": {
 			"status": "passed",
 			"commit": "7c26fbe476ab96e76234f1c50c679de25ca8d720",
@@ -141,7 +137,111 @@
 			"first_vote": "Pending",
 			"second_vote": "Approved",
 			"normal_csrf_and_session": true,
-			"remaining": "Recheck minor status-default and breadcrumb presentation after normal migration"
-		}
+			"refreshed_commit": "d5fb5101658a44131fb6bc5462f3be1a4d7b806b",
+			"default_filter_breadcrumb_sidebar_and_columns": "passed",
+			"native_evidence": "2 confirmations, 2 decisions, revision3/docstatus1, no open ToDo/shares/global Workflow Action"
+		},
+		"scope": "department sealing and human approval; consolidation unfinished",
+		"races": {
+			"status": "passed",
+			"commit": "7c26fbe476ab96e76234f1c50c679de25ca8d720",
+			"cases": [
+				{
+					"mode": "same-key",
+					"statuses": [
+						200,
+						200
+					],
+					"attempts": [
+						[
+							508,
+							200
+						],
+						[
+							200
+						]
+					],
+					"decisions": 1,
+					"revision": 2,
+					"overlap": true,
+					"replays": 1
+				},
+				{
+					"mode": "different-keys",
+					"statuses": [
+						200,
+						409
+					],
+					"attempts": [
+						[
+							508,
+							409
+						],
+						[
+							200
+						]
+					],
+					"decisions": 1,
+					"revision": 2,
+					"overlap": true,
+					"replays": 0
+				},
+				{
+					"mode": "different-actors",
+					"statuses": [
+						200,
+						409
+					],
+					"attempts": [
+						[
+							508,
+							409
+						],
+						[
+							200
+						]
+					],
+					"decisions": 1,
+					"revision": 2,
+					"overlap": true,
+					"replays": 0
+				},
+				{
+					"mode": "request-different-keys",
+					"statuses": [
+						200,
+						409
+					],
+					"attempts": [
+						[
+							508,
+							409
+						],
+						[
+							200
+						]
+					],
+					"cases": 1,
+					"overlap": true
+				}
+			],
+			"normal_csrf": true,
+			"isolated_site": "cod030-828dab0.localhost",
+			"financial_and_share_counts_unchanged": true,
+			"retry_boundary": "Whole fresh HTTP request, preserving original confirmation and idempotency key; no application transaction retry."
+		},
+		"protected_ci": {
+			"run": 40254559180,
+			"commit": "d5fb5101658a44131fb6bc5462f3be1a4d7b806b",
+			"all_required_jobs": "passed",
+			"pure_tests_passed": 363,
+			"complete_frappe_tests_passed": 352,
+			"fresh_site_error_logs": {
+				"hrp-test.localhost": 0,
+				"hrp-dev.localhost": 0,
+				"hrp-demo.localhost": 0
+			}
+		},
+		"public_isolation": "Public4c6b0b8 clean; 7 medical service PIDs/states and medical/child/rehab HTTP unchanged; private browser helper and tunnel closed"
 	}
 }
