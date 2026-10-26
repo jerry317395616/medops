@@ -36,7 +36,23 @@ def review_query(user=None):
 
 
 def forbidden_actors(doc) -> set[str]:
-	return {str(doc.get(key)) for key in ("applicant", "source_applicant", "requested_by") if doc.get(key)}
+	actors = {str(doc.get(key)) for key in ("applicant", "source_applicant", "requested_by") if doc.get(key)}
+	if doc.submission and frappe.db.exists("HRP Budget Submission", doc.submission):
+		source = frappe.get_doc("HRP Budget Submission", doc.submission)
+		if source.submission_type == "Consolidated":
+			from medops.common.budget_consolidation import source_references
+
+			for row in source_references(source.sources_snapshot):
+				actors.update((row.preparer, row.applicant, row.requested_by))
+	return actors
+
+
+def submission_preparer(source):
+	return (
+		source.applicant
+		if source.submission_type == "Consolidated"
+		else frappe.db.get_value("HRP Budget Plan", source.source_plan, "applicant")
+	)
 
 
 def approver_role_active(user: str) -> bool:
@@ -76,7 +92,7 @@ def case_source(doc, user: str, *, export=False):
 	):
 		if str(source.get(key)) != str(doc.get(key)):
 			return None
-	if frappe.db.get_value("HRP Budget Plan", source.source_plan, "applicant") != doc.source_applicant:
+	if submission_preparer(source) != doc.source_applicant:
 		return None
 	return source
 

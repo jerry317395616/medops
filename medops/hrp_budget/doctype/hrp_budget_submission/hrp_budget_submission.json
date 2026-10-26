@@ -40,7 +40,9 @@
 		"sealed_by",
 		"sealed_at",
 		"revision",
-		"remarks"
+		"remarks",
+		"source_set_digest",
+		"sources_snapshot"
 	],
 	"fields": [
 		{
@@ -81,7 +83,7 @@
 			"label": "标准成本中心",
 			"fieldtype": "Link",
 			"read_only": 1,
-			"reqd": 1,
+			"reqd": 0,
 			"options": "Cost Center"
 		},
 		{
@@ -121,7 +123,7 @@
 			"fieldtype": "Select",
 			"read_only": 1,
 			"reqd": 1,
-			"options": "Department"
+			"options": "Department\nConsolidated"
 		},
 		{
 			"fieldname": "identity_key",
@@ -169,39 +171,44 @@
 			"label": "原始计划",
 			"fieldtype": "Link",
 			"read_only": 1,
-			"reqd": 1,
-			"options": "HRP Budget Plan"
+			"reqd": 0,
+			"options": "HRP Budget Plan",
+			"mandatory_depends_on": "eval:doc.submission_type==\"Department\""
 		},
 		{
 			"fieldname": "source_plan_revision",
 			"label": "原计划修订",
 			"fieldtype": "Int",
 			"read_only": 1,
-			"reqd": 1
+			"reqd": 0,
+			"mandatory_depends_on": "eval:doc.submission_type==\"Department\""
 		},
 		{
 			"fieldname": "source_plan_digest",
 			"label": "原计划摘要",
 			"fieldtype": "Data",
 			"read_only": 1,
-			"reqd": 1
+			"reqd": 0,
+			"mandatory_depends_on": "eval:doc.submission_type==\"Department\""
 		},
 		{
 			"fieldname": "source_version",
 			"label": "冻结编制版本",
 			"fieldtype": "Link",
 			"read_only": 1,
-			"reqd": 1,
-			"options": "HRP Budget Version"
+			"reqd": 0,
+			"options": "HRP Budget Version",
+			"mandatory_depends_on": "eval:doc.submission_type==\"Department\""
 		},
 		{
 			"fieldname": "source_version_digest",
 			"label": "冻结版本摘要",
 			"fieldtype": "Data",
 			"read_only": 1,
-			"reqd": 1,
+			"reqd": 0,
 			"permlevel": 1,
-			"hidden": 1
+			"hidden": 1,
+			"mandatory_depends_on": "eval:doc.submission_type==\"Department\""
 		},
 		{
 			"fieldname": "total_amount",
@@ -253,6 +260,21 @@
 			"fieldtype": "Small Text",
 			"read_only": 1,
 			"reqd": 0
+		},
+		{
+			"fieldname": "source_set_digest",
+			"label": "汇总来源集合摘要",
+			"fieldtype": "Data",
+			"read_only": 1
+		},
+		{
+			"fieldname": "sources_snapshot",
+			"label": "完整来源审批凭证",
+			"fieldtype": "Code",
+			"options": "JSON",
+			"read_only": 1,
+			"hidden": 1,
+			"permlevel": 1
 		}
 	],
 	"permissions": [

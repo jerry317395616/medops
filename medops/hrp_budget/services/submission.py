@@ -188,6 +188,9 @@ def list_submissions(filters: dict[str, Any], *, offset=0, limit=50):
 			"source_plan",
 			"source_version",
 			"fiscal_year",
+			"submission_type",
+			"organization_version",
+			"currency",
 		}:
 			raise_ione_error("INVALID_REQUEST")
 		if not 0 <= offset <= 5000 or not 1 <= limit <= 100:

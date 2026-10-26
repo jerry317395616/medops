@@ -15,7 +15,7 @@ class HRPBudgetApproval(BudgetApprovalDocument):
 		applicant: DF.Link
 		company: DF.Link
 		completed_at: DF.Datetime | None
-		cost_center: DF.Link
+		cost_center: DF.Link | None
 		currency: DF.Link
 		currency_precision: DF.Int
 		current_step: DF.Int

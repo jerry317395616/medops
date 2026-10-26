@@ -47,19 +47,27 @@ def submission_permission(doc, user=None, ptype=None, debug=False):
 	# Native getdoc calls controller permissions again after stripping higher
 	# field levels. Reload only for verification; never restore private values
 	# onto the redacted document that Frappe is about to return.
-	if doc.get("source_version_digest") is None:
+	if (doc.submission_type == "Department" and doc.get("source_version_digest") is None) or (
+		doc.submission_type == "Consolidated" and doc.get("sources_snapshot") is None
+	):
 		if not doc.name or not frappe.db.exists(SUBMISSION, doc.name):
 			return False
 		doc = frappe.get_doc(SUBMISSION, doc.name)
 	if not scope_allowed(doc, user=user, action="export" if export else "read"):
 		return False
-	named = {field.fieldname for field in doc.meta.fields} - {"source_version_digest"}
+	named = {field.fieldname for field in doc.meta.fields} - {"source_version_digest", "sources_snapshot"}
 	named |= {
 		"lines." + field.fieldname
 		for field in frappe.get_meta(SUBMISSION_LINE).fields
 		if field.fieldname != "origin_version_digest"
 	}
 	if not can_read_named_fields(doc, named, user=user):
+		return False
+	if doc.submission_type == "Consolidated":
+		from medops.hrp_budget.services.consolidation_access import aggregate_sources_valid
+
+		return aggregate_sources_valid(doc, user=user, export=export)
+	if doc.submission_type != "Department":
 		return False
 	# A snapshot never grants access to its source. The complete plan permission
 	# includes every linked master and native source field; do not filter rows.

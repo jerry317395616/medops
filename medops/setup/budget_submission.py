@@ -14,6 +14,12 @@ def ensure_budget_submission():
 		),
 		("HRP Budget Submission", ["source_version", "creation"], "idx_hrp_submission_version"),
 		(
+			"HRP Budget Submission",
+			["company", "hospital", "submission_type", "fiscal_year"],
+			"idx_hrp_submission_kind",
+		),
+		("HRP Budget Submission Line", ["origin_plan", "parent"], "idx_hrp_submission_origin"),
+		(
 			"HRP Budget Submission Line",
 			["parent", "parenttype", "parentfield", "fact_key"],
 			"uniq_hrp_submission_fact",

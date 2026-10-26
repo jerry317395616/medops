@@ -14,7 +14,7 @@
 		"runtime_tests": 312,
 		"evidence": "architecture/releases/COD-031.json"
 	},
-	"current_scope": "Exact approval foundation and department sealed snapshots verified in development; complete COD032 human approval and consolidation remain unfinished. No public promotion.",
+	"current_scope": "Department sealing and human approval verified at 8631a5b (CI40256899688 passed). Consolidation implementation is a new unverified candidate; no public promotion.",
 	"checks": {
 		"new_pure_tests_passed": 23,
 		"pure_tests_expected": 354,
@@ -102,6 +102,14 @@
 				"hrp-dev.localhost": 0,
 				"hrp-demo.localhost": 0
 			}
+		},
+		"consolidation_candidate": {
+			"status": "unverified",
+			"pure_tests_defined": 12,
+			"native_tests_defined": 8,
+			"repeat_migration": "pending",
+			"browser": "pending",
+			"concurrency": "pending"
 		}
 	},
 	"overall_hospital_production_readiness": "not_established",

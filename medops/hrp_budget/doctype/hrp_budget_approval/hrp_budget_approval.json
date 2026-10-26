@@ -116,7 +116,7 @@
 			"label": "原始成本中心",
 			"fieldtype": "Link",
 			"read_only": 1,
-			"reqd": 1,
+			"reqd": 0,
 			"options": "Cost Center"
 		},
 		{

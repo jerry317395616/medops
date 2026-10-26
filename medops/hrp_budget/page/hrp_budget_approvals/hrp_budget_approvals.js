@@ -108,6 +108,10 @@ frappe.pages["hrp-budget-approvals"].on_page_load = (wrapper) => {
 		fact(body, "状态", `${status(doc.status)} · ${__("第")} ${doc.round_number} ${__("轮")}`);
 		fact(body, "金额", `${doc.currency} ${doc.total_amount}`);
 		fact(body, "发起人", doc.requested_by);
+		$("<button class='btn btn-default mb-3'>")
+			.text(__("核对申报明细"))
+			.on("click", () => frappe.set_route("hrp-budget-consolidations", doc.submission))
+			.appendTo(body);
 		$("<p class='text-muted'>")
 			.text(__("审批保留申报事实与独立复核记录；可用预算需完成后续预算下达。"))
 			.appendTo(body);

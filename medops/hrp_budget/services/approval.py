@@ -36,6 +36,7 @@ from medops.hrp_budget.services.approval_access import (
 	forbidden_actors,
 	get_case,
 	review_permission,
+	submission_preparer,
 )
 from medops.hrp_budget.services.approval_evidence import (
 	decision_history,
@@ -209,7 +210,7 @@ class RequestApproval(DomainService[CaseRequest]):
 					active_key=source.name,
 					**values,
 					source_digest=source.snapshot_digest,
-					source_applicant=frappe.db.get_value("HRP Budget Plan", source.source_plan, "applicant"),
+					source_applicant=submission_preparer(source),
 					requested_by=frappe.session.user,
 					posting_date=today(),
 					requested_at=now_datetime(),
@@ -398,6 +399,10 @@ class ConfirmHumanDecision(DomainService[HumanConfirmation]):
 
 	def perform(self, command):
 		original = checked_confirmation(command.confirmation, command.proof)
+		# Match request/aggregation lock ordering. The hospital fence serializes
+		# final approvals that may share original source plans across proposals.
+		initial = get_case(original.case)
+		lock_hospital(initial.hospital)
 		with approval_write(CaseMutation("confirm", original.case, int(original.case_revision))):
 			case = get_case(original.case, lock=True)
 			assert_actor(case, original.action, int(original.sequence_no))
@@ -428,6 +433,10 @@ class ConfirmHumanDecision(DomainService[HumanConfirmation]):
 				)
 			except ValueError as exc:
 				raise_ione_error("INVALID_STATE_TRANSITION", cause=exc)
+			if progress.status == "Approved":
+				from medops.hrp_budget.services.consolidation_access import assert_unclaimed_approved_sources
+
+				assert_unclaimed_approved_sources(case)
 			name = frappe.generate_hash(length=20)
 			with approval_write(
 				CaseMutation(

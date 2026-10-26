@@ -13,7 +13,7 @@ class HRPBudgetSubmission(BudgetSubmissionDocument):
 
 		applicant: DF.Link
 		company: DF.Link
-		cost_center: DF.Link
+		cost_center: DF.Link | None
 		currency: DF.Link
 		currency_precision: DF.Int
 		fiscal_year: DF.Link
@@ -29,11 +29,13 @@ class HRPBudgetSubmission(BudgetSubmissionDocument):
 		sealed_at: DF.Datetime
 		sealed_by: DF.Link
 		snapshot_digest: DF.Data
-		source_plan: DF.Link
-		source_plan_digest: DF.Data
+		source_plan: DF.Link | None
+		source_plan_digest: DF.Data | None
 		source_plan_revision: DF.Int
-		source_version: DF.Link
-		source_version_digest: DF.Data
+		source_set_digest: DF.Data | None
+		source_version: DF.Link | None
+		source_version_digest: DF.Data | None
+		sources_snapshot: DF.Code | None
 		status: str
 		subject: DF.Data
 		submission_type: str

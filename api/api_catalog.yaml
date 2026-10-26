@@ -1922,7 +1922,7 @@
   path: /api/method/medops.api.v1.finance.submission.get_record
   description: 按当前全部来源和字段权限读取封存申报
   request_schema: name
-  response_schema: sealed department snapshot
+  response_schema: sealed department v1 or consolidated v2 snapshot
   required_role: Budget reader
   idempotency: Not required (read-only)
   transaction_boundary: Read-only
@@ -2021,6 +2021,34 @@
   transaction_boundary: Read-only
   audit: Redacted event, status, revision and counts; no financial facts or confirmation
     proof
+  version: v1
+  domain_group: Finance
+  async: 'No'
+- api_code: FIN-033
+  app: medops
+  method: POST
+  path: /api/method/medops.api.v1.finance.consolidation.seal
+  description: 从已批准科室申报封存完整来源汇总；最终财务批准另行确认
+  request_schema: payload
+  response_schema: BudgetSubmissionAcknowledgement
+  required_role: Budget manager
+  idempotency: Required for write
+  transaction_boundary: Single DB transaction
+  audit: Redacted operation and counts; no financial values
+  version: v1
+  domain_group: Finance
+  async: 'No'
+- api_code: FIN-034
+  app: medops
+  method: GET
+  path: /api/method/medops.api.v1.finance.consolidation.eligible
+  description: 按当前全部来源权限分页读取可汇总的已批准科室申报
+  request_schema: filters,offset,limit
+  response_schema: BudgetConsolidationEligibleList
+  required_role: Budget reader
+  idempotency: Not required (read-only)
+  transaction_boundary: Read-only
+  audit: Redacted operation and counts; no financial values
   version: v1
   domain_group: Finance
   async: 'No'
