@@ -9,7 +9,7 @@ from medops.common.budget_workflow import APPROVER_ROLE, CASE, REVIEW, approval_
 from medops.common.exact_money import MAX_APPROVAL_AMOUNT, exact_decimal_amount
 from medops.hrp_budget.services.access_graph import read_graph
 from medops.hrp_budget.services.planning_access import READ_ROLES
-from medops.hrp_budget.services.statement_cache import cached_statement_value
+from medops.hrp_budget.services.statement_cache import cached_statement_value, statement_document_key
 from medops.hrp_budget.services.submission_access import submission_permission
 from medops.hrp_workflow_authorization.services.rule_contracts import can_read_named_fields
 from medops.services.data_access import scope_allowed, scope_permission_query
@@ -106,7 +106,7 @@ def case_permission(doc, user=None, ptype=None, debug=False):
 	# Bind every supplied field, including redaction, so a different in-memory
 	# case cannot reuse an earlier complete-source permission for the same name.
 	return cached_statement_value(
-		lambda: ("case_permission", frappe.as_json(doc.as_dict()), user, ptype),
+		lambda: ("case_permission", statement_document_key(doc), user, ptype),
 		lambda: _case_permission(doc, user, ptype),
 	)
 

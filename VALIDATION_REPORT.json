@@ -9,7 +9,7 @@
 		"ADR-0031",
 		"ADR-0032"
 	],
-	"current_scope": "Source4f16f78 full439 quality, focused dispatch9 and real two-process scheduler/RQ race passed; prior joint49 at1c987df retained. Directory baseline252 candidates took254.195s under profiler, showing repeated complete-source checks. Owned read-only per-phase memoization, field/actor binding and pending-read UI guards implemented, validation pending. Inventory441/437; full native, UI, remaining contention and release pending.",
+	"current_scope": "Prior source0898b5d full441 quality passed. Same252 directory profiled254.195s at4f16f78 and53.786s at0898b5d; complete-source/permission checks retained. Further full-document-bound submission/plan/version read-phase memoization implemented; native51, UI, full437/remaining contention/release pending.",
 	"checks": {
 		"pure_tests_expected": 441,
 		"complete_frappe_tests_expected": 437,
@@ -504,7 +504,7 @@
 			"proof": "cod033-4f16f78-scheduler-process-race.json"
 		},
 		"directory_performance": {
-			"status": "baseline measured; optimization pending validation",
+			"status": "first optimization measured; further owned proof reuse and native validation pending",
 			"baseline_source": "4f16f780cde896f4d2c36104aaef151cbfedf279",
 			"candidate_records": 252,
 			"profiled_seconds": 254.195,
@@ -513,7 +513,11 @@
 			"optimization": "Owned connection/actor and one graph phase only; key complete supplied case fields; final source and authority checks start fresh; locked writes uncached",
 			"native_binding_test_added": 1,
 			"pure_graph_tests_added": 2,
-			"full_hospital_capacity_certified": false
+			"full_hospital_capacity_certified": false,
+			"first_optimized_source": "0898b5de5ebe37488e5351d65bfe76e5bb6c202b",
+			"first_optimized_profiled_seconds": 53.786,
+			"first_optimized_candidates": 252,
+			"document_keys": "SHA256 of all supplied document fields; explicit actor/type; no serialized private snapshot copy retained as key"
 		}
 	},
 	"previous_verified_release": {

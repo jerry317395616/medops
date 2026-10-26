@@ -8,6 +8,7 @@ import frappe
 
 from medops.common.budget_planning import DIMENSION, FUND, PLAN, VALUE, VERSION
 from medops.hrp_budget.services.access_graph import access_graph_cache, read_graph
+from medops.hrp_budget.services.statement_cache import cached_statement_value, statement_document_key
 from medops.hrp_master_data.services.budget_dimensions import native_read
 from medops.hrp_workflow_authorization.services.rule_contracts import can_read_named_fields
 from medops.services.data_access import require_scope, scope_allowed, scope_permission_query
@@ -85,6 +86,13 @@ def version_sources(doc, *, user=None, export=False, cache=None) -> bool:
 def version_permission(doc, user=None, ptype=None, debug=False):
 	del debug
 	user = user or frappe.session.user
+	return cached_statement_value(
+		lambda: ("version_permission", statement_document_key(doc), user, ptype),
+		lambda: _version_permission(doc, user, ptype),
+	)
+
+
+def _version_permission(doc, user, ptype):
 	if user == "Guest" or ptype not in {None, "read", "select", "report", "export", "print"}:
 		return False
 	export = ptype in {"export", "print"}
@@ -100,6 +108,13 @@ def version_permission(doc, user=None, ptype=None, debug=False):
 def plan_permission(doc, user=None, ptype=None, debug=False):
 	del debug
 	user = user or frappe.session.user
+	return cached_statement_value(
+		lambda: ("plan_permission", statement_document_key(doc), user, ptype),
+		lambda: _plan_permission(doc, user, ptype),
+	)
+
+
+def _plan_permission(doc, user, ptype):
 	if user == "Guest" or ptype not in {None, "read", "select", "report", "export", "print"}:
 		return False
 	export = ptype in {"export", "print"}

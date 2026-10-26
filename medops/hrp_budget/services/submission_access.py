@@ -9,6 +9,7 @@ from medops.common.budget_approval import SUBMISSION, SUBMISSION_LINE, departmen
 from medops.common.budget_planning import PLAN, VERSION, plan_definition, planning_digest
 from medops.hrp_budget.services.access_graph import read_graph
 from medops.hrp_budget.services.planning_access import READ_ROLES, native_source, plan_permission
+from medops.hrp_budget.services.statement_cache import cached_statement_value, statement_document_key
 from medops.hrp_budget.services.submission_documents import stored_facts
 from medops.hrp_workflow_authorization.services.rule_contracts import can_read_named_fields
 from medops.services.data_access import scope_allowed, scope_permission_query
@@ -41,6 +42,13 @@ def submission_line_query(user=None):
 def submission_permission(doc, user=None, ptype=None, debug=False):
 	del debug
 	user = user or frappe.session.user
+	return cached_statement_value(
+		lambda: ("submission_permission", statement_document_key(doc), user, ptype),
+		lambda: _submission_permission(doc, user, ptype),
+	)
+
+
+def _submission_permission(doc, user, ptype):
 	if user == "Guest" or ptype not in {None, "read", "select", "report", "export", "print"}:
 		return False
 	export = ptype in {"export", "print"}

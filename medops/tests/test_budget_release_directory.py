@@ -19,6 +19,7 @@ from medops.hrp_budget.api.statement_reads import statement_connection
 from medops.hrp_budget.services import release_directory as directory
 from medops.hrp_budget.services.access_graph import access_graph
 from medops.hrp_budget.services.approval_access import case_permission
+from medops.hrp_budget.services.submission_access import submission_permission
 from medops.services.errors import raise_ione_error
 from medops.services.module_registry import load_module_registry
 from medops.tests import test_budget_consolidation as source_fixture
@@ -110,6 +111,13 @@ class TestBudgetReleaseDirectory(FrappeAPITestCase):
 			self.assertFalse(case_permission(tampered, user=ACTOR, ptype="read"))
 			self.assertFalse(case_permission(case, user="Guest", ptype="read"))
 			self.assertTrue(case_permission(case, user=ACTOR, ptype="read"))
+			source = frappe.get_doc("HRP Budget Submission", case.submission)
+			self.assertTrue(submission_permission(source, user=ACTOR, ptype="read"))
+			changed_source = frappe.get_doc(source.as_dict())
+			changed_source.total_amount = "1.000000000"
+			self.assertFalse(submission_permission(changed_source, user=ACTOR, ptype="read"))
+			self.assertFalse(submission_permission(source, user="Guest", ptype="read"))
+			self.assertTrue(submission_permission(source, user=ACTOR, ptype="read"))
 
 	def test_directory_digest_binds_pagination_and_changes_after_authorization(self):
 		first = self.success(self.listing(limit=1))
