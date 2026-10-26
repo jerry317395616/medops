@@ -25,6 +25,15 @@ AUDIT_HEADER_REQUEST_ID = "X-Request-ID"
 AUDIT_LOG_LEVELS = frozenset({"info", "warning", "error"})
 
 
+def prepare_native_diagnostic_logger() -> None:
+	"""Create the framework fallback sink so a privacy filter can be attached.
+
+	This creates no business event; all application events still use
+	``emit_audit_event`` and its allow-listed fields below.
+	"""
+	frappe.logger()
+
+
 def _new_identifier(prefix: str) -> str:
 	return f"{prefix}-{frappe.generate_hash(length=20)}"
 

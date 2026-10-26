@@ -7,6 +7,7 @@ from threading import Lock
 import frappe
 
 from medops.common.diagnostic_privacy import DiagnosticEvent, exception_trace, owned_method
+from medops.services.audit_context import prepare_native_diagnostic_logger
 
 _install_lock = Lock()
 _sdk_installed = False
@@ -58,7 +59,7 @@ def install_diagnostic_privacy() -> None:
 	with _install_lock:
 		# Ensure the native fallback logger already has the filter if SDK
 		# capture itself fails before log_error_snapshot creates that logger.
-		frappe.logger()
+		prepare_native_diagnostic_logger()
 		if not _sdk_installed:
 			from sentry_sdk import get_global_scope
 

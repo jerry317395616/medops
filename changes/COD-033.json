@@ -70,7 +70,8 @@
 		"medops/common/transactional_message.py",
 		"medops/common/diagnostic_privacy.py",
 		"medops/services/diagnostic_privacy.py",
-		"medops/extensions/error_log.py"
+		"medops/extensions/error_log.py",
+		"medops/services/audit_context.py"
 	],
 	"permissions_impact": "财务记录原生只读，记账必须独立人工确认与当前来源/字段/范围；不分配用户角色、范围或分享。 账簿按原始单位完整来源核验后投影，导出额外要求export；原生财务文档继续关闭。",
 	"migration_impact": "新增三个既有预算运行模型和既有HRP Integration Outbox，共四个，运行库存42；迁移只建表、索引及元数据，同步每分钟预算恢复Scheduled Job Type。通用金额版本1及历史记录不重算，无财务种子或用户授权。审批解析统一到既有15位整数精确上限。 导入独立预算下达与冲销Page及工作台入口，无财务数据或用户授权种子。",
