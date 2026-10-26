@@ -5,7 +5,14 @@ from frappe.tests.test_api import FrappeAPITestCase
 
 from medops.common.approval_matrix import build_approval_matrix_steps, build_approval_matrix_upsert
 from medops.common.budget_approval import build_department_submission
-from medops.common.budget_planning import build_action, build_master, build_plan, build_version
+from medops.common.budget_planning import (
+	MASTER_TYPES,
+	build_action,
+	build_master,
+	build_plan,
+	build_version,
+	master_identity,
+)
 from medops.common.budget_workflow import APPROVER_ROLE, CASE
 from medops.common.error_catalog import IoneApplicationError
 from medops.common.organization import (
@@ -40,6 +47,14 @@ MANAGER = "cod032c-manager@example.com"
 MAKERS = ("cod032c-maker-a@example.com", "cod032c-maker-b@example.com")
 REVIEWER = "cod032c-reviewer@example.com"
 PREFIX = "medops.api.v1.finance."
+
+
+def fixture_master(kind, payload):
+	command = build_master(kind, payload)
+	name = master_identity(command)
+	if frappe.db.exists(MASTER_TYPES[kind], name):
+		return {"name": name}
+	return upsert_budget_master(command, idempotency_key=fixture_request("c-" + kind))
 
 
 def fixtures():
@@ -171,24 +186,15 @@ def fixtures():
 	):
 		share_test_records(doctype, tuple(str(name) for name in names), users)
 	base = dict(company=COMPANY, hospital=HOSPITAL, valid_from="2026-01-01")
-	dimension = upsert_budget_master(
-		build_master(
-			"dimension",
-			dict(**base, code="COD032C-SUBJECT", display_name="预算分类", purpose="Budget Subject"),
-		),
-		idempotency_key=fixture_request("c-dimension"),
+	dimension = fixture_master(
+		"dimension",
+		dict(**base, code="COD032C-SUBJECT", display_name="预算分类", purpose="Budget Subject"),
 	)
-	value = upsert_budget_master(
-		build_master(
-			"value", dict(**base, code="EQUIPMENT", display_name="设备预算", dimension=dimension["name"])
-		),
-		idempotency_key=fixture_request("c-value"),
+	value = fixture_master(
+		"value", dict(**base, code="EQUIPMENT", display_name="设备预算", dimension=dimension["name"])
 	)
-	fund = upsert_budget_master(
-		build_master(
-			"fund", dict(**base, code="COD032C-OWN", display_name="自有资金", source_type="Own Revenue")
-		),
-		idempotency_key=fixture_request("c-fund"),
+	fund = fixture_master(
+		"fund", dict(**base, code="COD032C-OWN", display_name="自有资金", source_type="Own Revenue")
 	)
 	for code, unit, kind in (
 		("COD032C-DEPARTMENT", None, "User"),
