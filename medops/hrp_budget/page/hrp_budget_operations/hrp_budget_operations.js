@@ -9,6 +9,7 @@ frappe.pages["hrp-budget-operations"].on_page_load = (wrapper) => {
 		directory = null,
 		activeDialog = null,
 		writeBusy = false,
+		pendingReads = 0,
 		syncing = false;
 	const canManage = () =>
 		["System Manager", "HRP System Manager", "HRP Budget Manager"].some((role) => frappe.user.has_role(role));
@@ -41,9 +42,19 @@ frappe.pages["hrp-budget-operations"].on_page_load = (wrapper) => {
 				.filter(([, value]) => value),
 		);
 	}
+	function updateTools() {
+		tools.find("button").prop("disabled", writeBusy || pendingReads > 0);
+	}
 	async function read(method, args) {
-		return (await frappe.call({ method: `medops.api.v1.finance.release.${method}`, type: "GET", args }))
-			.message;
+		pendingReads += 1;
+		updateTools();
+		try {
+			return (await frappe.call({ method: `medops.api.v1.finance.release.${method}`, type: "GET", args }))
+				.message;
+		} finally {
+			pendingReads -= 1;
+			updateTools();
+		}
 	}
 	// Keep a stable key for identical input after an uncertain network result.
 	// A changed input starts a new command, still guarded by server revisions.
@@ -62,7 +73,7 @@ frappe.pages["hrp-budget-operations"].on_page_load = (wrapper) => {
 				commandKey = `budget-operation-${frappe.utils.get_random(32)}`;
 			}
 			writeBusy = true;
-			tools.find("button").prop("disabled", true);
+			updateTools();
 			try {
 				return (
 					await frappe.call({
@@ -74,7 +85,7 @@ frappe.pages["hrp-budget-operations"].on_page_load = (wrapper) => {
 				).message;
 			} finally {
 				writeBusy = false;
-				tools.find("button").prop("disabled", false);
+				updateTools();
 			}
 		};
 	}
@@ -310,7 +321,7 @@ frappe.pages["hrp-budget-operations"].on_page_load = (wrapper) => {
 		}
 	}
 	async function list(offset = 0) {
-		if (writeBusy) return;
+		if (writeBusy || pendingReads) return;
 		const selected = selectFilters();
 		if (!selected.company || !selected.hospital || !selected.fiscal_year)
 			return frappe.msgprint(__("请先选择法人、医院和预算年度。"));
@@ -318,6 +329,9 @@ frappe.pages["hrp-budget-operations"].on_page_load = (wrapper) => {
 		invalidate();
 		const id = generation;
 		filters.show();
+		const loading = $("<p role='status' class='text-muted'></p>")
+			.text(__("正在核验完整来源及当前权限，请稍候……"))
+			.appendTo(body);
 		try {
 			const result = await read(kind === "eligible" ? "eligible_sources" : "list_records", {
 				filters: selected,
@@ -326,6 +340,7 @@ frappe.pages["hrp-budget-operations"].on_page_load = (wrapper) => {
 				expected_digest: digest,
 			});
 			if (id !== generation) return;
+			loading.remove();
 			directory = result;
 			$("<h3></h3>")
 				.text(kind === "eligible" ? __("待下达的已批准汇总") : __("下达与冲销凭证"))
@@ -365,7 +380,10 @@ frappe.pages["hrp-budget-operations"].on_page_load = (wrapper) => {
 			if (offset) button(body, "上一页", () => list(Math.max(0, offset - 50)));
 			if (result.next_offset !== null) button(body, "下一页", () => list(result.next_offset));
 		} catch {
-			if (id === generation) fact(body, "查询未完成", __("请缩小范围或检查权限；目录变化时重新查询第一页。"));
+			if (id === generation) {
+				loading.remove();
+				fact(body, "查询未完成", __("请缩小范围或检查权限；目录变化时重新查询第一页。"));
+			}
 		}
 	}
 	for (const [fieldname, label, options] of [
@@ -383,14 +401,17 @@ frappe.pages["hrp-budget-operations"].on_page_load = (wrapper) => {
 				fieldtype: "Link",
 				options,
 				onchange: () => {
-					if (!syncing) invalidate();
+					if (!syncing) {
+						invalidate();
+						if (pendingReads) fact(body, "筛选已修改", __("当前读取结束后请重新查询。"));
+					}
 				},
 			},
 			render_input: true,
 		});
 	}
 	function navigateList(selectedKind) {
-		if (writeBusy) return;
+		if (writeBusy || pendingReads) return;
 		kind = selectedKind;
 		if (frappe.get_route()[1]) frappe.set_route("hrp-budget-operations");
 		else list();

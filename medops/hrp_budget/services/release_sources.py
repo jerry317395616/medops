@@ -13,12 +13,19 @@ from medops.hrp_budget.services.approval_access import case_permission, review_p
 from medops.hrp_budget.services.approval_evidence import decision_history, progress_for
 from medops.hrp_budget.services.release_documents import same_value
 from medops.hrp_budget.services.release_evidence import release_authorization
+from medops.hrp_budget.services.statement_cache import cached_statement_value
 from medops.hrp_budget.services.submission_documents import snapshot_from_document
 from medops.services.errors import raise_ione_error
 
 
 def stored_final_source(case_name, *, lock=False):
 	"""Internal complete-source integrity only; never grants source visibility."""
+	if lock:
+		return _stored_final_source(case_name, lock=True)
+	return cached_statement_value(("stored_final_source", case_name), lambda: _stored_final_source(case_name))
+
+
+def _stored_final_source(case_name, *, lock=False):
 	case = frappe.get_doc(CASE, case_name, for_update=lock)
 	source = frappe.get_doc(SUBMISSION, case.submission, for_update=lock)
 	if (
@@ -87,6 +94,15 @@ def stored_final_source(case_name, *, lock=False):
 @read_graph
 def approved_release_source(case_name, *, user=None, export=False, lock=False):
 	user = user or frappe.session.user
+	if lock:
+		return _approved_release_source(case_name, user=user, export=export, lock=True)
+	return cached_statement_value(
+		("approved_release_source", case_name, user, bool(export)),
+		lambda: _approved_release_source(case_name, user=user, export=export),
+	)
+
+
+def _approved_release_source(case_name, *, user, export=False, lock=False):
 	ptype = "export" if export else "read"
 	probe = frappe.get_doc(CASE, case_name)
 	if not frappe.has_permission(CASE, ptype, doc=probe, user=user) or not case_permission(

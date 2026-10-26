@@ -22,6 +22,16 @@ def access_graph_cache():
 	return _graph.get()
 
 
+def graph_value(key: tuple, reader: Callable[[], R]) -> R:
+	"""Reuse a completed value only in this synchronous graph, never exceptions."""
+	cache = access_graph_cache()
+	if cache is None:
+		return reader()
+	if key not in cache:
+		cache[key] = reader()
+	return cache[key]
+
+
 @contextmanager
 def access_graph():
 	current = _graph.get()

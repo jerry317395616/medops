@@ -11,6 +11,7 @@ from medops.hrp_budget.services.access_graph import read_graph
 from medops.hrp_budget.services.planning_access import MANAGER_ROLES
 from medops.hrp_budget.services.release_evidence import validate_release_evidence
 from medops.hrp_budget.services.release_sources import approved_release_source, stored_release_facts
+from medops.hrp_budget.services.statement_cache import cached_statement_value
 from medops.hrp_workflow_authorization.services.rule_contracts import can_read_named_fields
 from medops.services.data_access import scope_allowed, scope_permission_query
 from medops.services.errors import raise_ione_error
@@ -49,6 +50,12 @@ def outbox_query(user=None):
 def release_permission(doc, user=None, ptype=None, debug=False):
 	del debug
 	user = user or frappe.session.user
+	return cached_statement_value(
+		("release_permission", doc.name, user, ptype), lambda: _release_permission(doc, user, ptype)
+	)
+
+
+def _release_permission(doc, user, ptype):
 	if (
 		user == "Guest"
 		or ptype not in {None, "read", "select", "report", "export", "print"}

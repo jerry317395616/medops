@@ -9,10 +9,10 @@
 		"ADR-0031",
 		"ADR-0032"
 	],
-	"current_scope": "Joint49 and full439 quality passed at1c987df. Later real concurrent scheduler callbacks produced two identical queue entries; native worker still posted exactly one complete batch. Owned enqueue lock and native contention/retry test added, verification pending. Operator detail/directory render observed but directory latency is several minutes; full Page acceptance and performance work pending. Full436/remaining races/CI/promotion pending.",
+	"current_scope": "Source4f16f78 full439 quality, focused dispatch9 and real two-process scheduler/RQ race passed; prior joint49 at1c987df retained. Directory baseline252 candidates took254.195s under profiler, showing repeated complete-source checks. Owned read-only per-phase memoization, field/actor binding and pending-read UI guards implemented, validation pending. Inventory441/437; full native, UI, remaining contention and release pending.",
 	"checks": {
-		"pure_tests_expected": 439,
-		"complete_frappe_tests_expected": 436,
+		"pure_tests_expected": 441,
+		"complete_frappe_tests_expected": 437,
 		"exact_foundation_pure_tests_passed": 21,
 		"native_foundation": {
 			"status": "passed",
@@ -36,7 +36,7 @@
 		"protected_ci": "not run for COD-033",
 		"local_quality": "Full439 passed at 1c987df7293a7361a27332a73d8c5bd97793dd5c",
 		"pure_tests_passed": 439,
-		"complete_frappe_tests": "436 expected; complete suite pending",
+		"complete_frappe_tests": "437 expected; complete suite pending",
 		"current_protocol": {
 			"status": "full local quality passed",
 			"tests": 11,
@@ -487,7 +487,7 @@
 			"public_sites_untouched": true
 		},
 		"concurrent_scheduler": {
-			"status": "failure reproduced; fix implemented pending verification",
+			"status": "fixed; focused9 and repeated real process/RQ passed",
 			"source_commit": "1c987df7293a7361a27332a73d8c5bd97793dd5c",
 			"duplicate_queue_entries": 2,
 			"standard_worker_ledger_rows": 2,
@@ -496,7 +496,24 @@
 			"long_queue_after_owned_drain": 0,
 			"workers_after": 0,
 			"old_budget_roles_gl_stock_error_unchanged": true,
-			"native_test_added": 1
+			"native_test_added": 1,
+			"fix_source_commit": "4f16f780cde896f4d2c36104aaef151cbfedf279",
+			"fixed_native_queue_entries": 1,
+			"fixed_exact_ledger_rows": 2,
+			"fixed_real_processes": 2,
+			"proof": "cod033-4f16f78-scheduler-process-race.json"
+		},
+		"directory_performance": {
+			"status": "baseline measured; optimization pending validation",
+			"baseline_source": "4f16f780cde896f4d2c36104aaef151cbfedf279",
+			"candidate_records": 252,
+			"profiled_seconds": 254.195,
+			"page_items": 50,
+			"phase_candidate_checks": 504,
+			"optimization": "Owned connection/actor and one graph phase only; key complete supplied case fields; final source and authority checks start fresh; locked writes uncached",
+			"native_binding_test_added": 1,
+			"pure_graph_tests_added": 2,
+			"full_hospital_capacity_certified": false
 		}
 	},
 	"previous_verified_release": {

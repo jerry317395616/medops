@@ -14,7 +14,11 @@ from frappe.tests.test_api import FrappeAPITestCase
 from medops.api.v1.finance import release as release_api
 from medops.common.budget_ledger import LEDGER, RELEASE, RELEASE_PUBLIC_FIELDS
 from medops.common.budget_release_directory import SOURCE_PUBLIC_FIELDS
+from medops.common.budget_workflow import CASE
+from medops.hrp_budget.api.statement_reads import statement_connection
 from medops.hrp_budget.services import release_directory as directory
+from medops.hrp_budget.services.access_graph import access_graph
+from medops.hrp_budget.services.approval_access import case_permission
 from medops.services.errors import raise_ione_error
 from medops.services.module_registry import load_module_registry
 from medops.tests import test_budget_consolidation as source_fixture
@@ -95,6 +99,17 @@ class TestBudgetReleaseDirectory(FrappeAPITestCase):
 		self.assertEqual(items, [doc])
 		self.assertNotIn("outbox_message", doc)
 		self.assertNotIn("intent_digest", doc)
+
+	def test_read_graph_cache_binds_supplied_case_fields_and_explicit_actor(self):
+		frappe.set_user(ACTOR)
+		with statement_connection(), access_graph():
+			case = frappe.get_doc(CASE, frappe.db.get_value(RELEASE, self.release, "source_approval"))
+			self.assertTrue(case_permission(case, user=ACTOR, ptype="read"))
+			tampered = frappe.get_doc(case.as_dict())
+			tampered.total_amount = "1.000000000"
+			self.assertFalse(case_permission(tampered, user=ACTOR, ptype="read"))
+			self.assertFalse(case_permission(case, user="Guest", ptype="read"))
+			self.assertTrue(case_permission(case, user=ACTOR, ptype="read"))
 
 	def test_directory_digest_binds_pagination_and_changes_after_authorization(self):
 		first = self.success(self.listing(limit=1))
