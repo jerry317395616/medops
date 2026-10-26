@@ -22,7 +22,7 @@ from medops.hrp_budget.services import budget_statement as statements
 from medops.services.module_registry import load_module_registry
 from medops.tests import test_budget_consolidation as source_fixture
 from medops.tests import test_budget_release_execution as execution_fixture
-from medops.tests.scope_fixtures import share_test_records
+from medops.tests.scope_fixtures import committed_test_changes, share_test_records
 from medops.tests.test_budget_release_preparation import release_rule_fixtures
 
 ACTOR = source_fixture.MAKERS[0]
@@ -248,9 +248,8 @@ class TestBudgetStatement(FrappeAPITestCase):
 			):
 				self.denied(self.statement())
 		finally:
-			frappe.set_user("Administrator")
-			share_test_records("HRP Hospital", (source_fixture.HOSPITAL,), (ACTOR,))
-			frappe.local.db.commit()
+			with committed_test_changes(self):
+				share_test_records("HRP Hospital", (source_fixture.HOSPITAL,), (ACTOR,))
 
 	def test_final_phase_revocation_is_not_hidden_by_access_graph_success_cache(self):
 		try:
@@ -261,9 +260,8 @@ class TestBudgetStatement(FrappeAPITestCase):
 				self.assertEqual(response.status_code, 409)
 				self.denied(response, ("IONE-CORE-0005",))
 		finally:
-			frappe.set_user("Administrator")
-			share_test_records("HRP Hospital", (source_fixture.HOSPITAL,), (ACTOR,))
-			frappe.local.db.commit()
+			with committed_test_changes(self):
+				share_test_records("HRP Hospital", (source_fixture.HOSPITAL,), (ACTOR,))
 
 	def test_current_ledger_field_revocation_denies_even_when_rows_were_already_validated(self):
 		setters = []
@@ -279,11 +277,11 @@ class TestBudgetStatement(FrappeAPITestCase):
 			with self.revoke_after_entry(revoke):
 				self.denied(self.statement())
 		finally:
-			frappe.set_user("Administrator")
-			for name in setters:
-				frappe.delete_doc("Property Setter", name, ignore_permissions=True)
-			frappe.clear_cache(doctype=LEDGER)
-			frappe.local.db.commit()
+			with committed_test_changes(self):
+				for name in setters:
+					frappe.delete_doc("Property Setter", name, ignore_permissions=True)
+					self.assertFalse(frappe.db.exists("Property Setter", name))
+				frappe.clear_cache(doctype=LEDGER)
 
 	def test_native_user_permission_revocation_wins_over_poisoned_redis(self):
 		frappe.set_user(ACTOR)

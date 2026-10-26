@@ -2,7 +2,22 @@
 
 from __future__ import annotations
 
+from contextlib import contextmanager
+
 import frappe
+
+
+@contextmanager
+def committed_test_changes(test_case):
+	"""Change committed fixtures from a fresh secondary snapshot, not the caller's."""
+	with test_case.secondary_connection():
+		frappe.db.rollback()
+		frappe.set_user("Administrator")
+		try:
+			yield
+			frappe.db.commit()
+		finally:
+			frappe.db.rollback()
 
 
 def grant_test_scope(*, code: str, company: str, hospital: str, users: tuple[str, ...]) -> None:

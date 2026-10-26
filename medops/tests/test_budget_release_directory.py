@@ -19,7 +19,7 @@ from medops.services.errors import raise_ione_error
 from medops.services.module_registry import load_module_registry
 from medops.tests import test_budget_consolidation as source_fixture
 from medops.tests import test_budget_release_confirmation as confirmation_fixture
-from medops.tests.scope_fixtures import share_test_records
+from medops.tests.scope_fixtures import committed_test_changes, share_test_records
 from medops.tests.test_budget_release_preparation import release_rule_fixtures
 
 ACTOR = source_fixture.MANAGER
@@ -173,12 +173,11 @@ class TestBudgetReleaseDirectory(FrappeAPITestCase):
 			self.assertEqual(len(self.success(self.listing())["items"]), 1)
 			self.denied(self.preview())
 		finally:
-			frappe.set_user("Administrator")
-			user = frappe.get_doc("User", ACTOR)
-			user.add_roles("HRP Budget Manager")
-			if not had_auditor:
-				user.remove_roles("HRP Auditor")
-			frappe.local.db.commit()
+			with committed_test_changes(self):
+				user = frappe.get_doc("User", ACTOR)
+				user.add_roles("HRP Budget Manager")
+				if not had_auditor:
+					user.remove_roles("HRP Auditor")
 
 	@contextmanager
 	def revoke_on_projection(self, revoke, *, final_only=False, after_commit=None):
@@ -225,9 +224,8 @@ class TestBudgetReleaseDirectory(FrappeAPITestCase):
 			):
 				self.denied(self.listing())
 		finally:
-			frappe.set_user("Administrator")
-			share_test_records("HRP Hospital", (source_fixture.HOSPITAL,), (ACTOR,))
-			frappe.local.db.commit()
+			with committed_test_changes(self):
+				share_test_records("HRP Hospital", (source_fixture.HOSPITAL,), (ACTOR,))
 
 	def test_final_cached_source_success_cannot_hide_committed_share_revocation(self):
 		try:
@@ -236,9 +234,8 @@ class TestBudgetReleaseDirectory(FrappeAPITestCase):
 			):
 				self.denied(self.listing(), "IONE-CORE-0005", (409,))
 		finally:
-			frappe.set_user("Administrator")
-			share_test_records("HRP Hospital", (source_fixture.HOSPITAL,), (ACTOR,))
-			frappe.local.db.commit()
+			with committed_test_changes(self):
+				share_test_records("HRP Hospital", (source_fixture.HOSPITAL,), (ACTOR,))
 
 	def test_current_field_revocation_rejects_selected_record(self):
 		setters = []
@@ -254,11 +251,11 @@ class TestBudgetReleaseDirectory(FrappeAPITestCase):
 			with self.revoke_on_projection(revoke):
 				self.denied(self.record())
 		finally:
-			frappe.set_user("Administrator")
-			for name in setters:
-				frappe.delete_doc("Property Setter", name, ignore_permissions=True)
-			frappe.clear_cache(doctype=RELEASE)
-			frappe.local.db.commit()
+			with committed_test_changes(self):
+				for name in setters:
+					frappe.delete_doc("Property Setter", name, ignore_permissions=True)
+					self.assertFalse(frappe.db.exists("Property Setter", name))
+				frappe.clear_cache(doctype=RELEASE)
 
 	def test_current_roles_override_poisoned_redis_before_returning_record(self):
 		old = list(frappe.get_roles(ACTOR))
@@ -273,9 +270,8 @@ class TestBudgetReleaseDirectory(FrappeAPITestCase):
 			):
 				self.denied(self.record())
 		finally:
-			frappe.set_user("Administrator")
-			frappe.get_doc("User", ACTOR).add_roles("HRP Budget Manager")
-			frappe.local.db.commit()
+			with committed_test_changes(self):
+				frappe.get_doc("User", ACTOR).add_roles("HRP Budget Manager")
 			frappe.cache.hdel("roles", ACTOR)
 
 	def test_current_native_cost_center_permissions_override_poisoned_redis(self):
@@ -318,12 +314,12 @@ class TestBudgetReleaseDirectory(FrappeAPITestCase):
 			):
 				self.denied(self.record())
 		finally:
-			frappe.set_user("Administrator")
-			for name in permissions:
-				if frappe.db.exists("User Permission", name):
-					frappe.delete_doc("User Permission", name, ignore_permissions=True)
-			share_test_records("Cost Center", centers, (ACTOR,))
-			frappe.local.db.commit()
+			with committed_test_changes(self):
+				for name in permissions:
+					if frappe.db.exists("User Permission", name):
+						frappe.delete_doc("User Permission", name, ignore_permissions=True)
+					self.assertFalse(frappe.db.exists("User Permission", name))
+				share_test_records("Cost Center", centers, (ACTOR,))
 			frappe.cache.hdel("user_permissions", ACTOR)
 
 	def test_read_only_connection_preserves_primary_writes_callbacks_and_session(self):
