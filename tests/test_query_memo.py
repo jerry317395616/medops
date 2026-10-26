@@ -28,15 +28,20 @@ class TestQueryMemo(unittest.TestCase):
 		self.assertEqual(memoized_query_value(("same-key",), lambda: "fresh"), "fresh")
 
 	def test_nested_provider_and_exception_restore_the_previous_adapter(self):
-		def outer(_key, _reader):
-			return "outer"
+		calls = []
 
-		def inner(_key, _reader):
-			return "inner"
+		def outer(key, reader):
+			calls.append(("outer", key))
+			return reader()
+
+		def inner(key, reader):
+			calls.append(("inner", key))
+			return reader()
 
 		with use_query_memoizer(outer):
 			with self.assertRaisesRegex(RuntimeError, "controlled failure"), use_query_memoizer(inner):
-				self.assertEqual(memoized_query_value((), lambda: "fresh"), "inner")
+				self.assertEqual(memoized_query_value((), lambda: "fresh"), "fresh")
 				raise RuntimeError("controlled failure")
-			self.assertEqual(memoized_query_value((), lambda: "fresh"), "outer")
+			self.assertEqual(memoized_query_value((), lambda: "fresh"), "fresh")
 		self.assertEqual(memoized_query_value((), lambda: "fresh"), "fresh")
+		self.assertEqual(calls, [("inner", ()), ("outer", ())])
