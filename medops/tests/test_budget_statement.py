@@ -16,6 +16,7 @@ from frappe.tests.test_api import FrappeAPITestCase
 
 from medops.api.v1.finance import ledger as ledger_api
 from medops.common.budget_ledger import LEDGER, LEDGER_PUBLIC_FIELDS
+from medops.common.error_catalog import IoneApplicationError
 from medops.hrp_budget.api.statement_reads import statement_connection
 from medops.hrp_budget.services import budget_statement as statements
 from medops.services.module_registry import load_module_registry
@@ -334,6 +335,8 @@ class TestBudgetStatement(FrappeAPITestCase):
 
 	def test_export_requires_current_scope_export_grant(self):
 		book = self.success(self.statement())
+		with statement_connection():
+			statements.require_statement_scope(book["context"], export=True)
 		frappe.set_user("Administrator")
 		name = "COD032C-scope-" + ACTOR.split("@")[0]
 		scope = frappe.get_doc("HRP Access Scope", name)
@@ -345,6 +348,12 @@ class TestBudgetStatement(FrappeAPITestCase):
 			frappe.local.db.commit()
 			self.login_actor(ACTOR)
 			self.success(self.statement())
+			# Isolate the scope guard from independent native master export
+			# requirements; the API must reject too, without partial results.
+			with statement_connection():
+				with self.assertRaises(IoneApplicationError) as failure:
+					statements.require_statement_scope(book["context"], export=True)
+				self.assertEqual(failure.exception.code, "IONE-CORE-0002")
 			self.denied(
 				self.get(
 					self.method(PREFIX + "export_statement"),
