@@ -36,6 +36,8 @@ def is_owned_error() -> bool:
 
 def protect_event(event, hint):
 	del hint
+	if event.get("type") not in (None, "error"):
+		return event
 	return DiagnosticEvent(event) if is_owned_error() else event
 
 
