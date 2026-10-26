@@ -1,6 +1,10 @@
 frappe.pages["hrp-budget-approval"].on_page_load = (wrapper) => {
 	const page = frappe.ui.make_app_page({ parent: wrapper, title: __("预算审批"), single_column: true });
+	const filters = $("<div class='row mt-3'>").appendTo(page.body);
 	const body = $("<div class='mt-3'>").appendTo(page.body);
+	const controls = {};
+	let offset = 0,
+		ready = false;
 	const status = (value) =>
 		({ Pending: __("待审批"), Approved: __("已批准"), Rejected: __("已驳回"), Withdrawn: __("已撤回") })[
 			value
@@ -96,6 +100,7 @@ frappe.pages["hrp-budget-approval"].on_page_load = (wrapper) => {
 	}
 	async function showCase(name) {
 		const current = ++generation;
+		filters.hide();
 		body.empty();
 		const doc = await call("get_record", { name });
 		if (current !== generation) return;
@@ -180,10 +185,20 @@ frappe.pages["hrp-budget-approval"].on_page_load = (wrapper) => {
 		const name = frappe.get_route()[1];
 		if (name) return showCase(name);
 		const current = ++generation;
+		filters.show();
 		body.empty();
-		const result = await call("list_records", { filters: { status: "Pending" }, limit: 100 });
+		const selected = Object.fromEntries(
+			Object.entries(controls)
+				.map(([key, control]) => [key, control.get_value()])
+				.filter(([, value]) => value),
+		);
+		if (selected.status)
+			selected.status = Object.keys({ Pending: 1, Approved: 1, Rejected: 1, Withdrawn: 1 }).find(
+				(value) => status(value) === selected.status,
+			);
+		const result = await call("list_records", { filters: selected, offset, limit: 50 });
 		if (current !== generation) return;
-		$("<p>").text(__("待审批申报；仅列出当前有权读取全部来源的审批单。")).appendTo(body);
+		$("<p>").text(__("仅列出当前有权读取全部来源的审批单。请按法人、医院和状态筛选。")).appendTo(body);
 		if (!result.items.length) return $("<p>").text(__("暂无可见待审批单。")).appendTo(body);
 		const rows = table(body, ["申报", "金额", "发起人", "操作"]);
 		for (const item of result.items) {
@@ -195,10 +210,59 @@ frappe.pages["hrp-budget-approval"].on_page_load = (wrapper) => {
 				.on("click", () => frappe.set_route("hrp-budget-approval", item.name))
 				.appendTo($("<td>").appendTo(row));
 		}
+		if (offset > 0)
+			$("<button class='btn btn-default mr-2'>")
+				.text(__("上一页"))
+				.on("click", () => {
+					offset = Math.max(0, offset - 50);
+					refresh();
+				})
+				.appendTo(body);
 		if (result.next_offset !== null)
-			$("<p class='text-muted'>").text(__("还有待审批单，请按业务范围处理后刷新。")).appendTo(body);
+			$("<button class='btn btn-default'>")
+				.text(__("下一页"))
+				.on("click", () => {
+					offset = result.next_offset;
+					refresh();
+				})
+				.appendTo(body);
 	}
-	page.add_inner_button(__("待审批列表"), () => frappe.set_route("hrp-budget-approval"));
+	for (const df of [
+		{ fieldname: "company", label: __("法人"), fieldtype: "Link", options: "Company" },
+		{
+			fieldname: "hospital",
+			label: __("医院"),
+			fieldtype: "Link",
+			options: "HRP Hospital",
+			get_query: () => ({ filters: { company: controls.company.get_value() } }),
+		},
+		{
+			fieldname: "status",
+			label: __("状态"),
+			fieldtype: "Select",
+			options: ["", ...["Pending", "Approved", "Rejected", "Withdrawn"].map(status)],
+			default: status("Pending"),
+		},
+	]) {
+		controls[df.fieldname] = frappe.ui.form.make_control({
+			parent: $("<div class='col-md-4'>").appendTo(filters),
+			df: {
+				...df,
+				onchange: () => {
+					if (!ready) return;
+					offset = 0;
+					if (df.fieldname === "company" && controls.hospital.get_value())
+						return controls.hospital.set_value("");
+					refresh();
+				},
+			},
+			render_input: true,
+		});
+	}
+	ready = true;
+	page.add_inner_button(__("审批列表"), () =>
+		frappe.get_route()[1] ? frappe.set_route("hrp-budget-approval") : refresh(),
+	);
 	page.add_inner_button(__("刷新"), refresh);
 	wrapper.budgetApprovalRefresh = refresh;
 };
