@@ -27,6 +27,7 @@ def recovery_clock(value):
 	with ExitStack() as stack:
 		for name in (
 			"medops.hrp_budget.jobs.release.now_datetime",
+			"medops.hrp_budget.jobs.dispatch.now_datetime",
 			"medops.hrp_budget.services.release_recovery.now_datetime",
 			"medops.hrp_integration.services.outbox.now_datetime",
 			"medops.services.transactional_message.now_datetime",

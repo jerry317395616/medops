@@ -16,7 +16,24 @@ from medops.common.budget_ledger import (
 	BudgetReleaseFacts,
 	ReleaseExecutionAuthorization,
 )
+from medops.common.domain_service import fingerprint_json
+from medops.common.integration_outbox import OUTBOX_DEFINITION
+from medops.common.organization import normalize_positive_integer, normalize_reference
 from medops.common.transactional_message import message_record_name, normalize_processing_token
+
+CLAIM_JOB = "medops.hrp_budget.jobs.release.claim_authorized_release"
+EXECUTE_JOB = "medops.hrp_budget.jobs.release.execute_authorized_release"
+RELEASE_WORKER = "medops.budget.release.worker"
+LEASE_SECONDS = 3600
+EXECUTION_TIMEOUT = 1800
+
+
+def claim_receipt_key(message, attempt):
+	message = normalize_reference(message, label="message")
+	attempt = normalize_positive_integer(attempt, label="attempt")
+	if attempt > OUTBOX_DEFINITION.max_attempts:
+		raise ValueError("claim attempt exceeds reviewed limit")
+	return "budget-release-claim:" + fingerprint_json([message, attempt])
 
 
 @dataclass(frozen=True, slots=True)

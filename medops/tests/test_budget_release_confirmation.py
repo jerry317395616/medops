@@ -1,5 +1,8 @@
 from __future__ import annotations
 
+from contextlib import nullcontext
+from unittest.mock import patch
+
 import frappe
 from frappe.tests.test_api import FrappeAPITestCase
 
@@ -56,17 +59,20 @@ class TestBudgetReleaseConfirmation(FrappeAPITestCase):
 	def preview(self, revision=1):
 		return self.post_command("release.prepare", dict(release=self.release, expected_revision=revision))
 
-	def confirm(self, preview, *, key=None, **overrides):
-		return self.post_command(
-			"release.confirm",
-			dict(
-				confirmation=preview["confirmation"],
-				proof=preview["proof"],
-				acknowledge=True,
+	def confirm(self, preview, *, key=None, allow_dispatch=False, **overrides):
+		# Ordinary synthetic authorization tests do not leave real financial jobs
+		# in Redis. Dedicated dispatch tests opt in to production callbacks.
+		with nullcontext() if allow_dispatch else patch("medops.hrp_budget.jobs.dispatch._enqueue_committed"):
+			return self.post_command(
+				"release.confirm",
+				dict(
+					confirmation=preview["confirmation"],
+					proof=preview["proof"],
+					acknowledge=True,
+				)
+				| overrides,
+				request_key=key,
 			)
-			| overrides,
-			request_key=key,
-		)
 
 	def assert_unposted(self):
 		self.assertEqual(frappe.db.count(LEDGER, {"voucher_no": self.release}), 0)

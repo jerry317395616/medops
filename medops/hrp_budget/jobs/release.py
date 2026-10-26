@@ -6,15 +6,27 @@ import frappe
 from frappe.utils import get_datetime, now_datetime
 
 from medops.common.budget_ledger import RELEASE_EVENT_TYPE
-from medops.common.budget_release_control import ReleaseExecutionLease, release_execution
+from medops.common.budget_release_control import (
+	CLAIM_JOB as CLAIM_JOB,
+)
+from medops.common.budget_release_control import (
+	EXECUTE_JOB as EXECUTE_JOB,
+)
+from medops.common.budget_release_control import (
+	ReleaseExecutionLease,
+	release_execution,
+)
+from medops.common.budget_release_control import (
+	claim_receipt_key as claim_receipt_key,
+)
 from medops.common.domain_service import fingerprint_json
 from medops.common.error_catalog import IoneApplicationError
 from medops.common.integration_outbox import OUTBOX, OUTBOX_DEFINITION
 from medops.common.organization import normalize_positive_integer, normalize_reference
+from medops.hrp_budget.jobs.dispatch import dispatch_claim, dispatch_execution
 from medops.hrp_budget.services.release_access import get_release
 from medops.hrp_budget.services.release_confirmation import require_financial_actor
 from medops.hrp_budget.services.release_execution import (
-	EXECUTION_TIMEOUT,
 	LEASE_SECONDS,
 	RELEASE_WORKER,
 	ExecuteBudgetRelease,
@@ -34,17 +46,7 @@ from medops.services.transactional_message import (
 	select_outbox_work,
 )
 
-CLAIM_JOB = "medops.hrp_budget.jobs.release.claim_authorized_release"
-EXECUTE_JOB = "medops.hrp_budget.jobs.release.execute_authorized_release"
 FAILURE_MESSAGE = "预算执行未完成，请核验授权及配置后重试。"
-
-
-def claim_receipt_key(message, attempt):
-	message = normalize_reference(message, label="message")
-	attempt = normalize_positive_integer(attempt, label="attempt")
-	if attempt > OUTBOX_DEFINITION.max_attempts:
-		raise ValueError("claim attempt exceeds reviewed limit")
-	return "budget-release-claim:" + fingerprint_json([message, attempt])
 
 
 def prepare_owned_job(method, arguments):
@@ -68,19 +70,6 @@ def prepare_owned_job(method, arguments):
 
 def claim_command(message):
 	return ClaimOutboxMessage(message_name=message, worker=RELEASE_WORKER, lease_seconds=LEASE_SECONDS)
-
-
-def dispatch_execution(message, receipt):
-	frappe.enqueue(
-		EXECUTE_JOB,
-		queue="long",
-		timeout=EXECUTION_TIMEOUT,
-		enqueue_after_commit=True,
-		job_id="medops-release-execute-" + fingerprint_json([message, receipt]),
-		deduplicate=True,
-		message=message,
-		receipt=receipt,
-	)
 
 
 def claim_authorized_release(message):
@@ -221,18 +210,6 @@ def execute_authorized_release(message, receipt):
 		return dict(message=message, status="Posted", revision=result.result["revision"])
 	except Exception as error:
 		return record_failed_execution(message, receipt, error)
-
-
-def dispatch_claim(message):
-	frappe.enqueue(
-		CLAIM_JOB,
-		queue="long",
-		timeout=300,
-		enqueue_after_commit=True,
-		job_id="medops-release-claim-" + message,
-		deduplicate=True,
-		message=message,
-	)
 
 
 def due_release_messages(now):

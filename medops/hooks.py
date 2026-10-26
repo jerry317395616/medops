@@ -152,7 +152,12 @@ has_permission = {
 }
 
 scheduler_events = {
-	"cron": {"* * * * *": ["medops.hrp_workflow_authorization.services.sla.run_due_sla_cases"]},
+	"cron": {
+		"* * * * *": [
+			"medops.hrp_workflow_authorization.services.sla.run_due_sla_cases",
+			"medops.hrp_budget.jobs.release.dispatch_due_releases",
+		]
+	},
 	"daily": [
 		"medops.hrp_master_data.services.data_quality.run_data_quality_rules",
 		"medops.hrp_workflow_authorization.services.delegation.sync_delegation_statuses",

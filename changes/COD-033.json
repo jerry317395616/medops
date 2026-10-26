@@ -60,8 +60,8 @@
 		"medops/hrp_workflow_authorization/tests/test_access_scope.py"
 	],
 	"permissions_impact": "财务记录原生只读，记账必须独立人工确认与当前来源/字段/范围；不分配用户角色、范围或分享。",
-	"migration_impact": "新增三个既有预算运行模型和既有HRP Integration Outbox，共四个，运行库存42；迁移只建表、索引及元数据。通用金额版本1及历史记录不重算，无财务种子或用户授权。审批解析统一到既有15位整数精确上限。",
-	"rollback_plan": "维护状态保留精确分录、冲销、确认、授权和任务证据；不删表，不以旧Currency路径解释新版记录。",
+	"migration_impact": "新增三个既有预算运行模型和既有HRP Integration Outbox，共四个，运行库存42；迁移只建表、索引及元数据，同步每分钟预算恢复Scheduled Job Type。通用金额版本1及历史记录不重算，无财务种子或用户授权。审批解析统一到既有15位整数精确上限。",
+	"rollback_plan": "先停预算恢复调度与相关worker，维护状态保留精确分录、冲销、确认、授权和任务证据；不删表，不以旧Currency路径解释新版记录。",
 	"security_impact": "当前权限、独立会话确认、不可变财务证据和完整批次原子性；任务仅消费持久化授权，拒绝任意通用HTTP写台账。",
 	"test_plan": [
 		"冻结旧公共契约和原通用台账回归",

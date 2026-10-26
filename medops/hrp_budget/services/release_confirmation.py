@@ -23,6 +23,7 @@ from medops.common.budget_workflow import CONFIRMATION_SECONDS, HumanConfirmatio
 from medops.common.domain_service import DomainServiceDefinition, fingerprint_json
 from medops.common.integration_outbox import outbox_publication
 from medops.common.transactional_message import normalize_payload
+from medops.hrp_budget.jobs.dispatch import dispatch_authorized_release
 from medops.hrp_budget.services.approval import require_web_session, session_digest
 from medops.hrp_budget.services.planning import execution_payload
 from medops.hrp_budget.services.planning_access import MANAGER_ROLES
@@ -280,8 +281,14 @@ def prepare_release_confirmation(command, *, idempotency_key=None, correlation_i
 
 
 def confirm_release_authorization(command, *, idempotency_key=None, correlation_id=None):
-	return execution_payload(
-		ConfirmReleaseAuthorization().execute(
-			command, idempotency_key=idempotency_key, correlation_id=correlation_id
-		)
+	result = ConfirmReleaseAuthorization().execute(
+		command, idempotency_key=idempotency_key, correlation_id=correlation_id
 	)
+	name = str(result.result["name"])
+	dispatch_authorized_release(
+		name,
+		frappe.db.get_value(RELEASE, name, "outbox_message"),
+		int(str(result.result["revision"])),
+		correlation_id=result.correlation_id,
+	)
+	return execution_payload(result)

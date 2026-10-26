@@ -8,10 +8,10 @@
 		"ADR-0030",
 		"ADR-0031"
 	],
-	"current_scope": "Sourcea7e1b3a full422 quality and52 focused native passed. Owned recovery, current scope/User Permission revocation, nested transaction rollback and legacy scope save proven. Real RQ first-row SIGKILL rolls back; virtual lease/backoff recovery posts exactly one batch. Automatic confirmation enqueue/cron, contention, statements/UI/full402 native/protected release pending.",
+	"current_scope": "Commit-only authorization/claim/execution dispatch and minute cron implemented; eight new native dispatch cases including actual HTTP-to-standard-RQ. Await full422 local quality,60 focused native and repeated isolated migration. Priora7e1b3a verified52/real SIGKILL retained; full410 native, contention, statements/UI/protected release pending.",
 	"checks": {
 		"pure_tests_expected": 422,
-		"complete_frappe_tests_expected": 402,
+		"complete_frappe_tests_expected": 410,
 		"exact_foundation_pure_tests_passed": 21,
 		"native_foundation": {
 			"status": "passed",
@@ -35,7 +35,7 @@
 		"protected_ci": "not run for COD-033",
 		"local_quality": "all passed at a7e1b3a2785eecb0fb819b08c8e8942fe8b1c0c1",
 		"pure_tests_passed": 422,
-		"complete_frappe_tests": "402 expected; full current suite pending complete vertical slice",
+		"complete_frappe_tests": "410 expected; full current suite pending complete vertical slice",
 		"current_protocol": {
 			"status": "full local quality passed",
 			"tests": 11,
@@ -218,6 +218,15 @@
 			"focused_native": "cod033-a7e1b3a-runtime-recovery-regression.json",
 			"real_sigkill": "cod033-a7e1b3a-rq-kill-completed.json",
 			"nested_database": "cod033-a7e1b3a-nested-savepoint.json"
+		},
+		"automatic_dispatch": {
+			"status": "implemented; verification pending",
+			"new_native_expected": 8,
+			"commit_only_redis": true,
+			"persisted_hint_recheck": true,
+			"queue_outage_preserves_authority": true,
+			"cron": "* * * * *",
+			"public_deployment": false
 		}
 	},
 	"previous_verified_release": {

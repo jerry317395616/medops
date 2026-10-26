@@ -96,7 +96,8 @@ class TestBudgetReleaseExecution(FrappeAPITestCase):
 		self.assertEqual(result["status"], "Dispatched")
 		args, kwargs = enqueue.call_args
 		self.assertEqual(args, (jobs.EXECUTE_JOB,))
-		self.assertTrue(kwargs["enqueue_after_commit"])
+		# The owned callback runs after the actual framework job commit.
+		self.assertFalse(kwargs["enqueue_after_commit"])
 		self.assertEqual(kwargs["timeout"], execution.EXECUTION_TIMEOUT)
 		self.assertEqual(
 			set(kwargs) - {"queue", "timeout", "enqueue_after_commit", "job_id", "deduplicate"},
