@@ -2142,7 +2142,8 @@
   required_role: Budget manager (auditor may read); current complete source, field
     and scope permissions
   idempotency: Not required (read-only)
-  transaction_boundary: Read-only
+  transaction_boundary: Owned READ COMMITTED READ ONLY connection; caller transaction
+    preserved
   audit: Redacted status, revision and counts; no financial facts, human proof or
     message payload
   version: v1
@@ -2196,6 +2197,40 @@
     preserved
   audit: Redacted operation and counts; no financial values, private batch facts or
     authority digest
+  version: v1
+  domain_group: Finance
+  async: 'No'
+- api_code: FIN-044
+  app: medops
+  method: GET
+  path: /api/method/medops.api.v1.finance.release.list_records
+  description: 按当前完整来源权限分页读取下达与冲销凭证
+  request_schema: filters,offset,limit,expected_digest
+  response_schema: BudgetReleaseDirectory
+  required_role: Budget manager or auditor; current complete source, field, scope
+    and native permissions
+  idempotency: Not required (read-only)
+  transaction_boundary: Owned READ COMMITTED READ ONLY connection; caller transaction
+    preserved
+  audit: Redacted event and counts; no amounts, private authority digest or queue
+    payload
+  version: v1
+  domain_group: Finance
+  async: 'No'
+- api_code: FIN-045
+  app: medops
+  method: GET
+  path: /api/method/medops.api.v1.finance.release.eligible_sources
+  description: 按当前完整来源权限读取未准备下达的已批准汇总
+  request_schema: filters,offset,limit,expected_digest
+  response_schema: BudgetReleaseEligibleDirectory
+  required_role: Budget manager or auditor; current complete source, field, scope
+    and native permissions
+  idempotency: Not required (read-only)
+  transaction_boundary: Owned READ COMMITTED READ ONLY connection; caller transaction
+    preserved
+  audit: Redacted event and counts; no amounts, private authority digest or queue
+    payload
   version: v1
   domain_group: Finance
   async: 'No'

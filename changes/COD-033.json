@@ -61,10 +61,11 @@
 		"medops/hrp_workflow_authorization/tests/test_access_scope.py",
 		"medops/common/budget_statement.py",
 		"medops/common/budget_statement_access.py",
-		"medops/hrp_foundation/workspace/hrp/hrp.json"
+		"medops/hrp_foundation/workspace/hrp/hrp.json",
+		"medops/common/budget_release_directory.py"
 	],
 	"permissions_impact": "财务记录原生只读，记账必须独立人工确认与当前来源/字段/范围；不分配用户角色、范围或分享。 账簿按原始单位完整来源核验后投影，导出额外要求export；原生财务文档继续关闭。",
-	"migration_impact": "新增三个既有预算运行模型和既有HRP Integration Outbox，共四个，运行库存42；迁移只建表、索引及元数据，同步每分钟预算恢复Scheduled Job Type。通用金额版本1及历史记录不重算，无财务种子或用户授权。审批解析统一到既有15位整数精确上限。",
+	"migration_impact": "新增三个既有预算运行模型和既有HRP Integration Outbox，共四个，运行库存42；迁移只建表、索引及元数据，同步每分钟预算恢复Scheduled Job Type。通用金额版本1及历史记录不重算，无财务种子或用户授权。审批解析统一到既有15位整数精确上限。 导入独立预算下达与冲销Page及工作台入口，无财务数据或用户授权种子。",
 	"rollback_plan": "先停预算恢复调度与相关worker，维护状态保留精确分录、冲销、确认、授权和任务证据；不删表，不以旧Currency路径解释新版记录。",
 	"security_impact": "当前权限、独立会话确认、不可变财务证据和完整批次原子性；任务仅消费持久化授权，拒绝任意通用HTTP写台账。",
 	"test_plan": [

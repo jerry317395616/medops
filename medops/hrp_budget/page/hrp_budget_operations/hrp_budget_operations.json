@@ -1,0 +1,15 @@
+{
+	"doctype": "Page",
+	"name": "hrp-budget-operations",
+	"page_name": "hrp-budget-operations",
+	"title": "预算下达与冲销",
+	"module": "HRP Budget",
+	"standard": "Yes",
+	"system_page": 0,
+	"roles": [
+		{ "role": "System Manager" },
+		{ "role": "HRP System Manager" },
+		{ "role": "HRP Budget Manager" },
+		{ "role": "HRP Auditor" }
+	]
+}

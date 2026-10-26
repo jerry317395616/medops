@@ -8071,7 +8071,8 @@ paths:
             or idempotency conflict
       x-api-code: FIN-040
       x-idempotency: Not required (read-only)
-      x-transaction-boundary: Read-only
+      x-transaction-boundary: Owned READ COMMITTED READ ONLY connection; caller transaction
+        preserved
       parameters:
       - name: name
         in: query
@@ -8080,10 +8081,11 @@ paths:
           type: string
           minLength: 1
           maxLength: 140
-      description: Preparation is an unposted intent. Confirmation requires cookie/CSRF
-        and explicit human acknowledgement, and atomically persists durable authorization
-        plus Pending Outbox. It does not post ledger entries; asynchronous financial
-        execution remains under development.
+      description: Read the fixed financial record projection using an owned RC read-only
+        connection, preserving caller transaction and session. Current complete source,
+        native field, role and scope permissions are rechecked before return; changed
+        authority or record requires a fresh read. Does not expose queue payload or
+        confirmation proof.
   /api/method/medops.api.v1.finance.ledger.statement:
     get:
       operationId: fin_041
@@ -8251,6 +8253,148 @@ paths:
         rejects all rows and totals. Subsequent pages and exports bind the complete
         statement digest; changed books require requery. Bounds: 50000 own entries,
         1000 posted batches, 1000000 proof lines; overflow rejects the request.'
+  /api/method/medops.api.v1.finance.release.list_records:
+    get:
+      operationId: fin_044
+      summary: 按当前完整来源权限分页读取下达与冲销凭证
+      tags:
+      - medops
+      security:
+      - sessionAuth: []
+      responses:
+        '200':
+          description: Current authorized result
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: false
+                required:
+                - message
+                properties:
+                  message:
+                    $ref: '#/components/schemas/BudgetReleaseDirectory'
+        '400':
+          description: Invalid bounded request or missing explicit acknowledgement
+        '401':
+          description: Authentication required
+        '403':
+          description: Current complete source, native field, role and data-scope
+            permissions required
+        '404':
+          description: Reference or current matrix unavailable
+        '409':
+          description: Visible directory or authority changed; requery first page
+      x-api-code: FIN-044
+      x-idempotency: Not required (read-only)
+      x-transaction-boundary: Owned READ COMMITTED READ ONLY connection; caller transaction
+        preserved
+      parameters:
+      - name: filters
+        in: query
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BudgetReleaseDirectoryFilters'
+      - name: offset
+        in: query
+        schema:
+          type: integer
+          minimum: 0
+          maximum: 1000
+          default: 0
+      - name: limit
+        in: query
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 50
+          default: 50
+      - name: expected_digest
+        in: query
+        schema:
+          type: string
+          pattern: ^[0-9a-f]{64}$
+        description: Required when offset is nonzero
+      description: Exact company, hospital and fiscal year are mandatory. Native scoped
+        candidates are bounded at1000; overflow rejects, with no truncation. Complete
+        source visibility is checked before paging and again with fresh current authority
+        before return. Later pages bind the visible directory digest. Eligible means
+        approved consolidated source with no existing Release intent; posting dates
+        and operational rules are checked again by write services. No queue payload
+        or confirmation proof is returned.
+  /api/method/medops.api.v1.finance.release.eligible_sources:
+    get:
+      operationId: fin_045
+      summary: 按当前完整来源权限读取未准备下达的已批准汇总
+      tags:
+      - medops
+      security:
+      - sessionAuth: []
+      responses:
+        '200':
+          description: Current authorized result
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: false
+                required:
+                - message
+                properties:
+                  message:
+                    $ref: '#/components/schemas/BudgetReleaseEligibleDirectory'
+        '400':
+          description: Invalid bounded request or missing explicit acknowledgement
+        '401':
+          description: Authentication required
+        '403':
+          description: Current complete source, native field, role and data-scope
+            permissions required
+        '404':
+          description: Reference or current matrix unavailable
+        '409':
+          description: Visible directory or authority changed; requery first page
+      x-api-code: FIN-045
+      x-idempotency: Not required (read-only)
+      x-transaction-boundary: Owned READ COMMITTED READ ONLY connection; caller transaction
+        preserved
+      parameters:
+      - name: filters
+        in: query
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BudgetReleaseEligibleFilters'
+      - name: offset
+        in: query
+        schema:
+          type: integer
+          minimum: 0
+          maximum: 1000
+          default: 0
+      - name: limit
+        in: query
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 50
+          default: 50
+      - name: expected_digest
+        in: query
+        schema:
+          type: string
+          pattern: ^[0-9a-f]{64}$
+        description: Required when offset is nonzero
+      description: Exact company, hospital and fiscal year are mandatory. Native scoped
+        candidates are bounded at1000; overflow rejects, with no truncation. Complete
+        source visibility is checked before paging and again with fresh current authority
+        before return. Later pages bind the visible directory digest. Eligible means
+        approved consolidated source with no existing Release intent; posting dates
+        and operational rules are checked again by write services. No queue payload
+        or confirmation proof is returned.
 components:
   headers:
     CorrelationId:
@@ -12853,3 +12997,213 @@ components:
       format: binary
       description: Complete original-unit book; amounts and formula-like text are
         literal spreadsheet text.
+    BudgetReleaseDirectoryFilters:
+      type: object
+      additionalProperties: false
+      required:
+      - company
+      - hospital
+      - fiscal_year
+      properties:
+        company:
+          type: string
+          minLength: 1
+          maxLength: 140
+        hospital:
+          type: string
+          minLength: 1
+          maxLength: 140
+        fiscal_year:
+          type: string
+          minLength: 1
+          maxLength: 140
+        organization_unit:
+          type: string
+          minLength: 1
+          maxLength: 140
+        currency:
+          type: string
+          minLength: 1
+          maxLength: 140
+        name:
+          type: string
+          minLength: 1
+          maxLength: 140
+        status:
+          type: string
+          enum:
+          - Prepared
+          - Authorized
+          - Posted
+        operation:
+          type: string
+          enum:
+          - Release
+          - Reverse
+        source_approval:
+          type: string
+          minLength: 1
+          maxLength: 140
+        reversal_of:
+          type: string
+          minLength: 1
+          maxLength: 140
+    BudgetReleaseEligibleFilters:
+      type: object
+      additionalProperties: false
+      required:
+      - company
+      - hospital
+      - fiscal_year
+      properties:
+        company:
+          type: string
+          minLength: 1
+          maxLength: 140
+        hospital:
+          type: string
+          minLength: 1
+          maxLength: 140
+        fiscal_year:
+          type: string
+          minLength: 1
+          maxLength: 140
+        organization_unit:
+          type: string
+          minLength: 1
+          maxLength: 140
+        currency:
+          type: string
+          minLength: 1
+          maxLength: 140
+        name:
+          type: string
+          minLength: 1
+          maxLength: 140
+    BudgetReleaseEligibleItem:
+      type: object
+      additionalProperties: false
+      required:
+      - name
+      - revision
+      - subject
+      - company
+      - hospital
+      - organization_unit
+      - fiscal_year
+      - currency
+      - currency_precision
+      - total_amount
+      - line_count
+      - submission
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 140
+        revision:
+          type: integer
+          minimum: 2
+        subject:
+          type: string
+          minLength: 1
+          maxLength: 140
+        company:
+          type: string
+          minLength: 1
+          maxLength: 140
+        hospital:
+          type: string
+          minLength: 1
+          maxLength: 140
+        organization_unit:
+          type: string
+          minLength: 1
+          maxLength: 140
+        fiscal_year:
+          type: string
+          minLength: 1
+          maxLength: 140
+        currency:
+          type: string
+          minLength: 1
+          maxLength: 140
+        currency_precision:
+          type: integer
+          minimum: 0
+          maximum: 9
+        total_amount:
+          type: string
+          pattern: ^-?(0|[1-9][0-9]{0,14})(\.[0-9]{1,9})?$
+        line_count:
+          type: integer
+          minimum: 1
+          maximum: 50000
+        submission:
+          type: string
+          minLength: 1
+          maxLength: 140
+    BudgetReleaseDirectory:
+      type: object
+      additionalProperties: false
+      required:
+      - items
+      - offset
+      - limit
+      - next_offset
+      - list_digest
+      properties:
+        items:
+          type: array
+          maxItems: 50
+          items:
+            $ref: '#/components/schemas/BudgetReleaseRecord'
+        offset:
+          type: integer
+          minimum: 0
+          maximum: 1000
+        limit:
+          type: integer
+          minimum: 1
+          maximum: 50
+        next_offset:
+          type:
+          - integer
+          - 'null'
+          minimum: 1
+          maximum: 1000
+        list_digest:
+          type: string
+          pattern: ^[0-9a-f]{64}$
+    BudgetReleaseEligibleDirectory:
+      type: object
+      additionalProperties: false
+      required:
+      - items
+      - offset
+      - limit
+      - next_offset
+      - list_digest
+      properties:
+        items:
+          type: array
+          maxItems: 50
+          items:
+            $ref: '#/components/schemas/BudgetReleaseEligibleItem'
+        offset:
+          type: integer
+          minimum: 0
+          maximum: 1000
+        limit:
+          type: integer
+          minimum: 1
+          maximum: 50
+        next_offset:
+          type:
+          - integer
+          - 'null'
+          minimum: 1
+          maximum: 1000
+        list_digest:
+          type: string
+          pattern: ^[0-9a-f]{64}$

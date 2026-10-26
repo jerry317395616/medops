@@ -9,10 +9,10 @@
 		"ADR-0031",
 		"ADR-0032"
 	],
-	"current_scope": "Complete original-unit statement, projected entry, exact XLSX and distinct Page implemented. Source3f2aa21 full432 quality passed. Twelve statement cases passed in stages (11 at44cd57d plus corrected scope case at2619b22);33 backend regression cases passed at046d47a. Two repeated migrations and statement smoke passed at3f2aa21. Page renders; interaction acceptance incomplete after Computer Use stopped for URL confidence. Whole422 native, remaining contention, release/reversal operation UI, protected CI and promotion pending.",
+	"current_scope": "Operator Page and owned current-authority release record/directory/eligible-source reads implemented; new operator native/UI validation pending. Prior statement proofs retain original sources. Whole435 native, remaining contention, CI and promotion pending.",
 	"checks": {
-		"pure_tests_expected": 432,
-		"complete_frappe_tests_expected": 422,
+		"pure_tests_expected": 439,
+		"complete_frappe_tests_expected": 435,
 		"exact_foundation_pure_tests_passed": 21,
 		"native_foundation": {
 			"status": "passed",
@@ -411,6 +411,17 @@
 			"deployment_export_requirement": "Explicit current native master/source and scope export grants; Budget User ledger export flag alone is insufficient.",
 			"public_sites_untouched": true,
 			"raw_native_ledger_title_still_closed": true
+		},
+		"release_operator": {
+			"status": "implemented; validation pending",
+			"pure_tests": 7,
+			"native_tests": 13,
+			"page": "hrp-budget-operations",
+			"api_codes": [
+				"FIN-044",
+				"FIN-045"
+			],
+			"model_and_user_grants_added": false
 		}
 	},
 	"previous_verified_release": {

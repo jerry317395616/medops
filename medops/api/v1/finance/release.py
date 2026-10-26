@@ -6,18 +6,24 @@ import frappe
 
 from medops.api.v1.finance.planning import request_guard
 from medops.common.budget_ledger import (
-	RELEASE_PUBLIC_FIELDS,
 	build_release_preview,
 	build_release_request,
 	build_reverse_request,
 	build_revise_release_request,
 )
+from medops.common.budget_release_directory import build_release_directory
 from medops.common.budget_workflow import build_human_confirmation
 from medops.common.organization import normalize_reference
+from medops.hrp_budget.api.statement_reads import statement_connection
 from medops.hrp_budget.services import release, release_confirmation
 from medops.hrp_budget.services.approval import require_web_session
 from medops.hrp_budget.services.planning_access import MANAGER_ROLES
-from medops.hrp_budget.services.release_access import RELEASE_READ_ROLES, get_release
+from medops.hrp_budget.services.release_access import RELEASE_READ_ROLES
+from medops.hrp_budget.services.release_directory import (
+	ReadReleaseDirectory,
+	ReadReleaseRecord,
+	ReleaseRecordRequest,
+)
 
 
 @frappe.whitelist(allow_guest=True, methods=["POST"])
@@ -62,5 +68,28 @@ def confirm(payload: Any = None, correlation_id: Any = None, **extra):
 @frappe.whitelist(allow_guest=True, methods=["GET"])
 def get_record(name: Any = None, **extra):
 	with request_guard(extra, RELEASE_READ_ROLES):
-		doc = get_release(normalize_reference(name, label="name"))
-		return {key: doc.get(key) for key in RELEASE_PUBLIC_FIELDS}
+		command = ReleaseRecordRequest(normalize_reference(name, label="name"))
+		with statement_connection():
+			return ReadReleaseRecord().execute(command).result
+
+
+@frappe.whitelist(allow_guest=True, methods=["GET"])
+def list_records(filters: Any = None, offset: Any = 0, limit: Any = 50, expected_digest: Any = None, **extra):
+	with request_guard(extra, RELEASE_READ_ROLES):
+		command = build_release_directory(
+			"records", filters, offset=offset, limit=limit, expected_digest=expected_digest
+		)
+		with statement_connection():
+			return ReadReleaseDirectory().execute(command).result
+
+
+@frappe.whitelist(allow_guest=True, methods=["GET"])
+def eligible_sources(
+	filters: Any = None, offset: Any = 0, limit: Any = 50, expected_digest: Any = None, **extra
+):
+	with request_guard(extra, RELEASE_READ_ROLES):
+		command = build_release_directory(
+			"eligible", filters, offset=offset, limit=limit, expected_digest=expected_digest
+		)
+		with statement_connection():
+			return ReadReleaseDirectory().execute(command).result
