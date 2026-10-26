@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import logging
 from collections.abc import Callable, Iterator
 from contextlib import contextmanager
 from typing import Any
@@ -307,6 +308,10 @@ def emit_audit_event(
 		**normalize_audit_fields(fields),
 	}
 	logger = frappe.logger(normalize_logger_name(logger_name), allow_site=True)
+	# Audit events support INFO/WARNING/ERROR. Frappe's production default
+	# logger level is ERROR, which otherwise silently discards INFO events.
+	# Configure this validated MedOps namespace only, never the global level.
+	logger.setLevel(logging.INFO)
 	getattr(logger, level)(payload)
 	return payload
 

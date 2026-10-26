@@ -1,7 +1,11 @@
 from __future__ import annotations
 
 import json
+import logging
+from pathlib import Path
+from tempfile import TemporaryDirectory
 from unittest.mock import patch
+from uuid import uuid4
 
 import frappe
 from frappe.tests.test_api import FrappeAPITestCase
@@ -184,6 +188,35 @@ class TestAuditContextAPI(FrappeAPITestCase):
 		):
 			emit_audit_event("unsafe_event", user_email="patient@example.invalid")
 		logger.assert_not_called()
+
+	def test_info_audit_event_reaches_a_real_file_without_changing_framework_level(self) -> None:
+		logger = frappe.logger("medops.audit", allow_site=True)
+		framework = frappe.logger()
+		original, framework_level, global_level = logger.level, framework.level, frappe.log_level
+		marker = "COD033-file-audit-" + uuid4().hex
+		try:
+			with TemporaryDirectory(prefix="cod033-native-audit-") as folder:
+				path = Path(folder) / "event.log"
+				handler = logging.FileHandler(path, encoding="utf-8")
+				logger.addHandler(handler)
+				try:
+					logger.setLevel(logging.ERROR)
+					with service_audit_scope(marker):
+						payload = emit_audit_event("audit_persistence_probe", status="synthetic")
+					handler.flush()
+					text = path.read_text(encoding="utf-8")
+					self.assertEqual(logger.level, logging.INFO)
+					self.assertEqual(framework.level, framework_level)
+					self.assertEqual(frappe.log_level, global_level)
+					self.assertTrue(marker in text, "Normalized audit event did not reach the real file sink")
+					self.assertTrue(payload["request_id"] in text, "Audit request identity was lost")
+					self.assertTrue("audit_persistence_probe" in text, "Audit event type was lost")
+					self.assertFalse("Form Dict" in text, "Request form data reached the audit sink")
+				finally:
+					logger.removeHandler(handler)
+					handler.close()
+		finally:
+			logger.setLevel(original)
 
 	def test_direct_service_scopes_are_isolated_and_nested_context_is_immutable(self) -> None:
 		with service_audit_scope("COD-010-service-1") as first:

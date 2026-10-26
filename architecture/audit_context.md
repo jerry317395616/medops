@@ -83,3 +83,6 @@ response       -> X-Correlation-ID + X-Request-ID
 `change_manager.py`、`environment_manager.py` 和 `fixture_manager.py` 共用纯 Python
 标识符校验器。仓库契约阻止脚本或运行时代码重新定义关联 ID 正则、在统一服务
 外读取 `X-Correlation-ID`，以及绕过脱敏服务写应用审计日志。
+
+
+实际审计落盘复核：1627858在框架默认ERROR级别下，emit_audit_event正常返回但INFO未写入真实文件（0字节），已保存独立探针。统一审计入口现在只对经过medops命名校验的审计logger显式设置INFO，保留敏感字段前置拒绝，不调整框架/全局/其他应用级别，不补造历史日志。新增真实FileHandler写入测试，验证关联ID、请求ID、事件及全局/框架级别保持；库存453/446。新代码本地与原生复验待完成，历史主账/授权事实不修改。
