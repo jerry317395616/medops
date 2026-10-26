@@ -12,6 +12,7 @@ from medops.common.budget_planning import (
 	DIMENSION,
 	FUND,
 	LINE,
+	MASTER_TYPES,
 	PLAN,
 	VALUE,
 	VERSION,
@@ -19,6 +20,7 @@ from medops.common.budget_planning import (
 	build_master,
 	build_plan,
 	build_version,
+	master_identity,
 )
 from medops.common.business_rules import rule_payload
 from medops.common.domain_service import idempotency_record_name
@@ -176,25 +178,38 @@ def ensure_budget_fixtures():
 
 
 def create_budget_masters():
+	def ensure_master(kind, payload, label):
+		command = build_master(kind, payload)
+		name = master_identity(command)
+		if frappe.db.exists(MASTER_TYPES[kind], name):
+			# A repeat validation run may outlive the finite idempotency receipt.
+			# Reuse only matching synthetic data; never rewrite historical masters.
+			doc = get_budget_master(MASTER_TYPES[kind], name)
+			for field, expected in command.as_request_payload().items():
+				if field in {"kind", "expected_revision"} or not doc.meta.has_field(field):
+					continue
+				actual = doc.get(field)
+				assert (
+					str(actual) if actual is not None and field in {"valid_from", "valid_to"} else actual
+				) in (expected, "" if expected is None else expected), (
+					f"Synthetic budget master differs: {kind}.{field}"
+				)
+			return doc.as_public_dict()
+		return upsert_budget_master(command, idempotency_key=key(label))
+
 	base = {"company": COMPANY, "hospital": HOSPITAL, "valid_from": "2026-01-01"}
-	dimension = upsert_budget_master(
-		build_master(
-			"dimension",
-			{**base, "code": "COD031-SUBJECT", "display_name": "预算分类", "purpose": "Budget Subject"},
-		),
-		idempotency_key=key("dimension"),
+	dimension = ensure_master(
+		"dimension",
+		{**base, "code": "COD031-SUBJECT", "display_name": "预算分类", "purpose": "Budget Subject"},
+		"dimension",
 	)
-	value = upsert_budget_master(
-		build_master(
-			"value", {**base, "code": "EQUIPMENT", "display_name": "设备预算", "dimension": dimension["name"]}
-		),
-		idempotency_key=key("value"),
+	value = ensure_master(
+		"value",
+		{**base, "code": "EQUIPMENT", "display_name": "设备预算", "dimension": dimension["name"]},
+		"value",
 	)
-	fund = upsert_budget_master(
-		build_master(
-			"fund", {**base, "code": "OWN", "display_name": "自有资金", "source_type": "Own Revenue"}
-		),
-		idempotency_key=key("fund"),
+	fund = ensure_master(
+		"fund", {**base, "code": "OWN", "display_name": "自有资金", "source_type": "Own Revenue"}, "fund"
 	)
 	return dimension, value, fund
 

@@ -9,10 +9,10 @@
 		"ADR-0031",
 		"ADR-0032"
 	],
-	"current_scope": "Prior e311/709 browser,download and contention verified. New normalCookie/CSRF fault injection at e311 confirmed canary in native preview-evidence,idempotency-save and pre-hook initialization diagnostics;all data/counts/roles/default386 unchanged. Private string/byte diagnostic values and protected canonical snapshot strings now implemented;proof generation and replay validation preserve wrappers;message nonces normalized privately.4 pure and2 native matrix cases added;targeted pure15 and typecheck passed,full448/new native and early-boundary fix pending. Whole440/CI/promotion incomplete.",
+	"current_scope": "42ecfbc full448 local quality passed; native focused regression failed in two preview diagnostic subcases and expired synthetic master fixture initialization. Normal Cookie/CSRF external probe confirmed traceback_with_variables reads string contents directly, bypassing repr; protected values alone are insufficient. Implemented standard Error Log extension before immediate/deferred storage, scoped framework ERROR filters, and SDK final-serialization guard preserving exception classes/frames/trace IDs. Native tests now capture actual SDK memory transport with late WSGI enrichment and no outbound requests. Synthetic master fixture reuses only matching persisted data after receipt expiry. New453 local quality,58 focused native and real Cookie/CSRF probe pending; full443/CI/promotion incomplete.",
 	"checks": {
-		"pure_tests_expected": 448,
-		"complete_frappe_tests_expected": 440,
+		"pure_tests_expected": 453,
+		"complete_frappe_tests_expected": 443,
 		"exact_foundation_pure_tests_passed": 21,
 		"native_foundation": {
 			"status": "passed",
@@ -36,7 +36,7 @@
 		"protected_ci": "not run for COD-033",
 		"local_quality": "Full444 passed at65f43ef;production backend unchanged at709/e311;709 test-only ande311 frontend scoped checks passed;no new full suite at UI-only source",
 		"pure_tests_passed": 444,
-		"complete_frappe_tests": "440 expected; complete suite pending",
+		"complete_frappe_tests": "443 expected; complete suite pending",
 		"current_protocol": {
 			"status": "full local quality passed",
 			"tests": 11,

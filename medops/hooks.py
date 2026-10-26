@@ -37,7 +37,10 @@ before_job = ["medops.services.audit_context.start_job_audit_context"]
 after_job = ["medops.services.audit_context.finish_job_audit_context"]
 
 # Add standard DocType extensions here. Prefer extend_doctype_class over overrides.
-extend_doctype_class = {"Report": ["medops.extensions.core_report.CoreReportAccessMixin"]}
+extend_doctype_class = {
+	"Report": ["medops.extensions.core_report.CoreReportAccessMixin"],
+	"Error Log": ["medops.extensions.error_log.MedOpsErrorLogMixin"],
+}
 doc_events = {
 	"User": {"before_rename": "medops.hrp_budget.services.reference_integrity.protect_reference_rename"},
 	"Workflow": {

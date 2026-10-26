@@ -231,6 +231,29 @@ class TestBudgetReleaseConfirmation(FrappeAPITestCase):
 				self.assertEqual(before, {doctype: frappe.db.count(doctype) for doctype in before})
 		self.assert_unposted()
 
+	def test_pre_hook_http_initialization_fault_keeps_native_diagnostics_private(self):
+		import frappe.app
+
+		from medops.tests.privacy_diagnostics import PUBLIC_CANARY, NativeDiagnostics, injected_retry
+
+		original = frappe.app.HTTPRequest
+
+		def fail_after_session_init(*args, **kwargs):
+			original(*args, **kwargs)
+			injected_retry()
+
+		with (
+			NativeDiagnostics() as diagnostics,
+			patch.object(frappe.app, "HTTPRequest", new=fail_after_session_init),
+		):
+			response = self.post_command(
+				"release.confirm",
+				dict(confirmation="unpersisted-diagnostic", proof=PUBLIC_CANARY, acknowledge=True),
+			)
+			diagnostics.assert_private_retry(self, response)
+		self.assertEqual(frappe.db.count(OUTBOX, {"reference_name": self.release}), 0)
+		self.assert_unposted()
+
 	def test_changed_prepared_intent_invalidates_a_previous_confirmation(self):
 		preview = self.success(self.preview())
 		self.success(

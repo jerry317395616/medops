@@ -1,17 +1,19 @@
-"""Native diagnostic sink capture for public, non-authorizing test canaries."""
+"""Capture native deferred errors and actual SDK wire events, without networking."""
 
 from __future__ import annotations
 
 import json
-import sys
+import logging
 from contextlib import ExitStack
+from io import StringIO
 from unittest.mock import patch
 
-from sentry_sdk.serializer import serialize
-from sentry_sdk.utils import event_from_exception
+import sentry_sdk
+from sentry_sdk.transport import Transport
 
 import frappe
-from frappe.core.doctype.error_log.error_log import ErrorLog
+from frappe.model.document import Document
+from frappe.utils.sentry import before_send
 
 PUBLIC_CANARY = "diagnostic_" + "P" * 33
 
@@ -28,8 +30,8 @@ def injected_retry(*args, **kwargs):
 class NativeDiagnostics:
 	def __init__(self):
 		self.errors = []
-		self.messages = []
 		self.sdk_events = []
+		self.log = StringIO()
 		self.stack = ExitStack()
 
 	def __repr__(self):
@@ -37,41 +39,67 @@ class NativeDiagnostics:
 
 	def __enter__(self):
 		def capture_error(doc):
-			self.errors.append(frappe.as_json(doc.as_dict()))
+			# Intercept after the application's extension, at native Redis serialization.
+			doc.set_user_and_timestamp()
+			self.errors.append(
+				frappe.as_json(doc.get_valid_dict(convert_dates_to_str=True, ignore_virtual=True))
+			)
 
-		self.stack.enter_context(patch.object(ErrorLog, "deferred_insert", new=capture_error))
-		self.stack.enter_context(patch("frappe.utils.sentry.capture_exception", new=self.capture_telemetry))
+		class MemoryTransport(Transport):
+			def capture_envelope(transport, envelope):
+				for item in envelope.items:
+					if item.headers.get("type") == "event":
+						self.sdk_events.append(json.dumps(item.payload.json))
+
+		client = sentry_sdk.Client(
+			dsn="https://public@example.invalid/1",
+			transport=MemoryTransport,
+			default_integrations=False,
+			auto_enabling_integrations=False,
+			include_local_variables=True,
+			include_source_context=True,
+			send_default_pii=True,
+			max_value_length=100000,
+			before_send=before_send,
+		)
+		self.stack.callback(client.close)
+		scope = self.stack.enter_context(sentry_sdk.isolation_scope())
+		scope.set_client(client)
+		original_settings = frappe.get_system_settings
+
+		def settings(key=None):
+			return 1 if key == "enable_telemetry" else original_settings(key)
+
+		# Only test lookup changes; no persisted opt-in change and no network transport.
+		# Real native capture, scope processors, serializer and before_send still run.
+		self.stack.enter_context(patch.object(frappe, "get_system_settings", new=settings))
+		self.stack.enter_context(patch.object(Document, "deferred_insert", new=capture_error))
+		logger = frappe.logger()
+		handler = logging.StreamHandler(self.log)
+		logger.addHandler(handler)
+		self.stack.callback(logger.removeHandler, handler)
 		return self
 
 	def __exit__(self, *exception):
 		return self.stack.__exit__(*exception)
 
-	def capture_telemetry(self, **kwargs):
-		self.messages.append(str(kwargs.get("message", "")))
-		# Exercise the pinned SDK's real local-variable serializer without a
-		# client, transport, opt-in change or outbound telemetry event.
-		event, _ = event_from_exception(
-			sys.exc_info(),
-			client_options={
-				"add_full_stack": False,
-				"include_local_variables": True,
-				"include_source_context": False,
-				"max_value_length": 100000,
-			},
-		)
-		request = getattr(frappe.local, "request", None)
-		if request is not None:
-			event["contexts"] = {
-				"Request Body": request.json if request.is_json else request.form,
-			}
-		self.sdk_events.append(json.dumps(serialize(event, max_value_length=100000)))
-
 	def assert_private_retry(self, test, response):
 		test.assertEqual(response.status_code, 508)
 		test.assertEqual(response.get_json()["exc_type"], "QueryDeadlockError")
 		test.assertGreaterEqual(len(self.errors), 2)
-		test.assertGreaterEqual(len(self.messages), 2)
 		test.assertGreaterEqual(len(self.sdk_events), 2)
-		for sink in (self.errors, self.messages, self.sdk_events, [response.get_data(as_text=True)]):
+		test.assertIn("QueryDeadlockError", self.log.getvalue())
+		for index, sink in enumerate(
+			(self.errors, self.sdk_events, [self.log.getvalue(), response.get_data(as_text=True)])
+		):
 			for text in sink:
-				test.assertFalse(PUBLIC_CANARY in text, "Public canary leaked into native diagnostic sink")
+				test.assertFalse(PUBLIC_CANARY in text, f"Public canary leaked into native sink {index}")
+		for text in self.errors:
+			doc = json.loads(text)
+			test.assertTrue(doc["fingerprint"])
+			test.assertIn("QueryDeadlockError", doc["error"])
+			test.assertIn("File ", doc["error"])
+		for text in self.sdk_events:
+			event = json.loads(text)
+			test.assertEqual(event["exception"]["values"][-1]["type"], "QueryDeadlockError")
+			test.assertTrue(event["exception"]["values"][-1]["stacktrace"]["frames"])

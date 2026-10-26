@@ -76,7 +76,16 @@ MariaDB默认可重复读事务中的旧权限快照不能授权长批次；仅�
 
 锁定版本的原生日志仅浅层屏蔽字段，嵌套payload中的proof可能进入异常快照。最前应用before_request钩子仅对预算审批/财务确认RPC安装不含原文的str载体；明确解析器才取回请求体，正常RPC签名不变。独立Request.json/form遥测视图同步脱敏，命令及证明repr不公开原文。诊断深拷贝只得到脱敏文本，不保留证明副本。数据库508整笔重试信号和原生日志/审计保留，服务不重启事务。
 
-该钩子运行在HTTPRequest之后；原生CSRF拒绝跳过错误快照，但不据此宣称所有初始化异常或原始请求体采集均已覆盖。真实竞争、原生canary异常诊断与剩余更早错误边界须验证后才可发布。无需修改上游、扩展Error Log或关闭原生日志。
+该钩子运行在HTTPRequest之后；原生CSRF拒绝跳过错误快照，但不据此宣称所有初始化异常或原始请求体采集均已覆盖。真实竞争、原生canary异常诊断与剩余更早错误边界须验证后才可发布。此阶段尚未扩展Error Log；后续故障矩阵已证明仍需补充持久化诊断边界，以下决策更新取代该阶段限制。
 
 
 共享规范JSON对象使用传输兼容的私有字符串和字节表示，覆盖生成证明、结果字典、明文序列化快照和加密幂等重放的诊断局部值。生成证明及消息nonce立即包装，验权不先转换为普通str。原生repr和锁定SDK的__sentry_repr__均脱敏；JSON、hash、加密及原生508整笔重试保持原协议。增加真实SDK序列化的无外发canary矩阵，更早HTTPRequest边界继续单独闭合。
+
+
+### 原生诊断持久化与最终SDK序列化补充（2026-10-27）
+
+实测锁定traceback_with_variables的字符串分支绕过repr；值包装只能作为辅助保护。使用标准Error Log类扩展，在before_insert及deferred_insert父方法之前清除MedOps诊断的局部值、原始消息及请求/任务参数；保留代码帧、异常类、原生指纹、追踪ID、所有者及原生持久化路径。延迟Redis入队不能等到validate再处理。未修改上游、未覆盖原生控制器，也不删除或抑制错误记录。对已缓存框架logger的ERROR handler追加标准过滤器，其执行顺序在SiteContextFilter之后；不改变MedOps业务审计。
+
+使用SDK公开get_global_scope().add_event_processor注册幂等、无状态的受限处理器。返回的DiagnosticEvent利用已锁定SDK的__sentry_repr__协议在所有scope处理器之后、最终序列化时生成仅包含JSON基础类型的诊断允许列表，覆盖原生较晚追加的WSGI上下文。仅MedOps请求/任务/异常链适用；无关原生事件原样通过。保留异常类、代码帧、级别、event ID和trace ID；排除正文、cookies、headers、query、局部值、用户标记及任意额外载荷。协议依赖已锁定SDK，升级须重跑真实内存transport测试，不能只检查预序列化事件或mock遥测消息。
+
+测试专用内存transport无网络能力，临时模拟enable_telemetry查询只验证采集管道，不更新站点设置。真实Cookie/CSRF、原生508、当前权限与业务事务保持。连接建立前无法加载应用的框架/代理级异常尚不属于本应用扩展的覆盖证明。上线仍需全量原生、性能、备份恢复和目标医院验收。
