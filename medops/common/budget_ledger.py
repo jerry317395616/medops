@@ -17,7 +17,7 @@ from medops.common.budget_planning import object_payload
 from medops.common.budget_workflow import case_identity
 from medops.common.domain_service import canonical_json, fingerprint_json, normalize_sha256
 from medops.common.exact_money import signed_decimal_amount
-from medops.common.immutable_ledger import ImmutableLedgerDefinition
+from medops.common.immutable_ledger import ImmutableLedgerDefinition, build_reversal_values
 from medops.common.organization import (
 	normalize_positive_integer,
 	normalize_reference,
@@ -471,4 +471,46 @@ def allocation_values(facts: BudgetReleaseFacts, *, posting_time: str) -> Iterat
 			source_event_digest=source.approval_event_digest,
 		)
 		values["source_hash"] = fingerprint_json(values)
+		yield values
+
+
+def reversal_allocation_values(
+	original: BudgetReleaseFacts,
+	reversal: BudgetReleaseFacts,
+	*,
+	original_posting_time: str,
+	posting_time: str,
+) -> Iterator[dict[str, Any]]:
+	"""Exact full-batch reversal; persisted original rows must be verified separately."""
+	if reversal != reversal_facts(
+		original, posting_date=reversal.posting_date, reason=reversal.reason, prepared_by=reversal.prepared_by
+	):
+		raise ValueError("reversal intent differs from original approved batch")
+	# Validate the new local posting time with the same protocol as an allocation.
+	if (
+		not isinstance(posting_time, str)
+		or re.fullmatch(r"(?:[01]\d|2[0-3]):[0-5]\d:[0-5]\d(?:\.\d{1,6})?", posting_time) is None
+	):
+		raise ValueError("local posting time required")
+	posting_time = time.fromisoformat(posting_time).isoformat()
+	for row in allocation_values(original, posting_time=original_posting_time):
+		entry = dict(row, name=row["entry_key"], is_reversal=0, reversal_of=None)
+		overrides = dict(
+			posting_date=reversal.posting_date,
+			posting_time=posting_time,
+			voucher_type=RELEASE,
+			voucher_no=reversal.identity_key,
+			entry_key=ledger_entry_key(reversal.identity_key, row["fact_key"]),
+			release_digest=reversal.intent_digest,
+			source_hash="0" * 64,
+		)
+		values = build_reversal_values(
+			entry,
+			definition=BUDGET_LEDGER_DEFINITION,
+			fieldnames=frozenset(row) | {"is_reversal", "reversal_of"},
+			overrides=overrides,
+		)
+		values["source_hash"] = fingerprint_json(
+			{key: value for key, value in values.items() if key != "source_hash"}
+		)
 		yield values

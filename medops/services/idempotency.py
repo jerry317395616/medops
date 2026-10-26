@@ -20,7 +20,7 @@ from medops.common.domain_service import (
 	normalize_idempotency_key,
 	normalize_sha256,
 )
-from medops.services.errors import raise_ione_error
+from medops.services.errors import raise_ione_error, require_roles
 
 if TYPE_CHECKING:
 	from medops.hrp_foundation.doctype.hrp_service_idempotency.hrp_service_idempotency import (
@@ -225,10 +225,40 @@ def complete_idempotency(
 	record.save(ignore_permissions=True)
 
 
+def read_owned_idempotency_receipt(
+	definition: DomainServiceDefinition, idempotency_key: str, request_payload: dict[str, object]
+) -> dict[str, object]:
+	"""Internal adapter only: decrypt an existing owned receipt without renewing it.
+
+	Unlike execute/reserve this never creates, deletes, expires or reclaims work.
+	Callers must enforce the business authority and never expose secret results.
+	"""
+	require_roles(definition.required_roles)
+	key = normalize_idempotency_key(idempotency_key)
+	record = _load_record(idempotency_record_name(definition.name, key))
+	if record is None:
+		raise_ione_error("RESOURCE_NOT_FOUND")
+	payload, _ = canonical_json_object(request_payload)
+	_assert_record_matches(
+		record,
+		definition=definition,
+		key_hash=idempotency_key_hash(key),
+		request_fingerprint=fingerprint_json(
+			dict(
+				schema_version=1, service=definition.name, service_version=definition.version, request=payload
+			)
+		),
+	)
+	if get_datetime(record.expires_at) <= now_datetime():
+		raise_ione_error("CONFLICT")
+	return _load_replayed_result(record)
+
+
 __all__ = [
 	"IDEMPOTENCY_DOCTYPE",
 	"IdempotencyReservation",
 	"complete_idempotency",
+	"read_owned_idempotency_receipt",
 	"reserve_idempotency",
 	"resolve_idempotency_key",
 ]

@@ -5,12 +5,13 @@
 	"recorded_on": "2026-10-26",
 	"runtime_namespace": "medops",
 	"architecture_decisions": [
-		"ADR-0030"
+		"ADR-0030",
+		"ADR-0031"
 	],
-	"current_scope": "Four runtime models and real preparation verified privately. Independent human confirmation, durable authorization, atomic Pending Outbox and six APIs passed focused native tests. Queued financial execution, department statements and UI remain unfinished.",
+	"current_scope": "Owned release/reversal batch execution and explicit job transaction boundary implemented, pending focused native verification. No automatic queue hook or scheduler yet; statements/UI/full native/RQ/races/CI incomplete.",
 	"checks": {
-		"pure_tests_expected": 415,
-		"complete_frappe_tests_expected": 382,
+		"pure_tests_expected": 420,
+		"complete_frappe_tests_expected": 389,
 		"exact_foundation_pure_tests_passed": 21,
 		"native_foundation": {
 			"status": "passed",
@@ -86,6 +87,14 @@
 				"valid API credentials denied",
 				"mandatory release rules; no budget, GL or stock postings"
 			]
+		},
+		"owned_execution": {
+			"status": "implemented; real framework/native verification pending",
+			"native_tests_expected": 7,
+			"automatic_enqueue_enabled": false,
+			"cron_wired": false,
+			"real_rq_verified": false,
+			"public_deployment": false
 		}
 	},
 	"previous_verified_release": {

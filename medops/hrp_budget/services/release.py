@@ -141,8 +141,10 @@ def lock_release_source(name):
 	initial = get_release(name)
 	# Every financial writer takes final source -> voucher, in that order.
 	approved_release_source(initial.source_approval, lock=True)
+	if initial.operation == "Reverse":
+		get_release(initial.reversal_of, lock=True)
 	doc = get_release(name, lock=True)
-	if initial.source_approval != doc.source_approval:
+	if initial.source_approval != doc.source_approval or initial.reversal_of != doc.reversal_of:
 		raise_ione_error("CONFLICT")
 	return doc
 

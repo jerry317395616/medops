@@ -202,7 +202,7 @@ def validate_authorization_message(doc, decision):
 			or message.reference_name != doc.name
 			or int(message.payload_schema_version) != 1
 			or get_datetime(message.occurred_at) != get_datetime(decision.recorded_at)
-			or (doc.status == "Posted" and message.status != "Completed")
+			or (doc.status == "Posted" and message.status != "Delivered")
 		):
 			raise ValueError("durable financial message differs")
 	except (TypeError, ValueError) as error:

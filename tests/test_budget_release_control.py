@@ -1,16 +1,28 @@
 from __future__ import annotations
 
 import unittest
+from dataclasses import replace
+from datetime import datetime
 from typing import cast
 
-from medops.common.budget_ledger import LEDGER, LEDGER_PUBLIC_FIELDS, RELEASE, RELEASE_ENTRY
+from medops.common.budget_ledger import (
+	LEDGER,
+	LEDGER_PUBLIC_FIELDS,
+	RELEASE,
+	RELEASE_ENTRY,
+	ReleaseExecutionAuthorization,
+)
 from medops.common.budget_release_control import (
+	ReleaseExecutionLease,
+	execution_lease,
 	expected_release_record,
+	release_execution,
 	release_mutation,
 	release_record,
 	release_write,
 )
 from medops.common.integration_outbox import outbox_publication, publication_values
+from medops.common.transactional_message import message_record_name
 from tests.test_budget_ledger import approved_release
 
 
@@ -27,6 +39,60 @@ def current_mutation():
 
 
 class TestBudgetReleaseControl(unittest.TestCase):
+	def test_execution_lease_is_ephemeral_restored_and_does_not_repr_the_secret(self):
+		authority = ReleaseExecutionAuthorization.from_payload(
+			dict(
+				release="Release",
+				authorization_revision=2,
+				intent_digest="a" * 64,
+				decision="Decision",
+				actor="finance@example.com",
+			)
+		)
+		lease = ReleaseExecutionLease(
+			authority,
+			message_record_name("outbox", authority.event_id),
+			1,
+			datetime(2026, 10, 26, 10),
+			"S" * 43,
+		)
+		self.assertNotIn("S" * 43, repr(lease))
+		with release_execution(lease):
+			self.assertEqual(execution_lease(), lease)
+			with self.assertRaises(RuntimeError):
+				with release_execution(replace(lease, attempt=2)):
+					raise RuntimeError("simulated outer retry")
+			self.assertEqual(execution_lease(), lease)
+		self.assertIsNone(execution_lease())
+
+	def test_execution_lease_rejects_wrong_message_attempt_and_non_secret_shape(self):
+		authority = ReleaseExecutionAuthorization.from_payload(
+			dict(
+				release="Release",
+				authorization_revision=2,
+				intent_digest="a" * 64,
+				decision="Decision",
+				actor="finance@example.com",
+			)
+		)
+		lease = ReleaseExecutionLease(
+			authority,
+			message_record_name("outbox", authority.event_id),
+			1,
+			datetime(2026, 10, 26, 10),
+			"S" * 43,
+		)
+		for changes in (
+			dict(message="other"),
+			dict(attempt=True),
+			dict(attempt=0),
+			dict(attempt=11),
+			dict(processing_token="short"),
+		):
+			with self.subTest(changes=list(changes)), self.assertRaises(ValueError):
+				with release_execution(replace(lease, **changes)):
+					self.fail("invalid lease accepted")
+
 	def test_only_declared_operations_and_real_revision_shapes_can_issue_capability(self):
 		facts = approved_release()
 		for operation, revision in (("post", 0), ("prepare", 1), ("arbitrary", 1), ("confirm", True)):

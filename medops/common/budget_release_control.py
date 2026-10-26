@@ -5,10 +5,18 @@ from __future__ import annotations
 from collections.abc import Mapping
 from contextlib import contextmanager
 from contextvars import ContextVar
-from dataclasses import dataclass
+from dataclasses import asdict, dataclass, field
+from datetime import datetime
 from types import MappingProxyType
 
-from medops.common.budget_ledger import LEDGER, RELEASE, RELEASE_ENTRY, BudgetReleaseFacts
+from medops.common.budget_ledger import (
+	LEDGER,
+	RELEASE,
+	RELEASE_ENTRY,
+	BudgetReleaseFacts,
+	ReleaseExecutionAuthorization,
+)
+from medops.common.transactional_message import message_record_name, normalize_processing_token
 
 
 @dataclass(frozen=True, slots=True)
@@ -70,3 +78,42 @@ def release_mutation() -> ReleaseMutation | None:
 
 def release_record() -> ExpectedReleaseRecord | None:
 	return _record.get()
+
+
+@dataclass(frozen=True, slots=True)
+class ReleaseExecutionLease:
+	authority: ReleaseExecutionAuthorization
+	message: str
+	attempt: int
+	expires_at: datetime
+	processing_token: str = field(repr=False)
+
+
+_execution: ContextVar[ReleaseExecutionLease | None] = ContextVar(
+	"medops_budget_release_execution", default=None
+)
+
+
+@contextmanager
+def release_execution(lease: ReleaseExecutionLease):
+	if (
+		not isinstance(lease, ReleaseExecutionLease)
+		or not isinstance(lease.authority, ReleaseExecutionAuthorization)
+		or lease.authority != ReleaseExecutionAuthorization.from_payload(asdict(lease.authority))
+		or lease.message != message_record_name("outbox", lease.authority.event_id)
+		or type(lease.attempt) is not int
+		or not 1 <= lease.attempt <= 10
+		or not isinstance(lease.expires_at, datetime)
+		or lease.expires_at.tzinfo is not None
+	):
+		raise ValueError("owned durable execution lease required")
+	normalize_processing_token(lease.processing_token)
+	token = _execution.set(lease)
+	try:
+		yield
+	finally:
+		_execution.reset(token)
+
+
+def execution_lease() -> ReleaseExecutionLease | None:
+	return _execution.get()

@@ -14,6 +14,7 @@ from medops.common.budget_ledger import (
 	build_reverse_request,
 	ledger_entry_key,
 	release_facts,
+	reversal_allocation_values,
 	reversal_facts,
 )
 from medops.common.budget_workflow import case_identity
@@ -54,6 +55,66 @@ def reverse(original, **overrides):
 
 
 class TestBudgetLedger(unittest.TestCase):
+	def test_full_reversal_preserves_all_original_grain_at_each_precision(self):
+		for precision in range(10):
+			original = approved_release(precision=precision)
+			reversal = reverse(original)
+			rows = list(allocation_values(original, posting_time="08:01:02.123456"))
+			back = list(
+				reversal_allocation_values(
+					original, reversal, original_posting_time="08:01:02.123456", posting_time="09:02:03"
+				)
+			)
+			with self.subTest(precision=precision):
+				self.assertEqual(len(rows), len(back))
+				for first, last in zip(rows, back, strict=True):
+					self.assertEqual(last["reversal_of"], first["entry_key"])
+					self.assertEqual(Decimal(last["amount"]), -Decimal(first["amount"]))
+					self.assertEqual((last["debit"], last["credit"]), (first["credit"], first["debit"]))
+					for field in (
+						set(first)
+						- BUDGET_LEDGER_DEFINITION.transformed_fields
+						- BUDGET_LEDGER_DEFINITION.reversal_override_fields
+					):
+						self.assertEqual(last[field], first[field])
+					self.assertEqual(
+						last["source_hash"],
+						fingerprint_json({key: value for key, value in last.items() if key != "source_hash"}),
+					)
+
+	def test_reversal_rejects_changed_intent_before_the_first_row(self):
+		original = approved_release()
+		for changes in (
+			dict(total_amount="-1.000000000"),
+			dict(original_intent_digest="f" * 64),
+			dict(reversal_of="other"),
+		):
+			with self.subTest(changes=changes), self.assertRaises(ValueError):
+				next(
+					reversal_allocation_values(
+						original,
+						replace(reverse(original), **changes),
+						original_posting_time="08:00:00",
+						posting_time="09:00:00",
+					)
+				)
+
+	def test_reversal_precision_and_source_hash_do_not_use_callers_decimal_context(self):
+		original = approved_release()
+		back = reverse(original)
+		kwargs = dict(original_posting_time="08:00:00", posting_time="09:00:00")
+		expected = list(reversal_allocation_values(original, back, **kwargs))
+		with localcontext() as context:
+			context.prec = 6
+			self.assertEqual(list(reversal_allocation_values(original, back, **kwargs)), expected)
+		for clock in ("24:00:00", "9:00:00", "09:00:00+04:00"):
+			with self.subTest(clock=clock), self.assertRaises(ValueError):
+				list(
+					reversal_allocation_values(
+						original, back, original_posting_time="08:00:00", posting_time=clock
+					)
+				)
+
 	def test_release_preview_cannot_change_frozen_financial_intent_or_actor(self):
 		value = dict(release="Release", expected_revision=1)
 		self.assertEqual(build_release_preview(value).release, "Release")

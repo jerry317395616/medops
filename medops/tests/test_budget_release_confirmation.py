@@ -32,6 +32,9 @@ class TestBudgetReleaseConfirmation(FrappeAPITestCase):
 
 	def setUp(self):
 		super().setUp()
+		self.new_release()
+
+	def new_release(self):
 		self.sources = self.new_sources()
 		name = self.success(self.seal())["name"]
 		case = self.request_approval(name)
