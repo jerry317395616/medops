@@ -56,6 +56,9 @@ def install_diagnostic_privacy() -> None:
 	"""Register standard SDK/logging extensions; retain native opt-in and sinks."""
 	global _sdk_installed
 	with _install_lock:
+		# Ensure the native fallback logger already has the filter if SDK
+		# capture itself fails before log_error_snapshot creates that logger.
+		frappe.logger()
 		if not _sdk_installed:
 			from sentry_sdk import get_global_scope
 
@@ -67,3 +70,8 @@ def install_diagnostic_privacy() -> None:
 			for handler in tuple(logger.handlers):
 				if not any(isinstance(item, MedOpsDiagnosticFilter) for item in handler.filters):
 					handler.addFilter(MedOpsDiagnosticFilter())
+
+
+def protect_medops_diagnostics() -> None:
+	if is_owned_error():
+		install_diagnostic_privacy()

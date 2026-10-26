@@ -29,6 +29,7 @@ after_migrate = "medops.setup.install.after_migrate"
 before_uninstall = "medops.setup.install.before_uninstall"
 
 before_request = [
+	"medops.services.diagnostic_privacy.protect_medops_diagnostics",
 	"medops.services.confirmation_privacy.protect_confirmation_request",
 	"medops.services.audit_context.start_http_audit_context",
 ]
