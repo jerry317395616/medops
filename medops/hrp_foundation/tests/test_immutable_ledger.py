@@ -438,27 +438,40 @@ class TestImmutableLedger(IntegrationTestCase):
 	def test_committed_reversal_is_visible_after_an_older_consistent_snapshot(self) -> None:
 		entry_name = self._append("COD-033-stale-snapshot-source")["result"]["entry"]
 		self._primary_connection.commit()
-		with self.secondary_connection():
-			self.assertFalse(frappe.db.get_value(TEST_DOCTYPE, {"reversal_of": entry_name}, "name"))
+		# Frappe's lazy secondary connection can become the current connection on
+		# first entry. Preserve the original outer connection for subsequent tests.
 		with self.primary_connection():
-			self._reverse(entry_name, "COD-033-stale-snapshot-first")
-			self._primary_connection.commit()
-		with self.secondary_connection():
-			# Confirm this is a genuinely stale snapshot before exercising the writer.
-			self.assertFalse(frappe.db.get_value(TEST_DOCTYPE, {"reversal_of": entry_name}, "name"))
-			with self.assertRaises(IoneApplicationError) as raised:
-				self._reverse(entry_name, "COD-033-stale-snapshot-second")
-			self.assertEqual(raised.exception.code, "IONE-CORE-0006")
-			self.assertFalse(
-				frappe.db.exists(
-					"HRP Service Idempotency",
-					idempotency_record_name(
-						ReverseTestLedgerService.definition.name, "COD-033-stale-snapshot-second"
-					),
+			with self.secondary_connection():
+				self.assertFalse(frappe.db.get_value(TEST_DOCTYPE, {"reversal_of": entry_name}, "name"))
+			with self.primary_connection():
+				self._reverse(entry_name, "COD-033-stale-snapshot-first")
+				self._primary_connection.commit()
+			with self.secondary_connection():
+				# Confirm this is a genuinely stale snapshot before exercising the writer.
+				self.assertFalse(frappe.db.get_value(TEST_DOCTYPE, {"reversal_of": entry_name}, "name"))
+				try:
+					self._reverse(entry_name, "COD-033-stale-snapshot-second")
+				except frappe.QueryDeadlockError:
+					# MariaDB snapshot isolation rejects a changed record with 1020.
+					# Preserve the outer retry signal; never roll back a removed savepoint.
+					self._secondary_connection.rollback()
+				except IoneApplicationError as error:
+					self.assertEqual(error.code, "IONE-CORE-0006")
+				else:
+					self.fail("A committed reversal was missed by the current read")
+				with self.assertRaises(IoneApplicationError) as raised:
+					self._reverse(entry_name, "COD-033-stale-snapshot-second")
+				self.assertEqual(raised.exception.code, "IONE-CORE-0006")
+				self.assertFalse(
+					frappe.db.exists(
+						"HRP Service Idempotency",
+						idempotency_record_name(
+							ReverseTestLedgerService.definition.name, "COD-033-stale-snapshot-second"
+						),
+					)
 				)
-			)
-		self._secondary_connection.rollback()
-		self.assertEqual(frappe.db.count(TEST_DOCTYPE, {"reversal_of": entry_name}), 1)
+				self.assertEqual(frappe.db.count(TEST_DOCTYPE, {"reversal_of": entry_name}), 1)
+				self._secondary_connection.rollback()
 
 	def test_invalid_hash_and_unknown_entry_fail_without_ledger_write(self) -> None:
 		values = ledger_entry_values()

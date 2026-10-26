@@ -339,7 +339,7 @@ def reverse_immutable_entry(
 	entry_name = normalize_ledger_name(entry_name)
 	try:
 		locked_name = frappe.db.get_value(definition.doctype, entry_name, "name", for_update=True, wait=False)
-	except (frappe.QueryTimeoutError, frappe.QueryDeadlockError) as exc:
+	except frappe.QueryTimeoutError as exc:
 		raise_ione_error("CONFLICT", cause=exc)
 	if not locked_name:
 		raise_ione_error("RESOURCE_NOT_FOUND")
@@ -352,7 +352,7 @@ def reverse_immutable_entry(
 		existing_reversal = frappe.db.get_value(
 			definition.doctype, {"reversal_of": entry_name}, "name", for_update=True, wait=False
 		)
-	except (frappe.QueryTimeoutError, frappe.QueryDeadlockError) as exc:
+	except frappe.QueryTimeoutError as exc:
 		raise_ione_error("CONFLICT", cause=exc)
 	if existing_reversal:
 		raise_ione_error("INVALID_STATE_TRANSITION")
