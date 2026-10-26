@@ -9,7 +9,7 @@
 		"ADR-0031",
 		"ADR-0032"
 	],
-	"current_scope": "42ecfbc full448 local quality passed; native focused regression failed in two preview diagnostic subcases and expired synthetic master fixture initialization. Normal Cookie/CSRF external probe confirmed traceback_with_variables reads string contents directly, bypassing repr; protected values alone are insufficient. Implemented standard Error Log extension before immediate/deferred storage, scoped framework ERROR filters, and SDK final-serialization guard preserving exception classes/frames/trace IDs. Native tests now capture actual SDK memory transport with late WSGI enrichment and no outbound requests. Synthetic master fixture reuses only matching persisted data after receipt expiry. New453 local quality,58 focused native and real Cookie/CSRF probe pending; full443/CI/promotion incomplete.",
+	"current_scope": "dbc3d91 full453 local quality and1447 committed blob checks passed. At4ebca1a native diagnostic2/domain5/message13 passed; original confirmation/approval cases passed, but new HTTP SDK assertions received0 events because native API tests create new Threads without copying SDK ContextVars. Test harness now binds only its memory SDK client in the capture thread, delegates original native capture, and does not modify persisted settings or outbound transport. Product Error Log and native ERROR filters retained safe diagnostics; new SDK coverage and final58 native rerun/realCookie probe pending. Full443/CI/promotion incomplete.",
 	"checks": {
 		"pure_tests_expected": 453,
 		"complete_frappe_tests_expected": 443,

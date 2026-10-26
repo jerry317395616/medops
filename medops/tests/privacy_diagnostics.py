@@ -14,6 +14,7 @@ from sentry_sdk.transport import Transport
 import frappe
 from frappe.model.document import Document
 from frappe.utils.sentry import before_send
+from frappe.utils.sentry import capture_exception as native_capture_exception
 
 PUBLIC_CANARY = "diagnostic_" + "P" * 33
 
@@ -70,9 +71,20 @@ class NativeDiagnostics:
 		def settings(key=None):
 			return 1 if key == "enable_telemetry" else original_settings(key)
 
+		def capture_in_request_thread(*args, **kwargs):
+			# Frappe's API test client starts a new Thread without copying SDK
+			# ContextVars. Bind only this in-memory client in that capture scope;
+			# the original native implementation and its late WSGI processor run.
+			with sentry_sdk.isolation_scope() as request_scope:
+				request_scope.set_client(client)
+				return native_capture_exception(*args, **kwargs)
+
 		# Only test lookup changes; no persisted opt-in change and no network transport.
 		# Real native capture, scope processors, serializer and before_send still run.
 		self.stack.enter_context(patch.object(frappe, "get_system_settings", new=settings))
+		self.stack.enter_context(
+			patch("frappe.utils.sentry.capture_exception", new=capture_in_request_thread)
+		)
 		self.stack.enter_context(patch.object(Document, "deferred_insert", new=capture_error))
 		logger = frappe.logger()
 		handler = logging.StreamHandler(self.log)
