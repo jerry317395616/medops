@@ -1,8 +1,7 @@
 from __future__ import annotations
 
-from datetime import date
-
 import frappe
+from frappe.utils import nowdate
 
 from medops.common.access_scope import (
 	AccessAction,
@@ -78,7 +77,7 @@ def _expand_organization_units(
 
 def grants_for(user: str, doctype: str, action: AccessAction) -> tuple[ScopeGrant, ...]:
 	action_field = f"allow_{action}"
-	today = date.today().isoformat()
+	today = nowdate()
 	rows = frappe.db.sql(
 		f"""
 		SELECT

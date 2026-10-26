@@ -1,0 +1,320 @@
+{
+	"doctype": "DocType",
+	"name": "HRP Budget Review",
+	"module": "HRP Budget",
+	"custom": 0,
+	"engine": "InnoDB",
+	"autoname": "hash",
+	"title_field": "",
+	"is_submittable": 0,
+	"istable": 0,
+	"issingle": 0,
+	"track_changes": 0,
+	"allow_rename": 0,
+	"editable_grid": 0,
+	"field_order": [
+		"case",
+		"company",
+		"hospital",
+		"organization_unit",
+		"event_kind",
+		"action",
+		"sequence_no",
+		"actor",
+		"case_revision",
+		"source_digest",
+		"policy_digest",
+		"decision_digest",
+		"sod_digest",
+		"reason",
+		"recorded_at",
+		"expires_at",
+		"confirmation_hash",
+		"session_digest",
+		"confirmation",
+		"vote_key",
+		"revision_key",
+		"event_digest"
+	],
+	"fields": [
+		{
+			"fieldname": "case",
+			"label": "审批案例",
+			"fieldtype": "Link",
+			"read_only": 1,
+			"reqd": 1,
+			"options": "HRP Budget Approval"
+		},
+		{
+			"fieldname": "company",
+			"label": "法人",
+			"fieldtype": "Link",
+			"read_only": 1,
+			"reqd": 1,
+			"options": "Company"
+		},
+		{
+			"fieldname": "hospital",
+			"label": "医院",
+			"fieldtype": "Link",
+			"read_only": 1,
+			"reqd": 1,
+			"options": "HRP Hospital"
+		},
+		{
+			"fieldname": "organization_unit",
+			"label": "科室",
+			"fieldtype": "Link",
+			"read_only": 1,
+			"reqd": 1,
+			"options": "HRP Organization Unit"
+		},
+		{
+			"fieldname": "event_kind",
+			"label": "证据类别",
+			"fieldtype": "Select",
+			"read_only": 1,
+			"reqd": 1,
+			"options": "Confirmation\nDecision"
+		},
+		{
+			"fieldname": "action",
+			"label": "决定",
+			"fieldtype": "Select",
+			"read_only": 1,
+			"reqd": 1,
+			"options": "Approve\nReject\nWithdraw"
+		},
+		{
+			"fieldname": "sequence_no",
+			"label": "审批步骤",
+			"fieldtype": "Int",
+			"read_only": 1,
+			"reqd": 1
+		},
+		{
+			"fieldname": "actor",
+			"label": "操作人",
+			"fieldtype": "Link",
+			"read_only": 1,
+			"reqd": 1,
+			"options": "User"
+		},
+		{
+			"fieldname": "case_revision",
+			"label": "案例修订",
+			"fieldtype": "Int",
+			"read_only": 1,
+			"reqd": 1
+		},
+		{
+			"fieldname": "source_digest",
+			"label": "申报事实摘要",
+			"fieldtype": "Data",
+			"read_only": 1,
+			"reqd": 1
+		},
+		{
+			"fieldname": "policy_digest",
+			"label": "策略摘要",
+			"fieldtype": "Data",
+			"read_only": 1,
+			"reqd": 1
+		},
+		{
+			"fieldname": "decision_digest",
+			"label": "矩阵决定摘要",
+			"fieldtype": "Data",
+			"read_only": 1,
+			"reqd": 1
+		},
+		{
+			"fieldname": "sod_digest",
+			"label": "职责分离证据摘要",
+			"fieldtype": "Data",
+			"read_only": 1,
+			"reqd": 1
+		},
+		{
+			"fieldname": "reason",
+			"label": "理由",
+			"fieldtype": "Small Text",
+			"read_only": 1,
+			"reqd": 1
+		},
+		{
+			"fieldname": "recorded_at",
+			"label": "证据时间",
+			"fieldtype": "Datetime",
+			"read_only": 1,
+			"reqd": 1
+		},
+		{
+			"fieldname": "expires_at",
+			"label": "确认有效期",
+			"fieldtype": "Datetime",
+			"read_only": 1,
+			"reqd": 1
+		},
+		{
+			"fieldname": "confirmation_hash",
+			"label": "确认凭证摘要",
+			"fieldtype": "Data",
+			"read_only": 1,
+			"reqd": 1,
+			"permlevel": 1,
+			"hidden": 1
+		},
+		{
+			"fieldname": "session_digest",
+			"label": "会话摘要",
+			"fieldtype": "Data",
+			"read_only": 1,
+			"reqd": 1,
+			"permlevel": 1,
+			"hidden": 1
+		},
+		{
+			"fieldname": "confirmation",
+			"label": "确认记录",
+			"fieldtype": "Link",
+			"read_only": 1,
+			"reqd": 0,
+			"unique": 1,
+			"options": "HRP Budget Review"
+		},
+		{
+			"fieldname": "vote_key",
+			"label": "步骤操作身份",
+			"fieldtype": "Data",
+			"read_only": 1,
+			"reqd": 0,
+			"unique": 1,
+			"hidden": 1
+		},
+		{
+			"fieldname": "revision_key",
+			"label": "决定修订身份",
+			"fieldtype": "Data",
+			"read_only": 1,
+			"reqd": 0,
+			"unique": 1,
+			"hidden": 1
+		},
+		{
+			"fieldname": "event_digest",
+			"label": "证据摘要",
+			"fieldtype": "Data",
+			"read_only": 1,
+			"reqd": 1
+		}
+	],
+	"permissions": [
+		{
+			"role": "System Manager",
+			"read": 1,
+			"report": 1,
+			"export": 1,
+			"print": 1,
+			"create": 0,
+			"write": 0,
+			"delete": 0,
+			"submit": 0,
+			"cancel": 0,
+			"amend": 0
+		},
+		{
+			"role": "HRP System Manager",
+			"read": 1,
+			"report": 1,
+			"export": 1,
+			"print": 1,
+			"create": 0,
+			"write": 0,
+			"delete": 0,
+			"submit": 0,
+			"cancel": 0,
+			"amend": 0
+		},
+		{
+			"role": "HRP Budget User",
+			"read": 1,
+			"report": 1,
+			"export": 1,
+			"print": 1,
+			"create": 0,
+			"write": 0,
+			"delete": 0,
+			"submit": 0,
+			"cancel": 0,
+			"amend": 0
+		},
+		{
+			"role": "HRP Budget Manager",
+			"read": 1,
+			"report": 1,
+			"export": 1,
+			"print": 1,
+			"create": 0,
+			"write": 0,
+			"delete": 0,
+			"submit": 0,
+			"cancel": 0,
+			"amend": 0
+		},
+		{
+			"role": "HRP Finance User",
+			"read": 1,
+			"report": 1,
+			"export": 1,
+			"print": 1,
+			"create": 0,
+			"write": 0,
+			"delete": 0,
+			"submit": 0,
+			"cancel": 0,
+			"amend": 0
+		},
+		{
+			"role": "HRP Budget Approver",
+			"read": 1,
+			"report": 1,
+			"export": 1,
+			"print": 1,
+			"create": 0,
+			"write": 0,
+			"delete": 0,
+			"submit": 0,
+			"cancel": 0,
+			"amend": 0
+		},
+		{
+			"role": "HRP Auditor",
+			"read": 1,
+			"report": 1,
+			"export": 1,
+			"print": 1,
+			"create": 0,
+			"write": 0,
+			"delete": 0,
+			"submit": 0,
+			"cancel": 0,
+			"amend": 0
+		},
+		{
+			"role": "System Manager",
+			"permlevel": 1,
+			"read": 1
+		},
+		{
+			"role": "HRP System Manager",
+			"permlevel": 1,
+			"read": 1
+		}
+	],
+	"sort_field": "modified",
+	"sort_order": "DESC",
+	"actions": [],
+	"links": [],
+	"states": []
+}

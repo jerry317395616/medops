@@ -1,0 +1,98 @@
+{
+	"policy": {
+		"schema_version": 1,
+		"code": "PO_MAIN",
+		"display_name": "采购审批矩阵",
+		"target_doctype": "Purchase Order",
+		"company": "I-ONE",
+		"hospital": "H001",
+		"organization_unit": "FIN",
+		"include_descendants": true,
+		"priority": 10,
+		"dimensions": {},
+		"enabled": true,
+		"valid_from": "2026-01-01",
+		"valid_to": null,
+		"revision": 3,
+		"remarks": null,
+		"steps": [
+			{
+				"sequence_no": 1,
+				"step_name": "科室审批",
+				"threshold_amount": 0.0,
+				"approver_type": "Role",
+				"approver_role": "HRP User",
+				"approver_user": null,
+				"approval_mode": "All",
+				"description": null
+			},
+			{
+				"sequence_no": 2,
+				"step_name": "院级审批",
+				"threshold_amount": 1000.0,
+				"approver_type": "Role",
+				"approver_role": "HRP Auditor",
+				"approver_user": null,
+				"approval_mode": "All",
+				"description": null
+			}
+		],
+		"policy_digest": "63e4be28887fdd388e5c61134ee4d4aec6dddf4d5c9a1a99e3b75d0a2ae04f35"
+	},
+	"evaluation": {
+		"doctype": "Purchase Order",
+		"docname": "PO-0001",
+		"amount": 1234.5,
+		"dimensions": {
+			"company": "I-ONE",
+			"hospital": "H001",
+			"organization_unit": "FIN",
+			"effective_on": "2026-08-13",
+			"purchase_method": "公开招标"
+		}
+	},
+	"decision": {
+		"schema_version": 1,
+		"doctype": "Purchase Order",
+		"docname": "PO-0001",
+		"matrix": "PO_MAIN",
+		"matrix_code": "PO_MAIN",
+		"matrix_name": "采购审批矩阵",
+		"policy_version": 3,
+		"policy_digest": "63e4be28887fdd388e5c61134ee4d4aec6dddf4d5c9a1a99e3b75d0a2ae04f35",
+		"approvers": [
+			"legacy-1@example.com",
+			"legacy-2@example.com"
+		],
+		"delegations": [],
+		"steps": [
+			{
+				"sequence_no": 1,
+				"step_name": "科室审批",
+				"approval_mode": "All",
+				"threshold_amount": 0.0,
+				"approvers": [
+					{
+						"user": "legacy-1@example.com",
+						"source_type": "Role",
+						"source_value": "HRP User"
+					}
+				]
+			},
+			{
+				"sequence_no": 2,
+				"step_name": "院级审批",
+				"approval_mode": "All",
+				"threshold_amount": 1000.0,
+				"approvers": [
+					{
+						"user": "legacy-2@example.com",
+						"source_type": "Role",
+						"source_value": "HRP Auditor"
+					}
+				]
+			}
+		],
+		"decision_digest": "be61d617740bb1e248e8155508c09e70ea1e6ffa94cb56e985ac57174f262665"
+	}
+}

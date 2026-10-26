@@ -16,6 +16,11 @@ def ensure_approval_matrix_governance() -> dict[str, object]:
 			"idx_hrp_approval_matrix_organization",
 		),
 		(
+			"HRP Approval Matrix",
+			["target_doctype", "company", "hospital", "enabled", "amount_schema_version", "amount_precision"],
+			"idx_hrp_approval_matrix_amount_profile",
+		),
+		(
 			"HRP Approval Matrix Row",
 			["parent", "parenttype", "parentfield", "sequence_no", "idx"],
 			"idx_hrp_approval_matrix_step",

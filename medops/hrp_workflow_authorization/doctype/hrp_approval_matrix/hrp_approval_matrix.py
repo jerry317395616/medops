@@ -10,6 +10,7 @@ from medops.common.approval_matrix import (
 	ApprovalMatrixContractError,
 	ApprovalMatrixDefinition,
 	ApprovalMatrixStep,
+	approval_amount_profile,
 	build_approval_matrix_definition,
 	build_approval_matrix_step,
 )
@@ -50,6 +51,13 @@ class HRPApprovalMatrix(Document):
 
 	def validate(self) -> None:
 		definition = self.as_definition(revision=self.revision or 1)
+		self.set("amount_schema_version", definition.schema_version)
+		self.set("amount_precision", definition.amount_precision)
+		if definition.schema_version == 2:
+			for row, step in zip(self.steps, definition.steps, strict=True):
+				for fieldname, value in step.as_dict().items():
+					row.set("exact_threshold_amount" if fieldname == "threshold_amount" else fieldname, value)
+				row.threshold_amount = 0
 		self.code = definition.code
 		self.display_name = definition.display_name
 		self.target_doctype = definition.target_doctype
@@ -73,6 +81,8 @@ class HRPApprovalMatrix(Document):
 
 		before = self.get_doc_before_save()
 		if before is not None:
+			if before.amount_profile() != self.amount_profile():
+				raise_ione_error("OPERATION_NOT_ALLOWED")
 			for fieldname in (
 				"code",
 				"target_doctype",
@@ -109,6 +119,7 @@ class HRPApprovalMatrix(Document):
 
 	def as_definition(self, *, revision: object) -> ApprovalMatrixDefinition:
 		try:
+			version, precision = self.amount_profile()
 			return build_approval_matrix_definition(
 				code=self.code,
 				display_name=self.display_name,
@@ -125,21 +136,36 @@ class HRPApprovalMatrix(Document):
 				revision=revision,
 				remarks=self.remarks,
 				steps=tuple(self._step_contract(row) for row in self.steps),
+				schema_version=version,
+				amount_precision=precision,
 			)
 		except ApprovalMatrixContractError as exc:
 			raise_ione_error("INVALID_REQUEST", cause=exc)
 
-	@staticmethod
-	def _step_contract(row: HRPApprovalMatrixRow) -> ApprovalMatrixStep:
+	def amount_profile(self) -> tuple[int, int]:
+		return approval_amount_profile(
+			self.get("amount_schema_version") if self.get("amount_schema_version") is not None else 1,
+			self.get("amount_precision") if self.get("amount_precision") is not None else 2,
+		)
+
+	def _step_contract(self, row: HRPApprovalMatrixRow) -> ApprovalMatrixStep:
+		version, precision = self.amount_profile()
+		exact = row.get("exact_threshold_amount")
+		if (version == 1 and exact not in (None, "")) or (
+			version == 2 and (exact in (None, "") or row.threshold_amount not in (None, 0, 0.0))
+		):
+			raise ApprovalMatrixContractError("mixed approval threshold storage versions")
 		return build_approval_matrix_step(
 			sequence_no=row.sequence_no,
 			step_name=row.step_name,
-			threshold_amount=row.threshold_amount,
+			threshold_amount=row.threshold_amount if version == 1 else exact,
 			approver_type=row.approver_type,
 			approver_role=row.approver_role,
 			approver_user=row.approver_user,
 			approval_mode=row.approval_mode,
 			description=row.description,
+			schema_version=version,
+			amount_precision=precision,
 		)
 
 	def _validate_references(self) -> None:

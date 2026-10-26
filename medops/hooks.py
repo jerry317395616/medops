@@ -36,6 +36,20 @@ after_job = ["medops.services.audit_context.finish_job_audit_context"]
 # Add standard DocType extensions here. Prefer extend_doctype_class over overrides.
 extend_doctype_class = {"Report": ["medops.extensions.core_report.CoreReportAccessMixin"]}
 doc_events = {
+	"User": {"before_rename": "medops.hrp_budget.services.reference_integrity.protect_reference_rename"},
+	"Workflow": {
+		"validate": "medops.hrp_budget.services.approval_native.protect_workflow",
+		"on_trash": "medops.hrp_budget.services.approval_native.protect_workflow",
+		"before_rename": "medops.hrp_budget.services.approval_native.protect_workflow",
+	},
+	"Workflow State": {
+		"before_rename": "medops.hrp_budget.services.approval_native.protect_workflow_label",
+		"on_trash": "medops.hrp_budget.services.approval_native.protect_workflow_label",
+	},
+	"Workflow Action Master": {
+		"before_rename": "medops.hrp_budget.services.approval_native.protect_workflow_label",
+		"on_trash": "medops.hrp_budget.services.approval_native.protect_workflow_label",
+	},
 	"Company": {"before_rename": "medops.hrp_budget.services.reference_integrity.protect_reference_rename"},
 	"Currency": {"before_rename": "medops.hrp_budget.services.reference_integrity.protect_reference_rename"},
 	"Fiscal Year": {
@@ -55,13 +69,27 @@ doc_events = {
 		"on_trash": "medops.hrp_workflow_authorization.services.sla.sync_source",
 	},
 	"ToDo": {
-		"validate": "medops.hrp_workflow_authorization.services.sla.protect_todo",
-		"on_trash": "medops.hrp_workflow_authorization.services.sla.protect_todo",
-		"before_rename": "medops.hrp_workflow_authorization.services.sla.protect_todo",
+		"validate": [
+			"medops.hrp_workflow_authorization.services.sla.protect_todo",
+			"medops.hrp_budget.services.approval_native.protect_todo",
+		],
+		"on_trash": [
+			"medops.hrp_workflow_authorization.services.sla.protect_todo",
+			"medops.hrp_budget.services.approval_native.protect_todo",
+		],
+		"before_rename": [
+			"medops.hrp_workflow_authorization.services.sla.protect_todo",
+			"medops.hrp_budget.services.approval_native.protect_todo",
+		],
 	},
 }
 
 permission_query_conditions = {
+	"HRP Budget Approval": "medops.hrp_budget.services.approval_access.case_query",
+	"HRP Budget Review": "medops.hrp_budget.services.approval_access.review_query",
+	"ToDo": "medops.hrp_budget.services.approval_native.todo_query",
+	"HRP Budget Submission": "medops.hrp_budget.services.submission_access.submission_query",
+	"HRP Budget Submission Line": "medops.hrp_budget.services.submission_access.submission_line_query",
 	"HRP Business Dimension": "medops.hrp_master_data.services.budget_dimensions.dimension_query",
 	"HRP Dimension Value": "medops.hrp_master_data.services.budget_dimensions.value_query",
 	"HRP Funding Source": "medops.hrp_master_data.services.budget_dimensions.fund_query",
@@ -86,6 +114,11 @@ permission_query_conditions = {
 	"HRP Numbering Scheme": "medops.hrp_foundation.permissions.numbering_scheme_query",
 }
 has_permission = {
+	"HRP Budget Approval": "medops.hrp_budget.services.approval_access.case_permission",
+	"HRP Budget Review": "medops.hrp_budget.services.approval_access.review_permission",
+	"ToDo": "medops.hrp_budget.services.approval_native.todo_permission",
+	"HRP Budget Submission": "medops.hrp_budget.services.submission_access.submission_permission",
+	"HRP Budget Submission Line": "medops.hrp_budget.services.submission_access.submission_line_permission",
 	"HRP Business Dimension": "medops.hrp_master_data.services.budget_dimensions.master_permission",
 	"HRP Dimension Value": "medops.hrp_master_data.services.budget_dimensions.master_permission",
 	"HRP Funding Source": "medops.hrp_master_data.services.budget_dimensions.master_permission",

@@ -4,11 +4,12 @@ import json
 from contextlib import contextmanager
 from contextvars import ContextVar
 from dataclasses import asdict, dataclass
-from decimal import Decimal, InvalidOperation
+from decimal import Decimal
 from hashlib import sha256
 from typing import Any, Literal
 
 from medops.common.domain_service import fingerprint_json
+from medops.common.exact_money import ExactMoneyError, exact_decimal_amount
 from medops.common.organization import (
 	normalize_boolean,
 	normalize_code,
@@ -39,7 +40,9 @@ MAX_AMOUNT = Decimal("999999999999.999999999")
 # The exact decimal wire/storage fields are reviewed numeric sources, even though
 # Frappe's Currency persistence converts to binary float. No arbitrary Data field
 # becomes a numeric business-rule source.
-DECIMAL_DATA_FIELDS = frozenset({(PLAN, "total_amount"), (LINE, "amount")})
+DECIMAL_DATA_FIELDS = frozenset(
+	{(PLAN, "total_amount"), (LINE, "amount"), ("HRP Budget Approval", "total_amount")}
+)
 _master_write: ContextVar[bool] = ContextVar("medops_budget_master_write", default=False)
 _planning_write: ContextVar[str | None] = ContextVar("medops_budget_planning_write", default=None)
 
@@ -96,30 +99,10 @@ def choice(value: object, choices: tuple[str, ...], *, label: str) -> str:
 
 
 def decimal_amount(value: object, precision: int | None = None) -> str:
-	# JSON fractional numbers may already have lost digits in Frappe's float
-	# decoder. Only exact input types can become authoritative planning money.
-	if isinstance(value, bool) or not isinstance(value, (str, int, Decimal)):
-		raise BudgetPlanningError("decimal amount required")
-	if len(str(value)) > 64:
-		raise BudgetPlanningError("amount exceeds bounds")
 	try:
-		amount = Decimal(str(value))
-		if not amount.is_finite() or amount < 0 or amount > MAX_AMOUNT:
-			raise BudgetPlanningError("amount exceeds bounds")
-		if amount != amount.quantize(Decimal(".000000001")):
-			raise BudgetPlanningError("amount has unsupported precision")
-		if precision is not None:
-			if isinstance(precision, bool) or not isinstance(precision, int) or not 0 <= precision <= 9:
-				raise BudgetPlanningError("unsupported currency precision")
-			quantized = amount.quantize(Decimal(1).scaleb(-precision))
-			if amount != quantized:
-				raise BudgetPlanningError("amount exceeds captured currency precision")
-			return format(quantized, "f")
-		return format(amount.normalize(), "f") if amount else "0"
-	except (InvalidOperation, ValueError) as exc:
-		if isinstance(exc, BudgetPlanningError):
-			raise
-		raise BudgetPlanningError("invalid decimal amount") from exc
+		return exact_decimal_amount(value, precision, maximum=MAX_AMOUNT)
+	except ExactMoneyError as exc:
+		raise BudgetPlanningError(str(exc)) from exc
 
 
 def amount_total(values: list[str], precision: int) -> str:

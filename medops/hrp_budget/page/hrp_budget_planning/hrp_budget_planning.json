@@ -7,12 +7,29 @@
 	"standard": "Yes",
 	"system_page": 0,
 	"roles": [
-		{ "role": "System Manager" },
-		{ "role": "HRP System Manager" },
-		{ "role": "HRP Budget Manager" },
-		{ "role": "HRP Budget User" },
-		{ "role": "HRP Finance User" },
-		{ "role": "HRP Auditor" },
-		{ "role": "HRP Data Steward" }
+		{
+			"role": "System Manager"
+		},
+		{
+			"role": "HRP System Manager"
+		},
+		{
+			"role": "HRP Budget Manager"
+		},
+		{
+			"role": "HRP Budget User"
+		},
+		{
+			"role": "HRP Finance User"
+		},
+		{
+			"role": "HRP Auditor"
+		},
+		{
+			"role": "HRP Data Steward"
+		},
+		{
+			"role": "HRP Budget Approver"
+		}
 	]
 }

@@ -28,6 +28,114 @@ frappe.pages["hrp-budget-planning"].on_page_load = (wrapper) => {
 			return call(method, args, { "Idempotency-Key": key });
 		};
 	};
+	const submissionCall = async (method, args, headers) =>
+		(
+			await frappe.call({
+				method: "medops.api.v1.finance.submission." + method,
+				args,
+				headers,
+				type: headers ? "POST" : "GET",
+				freeze: true,
+			})
+		).message;
+	async function showSubmission(name) {
+		const doc = await submissionCall("get_record", { name });
+		const dialog = new frappe.ui.Dialog({
+			title: __("科室预算申报"),
+			size: "extra-large",
+			fields: [{ fieldname: "facts", fieldtype: "HTML" }],
+		});
+		const content = dialog.fields_dict.facts.$wrapper.empty();
+		$("<h4>").text(doc.subject).appendTo(content);
+		$("<p>").text(__("已封存，待人工审批；当前申报不形成可用预算。")).appendTo(content);
+		$("<p>")
+			.text(`${doc.currency} ${doc.total_amount} · ${doc.posting_date} · ${doc.applicant}`)
+			.appendTo(content);
+		const proof = $("<details>").appendTo(content);
+		$("<summary>").text(__("来源与封存凭证")).appendTo(proof);
+		$("<p>")
+			.text(`${__("申报事实摘要")}：${doc.snapshot_digest}`)
+			.appendTo(proof);
+		const tableContainer = $("<div class='table-responsive'>").appendTo(content);
+		const rows = table(tableContainer, [
+			"原始科室",
+			"预算科目",
+			"资金来源",
+			"会计科目",
+			"项目",
+			"期间开始",
+			"期间结束",
+			"精确金额",
+		]);
+		const displayLines = [...doc.lines].sort(
+			(a, b) => a.period_index - b.period_index || a.fact_key.localeCompare(b.fact_key),
+		);
+		for (const row of displayLines) {
+			const tr = $("<tr>").appendTo(rows);
+			for (const field of [
+				"organization_unit",
+				"budget_subject",
+				"funding_source",
+				"account",
+				"project",
+				"period_start",
+				"period_end",
+				"amount",
+			]) {
+				$("<td>")
+					.text(doc.display_labels?.[field]?.[row[field]] || row[field] || "")
+					.appendTo(tr);
+			}
+		}
+		const approvalButton = $("<button class='btn btn-primary mt-3'>")
+			.text(__("查看审批 / 发起审批"))
+			.on("click", async () => {
+				const method = "medops.api.v1.finance.approval.";
+				const existing = (
+					await frappe.call({
+						method: method + "list_records",
+						args: { filters: { submission: doc.name }, limit: 1 },
+						type: "GET",
+					})
+				).message;
+				const latest = existing.items[0];
+				if (latest && ["Pending", "Approved"].includes(latest.status)) {
+					dialog.hide();
+					return frappe.set_route("hrp-budget-approvals", latest.name);
+				}
+				if (!writer) return frappe.msgprint(__("当前没有可见审批单。"));
+				const key = `budget-approval-${frappe.utils.get_random(24)}`;
+				frappe.confirm(__("将当前封存申报提交独立审批，确认发起？"), async () => {
+					const result = (
+						await frappe.call({
+							method: method + "request_case",
+							args: { payload: { submission: doc.name, expected_revision: doc.revision } },
+							headers: { "Idempotency-Key": key },
+							type: "POST",
+							freeze: true,
+						})
+					).message;
+					dialog.hide();
+					frappe.set_route("hrp-budget-approvals", result.name);
+				});
+			});
+		approvalButton.appendTo(content);
+		dialog.show();
+	}
+	async function openSubmission(plan) {
+		const existing = await submissionCall("list_records", { filters: { source_plan: plan.name }, limit: 1 });
+		if (existing.items.length) return showSubmission(existing.items[0].name);
+		if (!writer || plan.status !== "Draft") return frappe.msgprint(__("当前计划还没有可见申报。"));
+		const key = `budget-submission-${frappe.utils.get_random(24)}`;
+		frappe.confirm(__("将冻结计划封存为科室申报；封存后不能修改，后续需人工审批。确认生成？"), async () => {
+			const result = await submissionCall(
+				"seal_department",
+				{ payload: { source_plan: plan.name, expected_revision: plan.revision } },
+				{ "Idempotency-Key": key },
+			);
+			await showSubmission(result.name);
+		});
+	}
 	const body = $("<div class='mt-3'>");
 	const fields = {},
 		filters = $("<div class='row'>").appendTo(page.body);
@@ -160,9 +268,11 @@ frappe.pages["hrp-budget-planning"].on_page_load = (wrapper) => {
 		for (const row of result.items) {
 			const tr = $("<tr>").appendTo(tb);
 			[row.subject, statusLabel(row.status)].forEach((v) => $("<td>").text(v).appendTo(tr));
-			button($("<td>").appendTo(tr), "查看计划", async () =>
+			const actions = $("<td>").appendTo(tr);
+			button(actions, "查看计划", async () =>
 				planDialog(version, await call("get_record", { kind: "plan", name: row.name })),
 			);
+			if (version.status === "Frozen") button(actions, "预算申报", () => openSubmission(row));
 		}
 		if (!result.items.length) $("<p>").text(__("当前版本没有可见的科室计划。")).appendTo(body);
 		if (offset) button(body, "上一页", () => openVersion(name, Math.max(0, offset - 50)));

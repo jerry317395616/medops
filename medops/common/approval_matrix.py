@@ -7,6 +7,12 @@ from decimal import Decimal, InvalidOperation
 from typing import Literal, TypedDict
 
 from medops.common.domain_service import canonical_json, fingerprint_json
+from medops.common.exact_money import (
+	MAX_APPROVAL_AMOUNT,
+	ExactMoneyError,
+	canonical_decimal,
+	exact_decimal_amount,
+)
 from medops.common.organization import (
 	OrganizationContractError,
 	normalize_boolean,
@@ -22,6 +28,8 @@ from medops.common.organization import (
 )
 
 APPROVAL_MATRIX_SCHEMA_VERSION = 1
+EXACT_APPROVAL_SCHEMA_VERSION = 2
+EXACT_APPROVAL_TARGETS = frozenset({"HRP Budget Approval"})
 APPROVAL_MATRIX_DOCTYPE = "HRP Approval Matrix"
 APPROVAL_MATRIX_ROW_DOCTYPE = "HRP Approval Matrix Row"
 APPROVER_TYPES = ("Role", "User")
@@ -51,15 +59,26 @@ class ResolvedApprover(DelegatedApproverEvidence):
 	source_value: str
 
 
-class ResolvedApprovalStep(TypedDict):
+class ApprovalStepSources(TypedDict, total=False):
+	source_assignments: list[ResolvedApprover]
+
+
+class ResolvedApprovalStep(ApprovalStepSources):
 	sequence_no: int
 	step_name: str
 	approval_mode: ApprovalMode
-	threshold_amount: float
+	threshold_amount: float | str
 	approvers: list[ResolvedApprover]
 
 
-class ApprovalDecision(TypedDict):
+class ExactApprovalDecisionContext(TypedDict, total=False):
+	amount: str
+	amount_precision: int
+	context_digest: str
+	policy_schema_version: int
+
+
+class ApprovalDecision(ExactApprovalDecisionContext):
 	schema_version: int
 	doctype: str
 	docname: str
@@ -74,7 +93,24 @@ class ApprovalDecision(TypedDict):
 	decision_digest: str
 
 
-def _decimal(value: object, *, label: str) -> Decimal:
+def approval_amount_profile(schema_version: object = 1, amount_precision: object = 2) -> tuple[int, int]:
+	try:
+		version = normalize_positive_integer(schema_version, label="schema_version")
+		precision = normalize_nonnegative_integer(amount_precision, label="amount_precision")
+	except OrganizationContractError as exc:
+		raise ApprovalMatrixContractError(str(exc)) from exc
+	if version not in (1, 2) or precision > 9 or (version == 1 and precision != 2):
+		raise ApprovalMatrixContractError("unsupported approval amount profile")
+	return version, precision
+
+
+def _decimal(value: object, *, label: str, schema_version: int = 1, amount_precision: int = 2) -> Decimal:
+	if schema_version == EXACT_APPROVAL_SCHEMA_VERSION:
+		try:
+			return Decimal(exact_decimal_amount(value, amount_precision, maximum=MAX_APPROVAL_AMOUNT))
+		except ExactMoneyError as exc:
+			raise ApprovalMatrixContractError(f"{label}: {exc}") from exc
+	# Preserve version1 parsing/quantization, including historical float inputs.
 	if isinstance(value, bool):
 		raise ApprovalMatrixContractError(f"{label} must be an amount")
 	try:
@@ -134,6 +170,8 @@ class ApprovalMatrixStep:
 	approver_user: str | None
 	approval_mode: ApprovalMode
 	description: str | None
+	schema_version: int = 1
+	amount_precision: int = 2
 
 	@property
 	def source_value(self) -> str:
@@ -146,7 +184,11 @@ class ApprovalMatrixStep:
 		return {
 			"sequence_no": self.sequence_no,
 			"step_name": self.step_name,
-			"threshold_amount": float(self.threshold_amount),
+			"threshold_amount": (
+				float(self.threshold_amount)
+				if self.schema_version == 1
+				else canonical_decimal(self.threshold_amount)
+			),
 			"approver_type": self.approver_type,
 			"approver_role": self.approver_role,
 			"approver_user": self.approver_user,
@@ -165,8 +207,11 @@ def build_approval_matrix_step(
 	approver_user: object = None,
 	approval_mode: object = "All",
 	description: object = None,
+	schema_version: object = 1,
+	amount_precision: object = 2,
 ) -> ApprovalMatrixStep:
 	try:
+		version, precision = approval_amount_profile(schema_version, amount_precision)
 		sequence = normalize_positive_integer(sequence_no, label="sequence_no")
 		name = normalize_required_text(step_name, label="step_name")
 		if not isinstance(approver_type, str) or approver_type not in APPROVER_TYPES:
@@ -182,18 +227,25 @@ def build_approval_matrix_step(
 		return ApprovalMatrixStep(
 			sequence_no=sequence,
 			step_name=name,
-			threshold_amount=_decimal(threshold_amount, label="threshold_amount"),
+			threshold_amount=_decimal(
+				threshold_amount, label="threshold_amount", schema_version=version, amount_precision=precision
+			),
 			approver_type=approver_type,
 			approver_role=role,
 			approver_user=user,
 			approval_mode=approval_mode,
 			description=normalize_optional_text(description, label="description"),
+			schema_version=version,
+			amount_precision=precision,
 		)
 	except OrganizationContractError as exc:
 		raise ApprovalMatrixContractError(str(exc)) from exc
 
 
-def build_approval_matrix_steps(value: object) -> tuple[ApprovalMatrixStep, ...]:
+def build_approval_matrix_steps(
+	value: object, *, schema_version: object = 1, amount_precision: object = 2
+) -> tuple[ApprovalMatrixStep, ...]:
+	version, precision = approval_amount_profile(schema_version, amount_precision)
 	loaded = value
 	if isinstance(value, str):
 		if len(value.encode("utf-8")) > MAX_DIMENSIONS_BYTES * 4:
@@ -204,6 +256,8 @@ def build_approval_matrix_steps(value: object) -> tuple[ApprovalMatrixStep, ...]
 			raise ApprovalMatrixContractError("steps must contain valid JSON") from exc
 	if not isinstance(loaded, list):
 		raise ApprovalMatrixContractError("steps must be a list")
+	if not 1 <= len(loaded) <= MAX_APPROVAL_STEPS:
+		raise ApprovalMatrixContractError("approval step count is outside the allowed range")
 	allowed = {
 		"sequence_no",
 		"step_name",
@@ -221,7 +275,7 @@ def build_approval_matrix_steps(value: object) -> tuple[ApprovalMatrixStep, ...]
 		for required in ("sequence_no", "step_name", "threshold_amount", "approver_type"):
 			if required not in row:
 				raise ApprovalMatrixContractError(f"an approval step is missing {required}")
-		steps.append(build_approval_matrix_step(**row))
+		steps.append(build_approval_matrix_step(**row, schema_version=version, amount_precision=precision))
 	_validate_step_chain(tuple(steps))
 	return tuple(steps)
 
@@ -272,10 +326,12 @@ class ApprovalMatrixDefinition:
 	remarks: str | None
 	steps: tuple[ApprovalMatrixStep, ...]
 	policy_digest: str
+	schema_version: int = 1
+	amount_precision: int = 2
 
 	def as_public_dict(self) -> dict[str, object]:
-		return {
-			"schema_version": APPROVAL_MATRIX_SCHEMA_VERSION,
+		payload: dict[str, object] = {
+			"schema_version": self.schema_version,
 			"code": self.code,
 			"display_name": self.display_name,
 			"target_doctype": self.target_doctype,
@@ -293,6 +349,9 @@ class ApprovalMatrixDefinition:
 			"steps": [step.as_dict() for step in self.steps],
 			"policy_digest": self.policy_digest,
 		}
+		if self.schema_version == EXACT_APPROVAL_SCHEMA_VERSION:
+			payload["amount_precision"] = self.amount_precision
+		return payload
 
 
 def build_approval_matrix_definition(
@@ -312,13 +371,20 @@ def build_approval_matrix_definition(
 	revision: object = 1,
 	remarks: object = None,
 	steps: tuple[ApprovalMatrixStep, ...] | list[ApprovalMatrixStep],
+	schema_version: object = 1,
+	amount_precision: object = 2,
 ) -> ApprovalMatrixDefinition:
 	try:
+		version, precision = approval_amount_profile(schema_version, amount_precision)
 		start = normalize_required_date(valid_from, label="valid_from")
 		end = normalize_optional_date(valid_to, label="valid_to")
 		validate_date_range(start, end)
 		normalized_steps = tuple(steps)
 		_validate_step_chain(normalized_steps)
+		if any(
+			(step.schema_version, step.amount_precision) != (version, precision) for step in normalized_steps
+		):
+			raise ApprovalMatrixContractError("approval step amount profile differs from its matrix")
 		normalized_unit = (
 			normalize_reference(organization_unit, label="organization_unit") if organization_unit else None
 		)
@@ -330,7 +396,7 @@ def build_approval_matrix_definition(
 			raise ApprovalMatrixContractError("priority is outside the allowed range")
 		normalized_dimensions = _load_dimensions(dimensions, context=False)
 		payload: dict[str, object] = {
-			"schema_version": APPROVAL_MATRIX_SCHEMA_VERSION,
+			"schema_version": version,
 			"code": normalize_code(code, label="code"),
 			"display_name": normalize_required_text(display_name, label="display_name"),
 			"target_doctype": normalize_reference(target_doctype, label="target_doctype"),
@@ -352,6 +418,8 @@ def build_approval_matrix_definition(
 				)
 			],
 		}
+		if version == EXACT_APPROVAL_SCHEMA_VERSION:
+			payload["amount_precision"] = precision
 		revision_value = normalize_positive_integer(revision, label="revision")
 	except OrganizationContractError as exc:
 		raise ApprovalMatrixContractError(str(exc)) from exc
@@ -372,6 +440,8 @@ def build_approval_matrix_definition(
 		remarks=payload["remarks"] if isinstance(payload["remarks"], str) else None,
 		steps=normalized_steps,
 		policy_digest=fingerprint_json(payload),
+		schema_version=version,
+		amount_precision=precision,
 	)
 
 
@@ -407,6 +477,8 @@ def build_approval_matrix_upsert(
 	remarks: object = None,
 	matrix_name: object = None,
 	expected_revision: object = 0,
+	schema_version: object = 1,
+	amount_precision: object = 2,
 ) -> ApprovalMatrixUpsert:
 	try:
 		expected = normalize_nonnegative_integer(expected_revision, label="expected_revision")
@@ -431,6 +503,8 @@ def build_approval_matrix_upsert(
 			revision=max(expected, 1),
 			remarks=remarks,
 			steps=steps,
+			schema_version=schema_version,
+			amount_precision=amount_precision,
 		),
 		expected_revision=expected,
 	)
@@ -446,12 +520,14 @@ class ApprovalEvaluation:
 	organization_unit: str
 	effective_on: str
 	dimensions: dict[str, str]
+	schema_version: int = 1
+	amount_precision: int = 2
 
 	def as_request_payload(self) -> dict[str, object]:
-		return {
+		payload: dict[str, object] = {
 			"doctype": self.target_doctype,
 			"docname": self.docname,
-			"amount": float(self.amount),
+			"amount": float(self.amount) if self.schema_version == 1 else canonical_decimal(self.amount),
 			"dimensions": {
 				"company": self.company,
 				"hospital": self.hospital,
@@ -460,6 +536,9 @@ class ApprovalEvaluation:
 				**self.dimensions,
 			},
 		}
+		if self.schema_version == EXACT_APPROVAL_SCHEMA_VERSION:
+			payload.update(schema_version=self.schema_version, amount_precision=self.amount_precision)
+		return payload
 
 
 def build_approval_evaluation(
@@ -468,14 +547,20 @@ def build_approval_evaluation(
 	docname: object,
 	amount: object,
 	dimensions: object,
+	schema_version: object = 1,
+	amount_precision: object = 2,
 ) -> ApprovalEvaluation:
 	try:
+		version, precision = approval_amount_profile(schema_version, amount_precision)
+		target = normalize_reference(doctype, label="doctype")
+		if target in EXACT_APPROVAL_TARGETS and version != EXACT_APPROVAL_SCHEMA_VERSION:
+			raise ApprovalMatrixContractError("exact approval target requires the exact amount contract")
 		loaded = _load_dimensions(dimensions, context=True)
 		effective_on = normalize_required_date(loaded.pop("effective_on"), label="effective_on")
 		return ApprovalEvaluation(
-			target_doctype=normalize_reference(doctype, label="doctype"),
+			target_doctype=target,
 			docname=normalize_reference(docname, label="docname"),
-			amount=_decimal(amount, label="amount"),
+			amount=_decimal(amount, label="amount", schema_version=version, amount_precision=precision),
 			company=normalize_reference(loaded.pop("company"), label="company"),
 			hospital=normalize_reference(loaded.pop("hospital"), label="hospital"),
 			organization_unit=normalize_reference(
@@ -484,6 +569,8 @@ def build_approval_evaluation(
 			),
 			effective_on=effective_on,
 			dimensions=loaded,
+			schema_version=version,
+			amount_precision=precision,
 		)
 	except OrganizationContractError as exc:
 		raise ApprovalMatrixContractError(str(exc)) from exc
@@ -496,6 +583,11 @@ def active_steps(
 	return tuple(step for step in definition.steps if amount >= step.threshold_amount)
 
 
+def _approver_source_key(approver: ResolvedApprover, *, exact: bool) -> tuple[str, ...]:
+	key = (approver["source_type"], approver["source_value"])
+	return (*key, approver.get("delegated_from", ""), approver.get("delegation", "")) if exact else key
+
+
 def build_approval_decision(
 	*,
 	evaluation: ApprovalEvaluation,
@@ -503,6 +595,15 @@ def build_approval_decision(
 	definition: ApprovalMatrixDefinition,
 	resolved_rows: list[tuple[ApprovalMatrixStep, list[ResolvedApprover]]],
 ) -> ApprovalDecision:
+	if definition.schema_version == EXACT_APPROVAL_SCHEMA_VERSION and (
+		evaluation.schema_version != EXACT_APPROVAL_SCHEMA_VERSION
+		or evaluation.amount_precision != definition.amount_precision
+	):
+		raise ApprovalMatrixContractError("approval evaluation amount profile differs from its matrix")
+	if evaluation.schema_version == EXACT_APPROVAL_SCHEMA_VERSION:
+		expected = active_steps(definition, evaluation.amount)
+		if len(expected) != len(resolved_rows) or set(expected) != {row for row, _ in resolved_rows}:
+			raise ApprovalMatrixContractError("resolved approval sources differ from the active policy")
 	grouped: dict[int, ResolvedApprovalStep] = {}
 	for row, approvers in resolved_rows:
 		step = grouped.setdefault(
@@ -511,25 +612,43 @@ def build_approval_decision(
 				"sequence_no": row.sequence_no,
 				"step_name": row.step_name,
 				"approval_mode": row.approval_mode,
-				"threshold_amount": float(row.threshold_amount),
+				"threshold_amount": (
+					float(row.threshold_amount)
+					if evaluation.schema_version == 1
+					else canonical_decimal(row.threshold_amount)
+				),
 				"approvers": [],
 			},
 		)
 		for approver in approvers:
+			if evaluation.schema_version == EXACT_APPROVAL_SCHEMA_VERSION:
+				step.setdefault("source_assignments", []).append(approver.copy())
 			existing = next(
 				(item for item in step["approvers"] if item["user"] == approver["user"]),
 				None,
 			)
 			if existing is None:
-				step["approvers"].append(approver)
+				step["approvers"].append(approver.copy() if evaluation.schema_version == 2 else approver)
 				continue
-			if (approver["source_type"], approver["source_value"]) < (
-				existing["source_type"],
-				existing["source_value"],
+			if _approver_source_key(approver, exact=evaluation.schema_version == 2) < _approver_source_key(
+				existing, exact=evaluation.schema_version == 2
 			):
-				existing.update(approver)
+				if evaluation.schema_version == 2:
+					step["approvers"][step["approvers"].index(existing)] = approver.copy()
+				else:
+					existing.update(approver)
 	for step in grouped.values():
 		step["approvers"].sort(key=lambda item: (item["user"], item["source_type"], item["source_value"]))
+		if evaluation.schema_version == EXACT_APPROVAL_SCHEMA_VERSION:
+			step.setdefault("source_assignments", []).sort(
+				key=lambda item: (
+					item["user"],
+					item["source_type"],
+					item["source_value"],
+					item.get("delegated_from", ""),
+					item.get("delegation", ""),
+				)
+			)
 		if not step["approvers"]:
 			raise ApprovalMatrixContractError("an active approval step has no approver")
 	steps = [grouped[key] for key in sorted(grouped)]
@@ -540,12 +659,12 @@ def build_approval_decision(
 		{
 			str(delegation)
 			for step in steps
-			for approver in step["approvers"]
+			for approver in step.get("source_assignments", step["approvers"])
 			if (delegation := approver.get("delegation"))
 		}
 	)
 	decision: ApprovalDecision = {
-		"schema_version": APPROVAL_MATRIX_SCHEMA_VERSION,
+		"schema_version": evaluation.schema_version,
 		"doctype": evaluation.target_doctype,
 		"docname": evaluation.docname,
 		"matrix": matrix,
@@ -558,6 +677,13 @@ def build_approval_decision(
 		"steps": steps,
 		"decision_digest": "",
 	}
+	if evaluation.schema_version == EXACT_APPROVAL_SCHEMA_VERSION:
+		decision.update(
+			amount=canonical_decimal(evaluation.amount),
+			amount_precision=evaluation.amount_precision,
+			context_digest=fingerprint_json(evaluation.as_request_payload()),
+			policy_schema_version=definition.schema_version,
+		)
 	decision["decision_digest"] = fingerprint_json(decision)
 	return decision
 
@@ -569,6 +695,8 @@ __all__ = [
 	"APPROVAL_MODES",
 	"APPROVER_TYPES",
 	"CONTEXT_DIMENSIONS",
+	"EXACT_APPROVAL_SCHEMA_VERSION",
+	"EXACT_APPROVAL_TARGETS",
 	"MAX_APPROVAL_STEPS",
 	"MAX_DIMENSIONS",
 	"ApprovalDecision",
@@ -580,6 +708,7 @@ __all__ = [
 	"DelegatedApproverEvidence",
 	"ResolvedApprover",
 	"active_steps",
+	"approval_amount_profile",
 	"build_approval_decision",
 	"build_approval_evaluation",
 	"build_approval_matrix_definition",

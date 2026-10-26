@@ -236,7 +236,8 @@ paths:
       - tokenAuth: []
       responses:
         '200':
-          description: Shared transactional Outbox, Inbox deduplication and lease contract
+          description: Shared transactional Outbox, Inbox deduplication and lease
+            contract
           content:
             application/json:
               schema:
@@ -272,7 +273,8 @@ paths:
       - tokenAuth: []
       responses:
         '200':
-          description: Source-controlled synthetic scenarios and non-production safety policy
+          description: Source-controlled synthetic scenarios and non-production safety
+            policy
           content:
             application/json:
               schema:
@@ -290,7 +292,8 @@ paths:
               schema:
                 $ref: '#/components/schemas/IoneErrorResponse'
         '500':
-          description: Test-data scenario registry or environment configuration is invalid
+          description: Test-data scenario registry or environment configuration is
+            invalid
           content:
             application/json:
               schema:
@@ -308,7 +311,8 @@ paths:
       - tokenAuth: []
       responses:
         '200':
-          description: Source-controlled read-only scenarios, thresholds and environment gate
+          description: Source-controlled read-only scenarios, thresholds and environment
+            gate
           content:
             application/json:
               schema:
@@ -326,7 +330,8 @@ paths:
               schema:
                 $ref: '#/components/schemas/IoneErrorResponse'
         '500':
-          description: Performance registry or managed environment configuration is invalid
+          description: Performance registry or managed environment configuration is
+            invalid
           content:
             application/json:
               schema:
@@ -709,7 +714,8 @@ paths:
           description: Document context conflict
         '500':
           description: Internal error
-      x-required-role: System Manager or HRP System Manager or HRP User or HRP Auditor or HRP Integration User
+      x-required-role: System Manager or HRP System Manager or HRP User or HRP Auditor
+        or HRP Integration User
       x-transaction-boundary: Read-only
       x-idempotency: Read-only deterministic
       requestBody:
@@ -744,6 +750,42 @@ paths:
                       type: string
                   - type: string
                     maxLength: 16384
+                schema_version:
+                  type: integer
+                  enum:
+                  - 1
+                  - 2
+                  default: 1
+                  description: 1保留旧契约；2使用精确金额契约。
+                amount_precision:
+                  type: integer
+                  minimum: 0
+                  maximum: 9
+                  default: 2
+                  description: 版本1固定2；版本2必须与真实单据捕获精度一致。
+              allOf:
+              - oneOf:
+                - properties:
+                    schema_version:
+                      enum:
+                      - 1
+                    amount_precision:
+                      enum:
+                      - 2
+                - required:
+                  - schema_version
+                  properties:
+                    schema_version:
+                      enum:
+                      - 2
+                    amount:
+                      oneOf:
+                      - type: integer
+                        minimum: 0
+                        maximum: 999999999999999
+                      - type: string
+                        maxLength: 64
+                      description: 版本2使用精确字符串或整数；小数JSON number拒绝，值须符合捕获精度。
   /api/method/medops.api.v1.core.approval.upsert:
     post:
       operationId: core_028
@@ -858,8 +900,11 @@ paths:
                         type: string
                         maxLength: 140
                       threshold_amount:
-                        type: number
-                        minimum: 0
+                        oneOf:
+                        - type: number
+                          minimum: 0
+                        - type: string
+                          maxLength: 64
                       approver_type:
                         type: string
                         enum:
@@ -878,6 +923,47 @@ paths:
                         - Any
                       description:
                         type: string
+                schema_version:
+                  type: integer
+                  enum:
+                  - 1
+                  - 2
+                  default: 1
+                  description: 1保留旧契约；2使用精确金额契约。
+                amount_precision:
+                  type: integer
+                  minimum: 0
+                  maximum: 9
+                  default: 2
+                  description: 版本1固定2；版本2必须与真实单据捕获精度一致。
+              allOf:
+              - oneOf:
+                - properties:
+                    schema_version:
+                      enum:
+                      - 1
+                    amount_precision:
+                      enum:
+                      - 2
+                - required:
+                  - schema_version
+                  properties:
+                    schema_version:
+                      enum:
+                      - 2
+                    steps:
+                      type: array
+                      items:
+                        type: object
+                        properties:
+                          threshold_amount:
+                            oneOf:
+                            - type: integer
+                              minimum: 0
+                              maximum: 999999999999999
+                            - type: string
+                              maxLength: 64
+                            description: 版本2使用精确字符串或整数；小数JSON number拒绝，值须符合捕获精度。
   /api/method/medops.api.v1.core.approval.get:
     get:
       operationId: core_029
@@ -924,7 +1010,8 @@ paths:
       - $ref: '#/components/parameters/CorrelationId'
       responses:
         '200':
-          description: Live, deterministic and redacted segregation decision; never replayed from an idempotency snapshot
+          description: Live, deterministic and redacted segregation decision; never
+            replayed from an idempotency snapshot
           content:
             application/json:
               schema:
@@ -960,7 +1047,8 @@ paths:
               schema:
                 $ref: '#/components/schemas/IoneErrorResponse'
         '500':
-          description: Persisted rule references or document scope configuration is invalid
+          description: Persisted rule references or document scope configuration is
+            invalid
           content:
             application/json:
               schema:
@@ -1025,7 +1113,8 @@ paths:
               schema:
                 $ref: '#/components/schemas/SegregationRuleUpsertFrappeResponse'
         '400':
-          description: Invalid rule contract, correlation identifier or missing idempotency key
+          description: Invalid rule contract, correlation identifier or missing idempotency
+            key
           content:
             application/json:
               schema:
@@ -1037,19 +1126,22 @@ paths:
               schema:
                 $ref: '#/components/schemas/IoneErrorResponse'
         '403':
-          description: System management role required or immutable rule identity change attempted
+          description: System management role required or immutable rule identity
+            change attempted
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/IoneErrorResponse'
         '404':
-          description: Rule or referenced DocType, company, hospital, organization unit or role not found
+          description: Rule or referenced DocType, company, hospital, organization
+            unit or role not found
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/IoneErrorResponse'
         '409':
-          description: Duplicate identity, stale revision, invalid referenced state or idempotency conflict
+          description: Duplicate identity, stale revision, invalid referenced state
+            or idempotency conflict
           content:
             application/json:
               schema:
@@ -1282,7 +1374,8 @@ paths:
           description: Effective mapping or referenced scope not found
         '500':
           description: Persisted mapping configuration is invalid
-      x-required-role: System Manager or HRP System Manager or HRP Data Steward or HRP Integration User
+      x-required-role: System Manager or HRP System Manager or HRP Data Steward or
+        HRP Integration User
       x-transaction-boundary: Read-only
       x-idempotency: Read-only deterministic
   /api/method/medops_core.api.v1.master.submit_change:
@@ -1384,7 +1477,8 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/IoneErrorResponse'
-      x-required-role: System Manager or HRP System Manager or HRP User or HRP Integration User
+      x-required-role: System Manager or HRP System Manager or HRP User or HRP Integration
+        User
       x-transaction-boundary: Single DB transaction
       x-idempotency: Required for write
       requestBody:
@@ -1597,7 +1691,8 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/IoneErrorResponse'
-      x-required-role: System Manager or HRP System Manager or HRP User or HRP Auditor or HRP Integration User
+      x-required-role: System Manager or HRP System Manager or HRP User or HRP Auditor
+        or HRP Integration User
       x-transaction-boundary: Read-only
       x-idempotency: Read-only owner scoped
   /api/method/medops_core.api.v1.inbox.list:
@@ -1796,7 +1891,8 @@ paths:
           description: Delegation not found
         '500':
           description: Internal error
-      x-required-role: System Manager or HRP System Manager or HRP Department Manager or HRP User or HRP Auditor
+      x-required-role: System Manager or HRP System Manager or HRP Department Manager
+        or HRP User or HRP Auditor
       x-transaction-boundary: Read-only
       x-idempotency: Read-only owner scoped
   /api/method/medops_finance.api.v1.budget.check:
@@ -4952,7 +5048,8 @@ paths:
         '500':
           description: Persisted organization mapping is invalid
           content: *id001
-      x-required-role: System Manager or HRP System Manager or HRP Data Steward or HRP Integration User
+      x-required-role: System Manager or HRP System Manager or HRP Data Steward or
+        HRP Integration User
       x-transaction-boundary: Read-only
       x-idempotency: Read-only deterministic
   /api/method/medops.api.v1.master_data.upsert_master_data_domain:
@@ -5042,7 +5139,8 @@ paths:
         '500':
           description: Persisted request configuration is invalid
           content: *id001
-      x-required-role: System Manager or HRP System Manager or HRP Data Steward or HRP User
+      x-required-role: System Manager or HRP System Manager or HRP Data Steward or
+        HRP User
       x-transaction-boundary: Single DB transaction
       x-idempotency: Required for write
   /api/method/medops.api.v1.master_data.submit_master_data_request:
@@ -5087,7 +5185,8 @@ paths:
         '500':
           description: Persisted request configuration is invalid
           content: *id001
-      x-required-role: System Manager or HRP System Manager or HRP Data Steward or HRP User
+      x-required-role: System Manager or HRP System Manager or HRP Data Steward or
+        HRP User
       x-transaction-boundary: Single DB transaction
       x-idempotency: Required for write
   /api/method/medops.api.v1.master_data.review_master_data_request:
@@ -5173,7 +5272,8 @@ paths:
         '500':
           description: Persisted request configuration is invalid
           content: *id001
-      x-required-role: System Manager or HRP System Manager or HRP Data Steward or HRP User
+      x-required-role: System Manager or HRP System Manager or HRP Data Steward or
+        HRP User
       x-transaction-boundary: Read-only
       x-idempotency: Read-only deterministic
   /api/method/medops.api.v1.master_data.upsert_external_code_mapping:
@@ -5357,7 +5457,8 @@ paths:
         '500':
           description: Persisted mapping configuration is invalid
           content: *id001
-      x-required-role: System Manager or HRP System Manager or HRP Data Steward or HRP Integration User
+      x-required-role: System Manager or HRP System Manager or HRP Data Steward or
+        HRP Integration User
       x-transaction-boundary: Read-only
       x-idempotency: Read-only deterministic
   /api/method/medops.api.v1.master_data.upsert_data_quality_rule:
@@ -5846,7 +5947,8 @@ paths:
               properties:
                 policy:
                   type: object
-                  description: Closed declarative policy; when_json and assertion_json use bounded all/any, scalar or child-table predicates. No scripts.
+                  description: Closed declarative policy; when_json and assertion_json
+                    use bounded all/any, scalar or child-table predicates. No scripts.
                 expected_revision:
                   type: integer
                   minimum: 0
@@ -6232,13 +6334,15 @@ paths:
               schema:
                 $ref: '#/components/schemas/FrappeResponse'
         '400':
-          description: Invalid input or scoped candidate scan exceeds 5000; narrow filters
+          description: Invalid input or scoped candidate scan exceeds 5000; narrow
+            filters
         '401':
           description: Authentication required
         '403':
           description: Native entity read permission denied
       x-api-code: CORE-044
-      x-required-role: Authenticated role with current scope and native source field read permissions
+      x-required-role: Authenticated role with current scope and native source field
+        read permissions
       x-transaction-boundary: Read-only
       x-idempotency: Not required (read-only)
   /api/method/medops.api.v1.core_workbench.register_population:
@@ -6904,6 +7008,679 @@ paths:
         required: true
         schema:
           type: string
+  /api/method/medops.api.v1.finance.submission.seal_department:
+    post:
+      operationId: fin_025
+      summary: 从冻结编制封存科室申报；不构成财务批准
+      tags:
+      - medops
+      security:
+      - tokenAuth: []
+      responses:
+        '200':
+          description: Current authorized result
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: false
+                required:
+                - message
+                properties:
+                  message:
+                    $ref: '#/components/schemas/BudgetSubmissionAcknowledgement'
+        '400':
+          description: Invalid bounded request
+        '401':
+          description: Authentication required
+        '403':
+          description: Current role, scope, source and field permissions required
+        '404':
+          description: Reference unavailable
+        '409':
+          description: Source, snapshot, revision, identity or idempotency conflict
+      x-api-code: FIN-025
+      x-idempotency: Required for write
+      x-transaction-boundary: Single DB transaction
+      parameters:
+      - name: Idempotency-Key
+        in: header
+        required: true
+        schema:
+          type: string
+          minLength: 1
+          maxLength: 140
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required:
+              - payload
+              properties:
+                payload:
+                  $ref: '#/components/schemas/BudgetDepartmentSealCommand'
+                correlation_id:
+                  type: string
+                  minLength: 1
+                  maxLength: 140
+  /api/method/medops.api.v1.finance.submission.get_record:
+    get:
+      operationId: fin_026
+      summary: 按当前全部来源和字段权限读取封存申报
+      tags:
+      - medops
+      security:
+      - tokenAuth: []
+      responses:
+        '200':
+          description: Current authorized result
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: false
+                required:
+                - message
+                properties:
+                  message:
+                    oneOf:
+                    - $ref: '#/components/schemas/BudgetSubmissionSnapshot'
+                    - $ref: '#/components/schemas/BudgetConsolidationSnapshot'
+        '400':
+          description: Invalid bounded request
+        '401':
+          description: Authentication required
+        '403':
+          description: Current role, scope, source and field permissions required
+        '404':
+          description: Reference unavailable
+        '409':
+          description: Source, snapshot, revision, identity or idempotency conflict
+      x-api-code: FIN-026
+      x-idempotency: Not required (read-only)
+      x-transaction-boundary: Read-only
+      parameters:
+      - name: name
+        in: query
+        required: true
+        schema:
+          type: string
+          minLength: 1
+          maxLength: 140
+  /api/method/medops.api.v1.finance.submission.list_records:
+    get:
+      operationId: fin_027
+      summary: 按当前权限分页查询封存申报
+      tags:
+      - medops
+      security:
+      - tokenAuth: []
+      responses:
+        '200':
+          description: Current authorized result
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: false
+                required:
+                - message
+                properties:
+                  message:
+                    $ref: '#/components/schemas/BudgetSubmissionList'
+        '400':
+          description: Invalid bounded request
+        '401':
+          description: Authentication required
+        '403':
+          description: Current role, scope, source and field permissions required
+        '404':
+          description: Reference unavailable
+        '409':
+          description: Source, snapshot, revision, identity or idempotency conflict
+      x-api-code: FIN-027
+      x-idempotency: Not required (read-only)
+      x-transaction-boundary: Read-only
+      parameters:
+      - name: offset
+        in: query
+        schema:
+          type: integer
+          minimum: 0
+          maximum: 5000
+          default: 0
+      - name: limit
+        in: query
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 100
+          default: 50
+      - name: filters
+        in: query
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              properties:
+                name:
+                  type: string
+                  minLength: 1
+                  maxLength: 140
+                company:
+                  type: string
+                  minLength: 1
+                  maxLength: 140
+                hospital:
+                  type: string
+                  minLength: 1
+                  maxLength: 140
+                organization_unit:
+                  type: string
+                  minLength: 1
+                  maxLength: 140
+                source_plan:
+                  type: string
+                  minLength: 1
+                  maxLength: 140
+                source_version:
+                  type: string
+                  minLength: 1
+                  maxLength: 140
+                fiscal_year:
+                  type: string
+                  minLength: 1
+                  maxLength: 140
+                submission_type:
+                  type: string
+                  minLength: 1
+                  maxLength: 140
+                organization_version:
+                  type: string
+                  minLength: 1
+                  maxLength: 140
+                currency:
+                  type: string
+                  minLength: 1
+                  maxLength: 140
+  /api/method/medops.api.v1.finance.approval.request_case:
+    post:
+      operationId: fin_028
+      summary: 为封存申报发起独立审批轮次
+      tags:
+      - medops
+      security:
+      - sessionAuth: []
+      responses:
+        '200':
+          description: Current authorized result
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: false
+                required:
+                - message
+                properties:
+                  message:
+                    $ref: '#/components/schemas/BudgetApprovalAcknowledgement'
+        '400':
+          description: Invalid bounded request or missing explicit acknowledgement
+        '401':
+          description: Authentication required
+        '403':
+          description: Current role, source, field, scope, actor and same web-session
+            proof required
+        '404':
+          description: Reference or current matrix unavailable
+        '409':
+          description: Expired proof, changed policy, stale revision, consumed confirmation
+            or idempotency conflict
+      x-api-code: FIN-028
+      x-idempotency: Required for write
+      x-transaction-boundary: Single DB transaction
+      description: Authenticated cookie session and normal Frappe CSRF protection
+        required. Authorization-header credentials are rejected. Confirmation never
+        accepts client amounts, source facts, approvers or workflow state.
+      parameters:
+      - name: Idempotency-Key
+        in: header
+        required: true
+        schema:
+          type: string
+          minLength: 1
+          maxLength: 140
+      - name: X-Frappe-CSRF-Token
+        in: header
+        required: true
+        schema:
+          type: string
+          minLength: 1
+          maxLength: 140
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required:
+              - payload
+              properties:
+                payload:
+                  $ref: '#/components/schemas/BudgetApprovalRequest'
+                correlation_id:
+                  type: string
+                  minLength: 1
+                  maxLength: 140
+  /api/method/medops.api.v1.finance.approval.prepare:
+    post:
+      operationId: fin_029
+      summary: 持久化当前审批人的短时确认预览
+      tags:
+      - medops
+      security:
+      - sessionAuth: []
+      responses:
+        '200':
+          description: Current authorized result
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: false
+                required:
+                - message
+                properties:
+                  message:
+                    $ref: '#/components/schemas/BudgetHumanPreview'
+        '400':
+          description: Invalid bounded request or missing explicit acknowledgement
+        '401':
+          description: Authentication required
+        '403':
+          description: Current role, source, field, scope, actor and same web-session
+            proof required
+        '404':
+          description: Reference or current matrix unavailable
+        '409':
+          description: Expired proof, changed policy, stale revision, consumed confirmation
+            or idempotency conflict
+      x-api-code: FIN-029
+      x-idempotency: Required for write
+      x-transaction-boundary: Single DB transaction
+      description: Authenticated cookie session and normal Frappe CSRF protection
+        required. Authorization-header credentials are rejected. Confirmation never
+        accepts client amounts, source facts, approvers or workflow state.
+      parameters:
+      - name: Idempotency-Key
+        in: header
+        required: true
+        schema:
+          type: string
+          minLength: 1
+          maxLength: 140
+      - name: X-Frappe-CSRF-Token
+        in: header
+        required: true
+        schema:
+          type: string
+          minLength: 1
+          maxLength: 140
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required:
+              - payload
+              properties:
+                payload:
+                  $ref: '#/components/schemas/BudgetReviewIntent'
+                correlation_id:
+                  type: string
+                  minLength: 1
+                  maxLength: 140
+  /api/method/medops.api.v1.finance.approval.confirm:
+    post:
+      operationId: fin_030
+      summary: 消费同一网页会话中的明确确认并记录决定
+      tags:
+      - medops
+      security:
+      - sessionAuth: []
+      responses:
+        '200':
+          description: Current authorized result
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: false
+                required:
+                - message
+                properties:
+                  message:
+                    $ref: '#/components/schemas/BudgetApprovalDecisionAcknowledgement'
+        '400':
+          description: Invalid bounded request or missing explicit acknowledgement
+        '401':
+          description: Authentication required
+        '403':
+          description: Current role, source, field, scope, actor and same web-session
+            proof required
+        '404':
+          description: Reference or current matrix unavailable
+        '409':
+          description: Expired proof, changed policy, stale revision, consumed confirmation
+            or idempotency conflict
+      x-api-code: FIN-030
+      x-idempotency: Required for write
+      x-transaction-boundary: Single DB transaction
+      description: Authenticated cookie session and normal Frappe CSRF protection
+        required. Authorization-header credentials are rejected. Confirmation never
+        accepts client amounts, source facts, approvers or workflow state.
+      parameters:
+      - name: Idempotency-Key
+        in: header
+        required: true
+        schema:
+          type: string
+          minLength: 1
+          maxLength: 140
+      - name: X-Frappe-CSRF-Token
+        in: header
+        required: true
+        schema:
+          type: string
+          minLength: 1
+          maxLength: 140
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required:
+              - payload
+              properties:
+                payload:
+                  $ref: '#/components/schemas/BudgetHumanConfirmation'
+                correlation_id:
+                  type: string
+                  minLength: 1
+                  maxLength: 140
+  /api/method/medops.api.v1.finance.approval.get_record:
+    get:
+      operationId: fin_031
+      summary: 按全部来源和字段权限读取审批事实及决定
+      tags:
+      - medops
+      security:
+      - sessionAuth: []
+      responses:
+        '200':
+          description: Current authorized result
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: false
+                required:
+                - message
+                properties:
+                  message:
+                    $ref: '#/components/schemas/BudgetApprovalRecord'
+        '400':
+          description: Invalid bounded request or missing explicit acknowledgement
+        '401':
+          description: Authentication required
+        '403':
+          description: Current role, source, field, scope, actor and same web-session
+            proof required
+        '404':
+          description: Reference or current matrix unavailable
+        '409':
+          description: Expired proof, changed policy, stale revision, consumed confirmation
+            or idempotency conflict
+      x-api-code: FIN-031
+      x-idempotency: Not required (read-only)
+      x-transaction-boundary: Read-only
+      parameters:
+      - name: name
+        in: query
+        required: true
+        schema:
+          type: string
+          minLength: 1
+          maxLength: 140
+  /api/method/medops.api.v1.finance.approval.list_records:
+    get:
+      operationId: fin_032
+      summary: 按当前完整权限分页读取审批单
+      tags:
+      - medops
+      security:
+      - sessionAuth: []
+      responses:
+        '200':
+          description: Current authorized result
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: false
+                required:
+                - message
+                properties:
+                  message:
+                    $ref: '#/components/schemas/BudgetApprovalList'
+        '400':
+          description: Invalid bounded request or missing explicit acknowledgement
+        '401':
+          description: Authentication required
+        '403':
+          description: Current role, source, field, scope, actor and same web-session
+            proof required
+        '404':
+          description: Reference or current matrix unavailable
+        '409':
+          description: Expired proof, changed policy, stale revision, consumed confirmation
+            or idempotency conflict
+      x-api-code: FIN-032
+      x-idempotency: Not required (read-only)
+      x-transaction-boundary: Read-only
+      parameters:
+      - name: offset
+        in: query
+        schema:
+          type: integer
+          minimum: 0
+          maximum: 5000
+      - name: limit
+        in: query
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 100
+      - name: filters
+        in: query
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              properties:
+                name:
+                  type: string
+                  minLength: 1
+                  maxLength: 140
+                company:
+                  type: string
+                  minLength: 1
+                  maxLength: 140
+                hospital:
+                  type: string
+                  minLength: 1
+                  maxLength: 140
+                organization_unit:
+                  type: string
+                  minLength: 1
+                  maxLength: 140
+                submission:
+                  type: string
+                  minLength: 1
+                  maxLength: 140
+                status:
+                  type: string
+                  minLength: 1
+                  maxLength: 140
+  /api/method/medops.api.v1.finance.consolidation.seal:
+    post:
+      operationId: fin_033
+      summary: 从已批准科室申报封存完整来源汇总；最终财务批准另行确认
+      tags:
+      - medops
+      security:
+      - tokenAuth: []
+      responses:
+        '200':
+          description: Current authorized result
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: false
+                required:
+                - message
+                properties:
+                  message:
+                    $ref: '#/components/schemas/BudgetSubmissionAcknowledgement'
+        '400':
+          description: Invalid bounded request
+        '401':
+          description: Authentication required
+        '403':
+          description: Current role, scope, source and field permissions required
+        '404':
+          description: Reference unavailable
+        '409':
+          description: Source, snapshot, revision, identity or idempotency conflict
+      x-api-code: FIN-033
+      x-idempotency: Required for write
+      x-transaction-boundary: Single DB transaction
+      parameters:
+      - name: Idempotency-Key
+        in: header
+        required: true
+        schema:
+          type: string
+          minLength: 1
+          maxLength: 140
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required:
+              - payload
+              properties:
+                payload:
+                  $ref: '#/components/schemas/BudgetConsolidationSealCommand'
+                correlation_id:
+                  type: string
+                  minLength: 1
+                  maxLength: 140
+  /api/method/medops.api.v1.finance.consolidation.eligible:
+    get:
+      operationId: fin_034
+      summary: 按当前全部来源权限分页读取可汇总的已批准科室申报
+      tags:
+      - medops
+      security:
+      - tokenAuth: []
+      responses:
+        '200':
+          description: Current authorized result
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: false
+                required:
+                - message
+                properties:
+                  message:
+                    $ref: '#/components/schemas/BudgetConsolidationEligibleList'
+        '400':
+          description: Invalid bounded request
+        '401':
+          description: Authentication required
+        '403':
+          description: Current role, scope, source and field permissions required
+        '404':
+          description: Reference unavailable
+        '409':
+          description: Source, snapshot, revision, identity or idempotency conflict
+      x-api-code: FIN-034
+      x-idempotency: Not required (read-only)
+      x-transaction-boundary: Read-only
+      parameters:
+      - name: offset
+        in: query
+        schema:
+          type: integer
+          minimum: 0
+          maximum: 5000
+          default: 0
+      - name: limit
+        in: query
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 100
+          default: 50
+      - name: filters
+        in: query
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              properties:
+                company:
+                  type: string
+                  minLength: 1
+                  maxLength: 140
+                hospital:
+                  type: string
+                  minLength: 1
+                  maxLength: 140
+                organization_unit:
+                  type: string
+                  minLength: 1
+                  maxLength: 140
+                organization_version:
+                  type: string
+                  minLength: 1
+                  maxLength: 140
+                fiscal_year:
+                  type: string
+                  minLength: 1
+                  maxLength: 140
+                currency:
+                  type: string
+                  minLength: 1
+                  maxLength: 140
 components:
   headers:
     CorrelationId:
@@ -6917,6 +7694,12 @@ components:
         type: string
         pattern: ^req-[A-Za-z0-9]{20}$
   securitySchemes:
+    sessionAuth:
+      type: apiKey
+      in: cookie
+      name: sid
+      description: Authenticated Frappe browser session; mutations require CSRF and
+        reject Authorization headers.
     tokenAuth:
       type: apiKey
       in: header
@@ -7004,7 +7787,8 @@ components:
         decision_digest:
           type: string
           pattern: ^[0-9a-f]{64}$
-          description: Binds the subject and document context, the redacted decision, and every evaluated rule name, revision and policy digest.
+          description: Binds the subject and document context, the redacted decision,
+            and every evaluated rule name, revision and policy digest.
         correlation_id:
           type: string
           pattern: ^[A-Za-z0-9][A-Za-z0-9._:/-]{0,139}$
@@ -7014,7 +7798,8 @@ components:
         idempotency_replayed:
           type: boolean
           const: false
-          description: Compatibility field that is always false because authorization decisions are evaluated live.
+          description: Compatibility field that is always false because authorization
+            decisions are evaluated live.
     SegregationConflict:
       oneOf:
       - $ref: '#/components/schemas/SegregationRuleConflict'
@@ -7760,7 +8545,8 @@ components:
           type: string
         exception:
           type: string
-          description: Present only when the locked Frappe traceback policy permits it.
+          description: Present only when the locked Frappe traceback policy permits
+            it.
     IoneError:
       type: object
       additionalProperties: false
@@ -9065,3 +9851,1528 @@ components:
       properties:
         message:
           $ref: '#/components/schemas/OrganizationMappingResult'
+    BudgetDepartmentSealCommand:
+      type: object
+      additionalProperties: false
+      required:
+      - source_plan
+      - expected_revision
+      properties:
+        source_plan:
+          type: string
+          minLength: 1
+          maxLength: 140
+        expected_revision:
+          type: integer
+          minimum: 1
+    BudgetSubmissionLine:
+      type: object
+      additionalProperties: false
+      required:
+      - origin_plan
+      - origin_version
+      - organization_unit
+      - cost_center
+      - budget_subject
+      - funding_source
+      - account
+      - fact_key
+      - origin_line_key
+      - origin_plan_digest
+      - project
+      - period_index
+      - period_start
+      - period_end
+      - amount
+      - description
+      properties:
+        origin_plan:
+          type: string
+          minLength: 1
+          maxLength: 140
+        origin_version:
+          type: string
+          minLength: 1
+          maxLength: 140
+        organization_unit:
+          type: string
+          minLength: 1
+          maxLength: 140
+        cost_center:
+          type: string
+          minLength: 1
+          maxLength: 140
+        budget_subject:
+          type: string
+          minLength: 1
+          maxLength: 140
+        funding_source:
+          type: string
+          minLength: 1
+          maxLength: 140
+        account:
+          type: string
+          minLength: 1
+          maxLength: 140
+        fact_key:
+          type: string
+          pattern: ^[0-9a-f]{64}$
+        origin_line_key:
+          type: string
+          pattern: ^[0-9a-f]{64}$
+        origin_plan_digest:
+          type: string
+          pattern: ^[0-9a-f]{64}$
+        project:
+          type:
+          - string
+          - 'null'
+          maxLength: 140
+        period_index:
+          type: integer
+          minimum: 1
+          maximum: 366
+        period_start:
+          type: string
+          format: date
+        period_end:
+          type: string
+          format: date
+        amount:
+          type: string
+          pattern: ^(0|[1-9][0-9]{0,14})(\.[0-9]{1,9})?$
+        description:
+          type:
+          - string
+          - 'null'
+          maxLength: 500
+    BudgetSubmissionSummary:
+      type: object
+      additionalProperties: false
+      required:
+      - company
+      - hospital
+      - organization_version
+      - fiscal_year
+      - currency
+      - source_plan
+      - source_version
+      - organization_unit
+      - cost_center
+      - subject
+      - applicant
+      - sealed_by
+      - name
+      - identity_key
+      - snapshot_digest
+      - source_plan_digest
+      - schema_version
+      - submission_type
+      - docstatus
+      - status
+      - revision
+      - source_plan_revision
+      - currency_precision
+      - posting_date
+      - sealed_at
+      - remarks
+      - total_amount
+      properties:
+        company:
+          type: string
+          minLength: 1
+          maxLength: 140
+        hospital:
+          type: string
+          minLength: 1
+          maxLength: 140
+        organization_version:
+          type: string
+          minLength: 1
+          maxLength: 140
+        fiscal_year:
+          type: string
+          minLength: 1
+          maxLength: 140
+        currency:
+          type: string
+          minLength: 1
+          maxLength: 140
+        source_plan:
+          type: string
+          minLength: 1
+          maxLength: 140
+        source_version:
+          type: string
+          minLength: 1
+          maxLength: 140
+        organization_unit:
+          type: string
+          minLength: 1
+          maxLength: 140
+        cost_center:
+          type: string
+          minLength: 1
+          maxLength: 140
+        subject:
+          type: string
+          minLength: 1
+          maxLength: 140
+        applicant:
+          type: string
+          minLength: 1
+          maxLength: 140
+        sealed_by:
+          type: string
+          minLength: 1
+          maxLength: 140
+        name:
+          type: string
+          pattern: ^[0-9a-f]{64}$
+        identity_key:
+          type: string
+          pattern: ^[0-9a-f]{64}$
+        snapshot_digest:
+          type: string
+          pattern: ^[0-9a-f]{64}$
+        source_plan_digest:
+          type: string
+          pattern: ^[0-9a-f]{64}$
+        schema_version:
+          type: integer
+          const: 1
+        submission_type:
+          type: string
+          const: Department
+        docstatus:
+          type: integer
+          const: 1
+        status:
+          type: string
+          const: Sealed
+        revision:
+          type: integer
+          const: 1
+        source_plan_revision:
+          type: integer
+          minimum: 1
+        currency_precision:
+          type: integer
+          minimum: 0
+          maximum: 9
+        posting_date:
+          type: string
+          format: date
+        sealed_at:
+          type: string
+        remarks:
+          type:
+          - string
+          - 'null'
+          maxLength: 1000
+        total_amount:
+          type: string
+          pattern: ^(0|[1-9][0-9]{0,14})(\.[0-9]{1,9})?$
+    BudgetSubmissionSnapshot:
+      type: object
+      additionalProperties: false
+      required:
+      - company
+      - hospital
+      - organization_version
+      - fiscal_year
+      - currency
+      - source_plan
+      - source_version
+      - organization_unit
+      - cost_center
+      - subject
+      - applicant
+      - sealed_by
+      - name
+      - identity_key
+      - snapshot_digest
+      - source_plan_digest
+      - schema_version
+      - submission_type
+      - docstatus
+      - status
+      - revision
+      - source_plan_revision
+      - currency_precision
+      - posting_date
+      - sealed_at
+      - remarks
+      - total_amount
+      - lines
+      - display_labels
+      properties:
+        company:
+          type: string
+          minLength: 1
+          maxLength: 140
+        hospital:
+          type: string
+          minLength: 1
+          maxLength: 140
+        organization_version:
+          type: string
+          minLength: 1
+          maxLength: 140
+        fiscal_year:
+          type: string
+          minLength: 1
+          maxLength: 140
+        currency:
+          type: string
+          minLength: 1
+          maxLength: 140
+        source_plan:
+          type: string
+          minLength: 1
+          maxLength: 140
+        source_version:
+          type: string
+          minLength: 1
+          maxLength: 140
+        organization_unit:
+          type: string
+          minLength: 1
+          maxLength: 140
+        cost_center:
+          type: string
+          minLength: 1
+          maxLength: 140
+        subject:
+          type: string
+          minLength: 1
+          maxLength: 140
+        applicant:
+          type: string
+          minLength: 1
+          maxLength: 140
+        sealed_by:
+          type: string
+          minLength: 1
+          maxLength: 140
+        name:
+          type: string
+          pattern: ^[0-9a-f]{64}$
+        identity_key:
+          type: string
+          pattern: ^[0-9a-f]{64}$
+        snapshot_digest:
+          type: string
+          pattern: ^[0-9a-f]{64}$
+        source_plan_digest:
+          type: string
+          pattern: ^[0-9a-f]{64}$
+        schema_version:
+          type: integer
+          const: 1
+        submission_type:
+          type: string
+          const: Department
+        docstatus:
+          type: integer
+          const: 1
+        status:
+          type: string
+          const: Sealed
+        revision:
+          type: integer
+          const: 1
+        source_plan_revision:
+          type: integer
+          minimum: 1
+        currency_precision:
+          type: integer
+          minimum: 0
+          maximum: 9
+        posting_date:
+          type: string
+          format: date
+        sealed_at:
+          type: string
+        remarks:
+          type:
+          - string
+          - 'null'
+          maxLength: 1000
+        total_amount:
+          type: string
+          pattern: ^(0|[1-9][0-9]{0,14})(\.[0-9]{1,9})?$
+        lines:
+          type: array
+          minItems: 1
+          maxItems: 5000
+          items:
+            $ref: '#/components/schemas/BudgetSubmissionLine'
+        display_labels:
+          type: object
+          additionalProperties: false
+          required:
+          - organization_unit
+          - budget_subject
+          - funding_source
+          properties:
+            organization_unit:
+              type: object
+              additionalProperties:
+                type: string
+                maxLength: 140
+            budget_subject:
+              type: object
+              additionalProperties:
+                type: string
+                maxLength: 140
+            funding_source:
+              type: object
+              additionalProperties:
+                type: string
+                maxLength: 140
+    BudgetSubmissionAcknowledgement:
+      type: object
+      additionalProperties: false
+      required:
+      - doctype
+      - name
+      - revision
+      - docstatus
+      - idempotency_replayed
+      - correlation_id
+      - request_id
+      properties:
+        doctype:
+          type: string
+          const: HRP Budget Submission
+        name:
+          type: string
+          pattern: ^[0-9a-f]{64}$
+        revision:
+          type: integer
+          const: 1
+        docstatus:
+          type: integer
+          const: 1
+        idempotency_replayed:
+          type: boolean
+        correlation_id:
+          type: string
+          minLength: 1
+          maxLength: 140
+        request_id:
+          type: string
+          minLength: 1
+          maxLength: 140
+    BudgetSubmissionList:
+      type: object
+      additionalProperties: false
+      required:
+      - items
+      - next_offset
+      - limit
+      properties:
+        items:
+          type: array
+          maxItems: 100
+          items:
+            oneOf:
+            - $ref: '#/components/schemas/BudgetSubmissionSummary'
+            - $ref: '#/components/schemas/BudgetConsolidationSummary'
+        next_offset:
+          type:
+          - integer
+          - 'null'
+          minimum: 0
+        limit:
+          type: integer
+          minimum: 1
+          maximum: 100
+    BudgetApprovalRequest:
+      type: object
+      additionalProperties: false
+      required:
+      - submission
+      - expected_revision
+      properties:
+        submission:
+          type: string
+          minLength: 1
+          maxLength: 140
+        expected_revision:
+          type: integer
+          minimum: 1
+    BudgetReviewIntent:
+      type: object
+      additionalProperties: false
+      required:
+      - case
+      - expected_revision
+      - action
+      - reason
+      properties:
+        case:
+          type: string
+          minLength: 1
+          maxLength: 140
+        expected_revision:
+          type: integer
+          minimum: 1
+        action:
+          type: string
+          enum:
+          - Approve
+          - Reject
+          - Withdraw
+        reason:
+          type: string
+          minLength: 1
+          maxLength: 1000
+    BudgetHumanConfirmation:
+      type: object
+      additionalProperties: false
+      required:
+      - confirmation
+      - proof
+      - acknowledge
+      properties:
+        confirmation:
+          type: string
+          minLength: 1
+          maxLength: 140
+        proof:
+          type: string
+          pattern: ^[A-Za-z0-9_-]{32,128}$
+        acknowledge:
+          type: boolean
+          const: true
+    BudgetHumanPreview:
+      type: object
+      additionalProperties: false
+      required:
+      - confirmation
+      - proof
+      - expires_at
+      - case
+      - case_revision
+      - action
+      - reason
+      - total_amount
+      - currency
+      - source_digest
+      - idempotency_replayed
+      - correlation_id
+      - request_id
+      properties:
+        confirmation:
+          type: string
+          minLength: 1
+          maxLength: 140
+        proof:
+          type: string
+          minLength: 32
+          maxLength: 128
+          description: Short-lived secret bound to current authenticated SID; keep
+            in memory only.
+        expires_at:
+          type: string
+        case:
+          type: string
+          pattern: ^[0-9a-f]{64}$
+        case_revision:
+          type: integer
+          minimum: 1
+        action:
+          type: string
+          enum:
+          - Approve
+          - Reject
+          - Withdraw
+        reason:
+          type: string
+        total_amount:
+          type: string
+          pattern: ^(0|[1-9][0-9]{0,14})(\.[0-9]{1,9})?$
+        currency:
+          type: string
+          minLength: 1
+          maxLength: 140
+        source_digest:
+          type: string
+          pattern: ^[0-9a-f]{64}$
+        idempotency_replayed:
+          type: boolean
+        correlation_id:
+          type: string
+          minLength: 1
+          maxLength: 140
+        request_id:
+          type: string
+          minLength: 1
+          maxLength: 140
+    BudgetApprovalAcknowledgement:
+      type: object
+      additionalProperties: false
+      required:
+      - doctype
+      - name
+      - revision
+      - docstatus
+      - status
+      - idempotency_replayed
+      - correlation_id
+      - request_id
+      properties:
+        doctype:
+          type: string
+          const: HRP Budget Approval
+        name:
+          type: string
+          pattern: ^[0-9a-f]{64}$
+        revision:
+          type: integer
+          minimum: 1
+        docstatus:
+          type: integer
+          enum:
+          - 0
+          - 1
+        status:
+          type: string
+          enum:
+          - Pending
+          - Approved
+          - Rejected
+          - Withdrawn
+        idempotency_replayed:
+          type: boolean
+        correlation_id:
+          type: string
+          minLength: 1
+          maxLength: 140
+        request_id:
+          type: string
+          minLength: 1
+          maxLength: 140
+    BudgetApprovalDecisionAcknowledgement:
+      type: object
+      additionalProperties: false
+      required:
+      - doctype
+      - name
+      - revision
+      - docstatus
+      - status
+      - idempotency_replayed
+      - correlation_id
+      - request_id
+      - review
+      properties:
+        doctype:
+          type: string
+          const: HRP Budget Approval
+        name:
+          type: string
+          pattern: ^[0-9a-f]{64}$
+        revision:
+          type: integer
+          minimum: 1
+        docstatus:
+          type: integer
+          enum:
+          - 0
+          - 1
+        status:
+          type: string
+          enum:
+          - Pending
+          - Approved
+          - Rejected
+          - Withdrawn
+        idempotency_replayed:
+          type: boolean
+        correlation_id:
+          type: string
+          minLength: 1
+          maxLength: 140
+        request_id:
+          type: string
+          minLength: 1
+          maxLength: 140
+        review:
+          type: string
+          minLength: 1
+          maxLength: 140
+    BudgetApprovalSummary:
+      type: object
+      additionalProperties: false
+      required:
+      - submission
+      - company
+      - hospital
+      - organization_version
+      - organization_unit
+      - cost_center
+      - fiscal_year
+      - currency
+      - subject
+      - applicant
+      - source_applicant
+      - requested_by
+      - policy_matrix
+      - name
+      - source_digest
+      - policy_digest
+      - decision_digest
+      - round_number
+      - policy_revision
+      - revision
+      - currency_precision
+      - current_step
+      - total_amount
+      - posting_date
+      - requested_at
+      - completed_at
+      - final_review
+      - status
+      - docstatus
+      properties:
+        submission:
+          type: string
+          minLength: 1
+          maxLength: 140
+        company:
+          type: string
+          minLength: 1
+          maxLength: 140
+        hospital:
+          type: string
+          minLength: 1
+          maxLength: 140
+        organization_version:
+          type: string
+          minLength: 1
+          maxLength: 140
+        organization_unit:
+          type: string
+          minLength: 1
+          maxLength: 140
+        cost_center:
+          type:
+          - string
+          - 'null'
+          maxLength: 140
+        fiscal_year:
+          type: string
+          minLength: 1
+          maxLength: 140
+        currency:
+          type: string
+          minLength: 1
+          maxLength: 140
+        subject:
+          type: string
+          minLength: 1
+          maxLength: 140
+        applicant:
+          type: string
+          minLength: 1
+          maxLength: 140
+        source_applicant:
+          type: string
+          minLength: 1
+          maxLength: 140
+        requested_by:
+          type: string
+          minLength: 1
+          maxLength: 140
+        policy_matrix:
+          type: string
+          minLength: 1
+          maxLength: 140
+        name:
+          type: string
+          pattern: ^[0-9a-f]{64}$
+        source_digest:
+          type: string
+          pattern: ^[0-9a-f]{64}$
+        policy_digest:
+          type: string
+          pattern: ^[0-9a-f]{64}$
+        decision_digest:
+          type: string
+          pattern: ^[0-9a-f]{64}$
+        round_number:
+          type: integer
+          minimum: 1
+        policy_revision:
+          type: integer
+          minimum: 1
+        revision:
+          type: integer
+          minimum: 1
+        currency_precision:
+          type: integer
+          minimum: 0
+          maximum: 9
+        current_step:
+          type: integer
+          minimum: 0
+          maximum: 100
+        total_amount:
+          type: string
+          pattern: ^(0|[1-9][0-9]{0,14})(\.[0-9]{1,9})?$
+        posting_date:
+          type: string
+          format: date
+        requested_at:
+          type: string
+        completed_at:
+          type:
+          - string
+          - 'null'
+        final_review:
+          type:
+          - string
+          - 'null'
+          maxLength: 140
+        status:
+          type: string
+          enum:
+          - Pending
+          - Approved
+          - Rejected
+          - Withdrawn
+        docstatus:
+          type: integer
+          enum:
+          - 0
+          - 1
+    BudgetApprovalRecord:
+      type: object
+      additionalProperties: false
+      required:
+      - submission
+      - company
+      - hospital
+      - organization_version
+      - organization_unit
+      - cost_center
+      - fiscal_year
+      - currency
+      - subject
+      - applicant
+      - source_applicant
+      - requested_by
+      - policy_matrix
+      - name
+      - source_digest
+      - policy_digest
+      - decision_digest
+      - round_number
+      - policy_revision
+      - revision
+      - currency_precision
+      - current_step
+      - total_amount
+      - posting_date
+      - requested_at
+      - completed_at
+      - final_review
+      - status
+      - docstatus
+      - steps
+      - reviews
+      - current_voters
+      properties:
+        submission:
+          type: string
+          minLength: 1
+          maxLength: 140
+        company:
+          type: string
+          minLength: 1
+          maxLength: 140
+        hospital:
+          type: string
+          minLength: 1
+          maxLength: 140
+        organization_version:
+          type: string
+          minLength: 1
+          maxLength: 140
+        organization_unit:
+          type: string
+          minLength: 1
+          maxLength: 140
+        cost_center:
+          type:
+          - string
+          - 'null'
+          maxLength: 140
+        fiscal_year:
+          type: string
+          minLength: 1
+          maxLength: 140
+        currency:
+          type: string
+          minLength: 1
+          maxLength: 140
+        subject:
+          type: string
+          minLength: 1
+          maxLength: 140
+        applicant:
+          type: string
+          minLength: 1
+          maxLength: 140
+        source_applicant:
+          type: string
+          minLength: 1
+          maxLength: 140
+        requested_by:
+          type: string
+          minLength: 1
+          maxLength: 140
+        policy_matrix:
+          type: string
+          minLength: 1
+          maxLength: 140
+        name:
+          type: string
+          pattern: ^[0-9a-f]{64}$
+        source_digest:
+          type: string
+          pattern: ^[0-9a-f]{64}$
+        policy_digest:
+          type: string
+          pattern: ^[0-9a-f]{64}$
+        decision_digest:
+          type: string
+          pattern: ^[0-9a-f]{64}$
+        round_number:
+          type: integer
+          minimum: 1
+        policy_revision:
+          type: integer
+          minimum: 1
+        revision:
+          type: integer
+          minimum: 1
+        currency_precision:
+          type: integer
+          minimum: 0
+          maximum: 9
+        current_step:
+          type: integer
+          minimum: 0
+          maximum: 100
+        total_amount:
+          type: string
+          pattern: ^(0|[1-9][0-9]{0,14})(\.[0-9]{1,9})?$
+        posting_date:
+          type: string
+          format: date
+        requested_at:
+          type: string
+        completed_at:
+          type:
+          - string
+          - 'null'
+        final_review:
+          type:
+          - string
+          - 'null'
+          maxLength: 140
+        status:
+          type: string
+          enum:
+          - Pending
+          - Approved
+          - Rejected
+          - Withdrawn
+        docstatus:
+          type: integer
+          enum:
+          - 0
+          - 1
+        steps:
+          type: array
+          maxItems: 100
+          items:
+            type: object
+            additionalProperties: false
+            required:
+            - sequence_no
+            - step_name
+            - approval_mode
+            - approvers
+            properties:
+              sequence_no:
+                type: integer
+                minimum: 1
+              step_name:
+                type: string
+                minLength: 1
+                maxLength: 140
+              approval_mode:
+                type: string
+                enum:
+                - All
+                - Any
+              approvers:
+                type: array
+                maxItems: 100
+                items:
+                  type: string
+                  minLength: 1
+                  maxLength: 140
+        reviews:
+          type: array
+          maxItems: 10000
+          items:
+            type: object
+            additionalProperties: false
+            required:
+            - name
+            - actor
+            - action
+            - sequence_no
+            - reason
+            - recorded_at
+            - case_revision
+            - event_digest
+            properties:
+              name:
+                type: string
+                minLength: 1
+                maxLength: 140
+              actor:
+                type: string
+                minLength: 1
+                maxLength: 140
+              action:
+                type: string
+                enum:
+                - Approve
+                - Reject
+                - Withdraw
+              sequence_no:
+                type: integer
+                minimum: 1
+              reason:
+                type: string
+                maxLength: 1000
+              recorded_at:
+                type: string
+              case_revision:
+                type: integer
+                minimum: 1
+              event_digest:
+                type: string
+                pattern: ^[0-9a-f]{64}$
+        current_voters:
+          type: array
+          maxItems: 100
+          items:
+            type: string
+            minLength: 1
+            maxLength: 140
+    BudgetApprovalList:
+      type: object
+      additionalProperties: false
+      required:
+      - items
+      - next_offset
+      - limit
+      properties:
+        items:
+          type: array
+          maxItems: 100
+          items:
+            $ref: '#/components/schemas/BudgetApprovalSummary'
+        next_offset:
+          type:
+          - integer
+          - 'null'
+          minimum: 0
+        limit:
+          type: integer
+          minimum: 1
+          maximum: 100
+    BudgetConsolidationSelection:
+      type: object
+      additionalProperties: false
+      required:
+      - submission
+      - expected_revision
+      - approval_case
+      - expected_approval_revision
+      - snapshot_digest
+      properties:
+        submission: &id027
+          type: string
+          minLength: 1
+          maxLength: 140
+        expected_revision:
+          type: integer
+          const: 1
+        approval_case: *id027
+        expected_approval_revision:
+          type: integer
+          minimum: 2
+        snapshot_digest:
+          type: string
+          pattern: ^[0-9a-f]{64}$
+    BudgetConsolidationSealCommand:
+      type: object
+      additionalProperties: false
+      required:
+      - organization_unit
+      - subject
+      - sources
+      properties:
+        organization_unit: *id027
+        subject:
+          type: string
+          minLength: 1
+          maxLength: 140
+        remarks:
+          type:
+          - string
+          - 'null'
+          maxLength: 1000
+        sources:
+          type: array
+          minItems: 1
+          maxItems: 1000
+          items:
+            $ref: '#/components/schemas/BudgetConsolidationSelection'
+    BudgetConsolidationSource:
+      type: object
+      additionalProperties: false
+      required:
+      - submission
+      - approval_case
+      - approval_final_review
+      - origin_plan
+      - preparer
+      - applicant
+      - requested_by
+      - snapshot_digest
+      - approval_decision_digest
+      - approval_event_digest
+      - approval_round
+      - approval_revision
+      properties:
+        submission:
+          type: string
+          minLength: 1
+          maxLength: 140
+        approval_case:
+          type: string
+          minLength: 1
+          maxLength: 140
+        approval_final_review:
+          type: string
+          minLength: 1
+          maxLength: 140
+        origin_plan:
+          type: string
+          minLength: 1
+          maxLength: 140
+        preparer:
+          type: string
+          minLength: 1
+          maxLength: 140
+        applicant:
+          type: string
+          minLength: 1
+          maxLength: 140
+        requested_by:
+          type: string
+          minLength: 1
+          maxLength: 140
+        snapshot_digest:
+          type: string
+          pattern: ^[0-9a-f]{64}$
+        approval_decision_digest:
+          type: string
+          pattern: ^[0-9a-f]{64}$
+        approval_event_digest:
+          type: string
+          pattern: ^[0-9a-f]{64}$
+        approval_round:
+          type: integer
+          minimum: 1
+        approval_revision:
+          type: integer
+          minimum: 2
+    BudgetConsolidationSummary:
+      type: object
+      additionalProperties: false
+      required:
+      - company
+      - hospital
+      - organization_version
+      - fiscal_year
+      - currency
+      - organization_unit
+      - cost_center
+      - subject
+      - applicant
+      - sealed_by
+      - name
+      - identity_key
+      - snapshot_digest
+      - schema_version
+      - submission_type
+      - docstatus
+      - status
+      - revision
+      - currency_precision
+      - posting_date
+      - sealed_at
+      - remarks
+      - total_amount
+      - source_set_digest
+      - sources
+      properties:
+        company:
+          type: string
+          minLength: 1
+          maxLength: 140
+        hospital:
+          type: string
+          minLength: 1
+          maxLength: 140
+        organization_version:
+          type: string
+          minLength: 1
+          maxLength: 140
+        fiscal_year:
+          type: string
+          minLength: 1
+          maxLength: 140
+        currency:
+          type: string
+          minLength: 1
+          maxLength: 140
+        organization_unit:
+          type: string
+          minLength: 1
+          maxLength: 140
+        cost_center:
+          type: 'null'
+        subject:
+          type: string
+          minLength: 1
+          maxLength: 140
+        applicant:
+          type: string
+          minLength: 1
+          maxLength: 140
+        sealed_by:
+          type: string
+          minLength: 1
+          maxLength: 140
+        name:
+          type: string
+          pattern: ^[0-9a-f]{64}$
+        identity_key:
+          type: string
+          pattern: ^[0-9a-f]{64}$
+        snapshot_digest:
+          type: string
+          pattern: ^[0-9a-f]{64}$
+        schema_version:
+          type: integer
+          const: 2
+        submission_type:
+          type: string
+          const: Consolidated
+        docstatus:
+          type: integer
+          const: 1
+        status:
+          type: string
+          const: Sealed
+        revision:
+          type: integer
+          const: 1
+        currency_precision:
+          type: integer
+          minimum: 0
+          maximum: 9
+        posting_date:
+          type: string
+          format: date
+        sealed_at:
+          type: string
+        remarks:
+          type:
+          - string
+          - 'null'
+          maxLength: 1000
+        total_amount:
+          type: string
+          pattern: ^(0|[1-9][0-9]{0,14})(\.[0-9]{1,9})?$
+        source_set_digest:
+          type: string
+          pattern: ^[0-9a-f]{64}$
+        sources:
+          type: array
+          minItems: 1
+          maxItems: 1000
+          items:
+            $ref: '#/components/schemas/BudgetConsolidationSource'
+    BudgetConsolidationSnapshot:
+      type: object
+      additionalProperties: false
+      required:
+      - company
+      - hospital
+      - organization_version
+      - fiscal_year
+      - currency
+      - organization_unit
+      - cost_center
+      - subject
+      - applicant
+      - sealed_by
+      - name
+      - identity_key
+      - snapshot_digest
+      - schema_version
+      - submission_type
+      - docstatus
+      - status
+      - revision
+      - currency_precision
+      - posting_date
+      - sealed_at
+      - remarks
+      - total_amount
+      - source_set_digest
+      - sources
+      - lines
+      - display_labels
+      properties:
+        company:
+          type: string
+          minLength: 1
+          maxLength: 140
+        hospital:
+          type: string
+          minLength: 1
+          maxLength: 140
+        organization_version:
+          type: string
+          minLength: 1
+          maxLength: 140
+        fiscal_year:
+          type: string
+          minLength: 1
+          maxLength: 140
+        currency:
+          type: string
+          minLength: 1
+          maxLength: 140
+        organization_unit:
+          type: string
+          minLength: 1
+          maxLength: 140
+        cost_center:
+          type: 'null'
+        subject:
+          type: string
+          minLength: 1
+          maxLength: 140
+        applicant:
+          type: string
+          minLength: 1
+          maxLength: 140
+        sealed_by:
+          type: string
+          minLength: 1
+          maxLength: 140
+        name:
+          type: string
+          pattern: ^[0-9a-f]{64}$
+        identity_key:
+          type: string
+          pattern: ^[0-9a-f]{64}$
+        snapshot_digest:
+          type: string
+          pattern: ^[0-9a-f]{64}$
+        schema_version:
+          type: integer
+          const: 2
+        submission_type:
+          type: string
+          const: Consolidated
+        docstatus:
+          type: integer
+          const: 1
+        status:
+          type: string
+          const: Sealed
+        revision:
+          type: integer
+          const: 1
+        currency_precision:
+          type: integer
+          minimum: 0
+          maximum: 9
+        posting_date:
+          type: string
+          format: date
+        sealed_at:
+          type: string
+        remarks:
+          type:
+          - string
+          - 'null'
+          maxLength: 1000
+        total_amount:
+          type: string
+          pattern: ^(0|[1-9][0-9]{0,14})(\.[0-9]{1,9})?$
+        source_set_digest:
+          type: string
+          pattern: ^[0-9a-f]{64}$
+        sources:
+          type: array
+          minItems: 1
+          maxItems: 1000
+          items:
+            $ref: '#/components/schemas/BudgetConsolidationSource'
+        lines:
+          type: array
+          minItems: 1
+          maxItems: 50000
+          items:
+            $ref: '#/components/schemas/BudgetSubmissionLine'
+        display_labels:
+          type: object
+          additionalProperties: false
+          required:
+          - organization_unit
+          - budget_subject
+          - funding_source
+          properties:
+            organization_unit:
+              type: object
+              additionalProperties:
+                type: string
+                maxLength: 140
+            budget_subject:
+              type: object
+              additionalProperties:
+                type: string
+                maxLength: 140
+            funding_source:
+              type: object
+              additionalProperties:
+                type: string
+                maxLength: 140
+    BudgetConsolidationEligibleSource:
+      type: object
+      additionalProperties: false
+      required:
+      - submission
+      - expected_revision
+      - approval_case
+      - expected_approval_revision
+      - snapshot_digest
+      - company
+      - hospital
+      - organization_version
+      - fiscal_year
+      - currency
+      - organization_unit
+      - cost_center
+      - subject
+      - currency_precision
+      - total_amount
+      - line_count
+      properties:
+        submission: &id028
+          type: string
+          minLength: 1
+          maxLength: 140
+        expected_revision:
+          type: integer
+          const: 1
+        approval_case: *id028
+        expected_approval_revision:
+          type: integer
+          minimum: 2
+        snapshot_digest:
+          type: string
+          pattern: ^[0-9a-f]{64}$
+        company:
+          type: string
+          minLength: 1
+          maxLength: 140
+        hospital:
+          type: string
+          minLength: 1
+          maxLength: 140
+        organization_version:
+          type: string
+          minLength: 1
+          maxLength: 140
+        fiscal_year:
+          type: string
+          minLength: 1
+          maxLength: 140
+        currency:
+          type: string
+          minLength: 1
+          maxLength: 140
+        organization_unit:
+          type: string
+          minLength: 1
+          maxLength: 140
+        cost_center:
+          type: string
+          minLength: 1
+          maxLength: 140
+        subject:
+          type: string
+          minLength: 1
+          maxLength: 140
+        currency_precision:
+          type: integer
+          minimum: 0
+          maximum: 9
+        total_amount:
+          type: string
+          pattern: ^(0|[1-9][0-9]{0,14})(\.[0-9]{1,9})?$
+        line_count:
+          type: integer
+          minimum: 1
+          maximum: 5000
+    BudgetConsolidationEligibleList:
+      type: object
+      additionalProperties: false
+      required:
+      - items
+      - next_offset
+      - limit
+      properties:
+        items:
+          type: array
+          maxItems: 100
+          items:
+            $ref: '#/components/schemas/BudgetConsolidationEligibleSource'
+        next_offset:
+          type:
+          - integer
+          - 'null'
+          minimum: 0
+        limit:
+          type: integer
+          minimum: 1
+          maximum: 100

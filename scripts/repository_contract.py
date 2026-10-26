@@ -811,11 +811,23 @@ def find_direct_transaction_commits(root: Path) -> list[str]:
 				and node.func.attr == "commit"
 				and isinstance(node.func.value, ast.Attribute)
 				and node.func.value.attr == "db"
-				and isinstance(node.func.value.value, ast.Name)
-				and node.func.value.value.id == "frappe"
 			):
+				owner = node.func.value.value
+				direct = isinstance(owner, ast.Name) and owner.id == "frappe"
+				local = (
+					isinstance(owner, ast.Attribute)
+					and owner.attr == "local"
+					and isinstance(owner.value, ast.Name)
+					and owner.value.id == "frappe"
+				)
+				# Native Frappe fixture setup/concurrency owns its outer transaction.
+				# This exception is limited to actual test_ files under a tests directory.
+				fixture = path.name.startswith("test_") and "tests" in path.relative_to(app_root).parts
+				if not direct and not (local and not fixture):
+					continue
+				accessor = "frappe.db" if direct else "frappe.local.db"
 				violations.append(
-					f"{path.relative_to(root)}:{node.lineno} calls frappe.db.commit; "
+					f"{path.relative_to(root)}:{node.lineno} calls {accessor}.commit; "
 					"the outer Frappe transaction owns the commit"
 				)
 	return violations
@@ -4025,6 +4037,8 @@ def validate_approval_matrix_contract(root: Path) -> list[str]:
 			"code",
 			"display_name",
 			"target_doctype",
+			"amount_schema_version",
+			"amount_precision",
 			"enabled",
 			"company",
 			"hospital",
@@ -4043,6 +4057,7 @@ def validate_approval_matrix_contract(root: Path) -> list[str]:
 			"sequence_no",
 			"step_name",
 			"threshold_amount",
+			"exact_threshold_amount",
 			"approver_type",
 			"approver_role",
 			"approver_user",
@@ -4070,6 +4085,12 @@ def validate_approval_matrix_contract(root: Path) -> list[str]:
 		blueprint.pop("x_hrp", None)
 		if runtime != blueprint:
 			violations.append(f"{name} runtime and blueprint metadata must match")
+		if name == APPROVAL_MATRIX_ROW_DOCTYPE:
+			types = {field["fieldname"]: field["fieldtype"] for field in runtime.get("fields", [])}
+			if types.get("threshold_amount") != "Currency" or types.get("exact_threshold_amount") != "Data":
+				violations.append(
+					"approval amount versions must preserve legacy Currency and exact Data columns"
+				)
 		if "?" in blueprint_paths[name].read_text(encoding="utf-8"):
 			violations.append(f"{name} blueprint contains replacement question marks")
 
@@ -4130,6 +4151,7 @@ def validate_approval_matrix_contract(root: Path) -> list[str]:
 		"idx_hrp_approval_matrix_resolution",
 		"idx_hrp_approval_matrix_organization",
 		"idx_hrp_approval_matrix_step",
+		"idx_hrp_approval_matrix_amount_profile",
 	):
 		if token not in setup_text:
 			violations.append(f"approval matrix migration is missing: {token}")
@@ -5278,6 +5300,59 @@ def validate_core_reports_contract(root: Path) -> list[str]:
 	return violations
 
 
+def validate_budget_submission_contract(root: Path) -> list[str]:
+	"""Sealed exact facts cannot acquire native editing or lose their scope gates."""
+	violations = []
+	for slug, child in (("hrp_budget_submission", False), ("hrp_budget_submission_line", True)):
+		path = root / "medops/hrp_budget/doctype" / slug / f"{slug}.json"
+		if not path.is_file():
+			violations.append(f"missing sealed budget model {slug}")
+			continue
+		doc = json.loads(path.read_text(encoding="utf-8"))
+		blueprint = json.loads(
+			(root / "doctype_blueprints/hrp_budget" / f"{slug}.json").read_text(encoding="utf-8")
+		)
+		if any(doc[key] != blueprint[key] for key in ("fields", "permissions", "is_submittable", "istable")):
+			violations.append(f"sealed budget blueprint differs from runtime: {slug}")
+		if (
+			doc["allow_rename"]
+			or doc["track_changes"]
+			or bool(doc["istable"]) != child
+			or bool(doc["is_submittable"]) == child
+		):
+			violations.append(f"sealed budget lifecycle drift: {slug}")
+		if any(
+			any(p.get(key) for key in ("create", "write", "delete", "submit", "cancel", "amend"))
+			for p in doc["permissions"]
+		):
+			violations.append(f"sealed budget must not grant native mutations: {slug}")
+		fields = {row["fieldname"]: row for row in doc["fields"]}
+		money = fields["amount" if child else "total_amount"]
+		if money["fieldtype"] != "Data" or not money.get("read_only"):
+			violations.append(f"sealed budget money must remain exact read-only Data: {slug}")
+		proof = fields["origin_version_digest" if child else "source_version_digest"]
+		if proof.get("permlevel") != 1 or not proof.get("hidden"):
+			violations.append(f"whole-version integrity proof must stay internal: {slug}")
+	for name in (
+		"uniq_hrp_submission_plan",
+		"idx_hrp_submission_scope",
+		"idx_hrp_submission_version",
+		"uniq_hrp_submission_fact",
+	):
+		if name not in (root / "medops/setup/budget_submission.py").read_text(encoding="utf-8"):
+			violations.append(f"missing sealed budget index: {name}")
+	hooks = (root / "medops/hooks.py").read_text(encoding="utf-8")
+	for callback in (
+		"submission_query",
+		"submission_line_query",
+		"submission_permission",
+		"submission_line_permission",
+	):
+		if f"medops.hrp_budget.services.submission_access.{callback}" not in hooks:
+			violations.append(f"missing sealed budget permission callback: {callback}")
+	return violations
+
+
 def collect_violations(root: Path) -> list[str]:
 	root = root.resolve()
 	violations: list[str] = []
@@ -5337,6 +5412,7 @@ def collect_violations(root: Path) -> list[str]:
 	violations.extend(validate_business_rule_contract(root))
 	violations.extend(validate_core_data_access_contract(root))
 	violations.extend(validate_core_reports_contract(root))
+	violations.extend(validate_budget_submission_contract(root))
 	return violations
 
 

@@ -17,9 +17,10 @@
   method: POST
   path: /api/method/medops.api.v1.core.approval.evaluate
   description: 按真实单据上下文确定性解析动态审批链
-  request_schema: doctype,docname,amount,dimensions
-  response_schema: schema_version,doctype,docname,matrix,matrix_code,matrix_name,policy_version,policy_digest,approvers,steps,decision_digest,correlation_id,request_id,idempotency_replayed
-  required_role: System Manager or HRP System Manager or HRP User or HRP Auditor or HRP Integration User
+  request_schema: doctype,docname,amount,dimensions,schema_version?,amount_precision?
+  response_schema: schema_version,doctype,docname,matrix,matrix_code,matrix_name,policy_version,policy_digest,approvers,steps,decision_digest,correlation_id,request_id,idempotency_replayed,amount?,amount_precision?,context_digest?,policy_schema_version?
+  required_role: System Manager or HRP System Manager or HRP User or HRP Auditor or
+    HRP Integration User
   idempotency: Read-only deterministic
   async: 'No'
   transaction_boundary: Read-only
@@ -38,7 +39,8 @@
   idempotency: Read-only deterministic
   async: 'No'
   transaction_boundary: Read-only
-  audit: Redacted conflicts and digest bound to every evaluated rule name revision and policy digest
+  audit: Redacted conflicts and digest bound to every evaluated rule name revision
+    and policy digest
   version: v1
 - api_code: CORE-004
   app: medops
@@ -48,7 +50,8 @@
   description: 按外部编码解析内部主数据
   request_schema: master_data_domain,company,hospital,organization_unit,external_system,external_code,effective_on
   response_schema: schema_version,name,master_data_domain,target_doctype,internal_name,company,hospital,organization_unit,external_system,external_code,external_label,enabled,valid_from,valid_to,revision,remarks,correlation_id,request_id,idempotency_replayed
-  required_role: System Manager or HRP System Manager or HRP Data Steward or HRP Integration User
+  required_role: System Manager or HRP System Manager or HRP Data Steward or HRP Integration
+    User
   idempotency: Read-only deterministic
   async: 'No'
   transaction_boundary: Read-only
@@ -76,11 +79,13 @@
   description: 取得受控业务编号
   request_schema: scheme,dimensions,date
   response_schema: schema_version,number,reservation_token,scheme,date,dimensions,correlation_id,request_id,idempotency_replayed
-  required_role: System Manager or HRP System Manager or HRP User or HRP Integration User
+  required_role: System Manager or HRP System Manager or HRP User or HRP Integration
+    User
   idempotency: Required for write
   async: 'No'
   transaction_boundary: Single DB transaction
-  audit: Redacted scheme revision template digest dimension digest bucket and sequence log
+  audit: Redacted scheme revision template digest dimension digest bucket and sequence
+    log
   version: v1
 - api_code: CORE-007
   app: medops
@@ -202,7 +207,8 @@
   description: 按组织单元或业务日期解析标准映射
   request_schema: organization_unit or hospital,unit_code,effective_on
   response_schema: schema_version,name,organization_version,organization_unit,company,hospital,unit_code,unit_type,department,cost_center,enabled,revision,remarks,correlation_id,request_id,idempotency_replayed
-  required_role: System Manager or HRP System Manager or HRP Data Steward or HRP Integration User
+  required_role: System Manager or HRP System Manager or HRP Data Steward or HRP Integration
+    User
   idempotency: Read-only deterministic
   async: 'No'
   transaction_boundary: Read-only
@@ -300,7 +306,8 @@
   description: 按内部主数据解析外部编码
   request_schema: master_data_domain,company,hospital,organization_unit,external_system,internal_name,effective_on
   response_schema: schema_version,name,master_data_domain,target_doctype,internal_name,company,hospital,organization_unit,external_system,external_code,external_label,enabled,valid_from,valid_to,revision,remarks,correlation_id,request_id,idempotency_replayed
-  required_role: System Manager or HRP System Manager or HRP Data Steward or HRP Integration User
+  required_role: System Manager or HRP System Manager or HRP Data Steward or HRP Integration
+    User
   idempotency: Read-only deterministic
   async: 'No'
   transaction_boundary: Read-only
@@ -370,7 +377,8 @@
   description: 查询编号预留
   request_schema: reservation_token
   response_schema: schema_version,number,reservation_token,scheme,date,dimensions
-  required_role: System Manager or HRP System Manager or HRP User or HRP Auditor or HRP Integration User
+  required_role: System Manager or HRP System Manager or HRP User or HRP Auditor or
+    HRP Integration User
   idempotency: Read-only owner scoped
   async: 'No'
   transaction_boundary: Read-only
@@ -381,7 +389,7 @@
   method: POST
   path: /api/method/medops.api.v1.core.approval.upsert
   description: 创建或修订受控审批矩阵
-  request_schema: code,display_name,target_doctype,company,hospital,organization_unit,include_descendants,priority,dimensions,enabled,valid_from,valid_to,steps,expected_revision,matrix_name,remarks
+  request_schema: code,display_name,target_doctype,company,hospital,organization_unit,include_descendants,priority,dimensions,enabled,valid_from,valid_to,steps,expected_revision,matrix_name,remarks,schema_version?,amount_precision?
   response_schema: schema_version,name,code,display_name,target_doctype,company,hospital,organization_unit,include_descendants,priority,dimensions,enabled,valid_from,valid_to,revision,steps,policy_digest,changed,changed_fields,correlation_id,request_id,idempotency_replayed
   required_role: System Manager or HRP System Manager
   idempotency: Required for write
@@ -425,7 +433,8 @@
   description: 查询审批委托
   request_schema: delegation
   response_schema: schema_version,name,matrix,matrix_revision,matrix_digest,target_doctype,company,hospital,organization_unit,include_descendants,from_user,to_user,step_sequence,valid_from,valid_to,status,reason,policy_digest,revoked_at,revoked_by,revocation_reason,expired_at,correlation_id,request_id,idempotency_replayed
-  required_role: System Manager or HRP System Manager or HRP Department Manager or HRP User or HRP Auditor
+  required_role: System Manager or HRP System Manager or HRP Department Manager or
+    HRP User or HRP Auditor
   idempotency: Read-only owner scoped
   async: 'No'
   transaction_boundary: Read-only
@@ -1671,7 +1680,8 @@
   description: 按当前组织范围及源字段权限查询主数据记录
   request_schema: entity,company,hospital,organization_unit,status,from_date,to_date,offset,limit
   response_schema: items,next_offset,limit
-  required_role: Authenticated role with current scope and native source field read permissions
+  required_role: Authenticated role with current scope and native source field read
+    permissions
   idempotency: Not required (read-only)
   transaction_boundary: Read-only
   audit: Redacted entity and returned count only
@@ -1889,6 +1899,156 @@
   idempotency: Not required (read-only)
   transaction_boundary: Read-only
   audit: Redacted operation, revision and counts; no financial values
+  version: v1
+  domain_group: Finance
+  async: 'No'
+- api_code: FIN-025
+  app: medops
+  method: POST
+  path: /api/method/medops.api.v1.finance.submission.seal_department
+  description: 从冻结编制封存科室申报；不构成财务批准
+  request_schema: payload
+  response_schema: doctype,name,revision,docstatus,idempotency_replayed,correlation_id,request_id
+  required_role: Budget writer
+  idempotency: Required for write
+  transaction_boundary: Single DB transaction
+  audit: Redacted operation and counts; no financial values
+  version: v1
+  domain_group: Finance
+  async: 'No'
+- api_code: FIN-026
+  app: medops
+  method: GET
+  path: /api/method/medops.api.v1.finance.submission.get_record
+  description: 按当前全部来源和字段权限读取封存申报
+  request_schema: name
+  response_schema: sealed department v1 or consolidated v2 snapshot
+  required_role: Budget reader
+  idempotency: Not required (read-only)
+  transaction_boundary: Read-only
+  audit: Redacted operation and counts; no financial values
+  version: v1
+  domain_group: Finance
+  async: 'No'
+- api_code: FIN-027
+  app: medops
+  method: GET
+  path: /api/method/medops.api.v1.finance.submission.list_records
+  description: 按当前权限分页查询封存申报
+  request_schema: filters,offset,limit
+  response_schema: items,next_offset,limit
+  required_role: Budget reader
+  idempotency: Not required (read-only)
+  transaction_boundary: Read-only
+  audit: Redacted operation and counts; no financial values
+  version: v1
+  domain_group: Finance
+  async: 'No'
+- api_code: FIN-028
+  app: medops
+  method: POST
+  path: /api/method/medops.api.v1.finance.approval.request_case
+  description: 为封存申报发起独立审批轮次
+  request_schema: payload
+  response_schema: BudgetApprovalAcknowledgement
+  required_role: Budget writer or assigned Budget approver; current source, field
+    and scope permissions
+  idempotency: Required for write
+  transaction_boundary: Single DB transaction
+  audit: Redacted event, status, revision and counts; no financial facts or confirmation
+    proof
+  version: v1
+  domain_group: Finance
+  async: 'No'
+- api_code: FIN-029
+  app: medops
+  method: POST
+  path: /api/method/medops.api.v1.finance.approval.prepare
+  description: 持久化当前审批人的短时确认预览
+  request_schema: payload
+  response_schema: BudgetHumanPreview
+  required_role: Budget writer or assigned Budget approver; current source, field
+    and scope permissions
+  idempotency: Required for write
+  transaction_boundary: Single DB transaction
+  audit: Redacted event, status, revision and counts; no financial facts or confirmation
+    proof
+  version: v1
+  domain_group: Finance
+  async: 'No'
+- api_code: FIN-030
+  app: medops
+  method: POST
+  path: /api/method/medops.api.v1.finance.approval.confirm
+  description: 消费同一网页会话中的明确确认并记录决定
+  request_schema: payload
+  response_schema: BudgetApprovalDecisionAcknowledgement
+  required_role: Budget writer or assigned Budget approver; current source, field
+    and scope permissions
+  idempotency: Required for write
+  transaction_boundary: Single DB transaction
+  audit: Redacted event, status, revision and counts; no financial facts or confirmation
+    proof
+  version: v1
+  domain_group: Finance
+  async: 'No'
+- api_code: FIN-031
+  app: medops
+  method: GET
+  path: /api/method/medops.api.v1.finance.approval.get_record
+  description: 按全部来源和字段权限读取审批事实及决定
+  request_schema: name
+  response_schema: BudgetApprovalRecord
+  required_role: Budget writer or assigned Budget approver; current source, field
+    and scope permissions
+  idempotency: Not required (read-only)
+  transaction_boundary: Read-only
+  audit: Redacted event, status, revision and counts; no financial facts or confirmation
+    proof
+  version: v1
+  domain_group: Finance
+  async: 'No'
+- api_code: FIN-032
+  app: medops
+  method: GET
+  path: /api/method/medops.api.v1.finance.approval.list_records
+  description: 按当前完整权限分页读取审批单
+  request_schema: filters,offset,limit
+  response_schema: BudgetApprovalList
+  required_role: Budget writer or assigned Budget approver; current source, field
+    and scope permissions
+  idempotency: Not required (read-only)
+  transaction_boundary: Read-only
+  audit: Redacted event, status, revision and counts; no financial facts or confirmation
+    proof
+  version: v1
+  domain_group: Finance
+  async: 'No'
+- api_code: FIN-033
+  app: medops
+  method: POST
+  path: /api/method/medops.api.v1.finance.consolidation.seal
+  description: 从已批准科室申报封存完整来源汇总；最终财务批准另行确认
+  request_schema: payload
+  response_schema: BudgetSubmissionAcknowledgement
+  required_role: Budget manager
+  idempotency: Required for write
+  transaction_boundary: Single DB transaction
+  audit: Redacted operation and counts; no financial values
+  version: v1
+  domain_group: Finance
+  async: 'No'
+- api_code: FIN-034
+  app: medops
+  method: GET
+  path: /api/method/medops.api.v1.finance.consolidation.eligible
+  description: 按当前全部来源权限分页读取可汇总的已批准科室申报
+  request_schema: filters,offset,limit
+  response_schema: BudgetConsolidationEligibleList
+  required_role: Budget reader
+  idempotency: Not required (read-only)
+  transaction_boundary: Read-only
+  audit: Redacted operation and counts; no financial values
   version: v1
   domain_group: Finance
   async: 'No'

@@ -1,0 +1,96 @@
+{
+  "source_commit": "d9cf20c7b56cfc8fdc1e443ea2d3f880959283c2",
+  "matrix": {
+    "name": "COD032-LEGACY-MIGRATION",
+    "schema_version": 1,
+    "code": "COD032-LEGACY-MIGRATION",
+    "display_name": "组织单元审批矩阵",
+    "target_doctype": "HRP Organization Unit",
+    "company": "COD-025测试医疗法人",
+    "hospital": "COD025-HOSPITAL",
+    "organization_unit": "COD025-HOSPITAL-V0001-COD025-FIN",
+    "include_descendants": false,
+    "priority": 9999,
+    "dimensions": {},
+    "enabled": true,
+    "valid_from": "2026-01-01",
+    "valid_to": null,
+    "revision": 1,
+    "remarks": null,
+    "steps": [
+      {
+        "sequence_no": 1,
+        "step_name": "管理员审批",
+        "threshold_amount": 0.0,
+        "approver_type": "User",
+        "approver_role": null,
+        "approver_user": "Administrator",
+        "approval_mode": "All",
+        "description": null
+      }
+    ],
+    "policy_digest": "46b9d189ce32e6e0cc3d9759b284d308b5379638182dca02753daab0889bb8a5"
+  },
+  "decision": {
+    "approvers": [
+      "Administrator"
+    ],
+    "decision_digest": "0e1c0310c05bbb527f08cf614a1576644ae4330dae9e677139233d71d3ad0aae",
+    "delegations": [],
+    "docname": "COD025-HOSPITAL-V0001-COD025-FIN",
+    "doctype": "HRP Organization Unit",
+    "matrix": "COD032-LEGACY-MIGRATION",
+    "matrix_code": "COD032-LEGACY-MIGRATION",
+    "matrix_name": "组织单元审批矩阵",
+    "policy_digest": "46b9d189ce32e6e0cc3d9759b284d308b5379638182dca02753daab0889bb8a5",
+    "policy_version": 1,
+    "schema_version": 1,
+    "steps": [
+      {
+        "approval_mode": "All",
+        "approvers": [
+          {
+            "source_type": "User",
+            "source_value": "Administrator",
+            "user": "Administrator"
+          }
+        ],
+        "sequence_no": 1,
+        "step_name": "管理员审批",
+        "threshold_amount": 0.0
+      }
+    ]
+  },
+  "request": {
+    "matrix_name": null,
+    "expected_revision": 0,
+    "schema_version": 1,
+    "code": "COD032-LEGACY-MIGRATION",
+    "display_name": "组织单元审批矩阵",
+    "target_doctype": "HRP Organization Unit",
+    "company": "COD-025测试医疗法人",
+    "hospital": "COD025-HOSPITAL",
+    "organization_unit": "COD025-HOSPITAL-V0001-COD025-FIN",
+    "include_descendants": false,
+    "priority": 9999,
+    "dimensions": {},
+    "enabled": true,
+    "valid_from": "2026-01-01",
+    "valid_to": null,
+    "revision": 1,
+    "remarks": null,
+    "steps": [
+      {
+        "sequence_no": 1,
+        "step_name": "管理员审批",
+        "threshold_amount": 0.0,
+        "approver_type": "User",
+        "approver_role": null,
+        "approver_user": "Administrator",
+        "approval_mode": "All",
+        "description": null
+      }
+    ],
+    "policy_digest": "46b9d189ce32e6e0cc3d9759b284d308b5379638182dca02753daab0889bb8a5"
+  }
+}
