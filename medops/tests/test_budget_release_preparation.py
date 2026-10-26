@@ -14,6 +14,7 @@ from medops.common.budget_ledger import (
 )
 from medops.common.error_catalog import IoneApplicationError
 from medops.common.integration_outbox import OUTBOX
+from medops.hrp_budget.services.link_titles import get_link_title
 from medops.hrp_budget.services.release import create_budget_release, revise_budget_release
 from medops.hrp_budget.services.release_access import get_release
 from medops.tests import test_budget_consolidation as source_fixture
@@ -67,6 +68,11 @@ class TestBudgetReleasePreparation(FrappeAPITestCase):
 			self.assertEqual(doc.source_approval, case)
 			self.assertEqual(doc.currency_precision, 9)
 			self.assertEqual(doc.line_count, 2)
+			frappe.set_user(source_fixture.MAKERS[0])
+			with self.assertRaises(IoneApplicationError) as raised:
+				get_link_title(RELEASE, first["name"])
+			self.assertEqual(raised.exception.code, "IONE-CORE-0002")
+			frappe.set_user(source_fixture.MANAGER)
 			with patch.object(frappe.get_meta(RELEASE).get_field("total_amount"), "permlevel", 2):
 				with self.assertRaises(IoneApplicationError) as raised:
 					get_release(first["name"])

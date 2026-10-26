@@ -594,6 +594,24 @@ def _clear_processing_lease(document: TransactionalMessageDocument) -> None:
 	document.lease_expires_at = None
 
 
+def read_message_document(
+	definition: MessageBoxDefinition, message_name: str, *, lock=False
+) -> TransactionalMessageDocument:
+	"""Internal owned adapter read; callers must enforce their business source scope.
+
+	There is no generic HTTP message reader. Payloads and lease hashes must never
+	be returned by an adapter's public projection or placed in its job arguments.
+	"""
+	require_roles(definition.required_roles)
+	validate_message_box_doctype(definition)
+	name = _validate_message_name(message_name)
+	if lock:
+		return _lock_message(definition, name)
+	if not frappe.db.exists(definition.doctype, name):
+		raise_ione_error("RESOURCE_NOT_FOUND")
+	return cast(TransactionalMessageDocument, frappe.get_doc(definition.doctype, name))
+
+
 def _assert_processing_token(
 	document: TransactionalMessageDocument,
 	processing_token: object,
