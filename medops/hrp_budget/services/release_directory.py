@@ -32,7 +32,6 @@ from medops.hrp_budget.services.release_access import (
 )
 from medops.hrp_budget.services.release_sources import approved_release_source
 from medops.hrp_budget.services.statement_authority import refresh_statement_actor
-from medops.hrp_budget.services.statement_cache import read_statement_document
 from medops.hrp_budget.services.statement_permissions import (
 	statement_metadata_types,
 	statement_permission_stamp,
@@ -200,7 +199,7 @@ def directory_candidates(command):
 
 
 def collect_release(name):
-	doc = read_statement_document(RELEASE, name)
+	doc = frappe.get_doc(RELEASE, name)
 	if not frappe.has_permission(RELEASE, "read", doc=doc) or not release_permission(doc, ptype="read"):
 		return None
 	return public_release(doc)

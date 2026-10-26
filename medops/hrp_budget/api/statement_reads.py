@@ -7,7 +7,9 @@ from contextlib import contextmanager, suppress
 import frappe
 
 from medops.common.budget_statement_access import StatementRead, current_statement_read, statement_read
+from medops.common.query_memo import use_query_memoizer
 from medops.hrp_budget.services.statement_authority import refresh_statement_actor
+from medops.hrp_budget.services.statement_cache import cached_statement_value
 from medops.services.errors import raise_ione_error, require_authenticated_user
 
 _MISSING = object()
@@ -45,7 +47,10 @@ def statement_connection(*, actor=None):
 		fresh.sql("SET SESSION TRANSACTION ISOLATION LEVEL READ COMMITTED")
 		fresh.sql("SET SESSION TRANSACTION READ ONLY")
 		fresh.begin()
-		with statement_read(StatementRead(principal, fresh)):
+		with (
+			statement_read(StatementRead(principal, fresh)),
+			use_query_memoizer(cached_statement_value),
+		):
 			refresh_statement_actor()
 			yield
 	finally:

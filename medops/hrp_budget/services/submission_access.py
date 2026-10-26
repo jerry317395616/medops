@@ -9,11 +9,7 @@ from medops.common.budget_approval import SUBMISSION, SUBMISSION_LINE, departmen
 from medops.common.budget_planning import PLAN, VERSION, plan_definition, planning_digest
 from medops.hrp_budget.services.access_graph import read_graph
 from medops.hrp_budget.services.planning_access import READ_ROLES, native_source, plan_permission
-from medops.hrp_budget.services.statement_cache import (
-	cached_statement_value,
-	read_statement_document,
-	statement_document_key,
-)
+from medops.hrp_budget.services.statement_cache import cached_statement_value, statement_document_key
 from medops.hrp_budget.services.submission_documents import stored_facts
 from medops.hrp_workflow_authorization.services.rule_contracts import can_read_named_fields
 from medops.services.data_access import scope_allowed, scope_permission_query
@@ -66,7 +62,7 @@ def _submission_permission(doc, user, ptype):
 	):
 		if not doc.name or not frappe.db.exists(SUBMISSION, doc.name):
 			return False
-		doc = read_statement_document(SUBMISSION, doc.name)
+		doc = frappe.get_doc(SUBMISSION, doc.name)
 	if not scope_allowed(doc, user=user, action="export" if export else "read"):
 		return False
 	named = {field.fieldname for field in doc.meta.fields} - {"source_version_digest", "sources_snapshot"}
@@ -129,7 +125,7 @@ def submission_line_permission(doc, user=None, ptype=None, debug=False):
 	del debug
 	if doc.parenttype != SUBMISSION or not doc.parent or not frappe.db.exists(SUBMISSION, doc.parent):
 		return False
-	parent = read_statement_document(SUBMISSION, doc.parent)
+	parent = frappe.get_doc(SUBMISSION, doc.parent)
 	return frappe.has_permission(SUBMISSION, "read", doc=parent, user=user) and submission_permission(
 		parent, user=user, ptype=ptype
 	)
@@ -139,7 +135,7 @@ def submission_line_permission(doc, user=None, ptype=None, debug=False):
 def get_submission(name: str, *, lock=False):
 	if not frappe.db.exists(SUBMISSION, name):
 		raise_ione_error("RESOURCE_NOT_FOUND")
-	doc = read_statement_document(SUBMISSION, name, for_update=lock)
+	doc = frappe.get_doc(SUBMISSION, name, for_update=lock)
 	if not frappe.has_permission(SUBMISSION, "read", doc=doc) or not submission_permission(doc, ptype="read"):
 		raise_ione_error("PERMISSION_DENIED")
 	return doc

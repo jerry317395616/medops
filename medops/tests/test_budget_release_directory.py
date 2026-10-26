@@ -1,7 +1,6 @@
 from __future__ import annotations
 
-import re
-from contextlib import contextmanager, suppress
+from contextlib import contextmanager
 from copy import deepcopy
 from hmac import compare_digest
 from typing import Any
@@ -14,17 +13,15 @@ from frappe.tests.test_api import FrappeAPITestCase
 
 from medops.api.v1.finance import release as release_api
 from medops.common.budget_ledger import LEDGER, RELEASE, RELEASE_PUBLIC_FIELDS
-from medops.common.budget_planning import PLAN
 from medops.common.budget_release_directory import SOURCE_PUBLIC_FIELDS
 from medops.common.budget_workflow import CASE
 from medops.hrp_budget.api.statement_reads import statement_connection
 from medops.hrp_budget.services import release_directory as directory
-from medops.hrp_budget.services import statement_cache
 from medops.hrp_budget.services.access_graph import access_graph
 from medops.hrp_budget.services.approval_access import case_permission
 from medops.hrp_budget.services.statement_authority import refresh_statement_actor
-from medops.hrp_budget.services.statement_cache import read_statement_document
 from medops.hrp_budget.services.submission_access import submission_permission
+from medops.hrp_workflow_authorization.services.access_scope import grants_for
 from medops.services.errors import raise_ione_error
 from medops.services.module_registry import load_module_registry
 from medops.tests import test_budget_consolidation as source_fixture
@@ -134,75 +131,70 @@ class TestBudgetReleaseDirectory(FrappeAPITestCase):
 		current = self.success(self.listing())["items"][0]
 		self.assertEqual((current["status"], current["revision"]), ("Authorized", 2))
 
-	@contextmanager
-	def trace_plan_document_reads(self, connection):
-		queries = []
-		original = connection.sql
-
-		def sql(query, *args, **kwargs):
-			if re.search(r"\bFROM\s+`tabHRP Budget Plan`", str(query), re.IGNORECASE):
-				queries.append(str(query))
-			return original(query, *args, **kwargs)
-
-		with patch.object(connection, "sql", new=sql):
-			yield queries
-
-	def test_source_document_reuse_detaches_children_and_reloads_after_authority_refresh(self):
-		plan = frappe.db.get_value("HRP Budget Submission", self.sources[0]["submission"], "source_plan")
+	def test_explicit_authority_refresh_invalidates_success_in_an_outer_graph(self):
 		frappe.set_user(ACTOR)
-		with statement_connection(), self.trace_plan_document_reads(frappe.local.db) as reads:
-			with access_graph():
-				first = read_statement_document(PLAN, plan)
-				stored = frappe.as_json(first.as_dict())
-				first.subject = "Synthetic caller changes must remain local"
-				first.lines[0].amount = "1.000000000"
-				second = read_statement_document(PLAN, plan)
-				self.assertIsNot(first, second)
-				self.assertIsNot(first.lines[0], second.lines[0])
-				self.assertEqual(frappe.as_json(second.as_dict()), stored)
-				self.assertEqual(len(reads), 1)
-				refresh_statement_actor()
-				self.assertEqual(frappe.as_json(read_statement_document(PLAN, plan).as_dict()), stored)
-				self.assertEqual(len(reads), 2)
-			with access_graph():
-				self.assertEqual(frappe.as_json(read_statement_document(PLAN, plan).as_dict()), stored)
-				self.assertEqual(len(reads), 3)
-			with access_graph(), patch.object(statement_cache, "MAX_DOCUMENT_CACHE_BYTES", 1):
-				for _ in range(2):
-					self.assertEqual(frappe.as_json(read_statement_document(PLAN, plan).as_dict()), stored)
-				self.assertEqual(len(reads), 5)
-
-	def test_source_document_reuse_excludes_other_actor_connection_and_locked_reads(self):
-		plan = frappe.db.get_value("HRP Budget Submission", self.sources[0]["submission"], "source_plan")
-		frappe.set_user(ACTOR)
-		primary = frappe.local.db
-		with self.trace_plan_document_reads(primary) as primary_reads:
-			with access_graph():
-				read_statement_document(PLAN, plan)
-				read_statement_document(PLAN, plan)
-			self.assertEqual(len(primary_reads), 2)
+		try:
 			with statement_connection(), access_graph():
-				fresh = frappe.local.db
-				with self.trace_plan_document_reads(fresh) as fresh_reads:
-					read_statement_document(PLAN, plan)
-					read_statement_document(PLAN, plan)
-					self.assertEqual(len(fresh_reads), 1)
-					frappe.set_user("Administrator")
-					read_statement_document(PLAN, plan)
-					self.assertEqual(len(fresh_reads), 2)
-					frappe.set_user(ACTOR)
-					try:
-						frappe.local.db = primary
-						read_statement_document(PLAN, plan)
-						self.assertEqual(len(primary_reads), 3)
-					finally:
-						frappe.local.db = fresh
-					# A read-only backend may reject FOR UPDATE. Either way the
-					# lock request must reach native SQL, never a cached document.
-					with directory.isolated_visibility_messages(), suppress(frappe.InReadOnlyMode):
-						read_statement_document(PLAN, plan, for_update=True)
-					self.assertEqual(len(fresh_reads), 3)
-					self.assertIn("for update", fresh_reads[-1].lower())
+				case = frappe.get_doc(CASE, frappe.db.get_value(RELEASE, self.release, "source_approval"))
+				self.assertTrue(case_permission(case, user=ACTOR, ptype="read"))
+				with source_fixture.committed_test_changes(self):
+					frappe.share.remove("HRP Hospital", source_fixture.HOSPITAL, ACTOR)
+				frappe.set_user(ACTOR)
+				refresh_statement_actor()
+				self.assertFalse(case_permission(case, user=ACTOR, ptype="read"))
+		finally:
+			with source_fixture.committed_test_changes(self):
+				share_test_records("HRP Hospital", (source_fixture.HOSPITAL,), (ACTOR,))
+
+	def test_scope_grants_reuse_only_the_current_owned_phase_and_refresh_after_revocation(self):
+		frappe.set_user(ACTOR)
+		scope_name = "COD032C-scope-" + ACTOR.split("@")[0]
+		primary = frappe.local.db
+		queries = []
+		database_class = type(primary)
+		original = database_class.sql
+
+		def sql(connection, query, *args, **kwargs):
+			if "FROM `tabHRP Access Scope` AS scope" in str(query):
+				queries.append(connection)
+			return original(connection, query, *args, **kwargs)
+
+		try:
+			with patch.object(database_class, "sql", new=sql):
+				with access_graph():
+					self.assertTrue(grants_for(ACTOR, CASE, "read"))
+					self.assertTrue(grants_for(ACTOR, CASE, "read"))
+				self.assertEqual(len(queries), 2)
+				with statement_connection():
+					with access_graph():
+						first = grants_for(ACTOR, CASE, "read")
+						self.assertTrue(first)
+						self.assertIs(grants_for(ACTOR, CASE, "read"), first)
+						self.assertEqual(len(queries), 3)
+						# Another permission action and another date cannot reuse it.
+						self.assertTrue(grants_for(ACTOR, CASE, "export"))
+						with patch(
+							"medops.hrp_workflow_authorization.services.access_scope.nowdate",
+							return_value="2026-10-28",
+						):
+							self.assertTrue(grants_for(ACTOR, CASE, "read"))
+						self.assertEqual(len(queries), 5)
+						with source_fixture.committed_test_changes(self):
+							frappe.get_doc("HRP Access Scope", scope_name).update({"enabled": 0}).save(
+								ignore_permissions=True
+							)
+						frappe.set_user(ACTOR)
+						refresh_statement_actor()
+						self.assertEqual(grants_for(ACTOR, CASE, "read"), ())
+						self.assertEqual(len(queries), 6)
+					with access_graph():
+						self.assertEqual(grants_for(ACTOR, CASE, "read"), ())
+						self.assertEqual(len(queries), 7)
+		finally:
+			with source_fixture.committed_test_changes(self):
+				frappe.get_doc("HRP Access Scope", scope_name).update({"enabled": 1}).save(
+					ignore_permissions=True
+				)
 
 	def test_eligible_sources_are_approved_consolidated_and_not_already_prepared(self):
 		case = frappe.db.get_value(RELEASE, self.release, "source_approval")

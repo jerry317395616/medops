@@ -5,7 +5,6 @@ import frappe
 from medops.common.budget_workflow import MAX_CASE_REVIEWS, REVIEW, Vote, parse_decision, replay_votes
 from medops.common.domain_service import fingerprint_json
 from medops.hrp_budget.services.approval_access import forbidden_actors
-from medops.hrp_budget.services.statement_cache import read_statement_document
 from medops.services.errors import raise_ione_error
 
 EVIDENCE_FIELDS = (
@@ -60,7 +59,7 @@ def decision_history(case, *, lock=False):
 		raise_ione_error("CONFIGURATION_INVALID")
 	events = []
 	for index, row in enumerate(rows, 1):
-		doc = read_statement_document(REVIEW, row[0], for_update=lock)
+		doc = frappe.get_doc(REVIEW, row[0], for_update=lock)
 		validate_evidence(doc)
 		if int(doc.case_revision) != index or any(
 			doc.get(key) != case.get(key)

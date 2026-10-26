@@ -9,9 +9,9 @@
 		"ADR-0031",
 		"ADR-0032"
 	],
-	"current_scope": "1627858 full453 local quality and1447 committed blobs passed; all58 focused native passed [2,5,13,10,19,9]. Normal Cookie/CSRF, non-test seven-phase diagnostic probe passed:14 native deferred Error Logs,14 actual SDK memory-transport events and12748 new native file-log bytes contain no public canary or actual SID/CSRF;native fingerprint/frame/type/timestamp identity retained. Existing protected data/counts/roles/default386 preserved;session logged out,no telemetry opt-in/network change. Probe tests the boundary after normal HTTPRequest construction and before application hooks, including JSON/form/v1/v2/legacy cmd. Full443 initial attempt stopped after7 tests when isolated1.5GiB database hit confirmed cgroup OOM;all preserved-state recovery checks passed. Isolated db live limit raised to4GiB without restart;host had64GiB available,compose persisted,public unchanged. Full443 same source rerun active,PID2330748; full result, UI/performance/backup/CI/promotion incomplete. New candidate adds bounded stored-document snapshots to avoid repeated native source loads within one actor/owned-RO-connection/graph phase. Independent native controllers/children returned;locks and non-owned reads bypass cache, explicit authority refresh clears it. Seven budget source types only,no physical ledger cache;8MiB conservative snapshot budget,2000 child-row per-doc cache limit,cache misses/oversize retain full native reading. Two real-SQL boundary cases added;new445 native inventory and performance still pending. Running443 at162 stays untouched. Full443 at162 completed1879.029s with440passing/3failures;allnine preserved-state checks true,default386,long0/workers0. Failures traced to obsolete governance counts, reused HTTP master fixture identities/finite receipts, and assuming yesterday precedes site capture epoch. Test fixes preserve real replay,known-zero and unknown history assertions;new source native445 validation pending. Additional real-file probe at162 proved emit_audit_event returned normally while default ERROR logger filtered INFO (0file bytes). Candidate explicitly sets validated MedOps audit loggers to INFO,with native real-file regression and unchanged-global-level assertions;no historical backfill. New complete native inventory446,all candidate runtime/profile gates pending.",
+	"current_scope": "COD-033 remains In Progress. Source162 full443 completed:440 passed/3 fixture or catalog failures; all9 preserved-state guards passed. Corrections for those3 tests and real INFO audit file gap are implemented. Failed full-document-cache prototype removed after same459 candidates measured77.527s/88042 SQL baseline versus80.258s/84125 SQL candidate with identical digests. New candidate only memoizes immutable scope grants and successful workflow integrity inside an owned read-only actor/connection/graph phase. Explicit authority refresh clears active graph. Local455/native446 inventory; new quality/runtime/performance validation pending. Public8291 remains unchanged. Actual hospital capacity/interfaces/UAT, UI eligible-source creation, full new native run, backup/CI/promotion incomplete.",
 	"checks": {
-		"pure_tests_expected": 453,
+		"pure_tests_expected": 455,
 		"complete_frappe_tests_expected": 446,
 		"exact_foundation_pure_tests_passed": 21,
 		"native_foundation": {
@@ -36,7 +36,7 @@
 		"protected_ci": "not run for COD-033",
 		"local_quality": "Full444 passed at65f43ef;production backend unchanged at709/e311;709 test-only ande311 frontend scoped checks passed;no new full suite at UI-only source",
 		"pure_tests_passed": 444,
-		"complete_frappe_tests": "446 expected for current candidate; prior443 had3test fixture/catalog failures",
+		"complete_frappe_tests": "446 expected for current candidate; prior443 had3 test fixture/catalog failures, fixed and awaiting revalidation",
 		"current_protocol": {
 			"status": "full local quality passed",
 			"tests": 11,
@@ -831,23 +831,35 @@
 		"proof": "cod033-1627858-full-native-suite-memory4g.json"
 	},
 	"pending_read_optimization": {
-		"status": "implemented, native validation and profiling pending",
-		"scope": "same-owned-read-only-connection, same actor, one access graph phase",
-		"reviewed_document_types": 7,
-		"source_document_cache_bytes": 8388608,
-		"maximum_cached_child_rows_per_document": 2000,
-		"mutable_document_instances_shared": false,
-		"cache_skipped_documents_still_fully_read": true,
-		"locks_other_actors_connections_and_framework_documents_use_native_reads": true,
-		"explicit_authority_refresh_clears_graph": true,
-		"native_cases_added": 2,
-		"native_tests_expected_for_candidate": 445,
-		"prior_profile": {
-			"source": "94be679",
-			"candidates": 252,
-			"seconds": 43.574,
-			"sql_calls": 48811
+		"status": "new immutable-authority candidate; native and same-input profiling pending",
+		"rejected_prototype": {
+			"source": "33709af",
+			"candidates": 459,
+			"seconds": 80.258,
+			"sql_calls": 84125,
+			"document_cache_removed": true
 		},
+		"baseline": {
+			"source": "1627858",
+			"candidates": 459,
+			"seconds": 77.527,
+			"sql_calls": 88042
+		},
+		"candidate_list_and_page_digests_equal": true,
+		"sql_attribution": {
+			"scope_grants": 14124,
+			"workflow_and_children": 10539
+		},
+		"scope": "same-owned-read-only-connection, same actor, one access graph phase",
+		"cached_values": [
+			"frozen ScopeGrant tuples keyed by user/type/action/site date",
+			"successful workflow validation boolean"
+		],
+		"full_source_documents_cached": false,
+		"explicit_authority_refresh_clears_graph": true,
+		"pure_cases_added": 2,
+		"native_cases_added": 2,
+		"native_tests_expected_for_candidate": 446,
 		"database_permission_api_or_model_changes": false,
 		"performance_improvement_not_yet_proven": true
 	},

@@ -11,6 +11,7 @@ from medops.common.access_scope import (
 	normalize_action,
 	normalize_doctype,
 )
+from medops.common.query_memo import memoized_query_value
 from medops.services.audit_context import emit_audit_event
 from medops.services.errors import raise_ione_error, require_authenticated_user
 
@@ -76,8 +77,20 @@ def _expand_organization_units(
 
 
 def grants_for(user: str, doctype: str, action: AccessAction) -> tuple[ScopeGrant, ...]:
-	action_field = f"allow_{action}"
 	today = nowdate()
+	if user != frappe.session.user or not all(isinstance(value, str) for value in (user, doctype, action)):
+		return _read_grants(user, doctype, action, today)
+	# Only the actual owned read adapter installs a provider. Its actor/connection
+	# checks and graph lifetime also apply here; other reads and all commands
+	# retain fresh native SQL. Frozen grants do not cache document matching.
+	return memoized_query_value(
+		("access_scope_grants", user, doctype, action, today),
+		lambda: _read_grants(user, doctype, action, today),
+	)
+
+
+def _read_grants(user: str, doctype: str, action: AccessAction, today: str) -> tuple[ScopeGrant, ...]:
+	action_field = f"allow_{action}"
 	rows = frappe.db.sql(
 		f"""
 		SELECT

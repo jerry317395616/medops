@@ -11,7 +11,6 @@ from medops.common.budget_consolidation import (
 from medops.common.budget_workflow import CASE, REVIEW
 from medops.hrp_budget.services.access_graph import access_graph_cache, read_graph
 from medops.hrp_budget.services.planning_access import native_source
-from medops.hrp_budget.services.statement_cache import read_statement_document
 from medops.services.errors import raise_ione_error
 
 
@@ -30,7 +29,7 @@ def approved_department(submission_name, case_name, *, user=None, export=False, 
 		return cache[key]
 	if not frappe.db.exists(SUBMISSION, submission_name) or not frappe.db.exists(CASE, case_name):
 		raise_ione_error("RESOURCE_NOT_FOUND")
-	doc = read_statement_document(SUBMISSION, submission_name, for_update=lock)
+	doc = frappe.get_doc(SUBMISSION, submission_name, for_update=lock)
 	if (
 		doc.submission_type != "Department"
 		or int(doc.schema_version) != 1
@@ -43,7 +42,7 @@ def approved_department(submission_name, case_name, *, user=None, export=False, 
 		doc, user=user, ptype=ptype
 	):
 		raise_ione_error("PERMISSION_DENIED")
-	case = read_statement_document(CASE, case_name, for_update=lock)
+	case = frappe.get_doc(CASE, case_name, for_update=lock)
 	if not frappe.has_permission(CASE, ptype, doc=case, user=user) or not case_permission(
 		case, user=user, ptype=ptype
 	):
@@ -190,7 +189,7 @@ def assert_unclaimed_approved_sources(case):
 	mutation = approval_mutation()
 	if not mutation or mutation.operation != "confirm" or mutation.case != case.name:
 		raise_ione_error("OPERATION_NOT_ALLOWED")
-	source = read_statement_document(SUBMISSION, case.submission)
+	source = frappe.get_doc(SUBMISSION, case.submission)
 	if source.submission_type != "Consolidated":
 		return
 	names = [ref.origin_plan for ref in source_references(source.sources_snapshot)]
