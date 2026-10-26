@@ -3,6 +3,7 @@ from __future__ import annotations
 from abc import ABC, abstractmethod
 from hashlib import sha256
 from typing import Generic, TypeVar
+from uuid import uuid4
 
 import frappe
 
@@ -139,7 +140,9 @@ class DomainService(ABC, Generic[CommandT]):
 
 	@staticmethod
 	def _savepoint_name(request_id: str) -> str:
-		digest = sha256(request_id.encode()).hexdigest()[:20]
+		# Nested services share the audit request, but must not replace each
+		# other's SQL savepoint. Its identity is local to this one invocation.
+		digest = sha256(f"{request_id}:{uuid4().hex}".encode()).hexdigest()[:24]
 		return f"ione_service_{digest}"
 
 	@staticmethod

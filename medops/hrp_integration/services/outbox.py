@@ -10,7 +10,7 @@ from medops.common.integration_outbox import (
 	publication_values,
 	retirement_values,
 )
-from medops.services.errors import raise_ione_error
+from medops.services.errors import raise_ione_error, require_roles
 from medops.services.transactional_message import (
 	ClaimOutboxService,
 	CompleteOutboxService,
@@ -59,6 +59,7 @@ class IntegrationOutboxDocument(TransactionalMessageDocument):
 
 
 def require_retirement(document):
+	require_roles(RETIREMENT_ROLES)
 	expected = retirement_values()
 	if expected is None or document is None:
 		raise_ione_error("OPERATION_NOT_ALLOWED")
@@ -121,8 +122,15 @@ class FailIntegrationOutbox(FailOutboxService):
 class RetireIntegrationOutbox(RetireOutboxService):
 	message_box_definition = OUTBOX_DEFINITION
 	definition = DomainServiceDefinition(
-		name="hrp_integration.outbox.retire", version=1, kind="command", required_roles=RETIREMENT_ROLES
+		name="hrp_integration.outbox.retire",
+		version=1,
+		kind="command",
+		required_roles=OUTBOX_DEFINITION.required_roles,
 	)
+
+	def authorize(self, command):
+		super().authorize(command)
+		require_roles(RETIREMENT_ROLES)
 
 	def authorize_retirement(self, document, command):
 		expected = require_retirement(document)

@@ -54,7 +54,10 @@
 		"medops/common/budget_release_control.py",
 		"medops/common/integration_outbox.py",
 		"medops/services/transactional_message.py",
-		"medops/services/idempotency.py"
+		"medops/services/idempotency.py",
+		"medops/services/domain_service.py",
+		"medops/hrp_workflow_authorization/doctype/hrp_access_scope/hrp_access_scope.py",
+		"medops/hrp_workflow_authorization/tests/test_access_scope.py"
 	],
 	"permissions_impact": "财务记录原生只读，记账必须独立人工确认与当前来源/字段/范围；不分配用户角色、范围或分享。",
 	"migration_impact": "新增三个既有预算运行模型和既有HRP Integration Outbox，共四个，运行库存42；迁移只建表、索引及元数据。通用金额版本1及历史记录不重算，无财务种子或用户授权。审批解析统一到既有15位整数精确上限。",

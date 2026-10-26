@@ -74,6 +74,62 @@ class ModuleCountQueryService(DomainService[None]):
 
 
 class TestDomainService(IntegrationTestCase):
+	def test_nested_service_failure_restores_its_own_boundary_and_preserves_earlier_caller_write(self):
+		modules = [row.module for row in load_module_registry().modules[:3]]
+		original = [frappe.db.get_value("HRP Module Setting", name, "workspace_route") for name in modules]
+		outer_key = "COD033-nested-outer-" + frappe.generate_hash(length=12)
+		inner_key = "COD033-nested-inner-" + frappe.generate_hash(length=12)
+
+		class Child(DomainService[FailingCommand]):
+			definition = DomainServiceDefinition(
+				name="hrp_foundation.test.nested_child",
+				version=1,
+				kind="command",
+				required_roles=frozenset({"System Manager"}),
+			)
+
+			def request_payload(self, command):
+				return dict(module=command.module_name)
+
+			def perform(self, command):
+				frappe.db.set_value(
+					"HRP Module Setting", command.module_name, "workspace_route", "COD033-nested-child"
+				)
+				return dict(changed=True)
+
+		class Parent(Child):
+			definition = DomainServiceDefinition(
+				name="hrp_foundation.test.nested_parent",
+				version=1,
+				kind="command",
+				required_roles=frozenset({"System Manager"}),
+			)
+
+			def perform(self, command):
+				frappe.db.set_value(
+					"HRP Module Setting", command.module_name, "workspace_route", "COD033-nested-parent"
+				)
+				Child().execute(FailingCommand(modules[2]), idempotency_key=inner_key)
+				raise RuntimeError("synthetic parent failure after successful nested service")
+
+		frappe.db.set_value(
+			"HRP Module Setting", modules[0], "workspace_route", "COD033-earlier-caller-write"
+		)
+		with self.assertRaises(IoneApplicationError):
+			Parent().execute(FailingCommand(modules[1]), idempotency_key=outer_key)
+		self.assertEqual(
+			frappe.db.get_value("HRP Module Setting", modules[0], "workspace_route"),
+			"COD033-earlier-caller-write",
+		)
+		self.assertEqual(
+			[frappe.db.get_value("HRP Module Setting", name, "workspace_route") for name in modules[1:]],
+			original[1:],
+		)
+		for definition, key in ((Parent.definition, outer_key), (Child.definition, inner_key)):
+			self.assertFalse(
+				frappe.db.exists("HRP Service Idempotency", idempotency_record_name(definition.name, key))
+			)
+
 	def test_database_conflict_preserves_outer_retry_instead_of_missing_savepoint(self) -> None:
 		with (
 			patch.object(

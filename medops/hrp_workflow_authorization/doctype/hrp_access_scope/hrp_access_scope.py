@@ -12,6 +12,7 @@ from medops.common.access_scope import (
 	build_access_scope_definition,
 	build_access_scope_member,
 )
+from medops.common.organization import OrganizationContractError, normalize_code
 from medops.services.errors import raise_ione_error
 
 
@@ -42,7 +43,18 @@ class HRPAccessScope(Document):
 		valid_to: DF.Date | None
 	# end: auto-generated types
 
+	def before_naming(self) -> None:
+		# field:code naming runs before validate, and Frappe later copies name
+		# back to code. Normalize before either identity can be persisted.
+		try:
+			self.code = normalize_code(self.code, label="code")
+		except OrganizationContractError as exc:
+			raise_ione_error("INVALID_REQUEST", cause=exc)
+
 	def validate(self) -> None:
+		before = self.get_doc_before_save()
+		if before is not None and before.code != self.code:
+			raise_ione_error("OPERATION_NOT_ALLOWED")
 		try:
 			definition = build_access_scope_definition(
 				code=self.code,
@@ -61,7 +73,10 @@ class HRPAccessScope(Document):
 		except AccessScopeContractError as exc:
 			raise_ione_error("INVALID_REQUEST", cause=exc)
 
-		self.code = definition.code
+		# Preserve pre-existing field-based identities, including mixed-case
+		# records created before before_naming normalized them. Do not rename
+		# access grants as a side effect of disabling or editing their policy.
+		self.code = before.code if before is not None else definition.code
 		self.display_name = definition.display_name
 		self.company = definition.company
 		self.hospital = definition.hospital
@@ -75,9 +90,6 @@ class HRPAccessScope(Document):
 		self.policy_digest = definition.policy_digest
 
 		self._validate_references()
-		before = self.get_doc_before_save()
-		if before is not None and before.code != self.code:
-			raise_ione_error("OPERATION_NOT_ALLOWED")
 
 	def before_save(self) -> None:
 		if self.is_new():

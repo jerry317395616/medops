@@ -252,8 +252,12 @@ class TestBudgetReleaseExecution(FrappeAPITestCase):
 				primary = frappe.local.db
 				with self.secondary_connection():
 					frappe.set_user("Administrator")
-					revoke()
-					self._secondary_connection.commit()
+					try:
+						revoke()
+						self._secondary_connection.commit()
+					except Exception:
+						self._secondary_connection.rollback()
+						raise
 				self.assertIs(frappe.local.db, primary)
 				frappe.set_user(source_fixture.MANAGER)
 			return result

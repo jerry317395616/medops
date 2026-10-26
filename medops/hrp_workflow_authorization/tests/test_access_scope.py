@@ -9,6 +9,7 @@ from frappe.tests import IntegrationTestCase
 from frappe.tests.test_api import FrappeAPITestCase
 
 from medops.common.error_catalog import IoneApplicationError
+from medops.hrp_workflow_authorization.doctype.hrp_access_scope.hrp_access_scope import HRPAccessScope
 from medops.hrp_workflow_authorization.permissions import (
 	has_scoped_permission,
 	organization_unit_query,
@@ -139,11 +140,13 @@ def reset_scope() -> None:
 	frappe.db.delete("HRP Access Scope", {"name": TEST_SCOPE})
 
 
-def create_scope(*, include_descendants: bool = True, target_doctype: str | None = None):
+def create_scope(
+	*, include_descendants: bool = True, target_doctype: str | None = None, code: str = TEST_SCOPE
+):
 	return frappe.get_doc(
 		{
 			"doctype": "HRP Access Scope",
-			"code": TEST_SCOPE,
+			"code": code,
 			"display_name": "财务部访问范围",
 			"company": TEST_COMPANY,
 			"hospital": TEST_HOSPITAL,
@@ -212,6 +215,34 @@ class TestAccessScope(IntegrationTestCase):
 		doc.save(ignore_permissions=True)
 		self.assertEqual(doc.revision, 2)
 		self.assertNotEqual(doc.policy_digest, first_digest)
+
+	def test_new_mixed_case_scope_normalizes_identity_before_field_naming(self) -> None:
+		doc = create_scope(code=TEST_SCOPE.lower())
+		self.assertEqual(doc.name, TEST_SCOPE)
+		self.assertEqual(doc.code, TEST_SCOPE)
+		doc.enabled = 0
+		doc.save(ignore_permissions=True)
+		doc.reload()
+		self.assertEqual(doc.code, TEST_SCOPE)
+		self.assertEqual(doc.enabled, 0)
+		self.assertEqual(doc.revision, 2)
+
+	def test_legacy_mixed_case_scope_can_be_disabled_without_renaming_its_grant(self) -> None:
+		legacy = TEST_SCOPE.lower()
+		# Reproduce the pinned framework's pre-fix field naming order.
+		with patch.object(HRPAccessScope, "before_naming", return_value=None):
+			doc = create_scope(code=legacy)
+		doc.reload()
+		self.assertEqual(doc.name, legacy)
+		self.assertEqual(doc.code, legacy)
+		doc.enabled = 0
+		doc.save(ignore_permissions=True)
+		doc.reload()
+		self.assertEqual((doc.name, doc.code, doc.enabled, doc.revision), (legacy, legacy, 0, 2))
+		doc.code = TEST_SCOPE
+		with self.assertRaises(IoneApplicationError) as denied:
+			doc.save(ignore_permissions=True)
+		self.assertEqual(denied.exception.code, "IONE-CORE-0008")
 
 	def test_resolver_expands_descendants_and_respects_target_doctype(self) -> None:
 		create_scope(target_doctype="HRP Organization Unit")
