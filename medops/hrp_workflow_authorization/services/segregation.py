@@ -20,6 +20,7 @@ from medops.hrp_workflow_authorization.doctype.hrp_segregation_rule.hrp_segregat
 )
 from medops.hrp_workflow_authorization.permissions import has_scoped_permission
 from medops.hrp_workflow_authorization.services.access_scope import dimension_fields_for
+from medops.hrp_workflow_authorization.services.policy_scope import assert_policy_tree_integrity
 from medops.services.audit_context import emit_audit_event
 from medops.services.domain_service import DomainService
 from medops.services.errors import raise_ione_error, require_roles
@@ -410,6 +411,14 @@ def _applicable_rules(
 	command: SegregationEvaluation,
 	context: _DocumentContext,
 ) -> list[tuple[str, SegregationRuleDefinition]]:
+	assert_policy_tree_integrity(
+		policy_doctype="HRP Segregation Rule",
+		target_doctype=command.target_doctype,
+		company=context.company,
+		hospital=context.hospital,
+		effective_on=context.effective_on,
+		action=command.action,
+	)
 	rows = frappe.db.sql(
 		"""SELECT name FROM `tabHRP Segregation Rule` policy
 		WHERE target_doctype=%s AND target_action=%s AND company=%s AND hospital=%s

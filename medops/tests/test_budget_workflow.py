@@ -10,7 +10,7 @@ from frappe.utils import now_datetime, nowdate
 
 from medops.common.approval_matrix import build_approval_matrix_steps, build_approval_matrix_upsert
 from medops.common.budget_workflow import APPROVER_ROLE, CASE, REVIEW, WORKFLOW, WORKFLOW_ACTIONS
-from medops.common.delegation import build_delegation_create
+from medops.common.delegation import build_delegation_create, build_delegation_revoke
 from medops.common.domain_service import fingerprint_json
 from medops.common.error_catalog import IoneApplicationError
 from medops.common.segregation import build_segregation_rule_upsert
@@ -19,7 +19,7 @@ from medops.hrp_budget.services.approval_native import require_workflow_integrit
 from medops.hrp_budget.services.submission import seal_department_submission
 from medops.hrp_workflow_authorization.services.access_scope import grants_for
 from medops.hrp_workflow_authorization.services.approval_matrix import upsert_approval_matrix
-from medops.hrp_workflow_authorization.services.delegation import create_delegation
+from medops.hrp_workflow_authorization.services.delegation import create_delegation, revoke_delegation
 from medops.hrp_workflow_authorization.services.segregation import upsert_segregation_rule
 from medops.setup.budget_approval import ensure_budget_approval
 from medops.tests.scope_fixtures import grant_test_scope, share_test_records
@@ -41,9 +41,28 @@ PREFIX = "medops.api.v1.finance.approval."
 ACTORS = ("cod032-reviewer-one@example.com", "cod032-reviewer-two@example.com")
 
 
+def close_test_delegations():
+	assert frappe.session.user == "Administrator" and COMPANY.startswith("COD-")
+	for name in frappe.get_all(
+		"HRP Delegation",
+		filters={
+			"target_doctype": CASE,
+			"company": COMPANY,
+			"from_user": ("in", ACTORS),
+			"status": ("in", ["Active", "Scheduled"]),
+		},
+		pluck="name",
+	):
+		revoke_delegation(
+			build_delegation_revoke(delegation=name, reason="结束合成测试委托"),
+			idempotency_key=fixture_request("revoke-test-delegation"),
+		)
+
+
 def ensure_workflow_fixtures():
 	org, unit = ensure_budget_fixtures()
 	ensure_budget_approval()
+	close_test_delegations()
 	for email in ACTORS:
 		if not frappe.db.exists("User", email):
 			frappe.get_doc(
@@ -147,6 +166,12 @@ class TestBudgetWorkflowAPI(FrappeAPITestCase):
 			),
 			idempotency_key=fixture_request("matrix-save"),
 		)
+
+	def tearDown(self):
+		frappe.set_user("Administrator")
+		close_test_delegations()
+		frappe.local.db.commit()
+		super().tearDown()
 
 	def login_actor(self, user):
 		from frappe.auth import CookieManager, LoginManager

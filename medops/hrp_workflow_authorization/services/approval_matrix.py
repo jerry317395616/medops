@@ -25,6 +25,7 @@ from medops.hrp_workflow_authorization.permissions import has_scoped_permission
 from medops.hrp_workflow_authorization.services.access_scope import dimension_fields_for
 from medops.hrp_workflow_authorization.services.approval_capability import can_approve_target
 from medops.hrp_workflow_authorization.services.delegation import apply_active_delegations
+from medops.hrp_workflow_authorization.services.policy_scope import assert_policy_tree_integrity
 from medops.hrp_workflow_authorization.services.rule_contracts import can_read_named_fields
 from medops.services.audit_context import emit_audit_event
 from medops.services.domain_service import DomainService
@@ -390,6 +391,13 @@ def _matrix_matches_unit(matrix: HRPApprovalMatrix, organization_unit: str) -> b
 
 
 def _select_matrix(command: ApprovalEvaluation) -> HRPApprovalMatrix:
+	assert_policy_tree_integrity(
+		policy_doctype="HRP Approval Matrix",
+		target_doctype=command.target_doctype,
+		company=command.company,
+		hospital=command.hospital,
+		effective_on=command.effective_on,
+	)
 	# Filter incompatible amount profiles before the bounded candidate scan.
 	# Version1 callers keep selecting only their original policy contract.
 	rows = frappe.db.sql(
