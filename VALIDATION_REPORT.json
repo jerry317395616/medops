@@ -12,8 +12,29 @@
 		"pure_tests_expected": 394,
 		"complete_frappe_tests_expected": 367,
 		"exact_foundation_pure_tests_passed": 21,
-		"native_foundation": "pending",
-		"protected_ci": "not run for COD-033"
+		"native_foundation": {
+			"status": "passed",
+			"source_commit": "77da19bf54a0521a207db38664ae83e669d3dfb1",
+			"tests": 20,
+			"counts": [
+				6,
+				10,
+				4
+			],
+			"coverage": [
+				"all captured precisions real database round-trip",
+				"native immutability, original grain and atomic rollback",
+				"legacy generic ledger and real stale-snapshot outer transaction retry",
+				"domain service transaction regressions"
+			],
+			"site": "cod030-828dab0.localhost",
+			"public_sites_untouched": true,
+			"migrations": 0
+		},
+		"protected_ci": "not run for COD-033",
+		"local_quality": "all passed at 77da19bf54a0521a207db38664ae83e669d3dfb1",
+		"pure_tests_passed": 394,
+		"complete_frappe_tests": "367 expected; full current suite pending concrete release slice"
 	},
 	"previous_verified_release": {
 		"schema_version": 1,
