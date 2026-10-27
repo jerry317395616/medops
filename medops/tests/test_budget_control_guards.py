@@ -393,7 +393,20 @@ class TestBudgetControlGuards(IntegrationTestCase):
 				assert_budget_guards(keys)
 				with self.assertRaises(IoneApplicationError):
 					assert_budget_guards([other])
+				observed = []
+
+				def observe_witness():
+					observed.append(
+						db.sql("SELECT COUNT(*) FROM `tabSeries` WHERE `name` = %s", (witness,))[0][0]
+					)
+
+				def add_later_callback():
+					observe_witness()
+					db.before_commit.add(observe_witness)
+
+				db.before_commit.add(add_later_callback)
 				db.commit()
+				self.assertEqual(observed, [1, 1])
 				self.assertIsNone(getattr(db, "_medops_budget_guard_marker", None))
 				self.assertEqual(
 					db.sql("SELECT COUNT(*) FROM `tabSeries` WHERE `name` = %s", (witness,))[0][0], 0
@@ -409,6 +422,59 @@ class TestBudgetControlGuards(IntegrationTestCase):
 						for name in names:
 							db.sql("DELETE FROM `tabSeries` WHERE `name` = %s", (name,))
 						db.commit()
+					db.rollback()
+					db.sql("SET SESSION TRANSACTION ISOLATION LEVEL REPEATABLE READ")
+					db.begin()
+				finally:
+					frappe.local.db = primary
+			else:
+				frappe.local.db = primary
+
+	def test_later_callback_failure_cannot_bypass_witness_on_commit_retry(self):
+		guard = budget_control_key(synthetic_key(uuid4().hex))
+		primary = frappe.local.db
+		db = None
+		try:
+			with self.secondary_connection():
+				db = frappe.local.db
+				db.rollback()
+				db.sql("SET SESSION TRANSACTION ISOLATION LEVEL READ COMMITTED")
+				db.begin()
+				db.savepoint("cod034_before_callback_guard")
+				keys = acquire_budget_guards([guard])
+
+				def fail_after_savepoint_rollback():
+					db.rollback(save_point="cod034_before_callback_guard")
+					raise RuntimeError("synthetic before-commit failure")
+
+				db.before_commit.add(fail_after_savepoint_rollback)
+				with self.assertRaisesRegex(RuntimeError, "synthetic before-commit failure"):
+					db.commit()
+				with self.assertRaises(IoneApplicationError):
+					assert_budget_guards(keys)
+				with self.assertRaises(IoneApplicationError):
+					db.commit()
+				db.rollback()
+				self.assertIsNone(getattr(db, "_medops_budget_guard_marker", None))
+
+				def fail_before_guard_registration():
+					raise RuntimeError("synthetic earlier callback failure")
+
+				db.before_commit.add(fail_before_guard_registration)
+				acquire_budget_guards([guard])
+				with self.assertRaisesRegex(RuntimeError, "synthetic earlier callback failure"):
+					db.commit()
+				db.rollback()
+				self.assertIsNone(getattr(db, "_medops_budget_guard_marker", None))
+				with patch.object(db.before_commit, "_functions", []):
+					with self.assertRaises(IoneApplicationError) as incompatible:
+						acquire_budget_guards([guard])
+				self.assertEqual(incompatible.exception.code, "IONE-CORE-0009")
+				self.assertIsNone(getattr(db, "_medops_budget_guard_marker", None))
+		finally:
+			if db is not None:
+				frappe.local.db = db
+				try:
 					db.rollback()
 					db.sql("SET SESSION TRANSACTION ISOLATION LEVEL REPEATABLE READ")
 					db.begin()

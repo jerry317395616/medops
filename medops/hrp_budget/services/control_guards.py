@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from collections import deque
 from dataclasses import dataclass
 from secrets import token_hex
 
@@ -46,6 +47,15 @@ def _before_guard_commit(db, marker):
 	try:
 		if getattr(db, "_medops_budget_guard_marker", None) is not marker or not _witness_present(db, marker):
 			raise_ione_error("OPERATION_NOT_ALLOWED")
+		# The pinned Frappe CallbackManager drains this deque in order. Recheck
+		# after all other callbacks, including ones they add, so a later callback
+		# cannot fail after the witness has been removed.
+		pending = getattr(db.before_commit, "_functions", None)
+		if not isinstance(pending, deque):
+			raise_ione_error("CONFIGURATION_INVALID")
+		if pending:
+			db.before_commit.add(lambda: _before_guard_commit(db, marker))
+			return
 		db.sql("DELETE FROM `tabSeries` WHERE `name` = %s", (marker.witness,))
 	except BaseException:
 		# CallbackManager removes a callback before invoking it. If commit is
@@ -94,9 +104,15 @@ def acquire_budget_guards(keys):
 		or str(engine[0][0]).upper() != "INNODB"
 	):
 		raise_ione_error("CONFIGURATION_INVALID")
+	# Install first so even an already-registered callback that fails cannot
+	# erase the rollback cleanup. The callback itself defers the final check
+	# until every ordinary callback has run. Unknown framework internals fail.
+	pending = getattr(db.before_commit, "_functions", None)
+	if not isinstance(pending, deque):
+		raise_ione_error("CONFIGURATION_INVALID")
 	marker = _GuardMarker(ordered, "medops:budget:witness:" + token_hex(16))
 	db._medops_budget_guard_marker = marker
-	db.before_commit.add(lambda: _before_guard_commit(db, marker))
+	pending.appendleft(lambda: _before_guard_commit(db, marker))
 	db.after_commit.add(lambda: _finish_guard_transaction(db, marker))
 	db.after_rollback.add(lambda: _finish_guard_transaction(db, marker))
 	for name in names:
