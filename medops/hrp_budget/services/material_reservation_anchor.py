@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from decimal import Decimal
+from decimal import Decimal, localcontext
 
 from medops.common.budget_control import BudgetControlKey
 from medops.common.budget_reservation_anchor import verify_reservation_anchor_row
@@ -50,12 +50,17 @@ def verify_material_reservation_evidence(
 		cost_center=source.cost_center,
 	)
 	key = position.key
+	with localcontext() as context:
+		context.prec = 48
+		exposure = (
+			Decimal(position.open_reservation) + Decimal(position.open_commitment) + Decimal(position.actual)
+		)
 	if (
 		key != expected_key
 		or (key.company, key.hospital, key.organization_unit, key.project)
 		!= (source.company, source.hospital, source.organization_unit, source.project)
 		or position.currency != source.currency
-		or Decimal(position.reserved) > Decimal(amount)
+		or exposure > Decimal(amount)
 	):
 		raise ValueError("reservation differs from purchase source")
 	return position

@@ -34,6 +34,9 @@ from medops.hrp_budget.services.control_guards import assert_budget_guards
 from medops.hrp_budget.services.material_budget_candidates import prepare_purchase_release_match
 from medops.hrp_budget.services.material_request_source import locked_material_request_source
 from medops.hrp_budget.services.material_reservation_anchor import verify_material_reservation_evidence
+from medops.hrp_budget.services.material_reservation_observation import (
+	guarded_material_reservation_observation,
+)
 from medops.hrp_budget.services.release_access import get_release
 from medops.hrp_budget.services.release_sources import stored_release_facts
 from medops.services.errors import raise_ione_error
@@ -712,6 +715,12 @@ class TestBudgetReleaseExecution(FrappeAPITestCase):
 		self.assertEqual(result.candidates[0].key.organization_unit, row.organization_unit)
 		self.assertEqual(result.source.expense_account, row.account)
 		self.assertEqual(result.source.cost_center, row.cost_center)
+		self.assertEqual(
+			guarded_material_reservation_observation(
+				result.source, [result.candidates[0].key], allocations={}
+			),
+			(),
+		)
 		# Construct evidence in memory only: the closed event/aggregate tables
 		# must remain unchanged while the real ERPNext source is checked.
 		digest = result.source.digest()
