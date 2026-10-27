@@ -176,24 +176,30 @@ def confirm_reservation_confirmation(name, proof, acknowledge):
 		item, confirmed = verify_reservation_confirmation_row(data)
 		actor = frappe.session.user
 		session = _session(item)
-		verify_reservation_confirmation_proof(
-			item,
-			confirmed,
-			proof=proof,
-			actor=actor,
-			session_digest=session,
-			now=_timestamp(now_datetime()),
-		)
+		try:
+			verify_reservation_confirmation_proof(
+				item,
+				confirmed,
+				proof=proof,
+				actor=actor,
+				session_digest=session,
+				now=_timestamp(now_datetime()),
+			)
+		except ValueError as error:
+			raise_ione_error("PERMISSION_DENIED", cause=error)
 		source = _inspect_intent(item, actor, session)
-		decision = reservation_decision(
-			item,
-			confirmed,
-			proof=proof,
-			actor=actor,
-			session_digest=session,
-			recorded_at=_timestamp(now_datetime()),
-			acknowledge=True,
-		)
+		try:
+			decision = reservation_decision(
+				item,
+				confirmed,
+				proof=proof,
+				actor=actor,
+				session_digest=session,
+				recorded_at=_timestamp(now_datetime()),
+				acknowledge=True,
+			)
+		except ValueError as error:
+			raise_ione_error("PERMISSION_DENIED", cause=error)
 		if frappe.db.get_value(
 			DOCTYPE, {"confirmation": confirmed.name}, "name", for_update=True
 		) or frappe.db.get_value(DOCTYPE, {"one_time_key": decision.one_time_key}, "name", for_update=True):

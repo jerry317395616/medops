@@ -20,10 +20,11 @@ from medops.common.confirmation_privacy import REDACTED_CONFIRMATION
 from medops.common.domain_service import idempotency_record_name
 from medops.common.error_catalog import IoneApplicationError
 from medops.hrp_budget.api.reservation_transaction import prepare_reservation_http_transaction
-from medops.hrp_budget.services import material_usage_preview
+from medops.hrp_budget.services import material_usage_preview, reservation_confirmation_service
 from medops.hrp_budget.services.material_request_source import MaterialRequestSource
 from medops.hrp_budget.services.reservation_confirmation_service import PrepareReservationConfirmation
 from medops.services.confirmation_privacy import protect_confirmation_request
+from medops.services.errors import raise_ione_error
 from medops.tests import test_budget_consolidation as source_fixture
 from medops.tests.test_budget_control_guards import synthetic_key
 
@@ -361,6 +362,31 @@ class TestBudgetReservationDurableHTTP(FrappeAPITestCase):
 			self.assertEqual(
 				(replayed["confirmation"], replayed["proof"]), (preview["confirmation"], preview["proof"])
 			)
+			changed = dict(payload, amount="9.00")
+			response = self.post(url, {"payload": changed}, headers={"Idempotency-Key": preview_key})
+			self.assertEqual(response.status_code, 409, response.get_data(as_text=True))
+
+			def revoked(*args, **kwargs):
+				del args, kwargs
+				raise_ione_error("PERMISSION_DENIED")
+
+			fault_key = "http-rollback-" + uuid4().hex
+			fault_payload = dict(payload, allocation="http-rollback-" + uuid4().hex[:12])
+			with patch.object(
+				reservation_confirmation_service, "revalidate_reservation_intent", side_effect=revoked
+			):
+				response = self.post(url, {"payload": fault_payload}, headers={"Idempotency-Key": fault_key})
+			self.assertEqual(response.status_code, 403, response.get_data(as_text=True))
+			frappe.db.rollback()
+			self.assertFalse(
+				frappe.db.exists(
+					"HRP Service Idempotency",
+					idempotency_record_name(PrepareReservationConfirmation.definition.name, fault_key),
+				)
+			)
+			self.assertEqual(
+				frappe.db.count("HRP Budget Reservation Authorization", {"source_name": request.name}), 1
+			)
 			command = {
 				"confirmation": preview["confirmation"],
 				"proof": preview["proof"],
@@ -375,6 +401,16 @@ class TestBudgetReservationDurableHTTP(FrappeAPITestCase):
 			self.assertEqual(response.status_code, 200, response.get_data(as_text=True))
 			self.assertTrue(response.get_json()["message"]["idempotency_replayed"])
 			self.assertEqual(response.get_json()["message"]["decision"], decision["decision"])
+			response = self.post(
+				url, {"payload": command}, headers={"Idempotency-Key": "duplicate-" + uuid4().hex}
+			)
+			self.assertEqual(response.status_code, 409, response.get_data(as_text=True))
+			previous_sid = self.sid
+			new_sid = source_fixture.TestBudgetConsolidationAPI.login_actor(self, "Administrator")
+			self.assertNotEqual(new_sid, previous_sid)
+			response = self.post(url, {"payload": command}, headers={"Idempotency-Key": confirm_key})
+			self.assertEqual(response.status_code, 403, response.get_data(as_text=True))
+			self.assertNotIn(preview["proof"], response.get_data(as_text=True))
 		frappe.db.rollback()
 		receipt = frappe.get_doc(
 			"HRP Service Idempotency",
