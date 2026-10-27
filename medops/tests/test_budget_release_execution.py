@@ -8,9 +8,10 @@ from unittest.mock import patch
 
 import frappe
 from frappe.tests.test_api import FrappeAPITestCase
-from frappe.utils import get_datetime, now_datetime
+from frappe.utils import add_days, get_datetime, now_datetime
 from frappe.utils.background_jobs import execute_job
 
+from medops.common.budget_control import KEY_FIELDS
 from medops.common.budget_ledger import LEDGER, RELEASE
 from medops.common.budget_material_match import match_purchase_release_keys
 from medops.common.budget_release_control import ReleaseExecutionLease, release_execution
@@ -20,6 +21,8 @@ from medops.hrp_budget.jobs import release as jobs
 from medops.hrp_budget.services import control_inventory, control_release
 from medops.hrp_budget.services import release_execution as execution
 from medops.hrp_budget.services.control_guards import assert_budget_guards
+from medops.hrp_budget.services.material_budget_candidates import prepare_purchase_release_match
+from medops.hrp_budget.services.material_request_source import locked_material_request_source
 from medops.hrp_budget.services.release_access import get_release
 from medops.hrp_budget.services.release_sources import stored_release_facts
 from medops.services.errors import raise_ione_error
@@ -613,4 +616,90 @@ class TestBudgetReleaseExecution(FrappeAPITestCase):
 		with self.assertRaises(IoneApplicationError):
 			assert_budget_guards(keys)
 		self.assertEqual(frappe.db.count(LEDGER, {"voucher_no": self.release}), 0)
+		frappe.db.rollback()
+
+	def test_guarded_purchase_match_reads_real_posted_release_without_financial_writes(self):
+		self.assertEqual(self.execute(self.claim())["status"], "Posted")
+		frappe.db.rollback()
+		frappe.set_user("Administrator")
+		frappe.db.sql("SET SESSION TRANSACTION ISOLATION LEVEL READ COMMITTED")
+		frappe.db.begin()
+		row_name = frappe.db.get_value(
+			LEDGER, {"voucher_no": self.release, "organization_unit": self.units["A"]}, "name"
+		)
+		row = frappe.get_doc(LEDGER, row_name)
+		if not frappe.db.exists("Item Group", "All Item Groups"):
+			frappe.get_doc(dict(doctype="Item Group", item_group_name="All Item Groups", is_group=1)).insert(
+				ignore_permissions=True
+			)
+		if not frappe.db.exists("Item Group", "COD034 Match Products"):
+			frappe.get_doc(
+				dict(
+					doctype="Item Group",
+					item_group_name="COD034 Match Products",
+					parent_item_group="All Item Groups",
+				)
+			).insert(ignore_permissions=True)
+		if not frappe.db.exists("UOM", "COD034 Match Unit"):
+			frappe.get_doc(dict(doctype="UOM", uom_name="COD034 Match Unit")).insert(ignore_permissions=True)
+		if not frappe.db.exists("Item", "COD034-MATCH-ITEM"):
+			frappe.get_doc(
+				dict(
+					doctype="Item",
+					item_code="COD034-MATCH-ITEM",
+					item_name="COD034 match fixture",
+					item_group="COD034 Match Products",
+					stock_uom="COD034 Match Unit",
+					is_stock_item=0,
+				)
+			).insert(ignore_permissions=True)
+		warehouse = frappe.db.get_value("Warehouse", {"company": row.company, "is_group": 0}, "name")
+		request_date = str(row.period_start)
+		schedule_date = add_days(request_date, 1)
+		request = frappe.get_doc(
+			dict(
+				doctype="Material Request",
+				company=row.company,
+				material_request_type="Purchase",
+				transaction_date=request_date,
+				schedule_date=schedule_date,
+				items=[
+					dict(
+						item_code="COD034-MATCH-ITEM",
+						qty=1,
+						uom="COD034 Match Unit",
+						conversion_factor=1,
+						warehouse=warehouse,
+						cost_center=row.cost_center,
+						expense_account=row.account,
+						project=row.project,
+						schedule_date=schedule_date,
+						rate=1,
+						amount=1,
+					)
+				],
+			)
+		).insert(ignore_permissions=True)
+		source = locked_material_request_source(request.name, request.items[0].name, row.organization_unit)
+		key_values = {
+			field: str(row.get(field)) if field in {"period_start", "period_end"} else row.get(field)
+			for field in KEY_FIELDS
+		}
+		before = {
+			doctype: frappe.db.count(doctype)
+			for doctype in (LEDGER, "HRP Budget Reservation", "HRP Budget Reservation Event")
+		}
+		result = prepare_purchase_release_match(
+			request.name,
+			request.items[0].name,
+			row.organization_unit,
+			expected_source_digest=source.digest(),
+			budget_date=request_date,
+			proposed_keys=[key_values],
+		)
+		self.assertEqual(len(result.candidates), 1)
+		self.assertEqual(result.candidates[0].key.organization_unit, row.organization_unit)
+		self.assertEqual(result.source.expense_account, row.account)
+		self.assertEqual(result.source.cost_center, row.cost_center)
+		self.assertEqual(before, {doctype: frappe.db.count(doctype) for doctype in before})
 		frappe.db.rollback()
