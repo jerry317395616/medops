@@ -35,7 +35,9 @@
 		"medops/hrp_budget/services/budget_usage_observation.py",
 		"medops/tests/test_budget_usage_observation.py",
 		"medops/hrp_budget/services/material_usage_sources.py",
-		"tests/test_change_governance.py"
+		"tests/test_change_governance.py",
+		"medops/hrp_budget/services/material_usage_preview.py",
+		"medops/tests/test_budget_usage_preview.py"
 	],
 	"permissions_impact": "无新API或角色；内部核查先验证当前预算台账读取权限、字段和组织范围，再读取预占结构。预占事件与聚合写入仍关闭。",
 	"migration_impact": "无新增数据库模型、字段或用户权限；依赖既有预占和事件表已迁移为 InnoDB。",
@@ -51,7 +53,8 @@
 		"预算占用来源在锁前发现、锁后重新枚举，与锁定的真实采购快照、成本中心和币种比较；新增隔离数据库用例待运行。",
 		"内部范围和权限共用接口修正跨模块私有访问；重新运行类型检查与质量检查。",
 		"隔离 CI 40581239849通过47项多来源围栏专项和真实两采购草稿锁竞争；后续来源校验另行测试。",
-		"空历史首笔申请及孤立事件；历史与新来源同时绑定；锁后集合变化和缺少历史锁均失败；新增专项待运行。"
+		"空历史首笔申请及孤立事件；历史与新来源同时绑定；锁后集合变化和缺少历史锁均失败；新增专项待运行。",
+		"采购来源发现、来源和预算围栏、占用重核、下达候选查询的完整顺序及失败失效；七项模拟来源流程测试待执行。"
 	],
 	"owner": "MedOps Maintainers",
 	"created_on": "2026-10-27",
