@@ -25,6 +25,7 @@
 		"medops/common/budget_control.py",
 		"medops/common/budget_control_history.py",
 		"medops/common/budget_control_release.py",
+		"medops/common/budget_reservation_events.py",
 		"medops/hrp_budget/services/control_guards.py",
 		"medops/hrp_budget/services/control_inventory.py",
 		"medops/hrp_budget/services/control_release.py",
@@ -37,6 +38,7 @@
 		"tests/test_budget_control.py",
 		"tests/test_budget_control_history.py",
 		"tests/test_budget_control_release.py",
+		"tests/test_budget_reservation_events.py",
 		"tests/test_change_governance.py"
 	],
 	"permissions_impact": "当前未接线锁原型无 API、用户授权、范围或财务写入；持预算锁时领域服务普通异常完整回滚同一事务的所有未提交写入，后续事务须重新校验权限与来源。",
@@ -55,6 +57,7 @@
 		"围栏内完整下达批次与物理分录对照、缺失分录拒绝及失效",
 		"真实下达行的字典身份解析，以及全新站点缺少 Transit 基础仓库类型的测试夹具",
 		"已授权下达单的历史期间重叠与同键币种精度冲突拒绝",
+		"预占、部分释放、承诺和实际转换的精确金额、连续顺序及不得重复扣减",
 		"隔离站点五项预算关键路径定向集成测试，不替代完整CI",
 		"定向CI拒绝 runner 临时目录外的解析后路径",
 		"事务见证对取锁前后保存点、早晚回调失败、动态回调、提交失败重试及成功清理的真实数据库验证",
