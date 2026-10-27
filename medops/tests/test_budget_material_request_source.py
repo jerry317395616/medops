@@ -364,6 +364,20 @@ class TestBudgetMaterialRequestSource(FrappeTestCase):
 				original_form,
 			)
 
+	def test_authority_refresh_allows_verified_background_actor_switch(self):
+		"""A worker may adopt the separately verified synthetic decision actor."""
+		previous_request = getattr(frappe.local, "request", None)
+		try:
+			frappe.local.request = None
+			frappe.set_user("Administrator")
+			release_execution.refresh_financial_authority(source_fixture.MANAGER)
+			self.assertEqual(frappe.session.user, source_fixture.MANAGER)
+			self.assertEqual(frappe.session.sid, source_fixture.MANAGER)
+			self.assertIn("HRP Budget Manager", frappe.get_roles())
+		finally:
+			frappe.set_user("Administrator")
+			frappe.local.request = previous_request
+
 	def test_reservation_domain_services_replay_and_protect_confirmation_proof(self):
 		"""Exercise encrypted receipts and evidence rows; source/session are substituted."""
 		self.request.items[0].rate = 10
