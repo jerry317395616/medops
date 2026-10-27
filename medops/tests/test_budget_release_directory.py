@@ -237,6 +237,7 @@ class TestBudgetReleaseDirectory(FrappeAPITestCase):
 		actual_list, actual_all = frappe.get_list, frappe.get_all
 		seen_sources, seen_releases = [], []
 		add_unrelated_submissions = True
+		add_relevant_releases = False
 
 		def noisy_list(doctype, *args, **kwargs):
 			rows = actual_list(doctype, *args, **kwargs)
@@ -256,8 +257,8 @@ class TestBudgetReleaseDirectory(FrappeAPITestCase):
 			filters = kwargs.get("filters", {})
 			if doctype == RELEASE and kwargs.get("pluck") == "source_approval":
 				seen_releases.append(dict(filters))
-				if filters.get("organization_unit") != unit:
-					return list(rows) + ["other-unit-case"] * (directory.MAX_DIRECTORY_CANDIDATES + 1)
+				if filters.get("organization_unit") != unit or add_relevant_releases:
+					return list(rows) + ["bounded-case"] * (directory.MAX_DIRECTORY_CANDIDATES + 1)
 			return rows
 
 		with patch("frappe.get_list", side_effect=noisy_list), patch("frappe.get_all", side_effect=noisy_all):
@@ -281,6 +282,14 @@ class TestBudgetReleaseDirectory(FrappeAPITestCase):
 					row.get("organization_unit") == unit and row.get("currency") == currency
 					for row in seen_releases
 				)
+			)
+			# Relevant excess is still rejected instead of returning a partial directory.
+			add_relevant_releases = True
+			self.assertEqual(
+				self.listing(
+					self.filters(organization_unit=unit, currency=currency), endpoint="eligible_sources"
+				).status_code,
+				400,
 			)
 
 		# The global existence check and per-source check still suppress a prepared source.
