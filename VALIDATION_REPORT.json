@@ -9,7 +9,7 @@
 		"ADR-0031",
 		"ADR-0032"
 	],
-	"current_scope": "COD-033 In Progress. c0ee full456 local/1449 blobs/full446 native passed;9 guards passed. Isolated recovery984tables/113143rows/14802encrypted receipts passed with only native System Settings.modified timestamp retained. Actual e87d901 UI accepted eligible-source to Prepared creation, same-value filter retention, missing-required clear/export disable, native scope narrowing B403/A200 and exact restoration. Financial delta1/0/0/0;2source lines in snapshot;no authorization,posting orOutbox. Native deletion cleanup for only the newly removed restriction executed in isolated long queue;original386default IDs/order retained,long0,workers0. Both benches/configs/existing services unchanged;public8291. Link validation settling/first-query UX,directory performance,new-source positive file export,protectedCI/promotion and whole HRP remain incomplete. New input-follow-up: e87 browser proves changed Link input can retain old ledger/export before blur; both Pages now bind input to the existing signature invalidator. Static checks passed, new-source actual browser regression pending. Frozen598 baseline83.251s/82245SQL/all984table hashes unchanged;not compared to prior459.",
+	"current_scope": "COD-033 In Progress. c0ee backend full456 local/full446 native/9guards passed;only PageJS/docs changed later. bcc952c actual browser VERIFIED focused-input invalidation, same-value retention, in-flight old200 rejection, partial-date input, operations directory clear, and positive full220row browser XLSX. All rows/headers/context/totals exactly match native authorized digest-bound export;precision9,alltext,noformulas/links. No financial or permission changes;original386queue IDs retained,workers0;both bench pins/configs/existing services unchanged;public8291. Frozen598 baseline83.251s/82245SQL/all984table hashes unchanged. Directory performance,native suggestion mouse-selection UX,protectedCI/promotion and whole HRP remain incomplete.",
 	"checks": {
 		"pure_tests_expected": 456,
 		"complete_frappe_tests_expected": 446,
@@ -59,7 +59,7 @@
 				"Outbox stale-snapshot full transaction retry"
 			]
 		},
-		"current_local_quality": "Full456 passed atc0ee;backend Python/models/tests identical through e87. e87 scoped contract/package/checksums/governance and1449committed blobs passed;JS static proofd0 unchanged. Current docs-only checkpoint requires scoped checks.",
+		"current_local_quality": "Full456 atc0ee;current backend Python/models/tests identical. bcc7 scoped checks/1449committed blobs passed,actualbrowser/file/native preserved-state checks passed. This final documentation checkpoint is checked separately.",
 		"runtime_native_partial": {
 			"source_commit": "daaed16f7765c0fb2e796fa100ca817970585499",
 			"passed_counts": [
@@ -1082,7 +1082,7 @@
 		}
 	],
 	"operations_link_filter_followup": {
-		"status": "observable browser behavior passed at e87d901 with explicit limits",
+		"status": "observable same-value and input-phase behavior passed at bcc952c",
 		"file": "medops/hrp_budget/page/hrp_budget_operations/hrp_budget_operations.js",
 		"trigger": "Native Link validation can invoke onchange again with an identical value; operations page previously invalidated every callback.",
 		"result": "Bind current normalized filter signature during queries and programmatic record loads; invalidate only on an actual filter change.",
@@ -1095,11 +1095,11 @@
 		],
 		"missing_required_filters_clear_previous_results_and_export": true,
 		"browser_validation_pending": false,
-		"verified_source_commit": "e87d9011e768043a6019e989803a75f32b384889",
-		"browser_proof": "cod033-e87d901-ui-browser-observations.json",
+		"verified_source_commit": "bcc952c9b084a2530248f5eeed4f72bfb2cc0265",
+		"browser_proof": "cod033-bcc952c-input-browser-observations.json",
 		"same_value_reentry_preserved_current_results": true,
 		"missing_required_query_cleared_results_and_export": true,
-		"scope_limit": "Native Link input values sometimes needed to settle before query; no universal first-click/latency guarantee. Current positive exported file not repeated."
+		"scope_limit": "Native suggestion popup covers toolbar after raw fills;normal keyboard query accepted,explicit mouse suggestion-selection flow remains. Current positive220row browser file accepted atbcc."
 	},
 	"operator_ui_acceptance": {
 		"status": "passed",
@@ -1268,20 +1268,24 @@
 		"proof": "cod033-e87d901-recovery-ui-integrity-v3.json"
 	},
 	"next_unblocked_tasks": [
-		"Native Link input settling/first-query UX and directory performance on a fixed dataset",
-		"Positive browser XLSX acceptance at final source;prior e311 proof not relabeled",
+		"Directory performance using frozen598 baseline without weakening source/current authority checks;consider measured pure normalization hotspots",
+		"Native Link suggestion mouse-selection query UX check;do not infer server timing defect from an overlaid button",
 		"ProtectedCI and complete release/promotion gates;no partial releasePR",
 		"COD034/035 and remainingHRP;actual hospital capacity/interfaces/UAT"
 	],
 	"input_invalidation_followup": {
-		"status": "implemented and two-page ESLint/Prettier passed; actual candidate browser verification pending",
+		"status": "actual browser verification passed at bcc952c",
 		"baseline_ui_source": "e87d9011e768043a6019e989803a75f32b384889",
 		"baseline_verified": "Filled organization_unit B while input retained focus; old A table51 rows and enabled export remained until native onchange.",
 		"baseline_screenshot": "cod033-e87d901-input-stale-export.png",
 		"fix": "Bind native input events to the existing normalized signature handler on operations Links and statement Links/dates; preserve native validation and server authority.",
 		"models_api_migration_or_user_grants_changed": false,
 		"server_python_tests_unchanged_since": "c0eea4c3e1fc40f05c7a7a10bc6a6eb2dc1c7572",
-		"candidate_browser_verification_pending": true
+		"candidate_browser_verification_pending": false,
+		"verified_source_commit": "bcc952c9b084a2530248f5eeed4f72bfb2cc0265",
+		"browser_proof": "cod033-bcc952c-input-browser-observations.json",
+		"native_integrity_proof": "cod033-bcc952c-input-browser-followup-integrity.json",
+		"same_value_and_inflight_and_partial_date_cases_verified": true
 	},
 	"frozen_directory_baseline": {
 		"status": "passed",
@@ -1334,5 +1338,107 @@
 		"dataset_rows": 113143,
 		"proof": "cod033-e87d901-frozen-directory-baseline.json",
 		"optimization_not_implemented": "All counted controller bodies use read; one document key variant per source. Normalizing equivalent permission type labels would not reduce this measured workload. No source/authorization checks removed."
+	},
+	"current_positive_browser_export": {
+		"status": "passed",
+		"source_commit": "bcc952c9b084a2530248f5eeed4f72bfb2cc0265",
+		"file": "cod033-bcc952c-browser-budget-statement.xlsx",
+		"bytes": 88163,
+		"sha256": "f85e8f5a073015e8cef35ee1d6f2eee3e40e5889ecd5fd3ce4642a8e850ee04e",
+		"browser_page_rows": 50,
+		"exported_data_rows": 220,
+		"all_complete_rows_headers_context_totals_match_native_authorized_source": true,
+		"all_rows_original_unit_A": true,
+		"all_precision9": true,
+		"all_nonempty_cells_text": true,
+		"text_cells": 6924,
+		"formula_cells": 0,
+		"hyperlinks": 0,
+		"external_relationships": 0,
+		"statement_digest": "2bf1ff94b3b16196d685a7c0af28bec1c4f634d09c366f625df78e6740e35c08",
+		"real_browser_download": true,
+		"no_user_grants": true,
+		"financial_values_returned": false,
+		"proof": "cod033-bcc952c-browser-export-file-proof.json"
+	},
+	"input_browser_observations": {
+		"status": "passed",
+		"source_commit": "bcc952c9b084a2530248f5eeed4f72bfb2cc0265",
+		"native_backend_evidence_source": "c0eea4c3e1fc40f05c7a7a10bc6a6eb2dc1c7572",
+		"baseline_source": "e87d9011e768043a6019e989803a75f32b384889",
+		"baseline_focus_change_B_kept_old_A_table51_and_export_enabled": true,
+		"fresh_followup_browser_origin": true,
+		"existing_Administrator_only_no_new_grants": true,
+		"finance_POST_endpoints_denied_by_temporary_test_helper": true,
+		"statement_A_total_rows": 220,
+		"statement_A_page_data_rows": 50,
+		"same_Link_input_value_kept_table51_and_export": true,
+		"changed_Link_input_B_retained_focus_but_immediately_cleared_table_and_disabled_export": true,
+		"request_confirmed_inflight_before_input_change": true,
+		"old_200_statement_response_did_not_restore_table_or_export": true,
+		"partial_from_date_input_2_retained_focus_but_immediately_cleared_table_and_disabled_export": true,
+		"TypeError_or_SyntaxError_after_partial_date": 0,
+		"real_browser_XLSX_download": true,
+		"download_file_proof": "cod033-bcc952c-browser-export-file-proof.json",
+		"operations_record_directory_buttons": 50,
+		"operations_same_year_input_kept_50_records": true,
+		"operations_changed_currency_USD_retained_focus_but_immediately_cleared_directory": true,
+		"synthetic_Administrator_normal_native_UI_logout_confirmed": true,
+		"main_followup_validation_tab_closed": true,
+		"temporary_helper_and_local_tunnel_stopped": true,
+		"screenshots": [
+			"cod033-e87d901-input-stale-export.png",
+			"cod033-bcc952c-focused-input-clears-export.png",
+			"cod033-bcc952c-operations-input-clears-directory.png"
+		],
+		"native_integrity_proof": "cod033-bcc952c-input-browser-followup-integrity.json",
+		"limits": [
+			"No universal first mouse-click guarantee; the native suggestion popup visibly covers the query toolbar after raw Link fills. Successful in-flight read used normal keyboard Enter; explicit mouse selection of a suggestion remains a separate UX check.",
+			"Existing full-permission Administrator validates positive export; this does not configure ordinary hospital department export permissions.",
+			"No hospital capacity claim; frozen598 clean cProfile baseline83.251s/82245SQL is separate from prior459 measurements."
+		]
+	},
+	"input_browser_native_integrity": {
+		"status": "passed",
+		"commit": "bcc952c9b084a2530248f5eeed4f72bfb2cc0265",
+		"phase": "followup",
+		"all_original_User_Permission_rows_unchanged": true,
+		"preexisting_services_configs_and_both_bench_app_pins_unchanged": true,
+		"protected_old_budget_roles_and_four_financial_models_unchanged": true,
+		"queues_gl_stock_settings_and_source_unchanged": true,
+		"queue_counts": {
+			"short": 0,
+			"default": 386,
+			"long": 0
+		},
+		"workers": 0,
+		"temporary_helper_stopped": true,
+		"finance_post_endpoints_denied": true,
+		"route_counters": {
+			"ledger.statement": {
+				"count": 4,
+				"statuses": [
+					"200",
+					"200",
+					"200",
+					"200"
+				]
+			},
+			"ledger.export_statement": {
+				"count": 1,
+				"statuses": [
+					"200"
+				]
+			},
+			"release.list_records": {
+				"count": 1,
+				"statuses": [
+					"200"
+				]
+			}
+		},
+		"public_sites_untouched": true,
+		"new_user_grants": false,
+		"source_data_returned": false
 	}
 }
