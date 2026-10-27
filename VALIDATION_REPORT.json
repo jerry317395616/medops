@@ -9,7 +9,7 @@
 		"ADR-0031",
 		"ADR-0032"
 	],
-	"current_scope": "COD-033 In Progress. c0ee full456 local/1449 blobs/full446 native passed;9 guards passed. Isolated recovery984tables/113143rows/14802encrypted receipts passed with only native System Settings.modified timestamp retained. Actual e87d901 UI accepted eligible-source to Prepared creation, same-value filter retention, missing-required clear/export disable, native scope narrowing B403/A200 and exact restoration. Financial delta1/0/0/0;2source lines in snapshot;no authorization,posting orOutbox. Native deletion cleanup for only the newly removed restriction executed in isolated long queue;original386default IDs/order retained,long0,workers0. Both benches/configs/existing services unchanged;public8291. Link validation settling/first-query UX,directory performance,new-source positive file export,protectedCI/promotion and whole HRP remain incomplete.",
+	"current_scope": "COD-033 In Progress. c0ee full456 local/1449 blobs/full446 native passed;9 guards passed. Isolated recovery984tables/113143rows/14802encrypted receipts passed with only native System Settings.modified timestamp retained. Actual e87d901 UI accepted eligible-source to Prepared creation, same-value filter retention, missing-required clear/export disable, native scope narrowing B403/A200 and exact restoration. Financial delta1/0/0/0;2source lines in snapshot;no authorization,posting orOutbox. Native deletion cleanup for only the newly removed restriction executed in isolated long queue;original386default IDs/order retained,long0,workers0. Both benches/configs/existing services unchanged;public8291. Link validation settling/first-query UX,directory performance,new-source positive file export,protectedCI/promotion and whole HRP remain incomplete. New input-follow-up: e87 browser proves changed Link input can retain old ledger/export before blur; both Pages now bind input to the existing signature invalidator. Static checks passed, new-source actual browser regression pending. Frozen598 baseline83.251s/82245SQL/all984table hashes unchanged;not compared to prior459.",
 	"checks": {
 		"pure_tests_expected": 456,
 		"complete_frappe_tests_expected": 446,
@@ -1272,5 +1272,67 @@
 		"Positive browser XLSX acceptance at final source;prior e311 proof not relabeled",
 		"ProtectedCI and complete release/promotion gates;no partial releasePR",
 		"COD034/035 and remainingHRP;actual hospital capacity/interfaces/UAT"
-	]
+	],
+	"input_invalidation_followup": {
+		"status": "implemented and two-page ESLint/Prettier passed; actual candidate browser verification pending",
+		"baseline_ui_source": "e87d9011e768043a6019e989803a75f32b384889",
+		"baseline_verified": "Filled organization_unit B while input retained focus; old A table51 rows and enabled export remained until native onchange.",
+		"baseline_screenshot": "cod033-e87d901-input-stale-export.png",
+		"fix": "Bind native input events to the existing normalized signature handler on operations Links and statement Links/dates; preserve native validation and server authority.",
+		"models_api_migration_or_user_grants_changed": false,
+		"server_python_tests_unchanged_since": "c0eea4c3e1fc40f05c7a7a10bc6a6eb2dc1c7572",
+		"candidate_browser_verification_pending": true
+	},
+	"frozen_directory_baseline": {
+		"status": "passed",
+		"source_commit": "e87d9011e768043a6019e989803a75f32b384889",
+		"site_is_immutable_restored_dataset": true,
+		"candidate_count": 598,
+		"candidate_digest": "e01a0feb07fecd17c87c10068ae899c7fa18d089faebd255c92948cd3be11b4b",
+		"list_digest": "59de6bf85a6167874e8c5a057411e6e755fba91632271ff7515a0af07c4baafd",
+		"page_digest": "410f5c6f8f9ba7ebc2aa8c4f6ef263460b4cda8a17eda5b6e2f5ab8fb7a07e32",
+		"page_items": 50,
+		"has_next": true,
+		"sql_calls": 82245,
+		"elapsed_seconds": 83.251,
+		"controller_body_calls": {
+			"_case_permission": {
+				"read": 3444
+			},
+			"_submission_permission": {
+				"read": 3444
+			},
+			"_plan_permission": {
+				"read": 2296
+			},
+			"_version_permission": {
+				"read": 1148
+			}
+		},
+		"controller_document_key_variant_histograms": {
+			"_case_permission": {
+				"1": 1722
+			},
+			"_submission_permission": {
+				"1": 1722
+			},
+			"_plan_permission": {
+				"1": 1148
+			},
+			"_version_permission": {
+				"1": 574
+			}
+		},
+		"original_queues_unchanged": true,
+		"workers": 0,
+		"private_values_returned": false,
+		"diagnostic_second_read_same_result": true,
+		"timing_does_not_include_patched_diagnostic_read": true,
+		"scope": "Clean native cProfile plus a separate counted diagnostic read on the same frozen restored dataset;not comparable to prior459 profiles or hospital capacity.",
+		"all984_table_hashes_files_and_receipts_unchanged": true,
+		"dataset_tables": 984,
+		"dataset_rows": 113143,
+		"proof": "cod033-e87d901-frozen-directory-baseline.json",
+		"optimization_not_implemented": "All counted controller bodies use read; one document key variant per source. Normalizing equivalent permission type labels would not reduce this measured workload. No source/authorization checks removed."
+	}
 }

@@ -43,6 +43,16 @@ frappe.pages["hrp-budget-operations"].on_page_load = (wrapper) => {
 				.filter(([, value]) => value),
 		);
 	}
+	function filterChanged() {
+		if (syncing) return;
+		const signature = JSON.stringify(selectFilters());
+		// Invalidate while typing, before native Link validation finishes.
+		// Later callbacks for the same normalized value keep the current view.
+		if (signature === filterSignature) return;
+		filterSignature = signature;
+		invalidate();
+		if (pendingReads) fact(body, "筛选已修改", __("当前读取结束后请重新查询。"));
+	}
 	function updateTools() {
 		tools.find("button").prop("disabled", writeBusy || pendingReads > 0);
 	}
@@ -405,20 +415,11 @@ frappe.pages["hrp-budget-operations"].on_page_load = (wrapper) => {
 				label: __(label),
 				fieldtype: "Link",
 				options,
-				onchange: () => {
-					if (!syncing) {
-						const signature = JSON.stringify(selectFilters());
-						// Native Link validation may repeat onchange for the same
-						// value after a query or dialog has already been opened.
-						if (signature === filterSignature) return;
-						filterSignature = signature;
-						invalidate();
-						if (pendingReads) fact(body, "筛选已修改", __("当前读取结束后请重新查询。"));
-					}
-				},
+				onchange: filterChanged,
 			},
 			render_input: true,
 		});
+		controls[fieldname].$input.on("input", filterChanged);
 	}
 	filterSignature = JSON.stringify(selectFilters());
 	function navigateList(selectedKind) {

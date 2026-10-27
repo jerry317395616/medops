@@ -72,6 +72,9 @@ frappe.pages["hrp-budget-statements"].on_page_load = function (wrapper) {
 			df: { fieldname, label: __(label), fieldtype, options, onchange: filterChanged },
 			render_input: true,
 		});
+		// Input changes precede native validation. Clear the old result/export
+		// immediately, including while a Link or date field still has focus.
+		controls[fieldname].$input.on("input", filterChanged);
 	}
 	controls.currency.set_value(frappe.defaults.get_user_default("currency") || "CNY");
 
