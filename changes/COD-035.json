@@ -56,12 +56,17 @@
 		"medops/common/reservation_evidence_control.py",
 		"medops/hrp_budget/services/reservation_confirmation.py",
 		"medops/hrp_budget/services/release_execution.py",
-		"medops/hrp_budget/services/reservation_confirmation_service.py"
+		"medops/hrp_budget/services/reservation_confirmation_service.py",
+		"medops/common/reservation_request.py",
+		"medops/api/v1/finance/reservation.py",
+		"medops/hrp_budget/api/reservation_transaction.py",
+		"medops/services/confirmation_privacy.py",
+		"medops/tests/test_budget_reservation_api.py"
 	],
-	"permissions_impact": "无新API或角色；私有候选要求真实会话、预算经理角色、科室写范围及预算台账读范围。预占事件与聚合写入仍关闭。",
+	"permissions_impact": "新增默认关闭的确认证据候选API，启用需站点布尔开关；要求POST登录会话、预算经理角色和来源/预算范围，不开放预算预占或财务过账。",
 	"migration_impact": "此前新增授权证据表、来源索引和可选来源快照字段；本次无新增结构迁移。标准站点迁移须在隔离副本验证并评估大表锁表、备份及维护窗口；未对服务器执行迁移。",
 	"rollback_plan": "本次预占写入仍关闭。上线或回退前停止全部受影响写入口和新旧 worker；保留事件证据并核对一致性。索引不能在运行反向查询的版本中移除，否则会拒绝查询；按站点制定备份与迁移回退。",
-	"security_impact": "权限刷新在同一网络用户下保留会话ID、会话数据与请求表单，禁止网络请求切换用户；后台任务仍可切换至已核验授权人。预占确认新增私有幂等审计领域服务，重放复核会话和来源；未开放API或预算记账，隔离回归待完成。",
+	"security_impact": "确认API默认为关闭；独占干净HTTP事务后切换READ COMMITTED，遇到写入、回调、嵌套或已有围栏失败关闭；确认请求加入凭证脱敏，域服务持久化加密幂等结果。真实HTTP、并发及完整医院业务未验收，证据不构成预算预占。",
 	"test_plan": [
 		"隔离CI 40578844791通过同预算范围多个采购来源、状态转移及101范围分组等31项专项",
 		"拒绝孤立事件、缺失事件、跨范围父子不一致、未知来源、重复动作与超限并失效预算围栏",
@@ -89,7 +94,9 @@
 		"20项纯逻辑测试覆盖意图、确认、决定、规范化持久化格式和篡改；独立证据表原生迁移与拒绝写入待执行。",
 		"私有确认/决定真实文档和数据库写入、错误凭证、重复决定及追加后拒绝修改；三项真实围栏与模拟来源用例包括采购检查器实际调用和会话变化；另有合成提交来源、真实请求校验及回滚专项，均待隔离执行。",
 		"隔离CI 40594313650暴露权限刷新重置会话；新增会话/请求表单保留、禁止网络身份切换、原生来源、加密幂等回放与过期/换会话拒绝测试，待隔离执行。",
-		"后台无请求时按已验证合成预算经理切换并重载角色，隔离验证待执行。"
+		"后台无请求时按已验证合成预算经理切换并重载角色，隔离验证待执行。",
+		"隔离CI 40595851888通过112项原生专项，含网络会话保留、后台授权人切换、证据与幂等测试；库存来源部分替身，Error Log为零。",
+		"新增默认关闭确认API、干净事务和回调/既有写入拒绝、真实HTTP默认拒绝与原生诊断凭证脱敏测试，隔离结果待运行。"
 	],
 	"owner": "MedOps Maintainers",
 	"created_on": "2026-10-27",
