@@ -161,6 +161,37 @@ class RepositoryContractTest(unittest.TestCase):
 	def test_current_ci_pipeline_is_mandatory(self) -> None:
 		self.assertEqual(validate_ci_pipeline(ROOT), [])
 
+	def test_ci_ione_core_profile_cannot_silently_drop_core(self) -> None:
+		with tempfile.TemporaryDirectory() as temp:
+			root = Path(temp)
+			for relative in (
+				".github/workflows/ci.yml",
+				"scripts/ci_integration.sh",
+				"scripts/bootstrap_latest_develop.sh",
+			):
+				path = root / relative
+				path.parent.mkdir(parents=True, exist_ok=True)
+				path.write_text((ROOT / relative).read_text(encoding="utf-8"), encoding="utf-8")
+			workflow = root / ".github/workflows/ci.yml"
+			workflow.write_text(
+				workflow.read_text(encoding="utf-8").replace(
+					'INCLUDE_IONE_CORE: "1"', 'INCLUDE_IONE_CORE: "0"'
+				),
+				encoding="utf-8",
+			)
+			self.assertIn(
+				"IONE Core compatibility must run the integration script with core enabled",
+				validate_ci_pipeline(root),
+			)
+			bootstrap = root / "scripts/bootstrap_latest_develop.sh"
+			bootstrap.write_text(
+				bootstrap.read_text(encoding="utf-8").replace(
+					"8c697bafd30aebd418aee18f618b287bbab557f3", "0" * 40
+				),
+				encoding="utf-8",
+			)
+			self.assertTrue(any("IONE Core CI bootstrap is missing" in x for x in validate_ci_pipeline(root)))
+
 	def test_current_environment_profiles_are_mandatory(self) -> None:
 		self.assertEqual(validate_environment_profiles(ROOT), [])
 

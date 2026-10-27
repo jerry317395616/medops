@@ -9,9 +9,9 @@
 		"ADR-0031",
 		"ADR-0032"
 	],
-	"current_scope": "COD-033 In Progress. Current candidate adds optional page-aligned budget subject/funding names under current native document, scope and display_name field authorization, followed by final recheck. Exact financial rows/digest and existing34 XLSX columns unchanged; labels omitted when unavailable or response JSON limits would be exceeded. Expected460 pure/448 native; candidate full quality, native and real browser pending. Prior f500 full446 is historical, public8291 unchanged; all HRP and hospital acceptance remain incomplete.",
+	"current_scope": "COD-033 In Progress. Current candidate adds authorized statement display labels and a separate GitHub CI IONE Core compatibility profile pinned to the owner repository. Expected 461 pure/448 native; the new CI profile and full current validation remain pending. Original strict server-service guard failed during user-confirmed maintenance, despite 14/14 native functional tests passing. Public8291 unchanged; all HRP and hospital acceptance remain incomplete.",
 	"checks": {
-		"pure_tests_expected": 460,
+		"pure_tests_expected": 461,
 		"complete_frappe_tests_expected": 448,
 		"exact_foundation_pure_tests_passed": 21,
 		"native_foundation": {
@@ -658,7 +658,17 @@
 			"new_tables_or_user_grants": false,
 			"early_http_request_boundary": "still not fixed"
 		},
-		"complete_frappe_tests_passed": 446
+		"complete_frappe_tests_passed": 446,
+		"ione_core_ci_compatibility": {
+			"status": "implemented_not_run",
+			"commit": "8c697bafd30aebd418aee18f618b287bbab557f3",
+			"source": "https://github.com/jerry317395616/ione_core.git",
+			"separate_job": true,
+			"required_check": false,
+			"fresh_ci_sites_only": true,
+			"existing_ci_without_core_retained": true,
+			"real_hospital_acceptance": false
+		}
 	},
 	"previous_verified_release": {
 		"schema_version": 1,

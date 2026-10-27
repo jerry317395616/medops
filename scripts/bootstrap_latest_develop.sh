@@ -112,6 +112,11 @@ HRMS_COMMIT="$(lock_value hrms commit)"
 FRAPPE_BRANCH="$(lock_value frappe branch)"
 ERPNEXT_BRANCH="$(lock_value erpnext branch)"
 HRMS_BRANCH="$(lock_value hrms branch)"
+INCLUDE_IONE_CORE="${INCLUDE_IONE_CORE:-0}"
+case "$INCLUDE_IONE_CORE" in
+  0|1) ;;
+  *) echo "INCLUDE_IONE_CORE must be 0 or 1" >&2; exit 1 ;;
+esac
 
 if ! command -v uv >/dev/null 2>&1; then
   echo "uv is required. Install it first, then rerun." >&2
@@ -145,14 +150,27 @@ bench get-app --branch "$HRMS_BRANCH" hrms https://github.com/jerry317395616/hrm
 pin_app hrms "$HRMS_COMMIT"
 bench setup requirements
 
+# Optional isolated CI compatibility profile. This is the deployed core revision,
+# fetched only from the owner's repository; it is not a new medops dependency.
+if [[ "$INCLUDE_IONE_CORE" == "1" ]]; then
+  IONE_CORE_COMMIT="8c697bafd30aebd418aee18f618b287bbab557f3"
+  git clone --no-checkout https://github.com/jerry317395616/ione_core.git apps/ione_core
+  git -C apps/ione_core fetch --depth 1 origin "$IONE_CORE_COMMIT"
+  git -C apps/ione_core checkout --detach "$IONE_CORE_COMMIT"
+  [[ "$(git -C apps/ione_core rev-parse HEAD)" == "$IONE_CORE_COMMIT" ]]
+  ./env/bin/python -m pip install -e apps/ione_core
+fi
+
 git clone --no-hardlinks "$ROOT_DIR" "$BENCH_DIR/apps/medops"
 ./env/bin/python -m pip install -e apps/medops
-python3 - "$BENCH_DIR/sites/apps.txt" <<'PYAPPS'
+python3 - "$BENCH_DIR/sites/apps.txt" "$INCLUDE_IONE_CORE" <<'PYAPPS'
 import sys
 from pathlib import Path
 
 path = Path(sys.argv[1])
 apps = [line.strip() for line in path.read_text(encoding="utf-8").splitlines() if line.strip()]
+if sys.argv[2] == "1" and "ione_core" not in apps:
+    apps.append("ione_core")
 if "medops" not in apps:
     apps.append("medops")
 path.write_text("\n".join(apps) + "\n", encoding="utf-8")
@@ -171,6 +189,9 @@ bench new-site "$SITE_NAME" \
 
 bench --site "$SITE_NAME" install-app erpnext
 bench --site "$SITE_NAME" install-app hrms
+if [[ "$INCLUDE_IONE_CORE" == "1" ]]; then
+  bench --site "$SITE_NAME" install-app ione_core
+fi
 bench --site "$SITE_NAME" install-app medops
 bench set-config -g developer_mode "$DEVELOPER_MODE"
 bench --site "$SITE_NAME" migrate

@@ -12,6 +12,12 @@ DB_HOST="${DB_HOST:-127.0.0.1}"
 DB_PORT="${DB_PORT:-3306}"
 REDIS_CACHE_PORT="${REDIS_CACHE_PORT:-13000}"
 REDIS_QUEUE_PORT="${REDIS_QUEUE_PORT:-11000}"
+INCLUDE_IONE_CORE="${INCLUDE_IONE_CORE:-0}"
+case "$INCLUDE_IONE_CORE" in
+  0|1) ;;
+  *) echo "INCLUDE_IONE_CORE must be 0 or 1" >&2; exit 1 ;;
+esac
+export INCLUDE_IONE_CORE
 
 : "${DB_ROOT_PASSWORD:?Set DB_ROOT_PASSWORD}"
 : "${ADMIN_PASSWORD:?Set ADMIN_PASSWORD}"
@@ -89,6 +95,9 @@ create_profile_site() {
     --admin-password "$ADMIN_PASSWORD"
   bench --site "$site_name" install-app erpnext
   bench --site "$site_name" install-app hrms
+  if [[ "$INCLUDE_IONE_CORE" == "1" ]]; then
+    bench --site "$site_name" install-app ione_core
+  fi
   bench --site "$site_name" install-app medops
   "$BENCH_DIR/env/bin/python" "$ROOT_DIR/scripts/environment_manager.py" \
     configure "$profile" \
@@ -213,7 +222,12 @@ for site_name in sys.argv[2:]:
 		raise SystemExit(f"Fresh CI site {site_name} contains Error Log records")
 PY
 
-for app in frappe erpnext hrms medops; do
+apps=(frappe erpnext hrms medops)
+if [[ "$INCLUDE_IONE_CORE" == "1" ]]; then
+  apps+=(ione_core)
+  [[ "$(git -C "$BENCH_DIR/apps/ione_core" rev-parse HEAD)" == "8c697bafd30aebd418aee18f618b287bbab557f3" ]]
+fi
+for app in "${apps[@]}"; do
   if [[ -n "$(git -C "$BENCH_DIR/apps/$app" status --porcelain)" ]]; then
     echo "CI validation changed the $app worktree" >&2
     git -C "$BENCH_DIR/apps/$app" status --short >&2

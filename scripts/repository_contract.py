@@ -445,6 +445,27 @@ def validate_ci_pipeline(root: Path) -> list[str]:
 		mariadb = services.get("mariadb") if isinstance(services, dict) else None
 		if not isinstance(mariadb, dict) or mariadb.get("image") != "mariadb:11.8":
 			violations.append("CI integration job must use MariaDB 11.8")
+	core = jobs.get("integration-core")
+	if not isinstance(core, dict) or core.get("name") != "Integration with IONE Core":
+		violations.append("CI must retain the independent IONE Core compatibility job")
+	else:
+		services = core.get("services")
+		mariadb = services.get("mariadb") if isinstance(services, dict) else None
+		if (
+			core.get("needs") != "quality"
+			or not isinstance(mariadb, dict)
+			or mariadb.get("image") != "mariadb:11.8"
+		):
+			violations.append("IONE Core compatibility must use the quality gate and MariaDB 11.8")
+		steps = core.get("steps", [])
+		if not isinstance(steps, list) or not any(
+			isinstance(step, dict)
+			and "bash scripts/ci_integration.sh" in str(step.get("run", ""))
+			and isinstance(step.get("env"), dict)
+			and step["env"].get("INCLUDE_IONE_CORE") == "1"
+			for step in steps
+		):
+			violations.append("IONE Core compatibility must run the integration script with core enabled")
 
 	security = jobs["security"]
 	if isinstance(security, dict) and security.get("needs") != "quality":
@@ -556,6 +577,15 @@ def validate_ci_pipeline(root: Path) -> list[str]:
 		):
 			if required_token not in bootstrap:
 				violations.append(f"locked Bench bootstrap is missing: {required_token}")
+		for required_token in (
+			"https://github.com/jerry317395616/ione_core.git",
+			"8c697bafd30aebd418aee18f618b287bbab557f3",
+			'bench --site "$SITE_NAME" install-app ione_core',
+		):
+			if required_token not in bootstrap:
+				violations.append(f"IONE Core CI bootstrap is missing: {required_token}")
+	if 'bench --site "$site_name" install-app ione_core' not in integration_script:
+		violations.append("IONE Core CI must install core on additional profile sites")
 	return violations
 
 
