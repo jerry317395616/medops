@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 import unittest
+from collections.abc import Iterator
 
 from medops.common.organization import (
 	MAX_HIERARCHY_NODES,
@@ -13,6 +14,8 @@ from medops.common.organization import (
 	hierarchy_digest,
 	normalize_code,
 	normalize_hierarchy_nodes,
+	normalize_optional_text,
+	normalize_required_text,
 )
 
 
@@ -46,6 +49,39 @@ def valid_nodes() -> list[dict[str, object]]:
 
 
 class OrganizationContractTest(unittest.TestCase):
+	def test_text_control_boundary_preserves_multiline_and_strip_contract(self) -> None:
+		class IteratedText(str):
+			def replace(self, old: str, new: str, count: int = -1, /) -> IteratedText:
+				return self
+
+			def strip(self, chars: str | None = None, /) -> IteratedText:
+				return self
+
+			def __iter__(self) -> Iterator[str]:
+				yield "\x01"
+
+		for normalizer in (normalize_required_text, normalize_optional_text):
+			with self.assertRaises(OrganizationContractError):
+				normalizer(IteratedText("name"), label="name")
+		for codepoint in range(32):
+			value = "科室" + chr(codepoint) + "末尾"
+			with self.subTest(codepoint=codepoint), self.assertRaises(OrganizationContractError):
+				normalize_required_text(value, label="name")
+			if codepoint in (9, 10, 13):
+				self.assertEqual(normalize_optional_text(value, label="remarks"), value.replace("\r", "\n"))
+			else:
+				with self.subTest(optional_codepoint=codepoint), self.assertRaises(OrganizationContractError):
+					normalize_optional_text(value, label="remarks")
+		for character in (" ", "\x7f", "\x80", "\x9f", "院", "\u0301", "\u200d", "\U0001f3e5"):
+			value = "科室" + character + "末尾"
+			self.assertEqual(normalize_required_text(value, label="name"), value)
+			self.assertEqual(normalize_optional_text(value, label="remarks"), value)
+		self.assertEqual(normalize_required_text("\x1c 科室A \x1d", label="name"), "科室A")
+		self.assertEqual(normalize_required_text("\r\n科室A\t", label="name"), "科室A")
+		self.assertEqual(
+			normalize_optional_text("  行一\r\n行二\t末尾 \r", label="remarks"), "行一\n行二\t末尾"
+		)
+
 	def test_codes_are_canonical_and_bounded(self) -> None:
 		self.assertEqual(normalize_code("hospital", label="code"), "HOSPITAL")
 		self.assertEqual(normalize_code("A_01-2", label="code"), "A_01-2")

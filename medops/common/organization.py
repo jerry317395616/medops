@@ -19,6 +19,8 @@ MAX_NAME_LENGTH = 140
 MAX_REMARKS_LENGTH = 500
 CODE_PATTERN = re.compile(r"^[A-Z][A-Z0-9_-]{0,63}$")
 SHA256_PATTERN = re.compile(r"^[0-9a-f]{64}$")
+_CONTROL_CHARACTERS = re.compile(r"[\x00-\x1f]")
+_MULTILINE_CONTROL_CHARACTERS = re.compile(r"[\x00-\x08\x0b-\x1f]")
 UNIT_TYPES = (
 	"HOSPITAL",
 	"CAMPUS",
@@ -62,7 +64,15 @@ def normalize_required_text(value: object, *, label: str, maximum: int = MAX_NAM
 	if not isinstance(value, str):
 		raise OrganizationContractError(f"{label} must be text")
 	normalized = value.replace("\r\n", "\n").replace("\r", "\n").strip()
-	if not normalized or len(normalized) > maximum or any(ord(character) < 32 for character in normalized):
+	if (
+		not normalized
+		or len(normalized) > maximum
+		or (
+			_CONTROL_CHARACTERS.search(normalized)
+			if type(normalized) is str
+			else any(ord(character) < 32 for character in normalized)
+		)
+	):
 		raise OrganizationContractError(f"{label} is invalid")
 	return normalized
 
@@ -80,8 +90,10 @@ def normalize_optional_text(
 	normalized = value.replace("\r\n", "\n").replace("\r", "\n").strip()
 	if not normalized:
 		return None
-	if len(normalized) > maximum or any(
-		ord(character) < 32 and character not in {"\n", "\t"} for character in normalized
+	if len(normalized) > maximum or (
+		_MULTILINE_CONTROL_CHARACTERS.search(normalized)
+		if type(normalized) is str
+		else any(ord(character) < 32 and character not in {"\n", "\t"} for character in normalized)
 	):
 		raise OrganizationContractError(f"{label} is invalid")
 	return normalized

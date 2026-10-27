@@ -73,7 +73,8 @@
 		"medops/extensions/error_log.py",
 		"medops/services/audit_context.py",
 		"medops/common/query_memo.py",
-		"medops/hrp_workflow_authorization/services/access_scope.py"
+		"medops/hrp_workflow_authorization/services/access_scope.py",
+		"medops/common/organization.py"
 	],
 	"permissions_impact": "财务记录原生只读，记账必须独立人工确认与当前来源/字段/范围；不分配用户角色、范围或分享。 账簿按原始单位完整来源核验后投影，导出额外要求export；原生财务文档继续关闭。",
 	"migration_impact": "新增三个既有预算运行模型和既有HRP Integration Outbox，共四个，运行库存42；迁移只建表、索引及元数据，同步每分钟预算恢复Scheduled Job Type。通用金额版本1及历史记录不重算，无财务种子或用户授权。审批解析统一到既有15位整数精确上限。 导入独立预算下达与冲销Page及工作台入口，无财务数据或用户授权种子。",
@@ -85,7 +86,8 @@
 		"追加/冲销/幂等/并发与整批失败回滚",
 		"独立人工确认与源/字段撤权",
 		"科室边界、完整账簿、真实HTTP/任务/页面",
-		"完整质量、全量Frappe、重复迁移、保护CI及隔离推广"
+		"完整质量、全量Frappe、重复迁移、保护CI及隔离推广",
+		"规范JSON/组织文本扫描对旧源码的控制字符、Unicode、边界与子类兼容性，以及同598冻结数据性能复验"
 	],
 	"owner": "MedOps Maintainers",
 	"created_on": "2026-10-26",

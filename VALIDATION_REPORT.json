@@ -9,9 +9,9 @@
 		"ADR-0031",
 		"ADR-0032"
 	],
-	"current_scope": "COD-033 In Progress. c0ee backend full456 local/full446 native/9guards passed;only PageJS/docs changed later. bcc952c actual browser VERIFIED focused-input invalidation, same-value retention, in-flight old200 rejection, partial-date input, operations directory clear, and positive full220row browser XLSX. All rows/headers/context/totals exactly match native authorized digest-bound export;precision9,alltext,noformulas/links. No financial or permission changes;original386queue IDs retained,workers0;both bench pins/configs/existing services unchanged;public8291. Frozen598 baseline83.251s/82245SQL/all984table hashes unchanged. Directory performance,native suggestion mouse-selection UX,protectedCI/promotion and whole HRP remain incomplete.",
+	"current_scope": "COD-033 In Progress. Pure C0 scan candidate changes two shared Python helpers; 8337 differential comparisons against2600589 passed with exact bytes/types/errors, including PrivateText and custom string iteration. Expected458 pure/446 native; current full quality/native and same frozen598 performance pending. Prior c0ee full446 and bcc browser220 XLSX retain their own source attribution. No schema/API/hook/permission/transaction changes; public8291 unchanged. ProtectedCI/promotion, remaining HRP modules and hospital acceptance remain.",
 	"checks": {
-		"pure_tests_expected": 456,
+		"pure_tests_expected": 458,
 		"complete_frappe_tests_expected": 446,
 		"exact_foundation_pure_tests_passed": 21,
 		"native_foundation": {
@@ -1440,5 +1440,25 @@
 		"public_sites_untouched": true,
 		"new_user_grants": false,
 		"source_data_returned": false
+	},
+	"text_scan_optimization": {
+		"status": "differential_passed_runtime_pending",
+		"baseline_commit": "2600589c0da56a6d8b6a400f0881d9dda8daad2f",
+		"candidate_source_git_blobs": {
+			"medops/common/domain_service.py": "996fd49906951fd090bd7be743360c754abf31db",
+			"medops/common/organization.py": "d03e4b5681e0dac1f680edb6d70a179f10b7b58c"
+		},
+		"differential_comparisons": 8337,
+		"proof": "cod033-text-scan-compatibility.json",
+		"pure_cases_added": 2,
+		"pure_tests_expected": 458,
+		"native_tests_expected": 446,
+		"current_full_quality_pending": true,
+		"current_full_native_pending": true,
+		"frozen598_performance_pending": true,
+		"models_api_hooks_permissions_and_transactions_unchanged": true,
+		"subclass_legacy_iteration_preserved": true,
+		"hospital_capacity_established": false,
+		"rollback": "Revert only the two shared scanner implementations; retain all data, ledgers and authorization facts. No migration or data rewriting."
 	}
 }

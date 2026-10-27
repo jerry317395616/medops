@@ -19,6 +19,7 @@ MAX_JSON_SNAPSHOT_BYTES = 262144
 SERVICE_NAME_PATTERN = re.compile(r"^[a-z][a-z0-9_.]{2,79}$")
 IDEMPOTENCY_KEY_PATTERN = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._:/-]{7,139}$")
 SHA256_PATTERN = re.compile(r"^[0-9a-f]{64}$")
+_CONTROL_CHARACTERS = re.compile(r"[\x00-\x1f]")
 ServiceKind = Literal["command", "query"]
 
 
@@ -79,7 +80,11 @@ def _normalize_json_value(value: object, *, depth: int, node_count: list[int]) -
 				not isinstance(key, str)
 				or not key
 				or len(key) > 128
-				or any(ord(character) < 32 for character in key)
+				or (
+					_CONTROL_CHARACTERS.search(key)
+					if type(key) is str
+					else any(ord(character) < 32 for character in key)
+				)
 			):
 				raise DomainServiceContractError("JSON snapshot contains an invalid key")
 			try:

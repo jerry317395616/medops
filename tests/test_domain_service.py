@@ -1,7 +1,9 @@
 from __future__ import annotations
 
+import json
 import math
 import unittest
+from collections.abc import Iterator
 
 from medops.common.domain_service import (
 	DOMAIN_SERVICE_SCHEMA_VERSION,
@@ -105,6 +107,22 @@ class TestDomainServiceContract(unittest.TestCase):
 		):
 			with self.subTest(value=value), self.assertRaises(DomainServiceContractError):
 				canonical_json(value)
+
+	def test_json_key_control_boundary_preserves_unicode_canonical_bytes(self) -> None:
+		class IteratedText(str):
+			def __iter__(self) -> Iterator[str]:
+				yield "\x01"
+
+		with self.assertRaises(DomainServiceContractError):
+			canonical_json({IteratedText("key"): "value"})
+		for codepoint in range(32):
+			with self.subTest(codepoint=codepoint), self.assertRaises(DomainServiceContractError):
+				canonical_json({"key" + chr(codepoint) + "end": "value"})
+		for character in (" ", "\x7f", "\x80", "\x9f", "院", "\u0301", "\u200d", "\U0001f3e5"):
+			with self.subTest(codepoint=ord(character)):
+				payload = {"key" + character + "end": ["原值", "\t\n", True, None]}
+				expected = json.dumps(payload, ensure_ascii=False, separators=(",", ":"), sort_keys=True)
+				self.assertEqual(canonical_json(payload).encode("utf-8"), expected.encode("utf-8"))
 
 	def test_idempotency_hashes_do_not_contain_the_raw_key(self) -> None:
 		deduplication_id = "COD-011-sensitive-key-0001"
