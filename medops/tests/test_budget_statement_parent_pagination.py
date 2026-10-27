@@ -67,3 +67,35 @@ class TestBudgetStatementParentPagination(IntegrationTestCase):
 			with self.assertRaises(IoneApplicationError) as overflow:
 				statements.statement_batches(self.context)
 			self.assertEqual(overflow.exception.code, "IONE-CORE-0003")
+
+	def test_real_frappe_query_pages_more_than_thousand_temporary_parents(self):
+		# MariaDB resolves the temporary table only on this test connection; it
+		# shadows rather than modifies the persistent release DocType table.
+		frappe.db.rollback()
+		frappe.db.sql(
+			"""CREATE TEMPORARY TABLE `tabHRP Budget Release` (
+			`name` VARCHAR(140) PRIMARY KEY, `company` VARCHAR(140), `hospital` VARCHAR(140),
+			`organization_version` VARCHAR(140), `fiscal_year` VARCHAR(140), `currency` VARCHAR(140),
+			`status` VARCHAR(30), `docstatus` INT, `posting_date` DATE
+			) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci"""
+		)
+		try:
+			names = [f"release-{index:05}" for index in range(1001)]
+			values = [
+				(name, "company", "hospital", "version", "year", "CNY", "Posted", 1, "2026-10-01")
+				for name in names
+			]
+			values.append(
+				("wrong-hospital", "company", "other", "version", "year", "CNY", "Posted", 1, "2026-10-01")
+			)
+			placeholders = ", ".join(["(%s,%s,%s,%s,%s,%s,%s,%s,%s)"] * len(values))
+			frappe.db.sql(
+				"INSERT INTO `tabHRP Budget Release` (`name`,`company`,`hospital`,`organization_version`,"
+				f"`fiscal_year`,`currency`,`status`,`docstatus`,`posting_date`) VALUES {placeholders}",  # nosec B608 - fixed table and bound values
+				tuple(value for row in values for value in row),
+			)
+			with patch.object(statements, "require_statement_scope"):
+				self.assertEqual(statements.statement_batches(self.context), tuple(names))
+		finally:
+			frappe.db.rollback()
+			frappe.db.sql("DROP TEMPORARY TABLE IF EXISTS `tabHRP Budget Release`")
