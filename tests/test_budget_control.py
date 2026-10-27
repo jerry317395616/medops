@@ -23,7 +23,8 @@ def key(**changes):
 		"budget_subject": "Equipment",
 		"funding_source": "Own Funds",
 		"project": None,
-		"period_index": 1,
+		"period_start": "2026-01-01",
+		"period_end": "2026-01-31",
 		**changes,
 	}
 
@@ -43,7 +44,7 @@ def components(**changes):
 
 class BudgetControlContractTest(unittest.TestCase):
 	def test_full_budget_key_is_canonical_and_each_dimension_matters(self):
-		first = budget_control_key(key(period_index="1", project=""))
+		first = budget_control_key(key(project=""))
 		self.assertEqual(first, budget_control_key(key()))
 		self.assertEqual(first.identity, budget_control_key(key()).identity)
 		for field, value in (
@@ -54,7 +55,8 @@ class BudgetControlContractTest(unittest.TestCase):
 			("budget_subject", "Drugs"),
 			("funding_source", "Grant"),
 			("project", "Project 1"),
-			("period_index", 2),
+			("period_start", "2026-01-02"),
+			("period_end", "2026-02-01"),
 		):
 			with self.subTest(field=field):
 				self.assertNotEqual(first.identity, budget_control_key(key(**{field: value})).identity)
@@ -65,21 +67,23 @@ class BudgetControlContractTest(unittest.TestCase):
 		for invalid in (
 			missing,
 			key(extra="x"),
-			key(period_index=True),
+			key(period_index=1),
+			key(period_start="2026-02-01"),
+			key(period_end="2026-02-30"),
 			key(project="a\nb"),
 			key(project=" "),
 		):
 			with self.subTest(invalid=invalid), self.assertRaises(ValueError):
 				budget_control_key(invalid)
 		with self.assertRaises(ValueError):
-			BudgetControlKey(**key(period_index=True))
+			BudgetControlKey(**key(period_start=True))
 		with self.assertRaises(ValueError):
 			BudgetControlKey(**key(company=" Hospital Co "))
 
 	def test_multi_key_guard_order_is_deterministic_and_duplicate_free(self):
 		first = budget_control_key(key())
 		second = budget_control_key(key(organization_unit="Department B"))
-		third = budget_control_key(key(period_index=2))
+		third = budget_control_key(key(period_start="2026-02-01", period_end="2026-02-28"))
 		one = ordered_budget_keys([first, second, third, first])
 		two = ordered_budget_keys([third, second, first])
 		self.assertEqual(one, two)

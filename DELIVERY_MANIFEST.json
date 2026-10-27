@@ -15,7 +15,7 @@
 		"environment_profiles": 3,
 		"fixture_rules": 3,
 		"fixture_files": 3,
-		"architecture_decisions": 33,
+		"architecture_decisions": 34,
 		"change_records": 36,
 		"change_risk_rules": 5,
 		"error_definitions": 12,

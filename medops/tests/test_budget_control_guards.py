@@ -68,7 +68,8 @@ def synthetic_key(suffix):
 		"budget_subject": "synthetic-subject",
 		"funding_source": "synthetic-fund",
 		"project": None,
-		"period_index": 1,
+		"period_start": "2026-01-01",
+		"period_end": "2026-01-31",
 	}
 
 

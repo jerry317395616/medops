@@ -9,7 +9,7 @@
 		"ADR-0031",
 		"ADR-0032"
 	],
-	"current_scope": "COD-033 remains In Progress: prior GitHub run 40480393108 had one long-queue precondition failure; CI-only bootstrap search isolation is implemented but not yet verified by a new run. COD-034 parallel prework adds exact budget contracts and an unconnected MariaDB transaction guard prototype using Frappe tabSeries. Expected 471 pure/450 native; lock native tests have not run and no business reservation, shared release fence, permissions, API or UI exists. Core compatibility CI, protected PR and hospital acceptance remain pending.",
+	"current_scope": "COD-033 remains In Progress: prior GitHub run 40480393108 had one long-queue precondition failure; CI-only bootstrap search isolation awaits full rerun. COD-034 prework changes the unconnected lock prototype to v2 with actual period dates rather than version-local indexes. Expected 471 pure/450 native; v2 native tests, canonical source identity, overlapping-period fence, reservations, shared release fence, permissions, API and UI remain incomplete. Core CI, protected PR and hospital acceptance remain pending.",
 	"checks": {
 		"pure_tests_expected": 471,
 		"complete_frappe_tests_expected": 450,
@@ -682,7 +682,11 @@
 			"release_reversal_shared_fence": false,
 			"hospital_acceptance": false,
 			"canonical_database_reference_resolution": false,
-			"alias_race_test_pending": true
+			"alias_race_test_pending": true,
+			"lock_version": 2,
+			"period_identity": "actual_start_and_end",
+			"overlapping_period_fence_implemented": false,
+			"native_tests_for_v2_run": false
 		},
 		"ci_bootstrap_search_isolation": {
 			"status": "implemented_not_retested",

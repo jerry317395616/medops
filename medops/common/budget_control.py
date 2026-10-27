@@ -12,7 +12,7 @@ from decimal import Decimal, localcontext
 from medops.common.budget_planning import object_payload
 from medops.common.domain_service import fingerprint_json
 from medops.common.exact_money import MAX_APPROVAL_AMOUNT, exact_decimal_amount, signed_decimal_amount
-from medops.common.organization import normalize_positive_integer, normalize_reference
+from medops.common.organization import normalize_reference, normalize_required_date, validate_date_range
 
 KEY_FIELDS = frozenset(
 	{
@@ -23,7 +23,8 @@ KEY_FIELDS = frozenset(
 		"budget_subject",
 		"funding_source",
 		"project",
-		"period_index",
+		"period_start",
+		"period_end",
 	}
 )
 BALANCE_FIELDS = frozenset(
@@ -41,7 +42,8 @@ class BudgetControlKey:
 	budget_subject: str
 	funding_source: str
 	project: str | None
-	period_index: int
+	period_start: str
+	period_end: str
 
 	def __post_init__(self) -> None:
 		for name in (
@@ -57,11 +59,11 @@ class BudgetControlKey:
 				raise ValueError("budget key must be canonical")
 		if self.project is not None and normalize_reference(self.project, label="project") != self.project:
 			raise ValueError("budget key must be canonical")
-		if (
-			type(self.period_index) is not int
-			or normalize_positive_integer(self.period_index, label="period_index") != self.period_index
-		):
-			raise ValueError("budget key must be canonical")
+		for name in ("period_start", "period_end"):
+			value = getattr(self, name)
+			if not isinstance(value, str) or normalize_required_date(value, label=name) != value:
+				raise ValueError("budget key must be canonical")
+		validate_date_range(self.period_start, self.period_end)
 
 	@property
 	def identity(self) -> str:
@@ -83,7 +85,8 @@ def budget_control_key(value: object) -> BudgetControlKey:
 		project=(
 			None if data["project"] in (None, "") else normalize_reference(data["project"], label="project")
 		),
-		period_index=normalize_positive_integer(data["period_index"], label="period_index"),
+		period_start=normalize_required_date(data["period_start"], label="period_start"),
+		period_end=normalize_required_date(data["period_end"], label="period_end"),
 	)
 
 

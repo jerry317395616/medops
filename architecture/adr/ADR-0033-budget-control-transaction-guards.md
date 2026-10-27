@@ -1,14 +1,14 @@
 ---
 id: ADR-0033
 title: 预算维度事务围栏
-status: Accepted
+status: Superseded
 date: 2026-10-27
 deciders:
   - MedOps Maintainers
 task_ids:
   - COD-034
 supersedes: []
-superseded_by:
+superseded_by: ADR-0034
 ---
 
 # ADR-0033 预算维度事务围栏

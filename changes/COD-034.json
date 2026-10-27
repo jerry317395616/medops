@@ -7,7 +7,7 @@
 	"change_types": ["application", "architecture", "documentation", "security"],
 	"affected_modules": ["HRP Budget", "HRP Foundation", "HRP Workflow Authorization"],
 	"breaking_change": false,
-	"adr_ids": ["ADR-0030", "ADR-0031", "ADR-0033"],
+	"adr_ids": ["ADR-0030", "ADR-0031", "ADR-0033", "ADR-0034"],
 	"path_globs": [
 		"README.md",
 		"DELIVERY_MANIFEST.json",
@@ -15,6 +15,7 @@
 		"SHA256SUMS.txt",
 		"architecture/budget_control.md",
 		"architecture/adr/ADR-0033-budget-control-transaction-guards.md",
+		"architecture/adr/ADR-0034-budget-period-identity.md",
 		"backlog/**",
 		"changes/COD-034.json",
 		"medops/common/budget_control.py",

@@ -10,7 +10,7 @@ from medops.services.errors import raise_ione_error
 # Frappe's standard MariaDB tabSeries has a 100-character primary key and an
 # InnoDB row per name. The prefix cannot collide with ordinary naming patterns
 # accidentally; the 64-character suffix never contains source identifiers.
-GUARD_PREFIX = "medops:budget:guard:v1:"
+GUARD_PREFIX = "medops:budget:guard:v2:"
 
 
 def acquire_budget_guards(keys):
