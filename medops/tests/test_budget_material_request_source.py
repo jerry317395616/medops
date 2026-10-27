@@ -222,10 +222,11 @@ class TestBudgetMaterialRequestSource(FrappeTestCase):
 			patch.object(reservation_confirmation, "_recheck"),
 		):
 			prepared = reservation_confirmation.prepare_reservation_confirmation(item)
-			with self.assertRaises(ValueError):
+			with self.assertRaises(IoneApplicationError) as denied:
 				reservation_confirmation.confirm_reservation_confirmation(
 					prepared["confirmation"], "wrong_confirmation_proof_1234567890", True
 				)
+			self.assertEqual(denied.exception.code, "IONE-CORE-0002")
 			self.assertEqual(frappe.db.count(doctype), before + 1)
 			result = reservation_confirmation.confirm_reservation_confirmation(
 				prepared["confirmation"], prepared["proof"], True

@@ -43,9 +43,17 @@ def _checked_confirmation(name, proof, *, recorded_at=None):
 	def verify_current():
 		stamp = recorded_at or now_datetime().isoformat(sep=" ", timespec="microseconds")
 		current_session = session_digest("budget-reservation:" + item.reservation_identity)
-		verify_reservation_confirmation_proof(
-			item, confirmed, proof=proof, actor=frappe.session.user, session_digest=current_session, now=stamp
-		)
+		try:
+			verify_reservation_confirmation_proof(
+				item,
+				confirmed,
+				proof=proof,
+				actor=frappe.session.user,
+				session_digest=current_session,
+				now=stamp,
+			)
+		except ValueError as error:
+			raise_ione_error("PERMISSION_DENIED", cause=error)
 
 	verify_current()
 	revalidate_reservation_intent(item, actor=confirmed.actor, session=confirmed.session_digest)
