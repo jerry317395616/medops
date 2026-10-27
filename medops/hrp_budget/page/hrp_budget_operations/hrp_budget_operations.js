@@ -10,6 +10,7 @@ frappe.pages["hrp-budget-operations"].on_page_load = (wrapper) => {
 		activeDialog = null,
 		writeBusy = false,
 		pendingReads = 0,
+		filterSignature = null,
 		syncing = false;
 	const canManage = () =>
 		["System Manager", "HRP System Manager", "HRP Budget Manager"].some((role) => frappe.user.has_role(role));
@@ -235,6 +236,7 @@ frappe.pages["hrp-budget-operations"].on_page_load = (wrapper) => {
 			try {
 				for (const [field, control] of Object.entries(controls)) await control.set_value(doc[field] || "");
 			} finally {
+				filterSignature = JSON.stringify(selectFilters());
 				syncing = false;
 			}
 			if (id !== generation) return;
@@ -323,8 +325,11 @@ frappe.pages["hrp-budget-operations"].on_page_load = (wrapper) => {
 	async function list(offset = 0) {
 		if (writeBusy || pendingReads) return;
 		const selected = selectFilters();
-		if (!selected.company || !selected.hospital || !selected.fiscal_year)
+		if (!selected.company || !selected.hospital || !selected.fiscal_year) {
+			invalidate();
 			return frappe.msgprint(__("请先选择法人、医院和预算年度。"));
+		}
+		filterSignature = JSON.stringify(selected);
 		const digest = offset ? directory?.list_digest : null;
 		invalidate();
 		const id = generation;
@@ -402,6 +407,11 @@ frappe.pages["hrp-budget-operations"].on_page_load = (wrapper) => {
 				options,
 				onchange: () => {
 					if (!syncing) {
+						const signature = JSON.stringify(selectFilters());
+						// Native Link validation may repeat onchange for the same
+						// value after a query or dialog has already been opened.
+						if (signature === filterSignature) return;
+						filterSignature = signature;
 						invalidate();
 						if (pendingReads) fact(body, "筛选已修改", __("当前读取结束后请重新查询。"));
 					}
@@ -410,6 +420,7 @@ frappe.pages["hrp-budget-operations"].on_page_load = (wrapper) => {
 			render_input: true,
 		});
 	}
+	filterSignature = JSON.stringify(selectFilters());
 	function navigateList(selectedKind) {
 		if (writeBusy || pendingReads) return;
 		kind = selectedKind;

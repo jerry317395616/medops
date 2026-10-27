@@ -171,6 +171,7 @@ frappe.pages["hrp-budget-statements"].on_page_load = function (wrapper) {
 		const query = payload();
 		filterSignature = JSON.stringify(query);
 		if (!query.organization_unit || !query.fiscal_year || !query.currency) {
+			invalidate();
 			frappe.msgprint(__("请先选择原始单位、会计年度和币种。"));
 			return;
 		}

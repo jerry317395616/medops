@@ -9,7 +9,7 @@
 		"ADR-0031",
 		"ADR-0032"
 	],
-	"current_scope": "COD-033 In Progress. c0eea4c full456 local quality/1449 committed blobs passed. Complete modules13/settings11 each ran twice:48 native executions (24 distinct cases),all9 preserved-state checks passed. Production app code is identical to86; only two HTTP tests receive per-execution UUID keys and preserve within-run replay. New full446 running on frozen private c0ee,PID4036727. Prior86 full446 ended with2 fixture request-key collisions/all9guards passed. Same459 optimization61.792s/63225SQL measured at9d with identical digests. INFO audit real-file and six targeted86 native passed. Backup/restore adapters/plan prepared but not executed; capacity/UI/CI/promotion and whole HRP goal remain incomplete. Public8291 unchanged.",
+	"current_scope": "COD-033 In Progress. c0eea4c full456 local quality/1449 committed blobs passed. Complete modules13/settings11 each ran twice:48 native executions (24 distinct cases),all9 preserved-state checks passed. Production app code is identical to86; only two HTTP tests receive per-execution UUID keys and preserve within-run replay. New full446 running on frozen private c0ee,PID4036727. Prior86 full446 ended with2 fixture request-key collisions/all9guards passed. Same459 optimization61.792s/63225SQL measured at9d with identical digests. INFO audit real-file and six targeted86 native passed. Backup/restore adapters/plan prepared but not executed; capacity/UI/CI/promotion and whole HRP goal remain incomplete. Public8291 unchanged. Local frontend follow-up aligns operations-page Link callbacks with the previously verified statement-page filter signature rule: unchanged normalized filters preserve current queries/dialogs; real changes still invalidate old results. ESLint/Prettier passed; actual operations-page browser validation pending. Private c0ee full run remains untouched and does not certify this new frontend change.",
 	"checks": {
 		"pure_tests_expected": 456,
 		"complete_frappe_tests_expected": 446,
@@ -1003,5 +1003,20 @@
 			"proof": "cod033-86ba9b0-full-native-suite-authority-read.json",
 			"driver_completed": true
 		}
-	]
+	],
+	"operations_link_filter_followup": {
+		"status": "implemented; ESLint/Prettier passed; browser validation pending",
+		"file": "medops/hrp_budget/page/hrp_budget_operations/hrp_budget_operations.js",
+		"trigger": "Native Link validation can invoke onchange again with an identical value; operations page previously invalidated every callback.",
+		"result": "Bind current normalized filter signature during queries and programmatic record loads; invalidate only on an actual filter change.",
+		"server_api_permission_or_financial_changes": false,
+		"native_full_source_left_frozen": "c0eea4c3e1fc40f05c7a7a10bc6a6eb2dc1c7572",
+		"not_yet_deployed_to_validation_site": true,
+		"files": [
+			"medops/hrp_budget/page/hrp_budget_operations/hrp_budget_operations.js",
+			"medops/hrp_budget/page/hrp_budget_statements/hrp_budget_statements.js"
+		],
+		"missing_required_filters_clear_previous_results_and_export": true,
+		"browser_validation_pending": true
+	}
 }
