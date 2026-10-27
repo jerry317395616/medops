@@ -70,13 +70,16 @@ def discover_material_usage_sources(value: object) -> tuple[MaterialSourceRefere
 		raise
 
 
-def guarded_verify_material_usage_sources(value: object, sources: object):
-	"""Recheck the complete discovered set against currently locked native rows.
+def guarded_verify_material_usage_sources(value: object, sources: object, *, discovered: object):
+	"""Recheck discovered usage and all locked sources, including new requests.
 
 	Only proves current source facts match captured digests; normal later changes
 	can prevent verification. It does not prove historical approvals, completeness
 	of other writers, allocation policy, authenticity against database tampering,
-	or funds. Caller must roll back the whole transaction on any failure.
+	or funds. The caller must pass the exact pre-lock discovery result and include
+	all historical and proposed sources in the locked set. A discovered empty set
+	does not imply no orphan events: the guarded chain inspection still runs.
+	Caller must roll back the whole transaction on any failure.
 	"""
 	try:
 		keys = ordered_budget_keys(value)
@@ -84,15 +87,32 @@ def guarded_verify_material_usage_sources(value: object, sources: object):
 			raise ValueError("bounded locked source snapshots required")
 		if any(type(source) is not MaterialRequestSource for source in sources):
 			raise ValueError("canonical source snapshots required")
+		if (
+			not isinstance(discovered, tuple)
+			or len(discovered) > MAX_BOUND_MATERIAL_SOURCES
+			or any(type(ref) is not MaterialSourceReference for ref in discovered)
+		):
+			raise ValueError("canonical pre-lock discovery required")
 		by_id = {(s.request, s.line, s.organization_unit): s for s in sources}
 		if len(by_id) != len(sources):
 			raise ValueError("duplicate locked source")
+		if any(
+			not any(
+				(source.company, source.hospital, source.organization_unit, source.project)
+				== (key.company, key.hospital, key.organization_unit, key.project)
+				for key in keys
+			)
+			for source in sources
+		):
+			raise ValueError("locked material source outside guarded scope")
 		bindings = tuple(sorted((*identity, source.digest()) for identity, source in by_id.items()))
 		assert_material_guard_bindings(keys, bindings)
 		rows = _roots(keys, frappe.session.user)
 		refs = _references(rows)
-		if tuple((r.request, r.line, r.organization_unit, r.expected_digest) for r in refs) != bindings:
+		if refs != discovered:
 			raise ValueError("reservation source set changed")
+		if any((r.request, r.line, r.organization_unit, r.expected_digest) not in bindings for r in refs):
+			raise ValueError("historical reservation source was not locked")
 		for identity, source in by_id.items():
 			if locked_material_request_source(*identity) != source:
 				raise ValueError("material source changed")

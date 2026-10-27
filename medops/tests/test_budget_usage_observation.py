@@ -257,6 +257,7 @@ class TestBudgetUsageObservation(IntegrationTestCase):
 		self.add_evidence(*self.evidence("a", digest=source.digest(), center=center))
 		with patch.object(observation, "check_usage_access"):
 			refs = material_usage_sources.discover_material_usage_sources([self.key])
+		self.discovered = refs
 		self.assertEqual(len(refs), 1)
 		self.assertEqual(refs[0].expected_digest, source.digest())
 		acquire_multi_source_bound_budget_guards(
@@ -272,7 +273,9 @@ class TestBudgetUsageObservation(IntegrationTestCase):
 				material_usage_sources, "locked_material_request_source", return_value=current or source
 			),
 		):
-			return material_usage_sources.guarded_verify_material_usage_sources([self.key], [source])
+			return material_usage_sources.guarded_verify_material_usage_sources(
+				[self.key], [source], discovered=self.discovered
+			)
 
 	def test_current_source_is_checked_against_complete_guarded_reservation(self):
 		source = self.prepare_source_verification()
@@ -311,3 +314,91 @@ class TestBudgetUsageObservation(IntegrationTestCase):
 			with self.assertRaises(IoneApplicationError):
 				material_usage_sources.discover_material_usage_sources([self.key])
 			query.assert_not_called()
+
+	def test_first_reservation_checks_empty_usage_and_proposed_source(self):
+		frappe.db.rollback()
+		source = self.source_snapshot()
+		with patch.object(observation, "check_usage_access"):
+			self.discovered = material_usage_sources.discover_material_usage_sources([self.key])
+		self.assertEqual(self.discovered, ())
+		acquire_multi_source_bound_budget_guards(
+			[self.key],
+			source_bindings=((source.request, source.line, source.organization_unit, source.digest()),),
+		)
+		self.assertEqual(self.verify_source(source), ())
+		assert_budget_guards([self.key])
+
+	def test_empty_discovery_does_not_hide_orphan_event(self):
+		frappe.db.rollback()
+		source = self.source_snapshot()
+		_, events = self.evidence("a", digest=source.digest())
+		self.insert("tabHRP Budget Reservation Event", events[0])
+		with patch.object(observation, "check_usage_access"):
+			self.discovered = material_usage_sources.discover_material_usage_sources([self.key])
+		self.assertEqual(self.discovered, ())
+		acquire_multi_source_bound_budget_guards(
+			[self.key],
+			source_bindings=((source.request, source.line, source.organization_unit, source.digest()),),
+		)
+		with self.assertRaises(IoneApplicationError):
+			self.verify_source(source)
+		with self.assertRaises(IoneApplicationError):
+			assert_budget_guards([self.key])
+
+	def test_historical_and_proposed_sources_are_both_bound_and_checked(self):
+		frappe.db.rollback()
+		existing = self.source_snapshot()
+		proposed = replace(existing, request="request-b")
+		self.add_evidence(*self.evidence("a", digest=existing.digest()))
+		with patch.object(observation, "check_usage_access"):
+			discovered = material_usage_sources.discover_material_usage_sources([self.key])
+		sources = (existing, proposed)
+		bindings = tuple(sorted((s.request, s.line, s.organization_unit, s.digest()) for s in sources))
+		acquire_multi_source_bound_budget_guards([self.key], source_bindings=bindings)
+		with (
+			patch.object(observation, "check_usage_access"),
+			patch.object(
+				material_usage_sources,
+				"locked_material_request_source",
+				side_effect=lambda request, line, unit: {s.request: s for s in sources}[request],
+			) as read,
+		):
+			positions = material_usage_sources.guarded_verify_material_usage_sources(
+				[self.key], sources, discovered=discovered
+			)
+		self.assertEqual(len(positions), 1)
+		self.assertEqual(read.call_count, 2)
+		assert_budget_guards([self.key])
+
+	def test_new_source_appearing_after_empty_discovery_requires_retry(self):
+		frappe.db.rollback()
+		source = self.source_snapshot()
+		with patch.object(observation, "check_usage_access"):
+			self.discovered = material_usage_sources.discover_material_usage_sources([self.key])
+		self.add_evidence(*self.evidence("a", digest=source.digest()))
+		acquire_multi_source_bound_budget_guards(
+			[self.key],
+			source_bindings=((source.request, source.line, source.organization_unit, source.digest()),),
+		)
+		with self.assertRaises(IoneApplicationError):
+			self.verify_source(source)
+		with self.assertRaises(IoneApplicationError):
+			assert_budget_guards([self.key])
+
+	def test_historical_source_cannot_be_replaced_by_an_unrelated_locked_source(self):
+		frappe.db.rollback()
+		existing = self.source_snapshot()
+		proposed = replace(existing, request="request-b")
+		self.add_evidence(*self.evidence("a", digest=existing.digest()))
+		with patch.object(observation, "check_usage_access"):
+			self.discovered = material_usage_sources.discover_material_usage_sources([self.key])
+		acquire_multi_source_bound_budget_guards(
+			[self.key],
+			source_bindings=(
+				(proposed.request, proposed.line, proposed.organization_unit, proposed.digest()),
+			),
+		)
+		with self.assertRaises(IoneApplicationError):
+			self.verify_source(proposed)
+		with self.assertRaises(IoneApplicationError):
+			assert_budget_guards([self.key])
