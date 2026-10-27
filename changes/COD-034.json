@@ -28,6 +28,7 @@
 		"medops/services/domain_service.py",
 		"medops/tests/test_budget_control_guards.py",
 		"medops/tests/test_budget_control_sources.py",
+		"medops/tests/test_budget_release_execution.py",
 		"tests/test_budget_control.py",
 		"tests/test_budget_control_release.py",
 		"tests/test_change_governance.py"
@@ -43,6 +44,7 @@
 		"来源读取权限、实际文档名解析与数据库排序规则别名",
 		"批量来源名称解析去重、单次调用缓存与拒绝整批",
 		"取锁后重读来源，变更、拒绝或超时使标记跨保存点失效并阻止正常提交",
+		"持久下达单与原始冲销批次取锁前后完整性、权限撤销及无写账",
 		"事务见证对取锁前后保存点、早晚回调失败、动态回调、提交失败重试及成功清理的真实数据库验证",
 		"0至9位精确金额、负余额、溢出、非有限值与错误输入",
 		"后续真实数据库同键/跨键竞争、单次锁请求及保存点/完整事务回滚、死锁整笔重试",

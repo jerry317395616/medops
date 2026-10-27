@@ -16,9 +16,12 @@ from medops.common.budget_release_control import ReleaseExecutionLease, release_
 from medops.common.error_catalog import IoneApplicationError
 from medops.common.integration_outbox import OUTBOX
 from medops.hrp_budget.jobs import release as jobs
+from medops.hrp_budget.services import control_release
 from medops.hrp_budget.services import release_execution as execution
+from medops.hrp_budget.services.control_guards import assert_budget_guards
 from medops.hrp_budget.services.release_access import get_release
 from medops.hrp_budget.services.release_sources import stored_release_facts
+from medops.services.errors import raise_ione_error
 from medops.services.immutable_ledger import append_immutable_entry
 from medops.tests import test_budget_consolidation as source_fixture
 from medops.tests import test_budget_release_confirmation as confirmation_fixture
@@ -416,3 +419,79 @@ class TestBudgetReleaseExecution(FrappeAPITestCase):
 				frappe.get_doc("User", source_fixture.MANAGER).remove_roles("Accounts User")
 			frappe.local.db.commit()
 			frappe.cache.hdel("user_permissions", source_fixture.MANAGER)
+
+	def test_persisted_authorized_release_guard_checks_original_units_without_posting(self):
+		frappe.db.rollback()
+		frappe.set_user("Administrator")
+		frappe.db.sql("SET SESSION TRANSACTION ISOLATION LEVEL READ COMMITTED")
+		frappe.db.begin()
+		revision = int(frappe.db.get_value(RELEASE, self.release, "revision"))
+		with self.assertRaises(IoneApplicationError):
+			control_release.prepare_persisted_release_guards(self.release, revision + 1)
+		self.assertIsNone(getattr(frappe.local.db, "_medops_budget_guard_marker", None))
+		keys = control_release.prepare_persisted_release_guards(self.release, revision)
+		self.assertEqual({key.organization_unit for key in keys}, {self.units["A"], self.units["B"]})
+		assert_budget_guards(keys)
+		self.assertEqual(frappe.db.count(LEDGER, {"voucher_no": self.release}), 0)
+		frappe.db.rollback()
+
+	def test_persisted_release_guard_poisoned_when_actor_check_is_revoked(self):
+		frappe.db.rollback()
+		frappe.set_user("Administrator")
+		frappe.db.sql("SET SESSION TRANSACTION ISOLATION LEVEL READ COMMITTED")
+		frappe.db.begin()
+		revision = int(frappe.db.get_value(RELEASE, self.release, "revision"))
+		original = control_release.require_financial_actor
+		calls = []
+
+		def revoke_after_guard(doc):
+			calls.append(1)
+			if len(calls) == 2:
+				raise_ione_error("PERMISSION_DENIED")
+			return original(doc)
+
+		with patch.object(control_release, "require_financial_actor", side_effect=revoke_after_guard):
+			with self.assertRaises(IoneApplicationError):
+				control_release.prepare_persisted_release_guards(self.release, revision)
+		self.assertEqual(len(calls), 2)
+		marker = getattr(frappe.local.db, "_medops_budget_guard_marker", None)
+		assert marker is not None
+		self.assertTrue(marker.state.invalidated)
+		with self.assertRaises(IoneApplicationError):
+			assert_budget_guards(marker.keys)
+		frappe.db.rollback()
+		self.assertIsNone(getattr(frappe.local.db, "_medops_budget_guard_marker", None))
+		self.assertEqual(frappe.db.count(LEDGER, {"voucher_no": self.release}), 0)
+
+	def test_persisted_reversal_guard_verifies_the_complete_original_batch(self):
+		receipt = self.claim()
+		self.assertEqual(self.execute(receipt)["status"], "Posted")
+		original_release = self.release
+		self.login_actor(source_fixture.MANAGER)
+		self.release = self.success(
+			self.post_command(
+				"release.create_reversal",
+				dict(
+					release=original_release,
+					expected_revision=3,
+					posting_date="2026-10-27",
+					reason="合成完整反向验收",
+				),
+			)
+		)["name"]
+		self.authorize()
+		frappe.db.rollback()
+		frappe.set_user("Administrator")
+		frappe.db.sql("SET SESSION TRANSACTION ISOLATION LEVEL READ COMMITTED")
+		frappe.db.begin()
+		revision = int(frappe.db.get_value(RELEASE, self.release, "revision"))
+		with patch.object(
+			control_release, "complete_batch", wraps=control_release.complete_batch
+		) as complete:
+			keys = control_release.prepare_persisted_release_guards(self.release, revision)
+		self.assertEqual(complete.call_count, 2)
+		self.assertEqual({key.organization_unit for key in keys}, {self.units["A"], self.units["B"]})
+		assert_budget_guards(keys)
+		self.assertEqual(frappe.db.count(LEDGER, {"voucher_no": original_release}), 2)
+		self.assertEqual(frappe.db.count(LEDGER, {"voucher_no": self.release}), 0)
+		frappe.db.rollback()

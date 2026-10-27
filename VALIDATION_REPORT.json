@@ -9,10 +9,10 @@
     "ADR-0031",
     "ADR-0032"
   ],
-  "current_scope": "COD-033 manual workflow 40497550894 passed 448 native tests in both plain and IONE Core configurations with zero Error Logs in all six fresh site checks; Required passed. The 90-minute timeout candidate, protected PR, server and hospital acceptance remain pending. COD-034 is unconnected prework: 484 pure and 462 expected native tests; current-source witness and callback tests have not run. It derives release/reversal keys, resolves reference names, and includes scope locks, overlap checks and guarded rollback. Callback ordering depends on pinned Frappe internals; direct or nested commits, manual queue changes, source completeness, permissions, writer fencing, business retries and hospital acceptance remain unverified or incomplete. An unconnected helper now locks and re-resolves release names; failures poison the guard across savepoints, but complete persisted facts and permissions remain pending.",
+  "current_scope": "COD-033 manual workflow 40497550894 passed 448 native tests in both plain and IONE Core configurations with zero Error Logs in all six fresh site checks; Required passed. The 90-minute timeout candidate, protected PR, server and hospital acceptance remain pending. COD-034 is unconnected prework: 484 pure and 465 expected native tests; current-source witness and callback tests have not run. It derives release/reversal keys, resolves reference names, and includes scope locks, overlap checks and guarded rollback. Callback ordering depends on pinned Frappe internals; direct or nested commits, manual queue changes, source completeness, permissions, writer fencing, business retries and hospital acceptance remain unverified or incomplete. An unconnected helper now locks and re-resolves release names; failures poison the guard across savepoints, but complete persisted facts and permissions remain pending. An unconnected persisted-release candidate rechecks the authorized document and original reversal batch under guard; it does not prove all budget events or authorize posting.",
   "checks": {
     "pure_tests_expected": 484,
-    "complete_frappe_tests_expected": 462,
+    "complete_frappe_tests_expected": 465,
     "exact_foundation_pure_tests_passed": 21,
     "native_foundation": {
       "status": "passed",
@@ -674,7 +674,7 @@
     "budget_control_prework": {
       "status": "pure_contracts_and_unconnected_lock_prototype",
       "pure_tests_added": 20,
-      "native_tests_added": 14,
+      "native_tests_added": 17,
       "database_lock_implemented": true,
       "database_lock_native_tested": false,
       "business_writers_use_guard": false,
@@ -735,7 +735,12 @@
       "guarded_release_name_recheck_implemented": true,
       "guarded_release_name_recheck_native_tested": false,
       "guard_invalidation_survives_savepoint_candidate": true,
-      "guarded_release_authorizes_financial_write": false
+      "guarded_release_authorizes_financial_write": false,
+      "persisted_authorized_release_recheck_implemented": true,
+      "persisted_authorized_release_recheck_native_tested": false,
+      "reversal_original_complete_batch_recheck_implemented": true,
+      "all_related_budget_events_complete": false,
+      "persisted_guard_grants_execution_authority": false
     },
     "ci_bootstrap_search_isolation": {
       "status": "implemented_not_retested",
