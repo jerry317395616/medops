@@ -20,7 +20,12 @@ from medops.common.budget_control import budget_control_key, budget_guard_names
 from medops.common.budget_reservation_anchor import ANCHOR_ROW_FIELDS
 from medops.common.budget_reservation_storage import ROW_FIELDS
 from medops.common.error_catalog import IoneApplicationError
-from medops.hrp_budget.services import material_budget_guards, material_request_source, material_usage_preview
+from medops.hrp_budget.services import (
+	material_budget_guards,
+	material_request_source,
+	material_usage_preview,
+	purchase_order_source,
+)
 from medops.hrp_budget.services.control_guards import acquire_budget_guards, assert_budget_guards
 from medops.hrp_budget.services.material_budget_guards import acquire_material_budget_guards
 from medops.tests import test_budget_consolidation as source_fixture
@@ -386,6 +391,98 @@ class TestBudgetMaterialRequestSource(FrappeTestCase):
 				for table, _ in reversed(tables):
 					primary.sql(f"DROP TEMPORARY TABLE IF EXISTS `{table}`")  # nosec B608 - fixed test tables
 				primary.rollback()
+
+	def test_real_submitted_purchase_order_is_linked_to_material_request(self):
+		# All documents in this test are synthetic, and are cancelled and removed
+		# after the committed fixture is used by the independent connection.
+		created_group = not frappe.db.exists("Supplier Group", "All Supplier Groups")
+		if created_group:
+			frappe.get_doc(
+				dict(doctype="Supplier Group", supplier_group_name="All Supplier Groups", is_group=1)
+			).insert(ignore_permissions=True)
+		supplier = frappe.get_doc(
+			dict(
+				doctype="Supplier",
+				supplier_name="COD035 Supplier " + uuid4().hex[:12],
+				supplier_group="All Supplier Groups",
+				supplier_type="Company",
+				country="China",
+			)
+		).insert(ignore_permissions=True)
+		self.request.items[0].rate = 10
+		self.request.items[0].amount = 10
+		self.request.save(ignore_permissions=True)
+		self.request.submit()
+		item = self.request.items[0]
+		order = frappe.get_doc(
+			dict(
+				doctype="Purchase Order",
+				supplier=supplier.name,
+				company=source_fixture.COMPANY,
+				transaction_date="2026-10-26",
+				schedule_date="2026-10-27",
+				currency="CNY",
+				conversion_rate=1,
+				items=[
+					dict(
+						item_code=item.item_code,
+						qty=1,
+						rate=10,
+						uom=item.uom,
+						stock_uom=item.uom,
+						conversion_factor=1,
+						warehouse=item.warehouse,
+						schedule_date="2026-10-27",
+						cost_center=self.cost_center,
+						expense_account=self.account,
+						material_request=self.request.name,
+						material_request_item=item.name,
+					)
+				],
+			)
+		).insert(ignore_permissions=True)
+		order.submit()
+		with self.committed_source_fixture():
+			primary = frappe.local.db
+			try:
+				material = material_request_source.locked_material_request_source(
+					self.request.name, self.line, self.units["A"]
+				)
+				primary.rollback()
+				verified, purchase = purchase_order_source.locked_purchase_order_source(
+					order.name,
+					order.items[0].name,
+					material.request,
+					material.line,
+					material.organization_unit,
+					expected_request_digest=material.digest(),
+				)
+				self.assertEqual(verified, material)
+				self.assertEqual(
+					(purchase.order, purchase.line, purchase.material_request_line),
+					(order.name, order.items[0].name, self.line),
+				)
+				self.assertEqual(
+					(purchase.currency, purchase.quantity, purchase.amount),
+					("CNY", "1.000000000", "10.000000000"),
+				)
+			finally:
+				frappe.local.db = primary
+				primary.rollback()
+				if frappe.db.exists("Purchase Order", order.name):
+					current = frappe.get_doc("Purchase Order", order.name)
+					if current.docstatus == 1:
+						current.cancel()
+					frappe.delete_doc("Purchase Order", order.name, ignore_permissions=True)
+				if frappe.db.exists("Material Request", self.request.name):
+					current = frappe.get_doc("Material Request", self.request.name)
+					if current.docstatus == 1:
+						current.cancel()
+				if frappe.db.exists("Supplier", supplier.name):
+					frappe.delete_doc("Supplier", supplier.name, ignore_permissions=True)
+				if created_group and frappe.db.exists("Supplier Group", "All Supplier Groups"):
+					frappe.delete_doc("Supplier Group", "All Supplier Groups", ignore_permissions=True)
+				primary.commit()
 
 	def test_generic_budget_guard_denies_late_source_lock(self):
 		guard = budget_control_key(synthetic_key(uuid4().hex))
