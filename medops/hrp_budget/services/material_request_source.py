@@ -29,6 +29,7 @@ SOURCE_FIELDS = {
 	"items.rate",
 	"items.amount",
 	"items.cost_center",
+	"items.expense_account",
 	"items.project",
 }
 UNIT_FIELDS = {"company", "hospital", "organization_version", "enabled", "valid_from", "valid_to"}
@@ -43,6 +44,7 @@ MAPPING_FIELDS = {
 	"revision",
 }
 CENTER_FIELDS = {"company", "disabled", "is_group"}
+ACCOUNT_FIELDS = {"company", "disabled", "is_group"}
 
 
 def _require_actor(actor: str) -> None:
@@ -79,6 +81,7 @@ class MaterialRequestSource:
 	status: str
 	item_code: str
 	uom: str
+	expense_account: str | None
 	project: str | None
 	quantity: str
 	rate: str
@@ -170,6 +173,13 @@ def locked_material_request_source(
 		raise_ione_error("CONFIGURATION_INVALID")
 	currency = native_document("Currency", company.default_currency, {"name"}, lock=True)
 	product = native_document("Item", item.item_code, {"name"}, lock=True)
+	account = (
+		native_document("Account", item.expense_account, ACCOUNT_FIELDS, lock=True)
+		if item.expense_account
+		else None
+	)
+	if account and (account.company != company.name or account.disabled or account.is_group):
+		raise_ione_error("CONFLICT")
 	project = native_document("Project", item.project, {"name"}, lock=True) if item.project else None
 	rows = frappe.db.sql(
 		"""SELECT name, CAST(qty AS CHAR) AS qty, CAST(rate AS CHAR) AS rate,
@@ -207,6 +217,8 @@ def locked_material_request_source(
 	):
 		if not native_read(doc, fields, user=actor):
 			raise_ione_error("PERMISSION_DENIED")
+	if account and not native_read(account, ACCOUNT_FIELDS, user=actor):
+		raise_ione_error("PERMISSION_DENIED")
 	if project and not native_read(project, {"name"}, user=actor):
 		raise_ione_error("PERMISSION_DENIED")
 	return MaterialRequestSource(
@@ -226,6 +238,7 @@ def locked_material_request_source(
 		status=source.status,
 		item_code=product.name,
 		uom=item.uom,
+		expense_account=account.name if account else None,
 		project=project.name if project else None,
 		quantity=quantity,
 		rate=rate,

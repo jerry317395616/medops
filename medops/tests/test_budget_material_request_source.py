@@ -53,6 +53,17 @@ class TestBudgetMaterialRequestSource(FrappeTestCase):
 				)
 			).insert(ignore_permissions=True)
 		self.cost_center = frappe.db.get_value("HRP Organization Mapping", self.units["A"], "cost_center")
+		self.account = frappe.db.get_value(
+			"Account",
+			{
+				"company": source_fixture.COMPANY,
+				"is_group": 0,
+				"disabled": 0,
+				"report_type": "Profit and Loss",
+			},
+			"name",
+		)
+		self.assertTrue(self.account)
 		warehouse = frappe.db.get_value(
 			"Warehouse", {"company": source_fixture.COMPANY, "is_group": 0}, "name"
 		)
@@ -71,6 +82,7 @@ class TestBudgetMaterialRequestSource(FrappeTestCase):
 						conversion_factor=1,
 						warehouse=warehouse,
 						cost_center=self.cost_center,
+						expense_account=self.account,
 						schedule_date="2026-10-27",
 					)
 				],
@@ -132,6 +144,7 @@ class TestBudgetMaterialRequestSource(FrappeTestCase):
 			(source_fixture.COMPANY, self.units["A"], self.cost_center),
 		)
 		self.assertEqual((before.currency, before.docstatus), ("CNY", 0))
+		self.assertEqual(before.expense_account, self.account)
 		self.assertEqual(len(before.digest()), 64)
 		with self.assertRaises(IoneApplicationError):
 			material_request_source.locked_material_request_source(
@@ -142,6 +155,14 @@ class TestBudgetMaterialRequestSource(FrappeTestCase):
 				material_request_source.locked_material_request_source(
 					self.request.name, self.line, self.units["A"]
 				)
+		group = frappe.db.get_value("Account", {"company": source_fixture.COMPANY, "is_group": 1}, "name")
+		self.assertTrue(group)
+		frappe.db.set_value("Material Request Item", self.line, "expense_account", group)
+		with self.assertRaises(IoneApplicationError):
+			material_request_source.locked_material_request_source(
+				self.request.name, self.line, self.units["A"]
+			)
+		frappe.db.set_value("Material Request Item", self.line, "expense_account", self.account)
 		frappe.db.set_value("Material Request Item", self.line, "amount", "999999999999.123456788")
 		after = material_request_source.locked_material_request_source(
 			self.request.name, self.line, self.units["A"]
