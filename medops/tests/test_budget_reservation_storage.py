@@ -33,6 +33,9 @@ class TestBudgetReservationStorage(FrappeTestCase):
 		fields = ("event_key", "sequence_key", "source_action_key", "event_digest")
 		for field in fields:
 			self.assertTrue(meta.get_field(field).unique)
+		for field in ("source_line", "source_allocation", "source_action", "proof_version"):
+			self.assertTrue(meta.get_field(field).reqd)
+			self.assertTrue(frappe.db.has_column(DOCTYPE, field))
 		rows = frappe.db.sql(
 			"""SELECT COLUMN_NAME, INDEX_NAME, NON_UNIQUE, SEQ_IN_INDEX
 			FROM information_schema.STATISTICS
