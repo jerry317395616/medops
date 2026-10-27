@@ -3,7 +3,7 @@ from __future__ import annotations
 import hashlib
 import json
 import unittest
-from dataclasses import replace
+from dataclasses import asdict, replace
 from datetime import datetime, timezone
 from types import MappingProxyType
 
@@ -23,6 +23,7 @@ from medops.common.reservation_authorization import (
 	verify_reservation_decision_evidence,
 )
 from medops.common.reservation_evidence_control import expected_evidence_values, expected_reservation_evidence
+from medops.common.reservation_request import build_reservation_prepare
 from tests.test_budget_control import key
 from tests.test_material_source_snapshot import facts
 
@@ -422,3 +423,28 @@ class ReservationAuthorizationTest(unittest.TestCase):
 						pass
 				raise RuntimeError("synthetic")
 		self.assertIsNone(expected_evidence_values())
+
+	def test_prepare_api_contract_reconstructs_exact_bound_intent(self):
+		item = intent()
+		payload = {
+			"source_snapshot": item.source_snapshot,
+			"source_snapshot_digest": item.source_snapshot_digest,
+			"allocation": item.allocation,
+			"budget_key": asdict(item.key),
+			"currency": item.currency,
+			"precision": item.precision,
+			"amount": item.amount,
+			"budget_date": item.budget_date,
+			"reason": item.reason,
+		}
+		self.assertEqual(build_reservation_prepare(payload), item)
+		self.assertEqual(build_reservation_prepare(json.dumps(payload, ensure_ascii=False)), item)
+		for changed in (
+			payload | {"unknown": "x"},
+			payload | {"precision": True},
+			payload | {"source_snapshot_digest": "0" * 64},
+			payload | {"amount": "999.00"},
+			{name: value for name, value in payload.items() if name != "reason"},
+		):
+			with self.assertRaises(ValueError):
+				build_reservation_prepare(changed)

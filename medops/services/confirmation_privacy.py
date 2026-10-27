@@ -5,7 +5,11 @@ import frappe
 from medops.common.confirmation_privacy import REDACTED_CONFIRMATION, ConfirmationPayload
 
 CONFIRM_METHODS = frozenset(
-	{"medops.api.v1.finance.release.confirm", "medops.api.v1.finance.approval.confirm"}
+	{
+		"medops.api.v1.finance.release.confirm",
+		"medops.api.v1.finance.approval.confirm",
+		"medops.api.v1.finance.reservation.confirm",
+	}
 )
 RPC_PREFIXES = ("/api/method/", "/api/v1/method/", "/api/v2/method/")
 
