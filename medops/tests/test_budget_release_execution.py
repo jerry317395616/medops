@@ -463,6 +463,49 @@ class TestBudgetReleaseExecution(FrappeAPITestCase):
 		self.assertIsNone(getattr(frappe.local.db, "_medops_budget_guard_marker", None))
 		self.assertEqual(frappe.db.count(LEDGER, {"voucher_no": self.release}), 0)
 
+	def test_persisted_release_guard_detects_role_revocation_from_another_transaction(self):
+		frappe.db.rollback()
+		frappe.set_user(source_fixture.MANAGER)
+		frappe.db.sql("SET SESSION TRANSACTION ISOLATION LEVEL READ COMMITTED")
+		frappe.db.begin()
+		revision = int(frappe.db.get_value(RELEASE, self.release, "revision"))
+		original = control_release.prepare_release_guards
+		calls = []
+
+		def guard_then_revoke(*args, **kwargs):
+			keys = original(*args, **kwargs)
+			calls.append(1)
+			primary = frappe.local.db
+			with self.secondary_connection():
+				frappe.set_user("Administrator")
+				try:
+					frappe.get_doc("User", source_fixture.MANAGER).remove_roles("HRP Budget Manager")
+					self._secondary_connection.commit()
+				except Exception:
+					self._secondary_connection.rollback()
+					raise
+			self.assertIs(frappe.local.db, primary)
+			frappe.set_user(source_fixture.MANAGER)
+			return keys
+
+		try:
+			with patch.object(control_release, "prepare_release_guards", side_effect=guard_then_revoke):
+				with self.assertRaises(IoneApplicationError):
+					control_release.prepare_persisted_release_guards(self.release, revision)
+			self.assertEqual(len(calls), 1)
+			marker = getattr(frappe.local.db, "_medops_budget_guard_marker", None)
+			assert marker is not None
+			self.assertTrue(marker.state.invalidated)
+			with self.assertRaises(IoneApplicationError):
+				assert_budget_guards(marker.keys)
+			self.assertEqual(frappe.db.count(LEDGER, {"voucher_no": self.release}), 0)
+		finally:
+			frappe.db.rollback()
+			frappe.set_user("Administrator")
+			frappe.get_doc("User", source_fixture.MANAGER).add_roles("HRP Budget Manager")
+			frappe.local.db.commit()
+			frappe.cache.hdel("roles", source_fixture.MANAGER)
+
 	def test_persisted_reversal_guard_verifies_the_complete_original_batch(self):
 		receipt = self.claim()
 		self.assertEqual(self.execute(receipt)["status"], "Posted")
