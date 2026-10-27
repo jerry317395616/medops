@@ -1265,47 +1265,61 @@ medops,HRP Budget,HRP Budget Control Rule,42,evidence_required,要求证据,Chec
 medops,HRP Budget,HRP Budget Control Rule,43,root_cause,根因,Long Text,,0,0,0,0,0,,,,根因,Finance
 medops,HRP Budget,HRP Budget Control Rule,44,corrective_action,纠正措施,Long Text,,0,0,0,0,0,,,,纠正措施,Finance
 medops,HRP Budget,HRP Budget Control Rule,45,verification_result,验证结果,Small Text,,0,0,0,0,0,,,,验证结果,Finance
-medops,HRP Budget,HRP Budget Reservation,10,company,法人,Link,Company,1,0,1,0,1,,,,法人,Finance
-medops,HRP Budget,HRP Budget Reservation,11,hospital,医院,Link,HRP Hospital,1,0,1,0,0,,,,医院,Finance
-medops,HRP Budget,HRP Budget Reservation,12,campus,院区,Link,HRP Campus,0,0,1,0,0,,,,院区,Finance
-medops,HRP Budget,HRP Budget Reservation,13,organization_unit,组织单元,Link,HRP Organization Unit,1,0,1,0,1,,,,组织单元,Finance
-medops,HRP Budget,HRP Budget Reservation,14,cost_center,成本中心,Link,Cost Center,0,0,1,0,0,,,,成本中心,Finance
-medops,HRP Budget,HRP Budget Reservation,15,fiscal_year,财政年度,Link,Fiscal Year,0,0,1,0,0,,,,财政年度,Finance
-medops,HRP Budget,HRP Budget Reservation,16,currency,币种,Link,Currency,0,0,0,0,0,,CNY,,币种,Finance
-medops,HRP Budget,HRP Budget Reservation,17,status,业务状态,Select,"Draft
+medops,HRP Budget,HRP Budget Reservation,1,reservation_key,预占标识,Data,,1,1,0,1,0,,,,预占标识,Finance
+medops,HRP Budget,HRP Budget Reservation,2,source_identity_key,来源分摊唯一键,Data,,1,1,0,1,0,,,,来源分摊唯一键,Finance
+medops,HRP Budget,HRP Budget Reservation,3,company,法人,Link,Company,1,0,1,1,1,,,,法人,Finance
+medops,HRP Budget,HRP Budget Reservation,4,hospital,医院,Link,HRP Hospital,1,0,1,1,0,,,,医院,Finance
+medops,HRP Budget,HRP Budget Reservation,5,campus,院区,Link,HRP Campus,0,0,1,1,0,,,,院区,Finance
+medops,HRP Budget,HRP Budget Reservation,6,organization_unit,组织单元,Link,HRP Organization Unit,1,0,1,1,1,,,,组织单元,Finance
+medops,HRP Budget,HRP Budget Reservation,7,cost_center,成本中心,Link,Cost Center,0,0,1,1,0,,,,成本中心,Finance
+medops,HRP Budget,HRP Budget Reservation,8,fiscal_year,财政年度,Link,Fiscal Year,1,0,1,1,0,,,,财政年度,Finance
+medops,HRP Budget,HRP Budget Reservation,9,currency,币种,Link,Currency,1,0,0,1,0,,,,币种,Finance
+medops,HRP Budget,HRP Budget Reservation,10,status,业务状态,Select,"Draft
 Under Review
 Approved
 Rejected
 In Progress
 Completed
 Cancelled
-Closed",0,0,1,0,1,,Draft,,业务状态,Finance
-medops,HRP Budget,HRP Budget Reservation,18,workflow_state,工作流状态,Link,Workflow State,0,0,1,1,0,,,,工作流状态,Finance
-medops,HRP Budget,HRP Budget Reservation,19,posting_date,业务日期,Date,,1,0,1,0,1,,,,业务日期,Finance
-medops,HRP Budget,HRP Budget Reservation,20,applicant,申请人,Link,User,1,0,1,0,0,,,,申请人,Finance
-medops,HRP Budget,HRP Budget Reservation,21,employee,员工,Link,Employee,0,0,1,0,0,,,,员工,Finance
-medops,HRP Budget,HRP Budget Reservation,22,subject,主题,Data,,1,0,0,0,1,,,,主题,Finance
-medops,HRP Budget,HRP Budget Reservation,23,total_amount,总金额,Currency,currency,0,0,0,0,1,2,,,总金额,Finance
-medops,HRP Budget,HRP Budget Reservation,24,external_id,外部ID,Data,,0,0,1,0,0,,,,外部ID,Finance
-medops,HRP Budget,HRP Budget Reservation,25,source_doctype,来源类型,Link,DocType,0,0,0,0,0,,,,来源类型,Finance
-medops,HRP Budget,HRP Budget Reservation,26,source_name,来源单据,Dynamic Link,source_doctype,0,0,1,0,0,,,,来源单据,Finance
-medops,HRP Budget,HRP Budget Reservation,27,submitted_at,提交时间,Datetime,,0,0,0,1,0,,,,提交时间,Finance
-medops,HRP Budget,HRP Budget Reservation,28,approved_at,批准时间,Datetime,,0,0,0,1,0,,,,批准时间,Finance
-medops,HRP Budget,HRP Budget Reservation,29,remarks,备注,Small Text,,0,0,0,0,0,,,,备注,Finance
-medops,HRP Budget,HRP Budget Reservation,30,budget_version,预算版本,Link,HRP Budget Version,0,0,1,0,0,,,,预算版本,Finance
-medops,HRP Budget,HRP Budget Reservation,31,budget_subject,预算科目,Link,HRP Dimension Value,0,0,1,0,0,,,,预算科目,Finance
-medops,HRP Budget,HRP Budget Reservation,32,funding_source,资金来源,Link,HRP Funding Source,0,0,1,0,0,,,,资金来源,Finance
-medops,HRP Budget,HRP Budget Reservation,33,approved_amount,批准金额,Currency,currency,0,0,0,0,0,2,,,批准金额,Finance
-medops,HRP Budget,HRP Budget Reservation,34,reserved_amount,预占金额,Currency,currency,0,0,0,1,0,2,,,预占金额,Finance
-medops,HRP Budget,HRP Budget Reservation,35,committed_amount,承诺金额,Currency,currency,0,0,0,1,0,2,,,承诺金额,Finance
-medops,HRP Budget,HRP Budget Reservation,36,actual_amount,实际金额,Currency,currency,0,0,0,1,0,2,,,实际金额,Finance
-medops,HRP Budget,HRP Budget Reservation,37,available_amount,可用金额,Currency,currency,0,0,0,1,1,2,,,可用金额,Finance
-medops,HRP Budget,HRP Budget Reservation,38,control_mode,控制模式,Select,"Hard
+Closed",1,0,1,1,1,,,,业务状态,Finance
+medops,HRP Budget,HRP Budget Reservation,11,workflow_state,工作流状态,Link,Workflow State,0,0,1,1,0,,,,工作流状态,Finance
+medops,HRP Budget,HRP Budget Reservation,12,posting_date,业务日期,Date,,1,0,1,1,1,,,,业务日期,Finance
+medops,HRP Budget,HRP Budget Reservation,13,applicant,申请人,Link,User,1,0,1,1,0,,,,申请人,Finance
+medops,HRP Budget,HRP Budget Reservation,14,employee,员工,Link,Employee,0,0,1,1,0,,,,员工,Finance
+medops,HRP Budget,HRP Budget Reservation,15,subject,主题,Data,,1,0,0,1,1,,,,主题,Finance
+medops,HRP Budget,HRP Budget Reservation,16,total_amount,总金额,Data,,0,0,0,1,1,,,,按捕获的币种精度保存精确金额；仅受控服务可维护。,Finance
+medops,HRP Budget,HRP Budget Reservation,17,external_id,外部ID,Data,,0,0,1,1,0,,,,外部ID,Finance
+medops,HRP Budget,HRP Budget Reservation,18,source_doctype,来源类型,Link,DocType,1,0,0,1,0,,,,来源类型,Finance
+medops,HRP Budget,HRP Budget Reservation,19,source_name,来源单据,Dynamic Link,source_doctype,1,0,1,1,0,,,,来源单据,Finance
+medops,HRP Budget,HRP Budget Reservation,20,submitted_at,提交时间,Datetime,,0,0,0,1,0,,,,提交时间,Finance
+medops,HRP Budget,HRP Budget Reservation,21,approved_at,批准时间,Datetime,,0,0,0,1,0,,,,批准时间,Finance
+medops,HRP Budget,HRP Budget Reservation,22,remarks,备注,Small Text,,0,0,0,1,0,,,,备注,Finance
+medops,HRP Budget,HRP Budget Reservation,23,budget_version,预算版本,Link,HRP Budget Version,0,0,1,1,0,,,,预算版本,Finance
+medops,HRP Budget,HRP Budget Reservation,24,budget_subject,预算科目,Link,HRP Dimension Value,1,0,1,1,0,,,,预算科目,Finance
+medops,HRP Budget,HRP Budget Reservation,25,funding_source,资金来源,Link,HRP Funding Source,1,0,1,1,0,,,,资金来源,Finance
+medops,HRP Budget,HRP Budget Reservation,26,approved_amount,批准金额,Data,,0,0,0,1,0,,,,按捕获的币种精度保存精确金额；仅受控服务可维护。,Finance
+medops,HRP Budget,HRP Budget Reservation,27,reserved_amount,预占金额,Data,,0,0,0,1,0,,,,按捕获的币种精度保存精确金额；仅受控服务可维护。,Finance
+medops,HRP Budget,HRP Budget Reservation,28,committed_amount,承诺金额,Data,,0,0,0,1,0,,,,按捕获的币种精度保存精确金额；仅受控服务可维护。,Finance
+medops,HRP Budget,HRP Budget Reservation,29,actual_amount,实际金额,Data,,0,0,0,1,0,,,,按捕获的币种精度保存精确金额；仅受控服务可维护。,Finance
+medops,HRP Budget,HRP Budget Reservation,30,available_amount,可用金额,Data,,0,0,0,1,1,,,,按捕获的币种精度保存精确金额；仅受控服务可维护。,Finance
+medops,HRP Budget,HRP Budget Reservation,31,control_mode,控制模式,Select,"Hard
 Soft
 Alert
-None",0,0,0,0,0,,Hard,,控制模式,Finance
-medops,HRP Budget,HRP Budget Reservation,39,period_start,期间开始,Date,,0,0,0,0,0,,,,期间开始,Finance
-medops,HRP Budget,HRP Budget Reservation,40,period_end,期间结束,Date,,0,0,0,0,0,,,,期间结束,Finance
+None",0,0,0,1,0,,,,控制模式,Finance
+medops,HRP Budget,HRP Budget Reservation,32,period_start,期间开始,Date,,1,0,0,1,0,,,,期间开始,Finance
+medops,HRP Budget,HRP Budget Reservation,33,period_end,期间结束,Date,,1,0,0,1,0,,,,期间结束,Finance
+medops,HRP Budget,HRP Budget Reservation,34,source_line,来源明细,Data,,1,0,0,1,0,,,,来源明细,Finance
+medops,HRP Budget,HRP Budget Reservation,35,source_allocation,来源分摊标识,Data,,1,0,0,1,0,,,,来源分摊标识,Finance
+medops,HRP Budget,HRP Budget Reservation,36,source_revision,来源修订,Data,,1,0,0,1,0,,,,来源修订,Finance
+medops,HRP Budget,HRP Budget Reservation,37,source_snapshot_digest,来源事实摘要,Data,,1,0,0,1,0,,,,来源事实摘要,Finance
+medops,HRP Budget,HRP Budget Reservation,38,project,项目,Link,Project,0,0,0,1,0,,,,项目,Finance
+medops,HRP Budget,HRP Budget Reservation,39,currency_precision,捕获精度,Int,,1,0,0,1,0,,,,捕获精度,Finance
+medops,HRP Budget,HRP Budget Reservation,40,revision,聚合修订,Int,,1,0,0,1,0,,,,聚合修订,Finance
+medops,HRP Budget,HRP Budget Reservation,41,event_count,事件数量,Int,,0,0,0,1,0,,,,事件数量,Finance
+medops,HRP Budget,HRP Budget Reservation,42,last_event_digest,最后事件摘要,Data,,0,0,0,1,0,,,,最后事件摘要,Finance
+medops,HRP Budget,HRP Budget Reservation,43,anchor_digest,聚合锚点摘要,Data,,1,0,0,1,0,,,,聚合锚点摘要,Finance
+medops,HRP Budget,HRP Budget Reservation,44,proof_version,证明版本,Int,,1,0,0,1,0,,,,证明版本,Finance
+medops,HRP Budget,HRP Budget Reservation,45,created_by,创建人,Link,User,1,0,0,1,0,,,,创建人,Finance
 medops,HRP Budget,HRP Budget Commitment,10,company,法人,Link,Company,1,0,1,0,1,,,,法人,Finance
 medops,HRP Budget,HRP Budget Commitment,11,hospital,医院,Link,HRP Hospital,1,0,1,0,0,,,,医院,Finance
 medops,HRP Budget,HRP Budget Commitment,12,campus,院区,Link,HRP Campus,0,0,1,0,0,,,,院区,Finance

@@ -66,8 +66,8 @@ fi
 storage_log="$BENCH_DIR/logs/focused-budget-storage-tests.log"
 bench --site "$SITE_NAME" run-tests --app medops --module medops.tests.test_budget_reservation_storage \
   --case TestBudgetReservationStorage 2>&1 | tee "$storage_log"
-if ! grep -Eq 'Ran 2 tests? in [0-9.]+s' "$storage_log"; then
-  echo "Focused CI did not execute the expected two storage tests" >&2
+if ! grep -Eq 'Ran 3 tests? in [0-9.]+s' "$storage_log"; then
+  echo "Focused CI did not execute the expected three storage tests" >&2
   exit 1
 fi
 

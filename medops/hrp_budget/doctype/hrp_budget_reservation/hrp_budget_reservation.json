@@ -1,0 +1,458 @@
+{
+	"doctype": "DocType",
+	"name": "HRP Budget Reservation",
+	"module": "HRP Budget",
+	"custom": 0,
+	"engine": "InnoDB",
+	"autoname": "field:reservation_key",
+	"title_field": "subject",
+	"is_submittable": 1,
+	"istable": 0,
+	"issingle": 0,
+	"track_changes": 1,
+	"allow_rename": 0,
+	"editable_grid": 0,
+	"field_order": [
+		"reservation_key",
+		"source_identity_key",
+		"company",
+		"hospital",
+		"campus",
+		"organization_unit",
+		"cost_center",
+		"fiscal_year",
+		"currency",
+		"status",
+		"workflow_state",
+		"posting_date",
+		"applicant",
+		"employee",
+		"subject",
+		"total_amount",
+		"external_id",
+		"source_doctype",
+		"source_name",
+		"submitted_at",
+		"approved_at",
+		"remarks",
+		"budget_version",
+		"budget_subject",
+		"funding_source",
+		"approved_amount",
+		"reserved_amount",
+		"committed_amount",
+		"actual_amount",
+		"available_amount",
+		"control_mode",
+		"period_start",
+		"period_end",
+		"source_line",
+		"source_allocation",
+		"source_revision",
+		"source_snapshot_digest",
+		"project",
+		"currency_precision",
+		"revision",
+		"event_count",
+		"last_event_digest",
+		"anchor_digest",
+		"proof_version",
+		"created_by"
+	],
+	"fields": [
+		{
+			"fieldname": "reservation_key",
+			"label": "预占标识",
+			"fieldtype": "Data",
+			"read_only": 1,
+			"reqd": 1,
+			"unique": 1
+		},
+		{
+			"fieldname": "source_identity_key",
+			"label": "来源分摊唯一键",
+			"fieldtype": "Data",
+			"read_only": 1,
+			"reqd": 1,
+			"unique": 1,
+			"hidden": 1
+		},
+		{
+			"fieldname": "company",
+			"label": "法人",
+			"fieldtype": "Link",
+			"options": "Company",
+			"reqd": 1,
+			"search_index": 1,
+			"in_list_view": 1,
+			"description": "法人",
+			"read_only": 1
+		},
+		{
+			"fieldname": "hospital",
+			"label": "医院",
+			"fieldtype": "Link",
+			"options": "HRP Hospital",
+			"reqd": 1,
+			"search_index": 1,
+			"description": "医院",
+			"read_only": 1
+		},
+		{
+			"fieldname": "campus",
+			"label": "院区",
+			"fieldtype": "Link",
+			"options": "HRP Campus",
+			"search_index": 1,
+			"description": "院区",
+			"read_only": 1
+		},
+		{
+			"fieldname": "organization_unit",
+			"label": "组织单元",
+			"fieldtype": "Link",
+			"options": "HRP Organization Unit",
+			"reqd": 1,
+			"search_index": 1,
+			"in_list_view": 1,
+			"description": "组织单元",
+			"read_only": 1
+		},
+		{
+			"fieldname": "cost_center",
+			"label": "成本中心",
+			"fieldtype": "Link",
+			"options": "Cost Center",
+			"search_index": 1,
+			"description": "成本中心",
+			"read_only": 1
+		},
+		{
+			"fieldname": "fiscal_year",
+			"label": "财政年度",
+			"fieldtype": "Link",
+			"options": "Fiscal Year",
+			"search_index": 1,
+			"description": "财政年度",
+			"read_only": 1,
+			"reqd": 1
+		},
+		{
+			"fieldname": "currency",
+			"label": "币种",
+			"fieldtype": "Link",
+			"options": "Currency",
+			"description": "币种",
+			"read_only": 1,
+			"reqd": 1
+		},
+		{
+			"fieldname": "status",
+			"label": "业务状态",
+			"fieldtype": "Select",
+			"options": "Draft\nUnder Review\nApproved\nRejected\nIn Progress\nCompleted\nCancelled\nClosed",
+			"search_index": 1,
+			"in_list_view": 1,
+			"description": "业务状态",
+			"read_only": 1,
+			"reqd": 1,
+			"allow_on_submit": 1
+		},
+		{
+			"fieldname": "workflow_state",
+			"label": "工作流状态",
+			"fieldtype": "Link",
+			"options": "Workflow State",
+			"search_index": 1,
+			"read_only": 1,
+			"description": "工作流状态"
+		},
+		{
+			"fieldname": "posting_date",
+			"label": "业务日期",
+			"fieldtype": "Date",
+			"reqd": 1,
+			"search_index": 1,
+			"in_list_view": 1,
+			"description": "业务日期",
+			"read_only": 1
+		},
+		{
+			"fieldname": "applicant",
+			"label": "申请人",
+			"fieldtype": "Link",
+			"options": "User",
+			"reqd": 1,
+			"search_index": 1,
+			"description": "申请人",
+			"read_only": 1
+		},
+		{
+			"fieldname": "employee",
+			"label": "员工",
+			"fieldtype": "Link",
+			"options": "Employee",
+			"search_index": 1,
+			"description": "员工",
+			"read_only": 1
+		},
+		{
+			"fieldname": "subject",
+			"label": "主题",
+			"fieldtype": "Data",
+			"reqd": 1,
+			"in_list_view": 1,
+			"description": "主题",
+			"read_only": 1
+		},
+		{
+			"fieldname": "total_amount",
+			"label": "总金额",
+			"fieldtype": "Data",
+			"in_list_view": 1,
+			"description": "按捕获的币种精度保存精确金额；仅受控服务可维护。",
+			"read_only": 1
+		},
+		{
+			"fieldname": "external_id",
+			"label": "外部ID",
+			"fieldtype": "Data",
+			"search_index": 1,
+			"description": "外部ID",
+			"read_only": 1
+		},
+		{
+			"fieldname": "source_doctype",
+			"label": "来源类型",
+			"fieldtype": "Link",
+			"options": "DocType",
+			"description": "来源类型",
+			"read_only": 1,
+			"reqd": 1
+		},
+		{
+			"fieldname": "source_name",
+			"label": "来源单据",
+			"fieldtype": "Dynamic Link",
+			"options": "source_doctype",
+			"search_index": 1,
+			"description": "来源单据",
+			"read_only": 1,
+			"reqd": 1
+		},
+		{
+			"fieldname": "submitted_at",
+			"label": "提交时间",
+			"fieldtype": "Datetime",
+			"read_only": 1,
+			"description": "提交时间"
+		},
+		{
+			"fieldname": "approved_at",
+			"label": "批准时间",
+			"fieldtype": "Datetime",
+			"read_only": 1,
+			"description": "批准时间"
+		},
+		{
+			"fieldname": "remarks",
+			"label": "备注",
+			"fieldtype": "Small Text",
+			"description": "备注",
+			"read_only": 1
+		},
+		{
+			"fieldname": "budget_version",
+			"label": "预算版本",
+			"fieldtype": "Link",
+			"options": "HRP Budget Version",
+			"search_index": 1,
+			"description": "预算版本",
+			"read_only": 1
+		},
+		{
+			"fieldname": "budget_subject",
+			"label": "预算科目",
+			"fieldtype": "Link",
+			"options": "HRP Dimension Value",
+			"search_index": 1,
+			"description": "预算科目",
+			"read_only": 1,
+			"reqd": 1
+		},
+		{
+			"fieldname": "funding_source",
+			"label": "资金来源",
+			"fieldtype": "Link",
+			"options": "HRP Funding Source",
+			"search_index": 1,
+			"description": "资金来源",
+			"read_only": 1,
+			"reqd": 1
+		},
+		{
+			"fieldname": "approved_amount",
+			"label": "批准金额",
+			"fieldtype": "Data",
+			"description": "按捕获的币种精度保存精确金额；仅受控服务可维护。",
+			"read_only": 1
+		},
+		{
+			"fieldname": "reserved_amount",
+			"label": "预占金额",
+			"fieldtype": "Data",
+			"read_only": 1,
+			"description": "按捕获的币种精度保存精确金额；仅受控服务可维护。",
+			"allow_on_submit": 1
+		},
+		{
+			"fieldname": "committed_amount",
+			"label": "承诺金额",
+			"fieldtype": "Data",
+			"read_only": 1,
+			"description": "按捕获的币种精度保存精确金额；仅受控服务可维护。",
+			"allow_on_submit": 1
+		},
+		{
+			"fieldname": "actual_amount",
+			"label": "实际金额",
+			"fieldtype": "Data",
+			"read_only": 1,
+			"description": "按捕获的币种精度保存精确金额；仅受控服务可维护。",
+			"allow_on_submit": 1
+		},
+		{
+			"fieldname": "available_amount",
+			"label": "可用金额",
+			"fieldtype": "Data",
+			"read_only": 1,
+			"in_list_view": 1,
+			"description": "按捕获的币种精度保存精确金额；仅受控服务可维护。",
+			"allow_on_submit": 1
+		},
+		{
+			"fieldname": "control_mode",
+			"label": "控制模式",
+			"fieldtype": "Select",
+			"options": "Hard\nSoft\nAlert\nNone",
+			"description": "控制模式",
+			"read_only": 1
+		},
+		{
+			"fieldname": "period_start",
+			"label": "期间开始",
+			"fieldtype": "Date",
+			"description": "期间开始",
+			"read_only": 1,
+			"reqd": 1
+		},
+		{
+			"fieldname": "period_end",
+			"label": "期间结束",
+			"fieldtype": "Date",
+			"description": "期间结束",
+			"read_only": 1,
+			"reqd": 1
+		},
+		{
+			"fieldname": "source_line",
+			"label": "来源明细",
+			"fieldtype": "Data",
+			"read_only": 1,
+			"reqd": 1
+		},
+		{
+			"fieldname": "source_allocation",
+			"label": "来源分摊标识",
+			"fieldtype": "Data",
+			"read_only": 1,
+			"reqd": 1
+		},
+		{
+			"fieldname": "source_revision",
+			"label": "来源修订",
+			"fieldtype": "Data",
+			"read_only": 1,
+			"reqd": 1
+		},
+		{
+			"fieldname": "source_snapshot_digest",
+			"label": "来源事实摘要",
+			"fieldtype": "Data",
+			"read_only": 1,
+			"reqd": 1,
+			"hidden": 1
+		},
+		{
+			"fieldname": "project",
+			"label": "项目",
+			"fieldtype": "Link",
+			"read_only": 1,
+			"reqd": 0,
+			"options": "Project"
+		},
+		{
+			"fieldname": "currency_precision",
+			"label": "捕获精度",
+			"fieldtype": "Int",
+			"read_only": 1,
+			"reqd": 1
+		},
+		{
+			"fieldname": "revision",
+			"label": "聚合修订",
+			"fieldtype": "Int",
+			"read_only": 1,
+			"reqd": 1,
+			"allow_on_submit": 1
+		},
+		{
+			"fieldname": "event_count",
+			"label": "事件数量",
+			"fieldtype": "Int",
+			"read_only": 1,
+			"reqd": 0,
+			"allow_on_submit": 1
+		},
+		{
+			"fieldname": "last_event_digest",
+			"label": "最后事件摘要",
+			"fieldtype": "Data",
+			"read_only": 1,
+			"reqd": 0,
+			"hidden": 1,
+			"allow_on_submit": 1
+		},
+		{
+			"fieldname": "anchor_digest",
+			"label": "聚合锚点摘要",
+			"fieldtype": "Data",
+			"read_only": 1,
+			"reqd": 1,
+			"hidden": 1,
+			"allow_on_submit": 1
+		},
+		{
+			"fieldname": "proof_version",
+			"label": "证明版本",
+			"fieldtype": "Int",
+			"read_only": 1,
+			"reqd": 1
+		},
+		{
+			"fieldname": "created_by",
+			"label": "创建人",
+			"fieldtype": "Link",
+			"read_only": 1,
+			"reqd": 1,
+			"options": "User"
+		}
+	],
+	"permissions": [],
+	"sort_field": "creation",
+	"sort_order": "DESC",
+	"description": "预占聚合及事件链锚点；授权业务写入尚未启用。",
+	"actions": [],
+	"links": [],
+	"states": []
+}
