@@ -76,7 +76,7 @@ class TestBudgetMaterialCandidates(IntegrationTestCase):
 			patch.object(candidates, "guarded_release_inventory", return_value=(self.entry,)),
 		):
 			result = self.prepare()
-		self.assertEqual(source.call_count, 2)
+		self.assertEqual(source.call_count, 3)
 		self.assertEqual(resolve.call_count, 3)
 		self.assertEqual([candidate.key for candidate in result.candidates], [self.key])
 		self.assertEqual(result.source, self.source)
@@ -94,6 +94,41 @@ class TestBudgetMaterialCandidates(IntegrationTestCase):
 			assert_budget_guards([self.key])
 		frappe.db.rollback()
 		self.assertIsNone(getattr(frappe.local.db, "_medops_budget_guard_marker", None))
+
+	def test_source_change_during_inventory_poison_guard(self):
+		changed = replace(self.source, amount="11.000000000")
+		with (
+			patch.object(
+				candidates, "locked_material_request_source", side_effect=[self.source, self.source, changed]
+			),
+			patch.object(candidates, "resolve_budget_control_key", side_effect=budget_control_key),
+			patch.object(candidates, "guarded_release_inventory", return_value=(self.entry,)),
+		):
+			with self.assertRaises(IoneApplicationError):
+				self.prepare()
+		with self.assertRaises(IoneApplicationError):
+			assert_budget_guards([self.key])
+
+	def test_source_permission_revoked_during_inventory_poison_guard(self):
+		calls = 0
+
+		def read_source(*_args):
+			nonlocal calls
+			calls += 1
+			if calls == 3:
+				candidates.raise_ione_error("PERMISSION_DENIED")
+			return self.source
+
+		with (
+			patch.object(candidates, "locked_material_request_source", side_effect=read_source),
+			patch.object(candidates, "resolve_budget_control_key", side_effect=budget_control_key),
+			patch.object(candidates, "guarded_release_inventory", return_value=(self.entry,)),
+		):
+			with self.assertRaises(IoneApplicationError):
+				self.prepare()
+		self.assertEqual(calls, 3)
+		with self.assertRaises(IoneApplicationError):
+			assert_budget_guards([self.key])
 
 	def test_key_identity_change_poison_guard(self):
 		other = budget_control_key(input_key(company="other-company"))

@@ -81,6 +81,11 @@ def prepare_purchase_release_match(
 			raise_ione_error("CONFLICT")
 		history = guarded_release_inventory(keys)
 		candidates = match_purchase_release_keys(keys, history, **values)
+		# Inventory can take time; refresh the actor and native source permissions
+		# again before returning facts that were read earlier in this transaction.
+		current = locked_material_request_source(request, line, organization_unit)
+		if current != source or current.digest() != digest:
+			raise_ione_error("CONFLICT")
 		if ordered_budget_keys([resolve_budget_control_key(value) for value in inputs]) != keys:
 			raise_ione_error("CONFLICT")
 		assert_budget_guards(keys)
