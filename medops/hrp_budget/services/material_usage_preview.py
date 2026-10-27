@@ -13,6 +13,7 @@ from medops.common.budget_material_match import (
 	match_purchase_release_keys,
 )
 from medops.common.budget_reservation_events import ReservationPosition
+from medops.common.budget_scope_observation import BudgetScopeObservation, observe_budget_scope
 from medops.common.organization import normalize_required_date
 from medops.hrp_budget.services.control_guards import assert_budget_guards, invalidate_budget_guards
 from medops.hrp_budget.services.control_inventory import guarded_release_inventory
@@ -40,6 +41,7 @@ class PurchaseUsageInspection:
 	candidates: tuple[PurchaseBudgetCandidate, ...]
 	usage: tuple[ReservationPosition, ...]
 	source_usage: tuple[ReservationPosition, ...]
+	budget_observations: tuple[BudgetScopeObservation, ...]
 
 
 def _assert_actor(actor: str) -> None:
@@ -116,11 +118,15 @@ def inspect_purchase_usage(
 			raise ValueError("usage changed during release inspection")
 		positions_by_source = verify_guarded_initial_authorizations(keys, sources, usage)
 		source_usage = positions_by_source[identity]
+		budget_observations = tuple(
+			observe_budget_scope(candidate.key, candidate.currency, candidate.precision, history, usage)
+			for candidate in candidates
+		)
 		if ordered_budget_keys([resolve_budget_control_key(value) for value in inputs]) != keys:
 			raise ValueError("budget key references changed")
 		_assert_actor(actor)
 		assert_budget_guards(keys)
-		return PurchaseUsageInspection(source, date, candidates, usage, source_usage)
+		return PurchaseUsageInspection(source, date, candidates, usage, source_usage, budget_observations)
 	except ValueError as error:
 		invalidate_budget_guards()
 		raise_ione_error("CONFLICT", cause=error)

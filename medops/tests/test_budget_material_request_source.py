@@ -8,7 +8,7 @@ import subprocess
 import sys
 import tempfile
 from contextlib import contextmanager
-from dataclasses import asdict
+from dataclasses import asdict, replace
 from datetime import datetime, timedelta
 from pathlib import Path
 from types import SimpleNamespace
@@ -851,13 +851,22 @@ class TestBudgetMaterialRequestSource(FrappeTestCase):
 				self.assertEqual(inspection.source_usage, inspection.usage)
 				self.assertEqual(inspection.usage[0].open_reservation, "1.00")
 				self.assertEqual(inspection.candidates[0].key, intent.key)
+				observation = inspection.budget_observations[0]
+				self.assertEqual(
+					(observation.net_releases, observation.exposure, observation.difference),
+					("20.00", "1.00", "19.00"),
+				)
 				assert_budget_guards([intent.key])
 				primary.rollback()
 
 				current_snapshot, current_digest = material_source_snapshot(asdict(material))
 				set_request(method="POST", path="/")
 				frappe.session.sid = "synthetic-test-web-session"
-				for amount, should_succeed in (("10.00", False), ("9.00", True)):
+				for amount, release_amount, should_succeed in (
+					("10.00", "20.00", False),
+					("9.00", "20.00", True),
+					("2.00", "2.00", False),
+				):
 					populate_evidence()
 					proposed = reservation_intent(
 						source_snapshot=current_snapshot,
@@ -875,7 +884,9 @@ class TestBudgetMaterialRequestSource(FrappeTestCase):
 							material_usage_preview, "resolve_budget_control_key", return_value=intent.key
 						),
 						patch.object(
-							material_usage_preview, "guarded_release_inventory", return_value=(entry,)
+							material_usage_preview,
+							"guarded_release_inventory",
+							return_value=(replace(entry, amount=release_amount),),
 						),
 						patch.object(
 							reservation_confirmation,
