@@ -1,15 +1,22 @@
 from __future__ import annotations
 
 import hashlib
+import json
 import unittest
 from dataclasses import replace
+from datetime import datetime, timezone
 
 from medops.common.budget_control import budget_control_key
+from medops.common.domain_service import canonical_json
 from medops.common.material_source_snapshot import material_source_snapshot
 from medops.common.reservation_authorization import (
+	parse_reservation_intent_snapshot,
+	reservation_authorization_row,
 	reservation_confirmation,
 	reservation_decision,
 	reservation_intent,
+	reservation_intent_snapshot,
+	verify_reservation_authorization_rows,
 	verify_reservation_confirmation_proof,
 	verify_reservation_decision_evidence,
 )
@@ -252,3 +259,143 @@ class ReservationAuthorizationTest(unittest.TestCase):
 		):
 			with self.subTest(changed=changed), self.assertRaises(ValueError):
 				verify_reservation_decision_evidence(item, first, changed)
+
+	def test_persisted_intent_roundtrip_keeps_source_snapshot_separate(self):
+		item = intent()
+		payload = reservation_intent_snapshot(item)
+		self.assertNotIn("MR-001", payload)
+		self.assertEqual(
+			parse_reservation_intent_snapshot(payload, source_snapshot=item.source_snapshot), item
+		)
+
+	def test_persisted_intent_rejects_changed_amount_digest_and_budget_scope(self):
+		item = intent()
+		payload = reservation_intent_snapshot(item)
+		for change in (
+			lambda row: row.update(amount="11.00"),
+			lambda row: row.update(intent_digest="0" * 64),
+			lambda row: row["budget_key"].update(organization_unit="Other"),
+		):
+			row = json.loads(payload)
+			change(row)
+			with self.assertRaises(ValueError):
+				parse_reservation_intent_snapshot(canonical_json(row), source_snapshot=item.source_snapshot)
+
+	def test_persisted_intent_rejects_wrong_source_and_unknown_or_duplicate_fields(self):
+		item = intent()
+		payload = reservation_intent_snapshot(item)
+		other_source, _ = material_source_snapshot(facts(amount="31.000000000"))
+		with self.assertRaises(ValueError):
+			parse_reservation_intent_snapshot(payload, source_snapshot=other_source)
+		row = json.loads(payload)
+		row["extra"] = "untrusted"
+		for candidate in (
+			canonical_json(row),
+			payload + " ",
+			payload.replace('"schema_version":1', '"schema_version":1,"schema_version":1'),
+		):
+			with self.assertRaises(ValueError):
+				parse_reservation_intent_snapshot(candidate, source_snapshot=item.source_snapshot)
+
+	def test_persisted_intent_rejects_noncanonical_budget_key(self):
+		item = intent()
+		row = json.loads(reservation_intent_snapshot(item))
+		row["budget_key"]["project"] = ""
+		with self.assertRaises(ValueError):
+			parse_reservation_intent_snapshot(canonical_json(row), source_snapshot=item.source_snapshot)
+
+	def evidence_rows(self):
+		item = intent()
+		first = confirmation(item)
+		decision = reservation_decision(
+			item,
+			first,
+			proof=PROOF,
+			actor=ACTOR,
+			session_digest=SESSION,
+			recorded_at=DECIDED,
+			acknowledge=True,
+		)
+		return (
+			item,
+			decision,
+			reservation_authorization_row(item, first),
+			reservation_authorization_row(item, first, decision),
+		)
+
+	def test_stored_pair_roundtrips_database_dates_and_empty_optional_fields(self):
+		item, decision, first, second = self.evidence_rows()
+		for row in (first, second):
+			row["recorded_at"] = datetime.fromisoformat(str(row["recorded_at"]))
+			row["expires_at"] = str(row["expires_at"]).removesuffix(".000000")
+		first["confirmation"] = ""
+		first["one_time_key"] = ""
+		self.assertEqual(verify_reservation_authorization_rows(first, second), (item, decision))
+		self.assertNotIn(PROOF, repr((first, second)))
+
+	def test_stored_decision_rejects_changed_bindings(self):
+		_, _, first, second = self.evidence_rows()
+		for field, value in (
+			("actor", "other@example.com"),
+			("intent_digest", "0" * 64),
+			("source_snapshot_digest", "0" * 64),
+			("budget_key_digest", "0" * 64),
+			("confirmation", "0" * 64),
+			("acknowledged", 0),
+			("one_time_key", "0" * 64),
+			("event_digest", "0" * 64),
+			("source_snapshot_json", "{}"),
+			("intent_snapshot_json", "{}"),
+		):
+			with self.subTest(field=field), self.assertRaises(ValueError):
+				verify_reservation_authorization_rows(first, second | {field: value})
+
+	def test_stored_confirmation_rejects_changed_bindings(self):
+		_, _, first, second = self.evidence_rows()
+		for field, value in (
+			("actor", "other@example.com"),
+			("source_name", "other"),
+			("organization_unit", "other"),
+			("proof_hash", "0" * 64),
+			("session_digest", "0" * 64),
+			("recorded_at", "2026-01-01 10:00:01"),
+			("proof_version", 2),
+			("evidence_key", "other"),
+			("unknown", "value"),
+		):
+			with self.subTest(field=field), self.assertRaises(ValueError):
+				verify_reservation_authorization_rows(first | {field: value}, second)
+
+	def test_stored_pair_rejects_decision_from_another_confirmation(self):
+		item, _, first, _ = self.evidence_rows()
+		other = confirmation(item, proof="another_confirmation_proof_1234567890")
+		decision = reservation_decision(
+			item,
+			other,
+			proof="another_confirmation_proof_1234567890",
+			actor=ACTOR,
+			session_digest=SESSION,
+			recorded_at=DECIDED,
+			acknowledge=True,
+		)
+		with self.assertRaises(ValueError):
+			verify_reservation_authorization_rows(first, reservation_authorization_row(item, other, decision))
+
+	def test_stored_pair_rejects_noncanonical_time_and_boolean_flags(self):
+		_, _, first, second = self.evidence_rows()
+		for field, value in (
+			("recorded_at", "2026-01-01T10:00:00"),
+			("recorded_at", datetime(2026, 1, 1, tzinfo=timezone.utc)),
+			("proof_version", True),
+			("acknowledged", False),
+		):
+			with self.subTest(field=field), self.assertRaises(ValueError):
+				verify_reservation_authorization_rows(first | {field: value}, second)
+
+	def test_projection_rejects_forged_intent_or_decision(self):
+		item, decision, _, _ = self.evidence_rows()
+		first = confirmation(item)
+		with self.assertRaises(ValueError):
+			reservation_authorization_row(replace(item, amount="11.00"), first)
+		with self.assertRaises(ValueError):
+			reservation_authorization_row(item, first, replace(decision, acknowledged=False))
