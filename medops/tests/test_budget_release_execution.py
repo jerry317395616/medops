@@ -744,7 +744,7 @@ class TestBudgetReleaseExecution(FrappeAPITestCase):
 		aggregate_row = reservation_anchor_row(anchor)
 		event_rows = [reservation_record_row(record)]
 		position = verify_material_reservation_evidence(
-			aggregate_row, event_rows, source=result.source, allocation=allocation
+			aggregate_row, event_rows, source=result.source, allocation=allocation, expected_key=event.key
 		)
 		self.assertEqual(position.reserved, exact_decimal_amount("1", precision))
 		with self.assertRaises(ValueError):
@@ -753,10 +753,23 @@ class TestBudgetReleaseExecution(FrappeAPITestCase):
 				event_rows,
 				source=replace(result.source, amount="2.000000000"),
 				allocation=allocation,
+				expected_key=event.key,
 			)
 		with self.assertRaises(ValueError):
 			verify_material_reservation_evidence(
-				aggregate_row, event_rows, source=result.source, allocation="other-allocation"
+				aggregate_row,
+				event_rows,
+				source=result.source,
+				allocation="other-allocation",
+				expected_key=event.key,
+			)
+		with self.assertRaises(ValueError):
+			verify_material_reservation_evidence(
+				aggregate_row,
+				event_rows,
+				source=result.source,
+				allocation=allocation,
+				expected_key=replace(event.key, funding_source="other-funding"),
 			)
 		oversized = reservation_record(
 			replace(event, amount=exact_decimal_amount("2", precision)),
@@ -774,6 +787,7 @@ class TestBudgetReleaseExecution(FrappeAPITestCase):
 				[reservation_record_row(oversized)],
 				source=result.source,
 				allocation=allocation,
+				expected_key=event.key,
 			)
 		self.assertEqual(before, {doctype: frappe.db.count(doctype) for doctype in before})
 		frappe.db.rollback()
