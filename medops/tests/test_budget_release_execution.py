@@ -657,7 +657,23 @@ class TestBudgetReleaseExecution(FrappeAPITestCase):
 		frappe.db.sql("SET SESSION TRANSACTION ISOLATION LEVEL READ COMMITTED")
 		frappe.db.begin()
 		revision = int(frappe.db.get_value(RELEASE, self.release, "revision"))
-		keys, entries = control_release.prepare_persisted_release_inventory(self.release, revision)
+		parent_queries = []
+		unpatched_get_all = frappe.get_all
+
+		def record_posted_parent_queries(doctype, *args, **kwargs):
+			filters = kwargs.get("filters") or {}
+			result = unpatched_get_all(doctype, *args, **kwargs)
+			if doctype == RELEASE and filters.get("status") == "Posted" and kwargs.get("pluck") == "name":
+				parent_queries.append((dict(filters), result))
+			return result
+
+		with (
+			patch.object(control_inventory, "RELEASE_PARENT_PAGE_SIZE", 1),
+			patch.object(frappe, "get_all", side_effect=record_posted_parent_queries),
+		):
+			keys, entries = control_release.prepare_persisted_release_inventory(self.release, revision)
+		self.assertGreaterEqual(len(parent_queries), 2)
+		self.assertEqual(parent_queries[1][0]["name"], [">", parent_queries[0][1][-1]])
 		original_names = set(frappe.get_all(LEDGER, filters={"voucher_no": original_release}, pluck="name"))
 		self.assertEqual(len(original_names), 2)
 		self.assertTrue(original_names.issubset({entry.name for entry in entries}))

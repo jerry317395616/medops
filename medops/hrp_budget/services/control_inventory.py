@@ -11,7 +11,6 @@ from medops.common.budget_statement_access import native_ledger_base_check
 from medops.common.exact_money import signed_decimal_amount
 from medops.hrp_budget.services.budget_statement import (
 	MAX_PRIVATE_PROOF_ENTRIES,
-	MAX_STATEMENT_BATCHES,
 	MAX_STATEMENT_ENTRIES,
 )
 from medops.hrp_budget.services.consolidation_access import approved_department
@@ -24,6 +23,43 @@ from medops.hrp_budget.services.release_sources import stored_release_facts
 from medops.hrp_workflow_authorization.services.rule_contracts import can_read_named_fields
 from medops.services.data_access import require_scope, scope_allowed
 from medops.services.errors import raise_ione_error
+
+RELEASE_PARENT_PAGE_SIZE = 128
+
+
+def posted_release_names_for_guarded_inventory(units):
+	"""Visit every posted parent for the guarded hospitals in database order.
+
+	Do not infer completeness from physical ledger rows: a whole missing batch
+	still has to be discovered through its posted parent. This cursor operates
+	under the common writer guard and READ COMMITTED; it does not authorize reads.
+	"""
+	seen = set()
+	for company, hospital in sorted({(company, hospital) for company, hospital, _ in units}):
+		cursor = None
+		while True:
+			filters = {"company": company, "hospital": hospital, "status": "Posted", "docstatus": 1}
+			if cursor is not None:
+				filters["name"] = [">", cursor]
+			page = frappe.get_all(
+				RELEASE,
+				filters=filters,
+				pluck="name",
+				order_by="name asc",
+				limit_page_length=RELEASE_PARENT_PAGE_SIZE,
+			)
+			if len(page) > RELEASE_PARENT_PAGE_SIZE:
+				raise_ione_error("CONFIGURATION_INVALID")
+			for name in page:
+				if not isinstance(name, str) or not name or name in seen:
+					raise_ione_error("CONFIGURATION_INVALID")
+				seen.add(name)
+				if len(seen) > MAX_PRIVATE_PROOF_ENTRIES:
+					raise_ione_error("INVALID_REQUEST")
+				yield name
+			if len(page) < RELEASE_PARENT_PAGE_SIZE:
+				break
+			cursor = page[-1]
 
 
 def _scope(key):
@@ -94,26 +130,11 @@ def guarded_release_inventory(value: object) -> tuple[ReleaseInventoryEntry, ...
 		units = sorted({(key.company, key.hospital, key.organization_unit) for key in keys})
 		scopes = {_scope(key) for key in keys}
 		_check_context(units, actor)
-		parents = []
-		for company, hospital in sorted({(company, hospital) for company, hospital, _ in units}):
-			parents.extend(
-				frappe.get_all(
-					RELEASE,
-					filters={"company": company, "hospital": hospital, "status": "Posted", "docstatus": 1},
-					pluck="name",
-					order_by="name asc",
-					limit_page_length=MAX_STATEMENT_BATCHES + 1,
-				)
-			)
-			if len(parents) > MAX_STATEMENT_BATCHES:
-				raise_ione_error("INVALID_REQUEST")
-		if len(set(parents)) != len(parents):
-			raise_ione_error("CONFIGURATION_INVALID")
 		unit_set = set(units)
 		rows = {}
 		references = {}
 		work = 0
-		for name in sorted(parents):
+		for name in posted_release_names_for_guarded_inventory(units):
 			parent = frappe.get_doc(RELEASE, name)
 			facts = stored_release_facts(parent)
 			work += len(facts.snapshot.lines)
