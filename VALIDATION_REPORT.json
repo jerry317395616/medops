@@ -749,7 +749,8 @@
       "guarded_release_history_compatibility_native_tested": false,
       "focused_budget_ci_implemented": true,
       "focused_budget_ci_executed": false,
-      "focused_budget_ci_replaces_required": false
+      "focused_budget_ci_replaces_required": false,
+      "focused_runner_path_traversal_denied_locally": true
     },
     "ci_bootstrap_search_isolation": {
       "status": "implemented_not_retested",

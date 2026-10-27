@@ -11,10 +11,14 @@ if [[ "${GITHUB_ACTIONS:-}" != "true" || -z "${RUNNER_TEMP:-}" ]]; then
   echo "Focused integration only runs on a GitHub Actions runner" >&2
   exit 1
 fi
-case "$BENCH_DIR" in
-  "$RUNNER_TEMP"/*) ;;
+runner_temp_real="$(realpath -e -- "$RUNNER_TEMP")"
+bench_dir_real="$(realpath -m -- "$BENCH_DIR")"
+case "$bench_dir_real" in
+  "$runner_temp_real"/*) ;;
   *) echo "Focused Bench must be inside the runner temporary directory" >&2; exit 1 ;;
 esac
+BENCH_DIR="$bench_dir_real"
+export BENCH_DIR
 export PATH="$HOME/.local/bin:$PATH"
 export KEEP_TEMPORARY_REDIS=1
 export MEDOPS_BOOTSTRAP_SKIP_SEARCH_INDEX=1
