@@ -41,7 +41,9 @@
 		"design/field_catalog.csv",
 		"doctype_blueprints/hrp_budget/hrp_budget_reservation_event.json",
 		"medops/hrp_budget/doctype/hrp_budget_reservation_event/hrp_budget_reservation_event.json",
-		"medops/tests/test_budget_reservation_storage.py"
+		"medops/tests/test_budget_reservation_storage.py",
+		"medops/hrp_budget/services/purchase_order_source.py",
+		"medops/tests/test_budget_purchase_order_source.py"
 	],
 	"permissions_impact": "无新API或角色；内部核查先验证当前预算台账读取权限、字段和组织范围，再读取预占结构。预占事件与聚合写入仍关闭。",
 	"migration_impact": "事件表来源名称新增 Frappe search_index；标准站点迁移会创建数据库索引。大表耗时与锁影响须先在隔离副本测量并备份；不改其他站点且本次未执行服务器迁移。",
@@ -65,7 +67,8 @@
 		"隔离CI 40583704971通过64项专项；新范围外关联预占拒绝、分摊合计、截断和来源复查测试待运行。",
 		"按采购行反向核对预占根与事件父关系和数量；范围外孤立事件与事件数超限失败关闭。",
 		"隔离CI 40584383442通过65项专项包含真实采购草稿联合检查；预算键和下达清点模拟。",
-		"隔离CI 40584637598通过66项专项；来源事件索引迁移断言及索引缺失失败关闭待测试。"
+		"隔离CI 40584637598通过66项专项；来源事件索引迁移断言及索引缺失失败关闭待测试。",
+		"ERPNext采购订单与物料申请关联、先父单锁序、精确数字、会话用户及幂等身份；11项模拟来源测试待隔离执行。"
 	],
 	"owner": "MedOps Maintainers",
 	"created_on": "2026-10-27",
