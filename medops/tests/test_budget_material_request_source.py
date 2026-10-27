@@ -43,6 +43,7 @@ from medops.hrp_budget.services import (
 from medops.hrp_budget.services.control_guards import acquire_budget_guards, assert_budget_guards
 from medops.hrp_budget.services.material_budget_guards import acquire_material_budget_guards
 from medops.tests import test_budget_consolidation as source_fixture
+from medops.tests import test_budget_material_authorization_observation as authorization_fixture
 from medops.tests.test_budget_control_guards import synthetic_key, wait_for_file
 
 INVERTED_LOCK_CHILD = r"""
@@ -709,6 +710,9 @@ class TestBudgetMaterialRequestSource(FrappeTestCase):
 		)
 		historical_snapshot, historical_digest = material_source_snapshot(asdict(initial_material))
 		self.assertEqual(historical_digest, initial_material.digest())
+		_, intent, root, events, confirmation, decision = authorization_fixture.synthetic_rows(
+			source=initial_material, amount="1.00"
+		)
 		item = self.request.items[0]
 		order = frappe.get_doc(
 			dict(
@@ -740,6 +744,7 @@ class TestBudgetMaterialRequestSource(FrappeTestCase):
 		order.submit()
 		with self.committed_source_fixture():
 			primary = frappe.local.db
+			created_tables = []
 			try:
 				material = material_request_source.locked_material_request_source(
 					self.request.name, self.line, self.units["A"]
@@ -775,8 +780,74 @@ class TestBudgetMaterialRequestSource(FrappeTestCase):
 					expected_request_digest=material.digest(),
 				)
 				self.assertEqual((linked_source, linked_orders), (material, (purchase,)))
+				primary.rollback()
+				# Only connection-private synthetic evidence is inserted; the real source
+				# and its locks remain native. Budget resolution and release are fixtures.
+				tables = (
+					("tabHRP Budget Reservation", ANCHOR_ROW_FIELDS | {"source_snapshot_json"}),
+					("tabHRP Budget Reservation Event", ROW_FIELDS),
+					("tabHRP Budget Reservation Authorization", AUTHORIZATION_ROW_FIELDS),
+				)
+				integers = {"event_count", "sequence", "currency_precision", "proof_version", "acknowledged"}
+				for table, fields in tables:
+					columns = []
+					for name in sorted(fields):
+						kind = (
+							"INT"
+							if name in integers
+							else "LONGTEXT"
+							if name.endswith("_json")
+							else "VARCHAR(255)"
+						)
+						columns.append(f"`{name}` {kind}")
+					primary.sql(
+						f"CREATE TEMPORARY TABLE `{table}` ({', '.join(columns)}) ENGINE=InnoDB"  # nosec B608 - fixed test tables
+					)
+					created_tables.append(table)
+				for table, row in (
+					("tabHRP Budget Reservation", root),
+					("tabHRP Budget Reservation Event", events[0]),
+					("tabHRP Budget Reservation Authorization", confirmation),
+					("tabHRP Budget Reservation Authorization", decision),
+				):
+					authorization_fixture.TestBudgetMaterialAuthorizationObservation.insert_row(
+						self, table, row
+					)
+				if not initial_material.expense_account:
+					raise AssertionError("synthetic source requires an expense account")
+				entry = ReleaseInventoryEntry(
+					"synthetic-release",
+					intent.key,
+					intent.currency,
+					intent.precision,
+					"20.00",
+					initial_material.expense_account,
+					initial_material.cost_center,
+				)
+				with (
+					patch.object(
+						material_usage_preview, "resolve_budget_control_key", return_value=intent.key
+					),
+					patch.object(material_usage_preview, "guarded_release_inventory", return_value=(entry,)),
+				):
+					inspection = material_usage_preview.inspect_purchase_usage(
+						material.request,
+						material.line,
+						material.organization_unit,
+						expected_source_digest=material.digest(),
+						budget_date=initial_material.transaction_date,
+						proposed_keys=[asdict(intent.key)],
+					)
+				self.assertEqual(inspection.source, material)
+				self.assertEqual(len(inspection.usage), 1)
+				self.assertEqual(inspection.usage[0].open_reservation, "1.00")
+				self.assertEqual(inspection.candidates[0].key, intent.key)
+				assert_budget_guards([intent.key])
 			finally:
 				frappe.local.db = primary
+				primary.rollback()
+				for table in reversed(created_tables):
+					primary.sql(f"DROP TEMPORARY TABLE `{table}`")  # nosec B608 - fixed test tables
 				primary.rollback()
 				if frappe.db.exists("Purchase Order", order.name):
 					current = frappe.get_doc("Purchase Order", order.name)

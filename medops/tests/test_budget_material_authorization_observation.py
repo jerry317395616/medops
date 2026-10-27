@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import hashlib
 from dataclasses import asdict, replace
+from datetime import datetime, timedelta
 from unittest.mock import patch
 
 import frappe
@@ -67,13 +68,13 @@ def synthetic_rows(*, index=1, source=None, amount="10.00"):
 	source = source or base_source
 	key = budget_control_key(
 		{
-			"company": "Company",
-			"hospital": "Hospital",
-			"organization_unit": "Unit",
+			"company": source.company,
+			"hospital": source.hospital,
+			"organization_unit": source.organization_unit,
 			"fiscal_year": "Year",
 			"budget_subject": "Subject",
 			"funding_source": "Fund",
-			"project": None,
+			"project": source.project,
 			"period_start": "2026-01-01",
 			"period_end": "2026-12-31",
 		}
@@ -84,20 +85,26 @@ def synthetic_rows(*, index=1, source=None, amount="10.00"):
 		source_snapshot_digest=digest,
 		allocation=f"allocation-{index}",
 		key=key,
-		currency="CNY",
+		currency=source.currency,
 		precision=2,
 		amount=amount,
-		budget_date="2026-01-01",
+		budget_date=source.transaction_date,
 		reason="Synthetic",
 	)
 	proof = "synthetic_confirmation_proof_1234567890"
+	start = max(datetime.fromisoformat(source.request_modified), datetime.fromisoformat(source.line_modified))
+	start += timedelta(microseconds=1)
+
+	def stamp(value):
+		return value.isoformat(sep=" ", timespec="microseconds")
+
 	confirmed = reservation_confirmation(
 		item,
 		actor="manager@example.com",
 		proof_hash=hashlib.sha256(proof.encode()).hexdigest(),
 		session_digest="a" * 64,
-		recorded_at="2026-01-01 10:00:00.000000",
-		expires_at="2026-01-01 10:05:00.000000",
+		recorded_at=stamp(start),
+		expires_at=stamp(start + timedelta(minutes=5)),
 	)
 	decision = reservation_decision(
 		item,
@@ -105,23 +112,25 @@ def synthetic_rows(*, index=1, source=None, amount="10.00"):
 		proof=proof,
 		actor="manager@example.com",
 		session_digest="a" * 64,
-		recorded_at="2026-01-01 10:01:00.000000",
+		recorded_at=stamp(start + timedelta(microseconds=1)),
 		acknowledge=True,
 	)
 	ref = ReservationSource(
 		"Material Request", source.request, digest, source.line, item.allocation, "Reserve"
 	)
 	name = f"RESERVATION-{index:03d}"
-	event = ReservationEvent(reservation_event_key(name, 1), name, 1, key, "CNY", 2, "Reserve", amount)
+	event = ReservationEvent(
+		reservation_event_key(name, 1), name, 1, key, source.currency, 2, "Reserve", amount
+	)
 	record = reservation_record(
 		event,
 		ref,
 		actor="manager@example.com",
-		occurred_at="2026-01-01 10:02:00.000000",
+		occurred_at=stamp(start + timedelta(microseconds=2)),
 		previous_digest=None,
 	)
 	anchor = reservation_anchor(
-		[record], expected_source=ref, source_snapshot_digest=digest, cost_center="Center"
+		[record], expected_source=ref, source_snapshot_digest=digest, cost_center=source.cost_center
 	)
 	root = build_snapshot_reservation_projection(
 		anchor, [record], source_facts=asdict(source), allocation=item.allocation, expected_key=key
