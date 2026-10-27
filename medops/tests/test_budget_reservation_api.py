@@ -2,8 +2,10 @@
 
 from __future__ import annotations
 
+from dataclasses import asdict
 from types import SimpleNamespace
 from unittest.mock import patch
+from uuid import uuid4
 
 import frappe
 from frappe.tests.test_api import FrappeAPITestCase
@@ -11,12 +13,19 @@ from frappe.tests.utils import FrappeTestCase
 from frappe.utils import set_request
 
 from medops.api.v1.finance import reservation
+from medops.common.budget_control import budget_control_key
+from medops.common.budget_control_history import ReleaseInventoryEntry
 from medops.common.budget_workflow import build_human_confirmation
 from medops.common.confirmation_privacy import REDACTED_CONFIRMATION
+from medops.common.domain_service import idempotency_record_name
 from medops.common.error_catalog import IoneApplicationError
 from medops.hrp_budget.api.reservation_transaction import prepare_reservation_http_transaction
+from medops.hrp_budget.services import material_usage_preview
 from medops.hrp_budget.services.material_request_source import MaterialRequestSource
+from medops.hrp_budget.services.reservation_confirmation_service import PrepareReservationConfirmation
 from medops.services.confirmation_privacy import protect_confirmation_request
+from medops.tests import test_budget_consolidation as source_fixture
+from medops.tests.test_budget_control_guards import synthetic_key
 
 
 class TestBudgetReservationAPI(FrappeTestCase):
@@ -221,3 +230,158 @@ class TestBudgetReservationHTTP(FrappeAPITestCase):
 				{"payload": {"confirmation": "synthetic", "proof": PUBLIC_CANARY, "acknowledge": True}},
 			)
 			diagnostics.assert_private_retry(self, response)
+
+
+class TestBudgetReservationDurableHTTP(FrappeAPITestCase):
+	@classmethod
+	def setUpClass(cls):
+		super().setUpClass()
+		_, cls.units, _, _ = source_fixture.fixtures()
+		fixture_connection = frappe.local.db
+		fixture_connection.commit()
+
+	def test_real_http_confirmation_replays_without_budget_posting(self):
+		"""Committed synthetic source and evidence; budget resolution/inventory are substitutes."""
+		frappe.set_user("Administrator")
+		if not frappe.db.exists("Item Group", "All Item Groups"):
+			frappe.get_doc(dict(doctype="Item Group", item_group_name="All Item Groups", is_group=1)).insert(
+				ignore_permissions=True
+			)
+		if not frappe.db.exists("UOM", "COD035 HTTP Unit"):
+			frappe.get_doc(dict(doctype="UOM", uom_name="COD035 HTTP Unit")).insert(ignore_permissions=True)
+		item_code = "COD035-HTTP-" + uuid4().hex[:16]
+		frappe.get_doc(
+			dict(
+				doctype="Item",
+				item_code=item_code,
+				item_name="Synthetic HTTP item",
+				item_group="All Item Groups",
+				stock_uom="COD035 HTTP Unit",
+				is_stock_item=0,
+			)
+		).insert(ignore_permissions=True)
+		center = frappe.db.get_value("HRP Organization Mapping", self.units["A"], "cost_center")
+		account = frappe.db.get_value(
+			"Account",
+			{
+				"company": source_fixture.COMPANY,
+				"is_group": 0,
+				"disabled": 0,
+				"report_type": "Profit and Loss",
+			},
+			"name",
+		)
+		warehouse = frappe.db.get_value(
+			"Warehouse", {"company": source_fixture.COMPANY, "is_group": 0}, "name"
+		)
+		self.assertTrue(center and account and warehouse)
+		request = frappe.get_doc(
+			dict(
+				doctype="Material Request",
+				company=source_fixture.COMPANY,
+				material_request_type="Purchase",
+				transaction_date="2026-10-26",
+				schedule_date="2026-10-27",
+				items=[
+					dict(
+						item_code=item_code,
+						qty=1,
+						uom="COD035 HTTP Unit",
+						conversion_factor=1,
+						warehouse=warehouse,
+						cost_center=center,
+						expense_account=account,
+						schedule_date="2026-10-27",
+					)
+				],
+			)
+		).insert(ignore_permissions=True)
+		request.items[0].rate = 10
+		request.items[0].amount = 10
+		request.save(ignore_permissions=True)
+		request.submit()
+		# The HTTP test client uses independent connections; publish only synthetic fixtures.
+		fixture_connection = frappe.local.db
+		fixture_connection.commit()
+		self.TEST_CLIENT.set_cookie(key="sid", value=self.sid)
+		before = {
+			name: frappe.db.count(name)
+			for name in ("HRP Budget Reservation", "HRP Budget Reservation Event", "HRP Budget Ledger")
+		}
+		values = synthetic_key(uuid4().hex)
+		values.update(
+			company=source_fixture.COMPANY,
+			hospital=source_fixture.HOSPITAL,
+			organization_unit=self.units["A"],
+			project=None,
+			period_start="2026-01-01",
+			period_end="2026-12-31",
+			budget_subject="http-subject-" + uuid4().hex[:12],
+		)
+		key = budget_control_key(values)
+		inventory = ReleaseInventoryEntry("synthetic-release", key, "CNY", 2, "20.00", account, center)
+		preview_key, confirm_key = "http-preview-" + uuid4().hex, "http-confirm-" + uuid4().hex
+		with (
+			patch.object(reservation, "_enabled"),
+			patch.object(material_usage_preview, "resolve_budget_control_key", return_value=key),
+			patch.object(material_usage_preview, "guarded_release_inventory", return_value=(inventory,)),
+		):
+			response = self.post(
+				self.method("medops.api.v1.finance.reservation.source"),
+				{
+					"payload": {
+						"request": request.name,
+						"line": request.items[0].name,
+						"organization_unit": self.units["A"],
+					}
+				},
+			)
+			self.assertEqual(response.status_code, 200, response.get_data(as_text=True))
+			source = response.get_json()["message"]
+			payload = {
+				**source,
+				"allocation": "http-allocation-" + uuid4().hex[:12],
+				"budget_key": asdict(key),
+				"currency": "CNY",
+				"precision": 2,
+				"amount": "10.00",
+				"budget_date": "2026-10-26",
+				"reason": "Synthetic HTTP review",
+			}
+			url = self.method("medops.api.v1.finance.reservation.prepare")
+			response = self.post(url, {"payload": payload}, headers={"Idempotency-Key": preview_key})
+			self.assertEqual(response.status_code, 200, response.get_data(as_text=True))
+			preview = response.get_json()["message"]
+			self.assertEqual(preview["effect"], "confirmation_only")
+			self.assertFalse(preview["idempotency_replayed"])
+			response = self.post(url, {"payload": payload}, headers={"Idempotency-Key": preview_key})
+			self.assertEqual(response.status_code, 200, response.get_data(as_text=True))
+			replayed = response.get_json()["message"]
+			self.assertTrue(replayed["idempotency_replayed"])
+			self.assertEqual(
+				(replayed["confirmation"], replayed["proof"]), (preview["confirmation"], preview["proof"])
+			)
+			command = {
+				"confirmation": preview["confirmation"],
+				"proof": preview["proof"],
+				"acknowledge": True,
+			}
+			url = self.method("medops.api.v1.finance.reservation.confirm")
+			response = self.post(url, {"payload": command}, headers={"Idempotency-Key": confirm_key})
+			self.assertEqual(response.status_code, 200, response.get_data(as_text=True))
+			decision = response.get_json()["message"]
+			self.assertEqual(decision["effect"], "confirmation_only")
+			response = self.post(url, {"payload": command}, headers={"Idempotency-Key": confirm_key})
+			self.assertEqual(response.status_code, 200, response.get_data(as_text=True))
+			self.assertTrue(response.get_json()["message"]["idempotency_replayed"])
+			self.assertEqual(response.get_json()["message"]["decision"], decision["decision"])
+		frappe.db.rollback()
+		receipt = frappe.get_doc(
+			"HRP Service Idempotency",
+			idempotency_record_name(PrepareReservationConfirmation.definition.name, preview_key),
+		)
+		self.assertNotIn(preview["proof"], receipt.response_snapshot)
+		self.assertEqual({name: frappe.db.count(name) for name in before}, before)
+		self.assertEqual(
+			frappe.db.count("HRP Budget Reservation Authorization", {"source_name": request.name}), 2
+		)
