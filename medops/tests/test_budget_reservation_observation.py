@@ -239,3 +239,14 @@ class TestBudgetReservationObservation(IntegrationTestCase):
 		self.assertEqual(calls, 2)
 		with self.assertRaises(IoneApplicationError):
 			assert_budget_guards([self.key])
+
+	def test_guest_cannot_read_reservation_rows_even_with_a_guard(self):
+		frappe.set_user("Guest")
+		with patch.object(observation, "_source_reservations") as read_rows:
+			with self.assertRaises(IoneApplicationError) as error:
+				observation.guarded_material_reservation_observation(self.source, [self.key], allocations={})
+		self.assertEqual(error.exception.code, "IONE-CORE-0002")
+		read_rows.assert_not_called()
+		frappe.set_user("Administrator")
+		with self.assertRaises(IoneApplicationError):
+			assert_budget_guards([self.key])
