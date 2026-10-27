@@ -227,6 +227,7 @@ class TestBudgetReleaseExecution(FrappeAPITestCase):
 			primary = frappe.local.db
 			marker = getattr(primary, "_medops_budget_guard_marker", None)
 			self.assertIsNotNone(marker)
+			assert marker is not None
 			assert_budget_guards(marker.keys)
 			with self.secondary_connection():
 				other = frappe.local.db
