@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from contextlib import contextmanager
 from copy import deepcopy
+from dataclasses import replace
 from datetime import timedelta
 from decimal import Decimal, localcontext
 from unittest.mock import patch
@@ -15,7 +16,16 @@ from medops.common.budget_control import KEY_FIELDS
 from medops.common.budget_ledger import LEDGER, RELEASE
 from medops.common.budget_material_match import match_purchase_release_keys
 from medops.common.budget_release_control import ReleaseExecutionLease, release_execution
+from medops.common.budget_reservation_anchor import reservation_anchor, reservation_anchor_row
+from medops.common.budget_reservation_events import ReservationEvent
+from medops.common.budget_reservation_proof import (
+	ReservationSource,
+	reservation_event_key,
+	reservation_record,
+)
+from medops.common.budget_reservation_storage import reservation_record_row
 from medops.common.error_catalog import IoneApplicationError
+from medops.common.exact_money import exact_decimal_amount
 from medops.common.integration_outbox import OUTBOX
 from medops.hrp_budget.jobs import release as jobs
 from medops.hrp_budget.services import control_inventory, control_release
@@ -23,6 +33,7 @@ from medops.hrp_budget.services import release_execution as execution
 from medops.hrp_budget.services.control_guards import assert_budget_guards
 from medops.hrp_budget.services.material_budget_candidates import prepare_purchase_release_match
 from medops.hrp_budget.services.material_request_source import locked_material_request_source
+from medops.hrp_budget.services.material_reservation_anchor import verify_material_reservation_evidence
 from medops.hrp_budget.services.release_access import get_release
 from medops.hrp_budget.services.release_sources import stored_release_facts
 from medops.services.errors import raise_ione_error
@@ -701,5 +712,68 @@ class TestBudgetReleaseExecution(FrappeAPITestCase):
 		self.assertEqual(result.candidates[0].key.organization_unit, row.organization_unit)
 		self.assertEqual(result.source.expense_account, row.account)
 		self.assertEqual(result.source.cost_center, row.cost_center)
+		# Construct evidence in memory only: the closed event/aggregate tables
+		# must remain unchanged while the real ERPNext source is checked.
+		digest = result.source.digest()
+		allocation = "synthetic-allocation-1"
+		origin = ReservationSource(
+			"Material Request", request.name, digest, request.items[0].name, allocation, "Reserve"
+		)
+		reservation = "synthetic-reservation-1"
+		precision = result.candidates[0].precision
+		event = ReservationEvent(
+			reservation_event_key(reservation, 1),
+			reservation,
+			1,
+			result.candidates[0].key,
+			result.source.currency,
+			precision,
+			"Reserve",
+			exact_decimal_amount("1", precision),
+		)
+		record = reservation_record(
+			event,
+			origin,
+			actor="Administrator",
+			occurred_at="2026-10-27 09:30:00.000000",
+			previous_digest=None,
+		)
+		anchor = reservation_anchor(
+			[record], expected_source=origin, source_snapshot_digest=digest, cost_center=source.cost_center
+		)
+		aggregate_row = reservation_anchor_row(anchor)
+		event_rows = [reservation_record_row(record)]
+		position = verify_material_reservation_evidence(
+			aggregate_row, event_rows, source=result.source, allocation=allocation
+		)
+		self.assertEqual(position.reserved, exact_decimal_amount("1", precision))
+		with self.assertRaises(ValueError):
+			verify_material_reservation_evidence(
+				aggregate_row,
+				event_rows,
+				source=replace(result.source, amount="2.000000000"),
+				allocation=allocation,
+			)
+		with self.assertRaises(ValueError):
+			verify_material_reservation_evidence(
+				aggregate_row, event_rows, source=result.source, allocation="other-allocation"
+			)
+		oversized = reservation_record(
+			replace(event, amount=exact_decimal_amount("2", precision)),
+			origin,
+			actor="Administrator",
+			occurred_at="2026-10-27 09:30:00.000000",
+			previous_digest=None,
+		)
+		oversized_anchor = reservation_anchor(
+			[oversized], expected_source=origin, source_snapshot_digest=digest, cost_center=source.cost_center
+		)
+		with self.assertRaises(ValueError):
+			verify_material_reservation_evidence(
+				reservation_anchor_row(oversized_anchor),
+				[reservation_record_row(oversized)],
+				source=result.source,
+				allocation=allocation,
+			)
 		self.assertEqual(before, {doctype: frappe.db.count(doctype) for doctype in before})
 		frappe.db.rollback()
