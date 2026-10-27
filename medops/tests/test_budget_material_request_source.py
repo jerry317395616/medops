@@ -2,15 +2,83 @@
 
 from __future__ import annotations
 
+import json
+import os
+import subprocess
+import sys
+import tempfile
 from contextlib import contextmanager
+from pathlib import Path
 from unittest.mock import patch
+from uuid import uuid4
 
 import frappe
 from frappe.tests.utils import FrappeTestCase
+from frappe.utils import get_bench_path
 
+from medops.common.budget_control import budget_control_key, budget_guard_names
 from medops.common.error_catalog import IoneApplicationError
 from medops.hrp_budget.services import material_request_source
 from medops.tests import test_budget_consolidation as source_fixture
+from medops.tests.test_budget_control_guards import synthetic_key, wait_for_file
+
+INVERTED_LOCK_CHILD = r"""
+import json, sys, time
+from pathlib import Path
+import frappe
+from medops.common.budget_control import budget_control_key
+from medops.hrp_budget.services.control_guards import acquire_budget_guards, assert_budget_guards
+from medops.hrp_budget.services.material_request_source import locked_material_request_source
+
+site, request, line, unit, key_json, mode, directory = sys.argv[1:]
+root = Path(directory)
+connected = False
+result = {'status': 'unexpected'}
+def wait_for(name):
+    deadline = time.monotonic() + 35
+    while not (root / name).exists():
+        if time.monotonic() >= deadline:
+            raise TimeoutError('synthetic coordination timed out')
+        time.sleep(0.05)
+try:
+    frappe.init(site=site, sites_path='.')
+    frappe.connect()
+    connected = True
+    frappe.set_user('Administrator')
+    frappe.db.rollback()
+    frappe.db.sql('SET SESSION TRANSACTION ISOLATION LEVEL READ COMMITTED')
+    frappe.db.sql('SET SESSION innodb_lock_wait_timeout = 8')
+    frappe.db.begin()
+    key = budget_control_key(json.loads(key_json))
+    if mode == 'source-first':
+        locked_material_request_source(request, line, unit)
+        (root / 'source-locked').write_text('ready', encoding='utf-8')
+        wait_for('guard-locked')
+        (root / 'source-waiting').write_text('ready', encoding='utf-8')
+        acquire_budget_guards([key])
+    else:
+        acquire_budget_guards([key])
+        (root / 'guard-locked').write_text('ready', encoding='utf-8')
+        wait_for('source-waiting')
+        locked_material_request_source(request, line, unit)
+    assert_budget_guards([key])
+    result = {'status': 'success'}
+except frappe.QueryDeadlockError:
+    result = {'status': 'deadlock'}
+except frappe.QueryTimeoutError:
+    result = {'status': 'timeout'}
+except Exception as error:
+    result = {'status': 'unexpected', 'type': type(error).__name__}
+finally:
+    if connected:
+        try:
+            frappe.db.rollback()
+            result['guard_marker_cleared'] = getattr(frappe.local.db, '_medops_budget_guard_marker', None) is None
+        except Exception as error:
+            result = {'status': 'rollback_failed', 'type': type(error).__name__}
+    frappe.destroy()
+    (root / (mode + '-result')).write_text(json.dumps(result), encoding='utf-8')
+"""
 
 
 class TestBudgetMaterialRequestSource(FrappeTestCase):
@@ -204,6 +272,82 @@ class TestBudgetMaterialRequestSource(FrappeTestCase):
 				other = frappe.local.db
 				other.set_value("Material Request Item", self.line, "amount", "10.000000000")
 				other.rollback()
+
+	def test_reversed_source_and_guard_lock_order_deadlocks_and_rolls_back(self):
+		"""A late source lock can deadlock a transaction that locked source first."""
+		values = synthetic_key(uuid4().hex)
+		guard = budget_control_key(values)
+		names = budget_guard_names([guard])
+		processes = []
+		with self.committed_source_fixture():
+			primary = frappe.local.db
+			before = material_request_source.locked_material_request_source(
+				self.request.name, self.line, self.units["A"]
+			).digest()
+			primary.rollback()
+			for name in names:
+				self.assertEqual(
+					primary.sql("SELECT COUNT(*) FROM `tabSeries` WHERE `name`=%s", (name,))[0][0], 0
+				)
+			with tempfile.TemporaryDirectory(prefix="medops-source-guard-order-") as directory:
+				root = Path(directory)
+
+				def launch(mode):
+					process = subprocess.Popen(
+						[
+							sys.executable,
+							"-c",
+							INVERTED_LOCK_CHILD,
+							frappe.local.site,
+							self.request.name,
+							self.line,
+							self.units["A"],
+							json.dumps(values),
+							mode,
+							directory,
+						],
+						cwd=os.path.join(get_bench_path(), "sites"),
+						stdin=subprocess.DEVNULL,
+						stdout=subprocess.DEVNULL,
+						stderr=subprocess.DEVNULL,
+					)
+					processes.append(process)
+					return process
+
+				try:
+					source_first = launch("source-first")
+					wait_for_file(root / "source-locked", source_first, timeout=35)
+					guard_first = launch("guard-first")
+					wait_for_file(root / "guard-locked", guard_first, timeout=35)
+					self.assertEqual(source_first.wait(timeout=35), 0)
+					self.assertEqual(guard_first.wait(timeout=35), 0)
+					outcomes = [
+						json.loads((root / f"{mode}-result").read_text(encoding="utf-8"))
+						for mode in ("source-first", "guard-first")
+					]
+					self.assertCountEqual([item["status"] for item in outcomes], ["deadlock", "success"])
+					self.assertTrue(all(item.get("guard_marker_cleared") for item in outcomes))
+				finally:
+					for process in processes:
+						if process.poll() is None:
+							process.terminate()
+							try:
+								process.wait(timeout=5)
+							except subprocess.TimeoutExpired:
+								process.kill()
+								process.wait(timeout=5)
+			primary.rollback()
+			for name in names:
+				self.assertEqual(
+					primary.sql("SELECT COUNT(*) FROM `tabSeries` WHERE `name`=%s", (name,))[0][0], 0
+				)
+			self.assertEqual(
+				material_request_source.locked_material_request_source(
+					self.request.name, self.line, self.units["A"]
+				).digest(),
+				before,
+			)
+			primary.rollback()
 
 	def test_role_revocation_from_another_transaction_denies_source(self):
 		manager = source_fixture.MANAGER
