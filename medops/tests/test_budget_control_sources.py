@@ -1,13 +1,18 @@
 from __future__ import annotations
 
 from types import SimpleNamespace
+from typing import cast
 from unittest.mock import patch
 
 import frappe
 from frappe.tests import IntegrationTestCase
 
-from medops.common.budget_control import budget_guard_names
-from medops.hrp_budget.services.control_sources import resolve_budget_control_key
+from medops.common.budget_control import budget_control_key, budget_guard_names
+from medops.common.budget_ledger import BudgetReleaseFacts
+from medops.hrp_budget.services.control_sources import (
+	resolve_budget_control_key,
+	resolve_release_control_keys,
+)
 from medops.hrp_budget.services.planning import native_document
 
 
@@ -73,3 +78,48 @@ class TestBudgetControlSources(IntegrationTestCase):
 			self.assertEqual(native_document("User", "administrator", {"name"}).name, canonical)
 		finally:
 			frappe.set_user(previous_user)
+
+	def test_batch_resolves_and_deduplicates_aliases_with_a_call_local_cache(self):
+		first = budget_control_key(input_key())
+		alias = budget_control_key(input_key(organization_unit="UNIT"))
+		fetches = []
+
+		def lookup(doctype, name, fields, *, cache):
+			key = (doctype, name)
+			if key not in cache:
+				fetches.append(key)
+				cache[key] = SimpleNamespace(name=name.upper())
+			return cache[key]
+
+		with (
+			patch(
+				"medops.hrp_budget.services.control_sources.budget_keys_for_release_batch",
+				return_value=(first, alias),
+			),
+			patch("medops.hrp_budget.services.control_sources.native_document", side_effect=lookup),
+		):
+			resolved = resolve_release_control_keys(cast(BudgetReleaseFacts, object()))
+			self.assertEqual(len(resolved), 1)
+			self.assertEqual(resolved[0].organization_unit, "UNIT")
+			self.assertEqual(len(fetches), 7)
+			resolve_release_control_keys(cast(BudgetReleaseFacts, object()))
+			self.assertEqual(len(fetches), 14, "cache must not cross separate calls")
+
+	def test_batch_propagates_read_denial_before_returning_any_keys(self):
+		first = budget_control_key(input_key())
+		second = budget_control_key(input_key(organization_unit="denied"))
+
+		def lookup(doctype, name, fields, *, cache):
+			if doctype == "HRP Organization Unit" and name == "denied":
+				raise PermissionError("synthetic source denial")
+			return SimpleNamespace(name=name)
+
+		with (
+			patch(
+				"medops.hrp_budget.services.control_sources.budget_keys_for_release_batch",
+				return_value=(first, second),
+			),
+			patch("medops.hrp_budget.services.control_sources.native_document", side_effect=lookup),
+		):
+			with self.assertRaises(PermissionError):
+				resolve_release_control_keys(cast(BudgetReleaseFacts, object()))

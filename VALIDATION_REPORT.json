@@ -9,10 +9,10 @@
     "ADR-0031",
     "ADR-0032"
   ],
-  "current_scope": "COD-033 remains In Progress: run 40486315663 passed 448 native tests in both plain and IONE Core environments but failed the zero Error Log gate; savepoint-only cleanup failed on native MyISAM Error Log; exact identity-checked synthetic cleanup has not been native verified. COD-034 prework adds an unconnected MariaDB v3 scope-and-period guard with fail-closed one-shot connection markers. Expected 483 pure/454 native; actual lock, savepoint, commit and rollback tests have not run. A pure overlap check is implemented but does not prove complete data or locking. An unconnected resolver reads persisted reference names with standard read permissions; it has not been native tested and does not validate relationships or grant write authority. Canonical source identity, overlap business validation, reservations, shared release fence, permissions, API and UI remain incomplete. Protected PR and hospital acceptance remain pending. The candidate Required aggregate includes IONE Core but has not been verified on GitHub or the protected branch. Pure release/reversal key derivation is present, but is not integrated with the lock or write service.",
+  "current_scope": "COD-033 remains In Progress: run 40486315663 passed 448 native tests in both plain and IONE Core environments but failed the zero Error Log gate; savepoint-only cleanup failed on native MyISAM Error Log; exact identity-checked synthetic cleanup has not been native verified. COD-034 prework adds an unconnected MariaDB v3 scope-and-period guard with fail-closed one-shot connection markers. Expected 483 pure/456 native; actual lock, savepoint, commit and rollback tests have not run. A pure overlap check is implemented but does not prove complete data or locking. An unconnected resolver reads persisted reference names with standard read permissions; it has not been native tested and does not validate relationships or grant write authority. Canonical source identity, overlap business validation, reservations, shared release fence, permissions, API and UI remain incomplete. Protected PR and hospital acceptance remain pending. The candidate Required aggregate includes IONE Core but has not been verified on GitHub or the protected branch. Pure release/reversal key derivation is present, but is not integrated with the lock or write service. An unconnected release-batch source resolution composes sealed keys with a per-call name cache; it has not been native tested.",
   "checks": {
     "pure_tests_expected": 483,
-    "complete_frappe_tests_expected": 454,
+    "complete_frappe_tests_expected": 456,
     "exact_foundation_pure_tests_passed": 21,
     "native_foundation": {
       "status": "passed",
@@ -674,7 +674,7 @@
     "budget_control_prework": {
       "status": "pure_contracts_and_unconnected_lock_prototype",
       "pure_tests_added": 20,
-      "native_tests_added": 6,
+      "native_tests_added": 8,
       "database_lock_implemented": true,
       "database_lock_native_tested": false,
       "business_writers_use_guard": false,
@@ -702,10 +702,13 @@
       "pure_overlap_check_proves_source_completeness_or_lock": false,
       "reference_name_resolver_implemented": true,
       "reference_name_resolver_native_tested": false,
-      "reference_name_resolver_mocked_tests": 2,
+      "reference_name_resolver_mocked_tests": 4,
       "standard_reader_real_database_alias_test": "added_not_run",
       "release_reversal_key_derivation_implemented": true,
-      "release_reversal_key_derivation_authorizes_write": false
+      "release_reversal_key_derivation_authorizes_write": false,
+      "release_batch_source_resolution_implemented": true,
+      "release_batch_source_resolution_native_tested": false,
+      "release_batch_source_resolution_grants_write_authority": false
     },
     "ci_bootstrap_search_isolation": {
       "status": "implemented_not_retested",
