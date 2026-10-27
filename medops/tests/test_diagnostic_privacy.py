@@ -21,13 +21,35 @@ class TestDiagnosticPrivacy(IntegrationTestCase):
 		created = []
 
 		def rollback_synthetic_diagnostic():
-			# Savepoint rollback affects only this test's writes and never deletes
-			# unrelated Error Logs. An unexpected commit must fail this cleanup.
+			# Native Error Log is MyISAM on MariaDB, so rollback alone cannot remove
+			# it. Delete only a record this invocation inserted and whose identity,
+			# owner, fingerprint and sanitized method still match the returned doc.
 			if frappe.local.db is not db:
 				raise AssertionError("diagnostic test changed its database connection")
 			db.rollback(save_point=savepoint)
-			for name in created:
-				self.assertFalse(db.exists("Error Log", name), "synthetic diagnostic survived rollback")
+			for name, owner, fingerprint in created:
+				row = db.get_value(
+					"Error Log", name, ["name", "owner", "fingerprint", "method"], as_dict=True
+				)
+				if row is None:
+					continue
+				if not fingerprint or (row.name, row.owner, row.fingerprint, row.method) != (
+					name,
+					owner,
+					fingerprint,
+					"QueryDeadlockError",
+				):
+					raise AssertionError("synthetic diagnostic ownership changed; retained")
+				db.delete(
+					"Error Log",
+					{
+						"name": name,
+						"owner": owner,
+						"fingerprint": fingerprint,
+						"method": "QueryDeadlockError",
+					},
+				)
+				self.assertFalse(db.exists("Error Log", name), "synthetic diagnostic cleanup failed")
 
 		self.addCleanup(rollback_synthetic_diagnostic)
 		set_request(path="/api/method/medops.api.v1.finance.release.confirm")
@@ -37,7 +59,7 @@ class TestDiagnosticPrivacy(IntegrationTestCase):
 				raise frappe.QueryDeadlockError(PUBLIC_CANARY)
 			except frappe.QueryDeadlockError:
 				immediate = frappe.log_error(PUBLIC_CANARY, defer_insert=False)
-				created.append(immediate.name)
+				created.append((immediate.name, immediate.owner, immediate.fingerprint))
 				frappe.log_error(PUBLIC_CANARY, defer_insert=True)
 			stored = frappe.get_doc("Error Log", immediate.name)
 			self.assertEqual(stored.owner, frappe.session.user)

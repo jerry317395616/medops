@@ -9,7 +9,7 @@
 		"ADR-0031",
 		"ADR-0032"
 	],
-	"current_scope": "COD-033 In Progress. GitHub run 40486315663 ran 448 native tests successfully in both plain and IONE Core environments, without bootstrap search-index queueing; both jobs failed the zero Error Log gate with one QueryDeadlockError each. Timestamp and method align with the immediate synthetic diagnostic test, but the ephemeral rows were not inspected directly. Test-local savepoint cleanup is implemented but not yet verified in native CI. Protected CI, native browser, full release and hospital acceptance remain pending. The candidate Required aggregate now includes IONE Core; its actual GitHub and protected-branch behavior remain unverified.",
+	"current_scope": "COD-033 In Progress. GitHub run 40486315663 ran 448 native tests successfully in both plain and IONE Core environments, without bootstrap search-index queueing; both jobs failed the zero Error Log gate with one QueryDeadlockError each. Timestamp and method align with the immediate synthetic diagnostic test, but the ephemeral rows were not inspected directly. Savepoint-only cleanup failed in native CI because the pinned Error Log uses MyISAM; exact identity-checked synthetic cleanup is implemented but not yet native tested. Protected CI, native browser, full release and hospital acceptance remain pending. The candidate Required aggregate now includes IONE Core; its actual GitHub and protected-branch behavior remain unverified.",
 	"checks": {
 		"pure_tests_expected": 463,
 		"complete_frappe_tests_expected": 448,
@@ -693,6 +693,13 @@
 			"timestamp_matches_synthetic_diagnostic_test": true,
 			"row_identity_directly_verified": false,
 			"cleanup": "test-local savepoint rollback and exact created-name absence check",
+			"followup_run": 40493519583,
+			"followup_core_native_tests": 448,
+			"followup_core_failures": 1,
+			"followup_failure": "synthetic Error Log survived savepoint rollback",
+			"pinned_frappe_error_log_engine": "MyISAM",
+			"candidate_cleanup": "rollback transactional writes; delete only the recorded synthetic Error Log after verifying name, owner, fingerprint and sanitized method",
+			"candidate_native_retested": false,
 			"zero_error_log_gate_unchanged": true,
 			"original_errors_deleted_by_ci": false
 		}
