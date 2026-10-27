@@ -9,10 +9,10 @@
 		"ADR-0031",
 		"ADR-0032"
 	],
-	"current_scope": "COD-033 remains In Progress and pending full release gates. COD-034 parallel prework adds pure budget-key and exact availability contracts only; no database lock, persisted reservation, API, UI or production budget authority. Expected 467 pure/448 native. Core compatibility CI, full native, protected PR and hospital acceptance remain pending.",
+	"current_scope": "COD-033 remains In Progress and pending full release gates. COD-034 parallel prework adds exact budget contracts and an unconnected MariaDB transaction guard prototype using Frappe tabSeries. Expected 471 pure/450 native; lock native tests have not run and no business reservation, shared release fence, permissions, API or UI exists. Core compatibility CI, protected PR and hospital acceptance remain pending.",
 	"checks": {
-		"pure_tests_expected": 467,
-		"complete_frappe_tests_expected": 448,
+		"pure_tests_expected": 471,
+		"complete_frappe_tests_expected": 450,
 		"exact_foundation_pure_tests_passed": 21,
 		"native_foundation": {
 			"status": "passed",
@@ -670,14 +670,19 @@
 			"real_hospital_acceptance": false
 		},
 		"budget_control_prework": {
-			"status": "pure_contracts_only",
-			"pure_tests_added": 6,
-			"database_lock_implemented": false,
+			"status": "pure_contracts_and_unconnected_lock_prototype",
+			"pure_tests_added": 10,
+			"native_tests_added": 2,
+			"database_lock_implemented": true,
+			"database_lock_native_tested": false,
+			"business_writers_use_guard": false,
 			"persisted_reservation_implemented": false,
 			"api_or_ui_implemented": false,
 			"concurrent_acceptance": false,
 			"release_reversal_shared_fence": false,
-			"hospital_acceptance": false
+			"hospital_acceptance": false,
+			"canonical_database_reference_resolution": false,
+			"alias_race_test_pending": true
 		}
 	},
 	"previous_verified_release": {

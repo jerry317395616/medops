@@ -29,6 +29,7 @@ KEY_FIELDS = frozenset(
 BALANCE_FIELDS = frozenset(
 	{"approved", "adjustment_in", "adjustment_out", "reserved", "committed", "actual", "released"}
 )
+MAX_CONTROL_KEYS = 1000
 
 
 @dataclass(frozen=True, slots=True)
@@ -68,7 +69,7 @@ class BudgetControlKey:
 
 
 def budget_control_key(value: object) -> BudgetControlKey:
-	"""Normalize every BR-BUD-002 dimension; absent project is explicit."""
+	"""Normalize lexical dimensions; this does not resolve database identities."""
 	data = object_payload(value, set(KEY_FIELDS))
 	if set(data) != KEY_FIELDS:
 		raise ValueError("complete budget key required")
@@ -84,6 +85,21 @@ def budget_control_key(value: object) -> BudgetControlKey:
 		),
 		period_index=normalize_positive_integer(data["period_index"], label="period_index"),
 	)
+
+
+def ordered_budget_keys(value: object) -> tuple[BudgetControlKey, ...]:
+	"""Validate the entire lock set before writing, then impose one global order."""
+	if not isinstance(value, (tuple, list)) or not 1 <= len(value) <= MAX_CONTROL_KEYS:
+		raise ValueError("bounded nonempty budget keys required")
+	keys: dict[str, BudgetControlKey] = {}
+	for key in value:
+		if type(key) is not BudgetControlKey:
+			raise ValueError("canonical budget keys required")
+		identity = key.identity
+		if identity in keys and keys[identity] != key:
+			raise ValueError("budget key identity collision")
+		keys[identity] = key
+	return tuple(keys[identity] for identity in sorted(keys))
 
 
 def available_budget(value: object, precision: int) -> str:

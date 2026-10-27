@@ -2,12 +2,14 @@ from __future__ import annotations
 
 import unittest
 from decimal import Decimal, localcontext
+from unittest.mock import PropertyMock, patch
 
 from medops.common.budget_control import (
 	BudgetControlKey,
 	available_budget,
 	budget_control_key,
 	fits_available_budget,
+	ordered_budget_keys,
 )
 from medops.common.exact_money import ExactMoneyError
 
@@ -73,6 +75,36 @@ class BudgetControlContractTest(unittest.TestCase):
 			BudgetControlKey(**key(period_index=True))
 		with self.assertRaises(ValueError):
 			BudgetControlKey(**key(company=" Hospital Co "))
+
+	def test_multi_key_guard_order_is_deterministic_and_duplicate_free(self):
+		first = budget_control_key(key())
+		second = budget_control_key(key(organization_unit="Department B"))
+		third = budget_control_key(key(period_index=2))
+		one = ordered_budget_keys([first, second, third, first])
+		two = ordered_budget_keys([third, second, first])
+		self.assertEqual(one, two)
+		self.assertEqual(len(one), 3)
+		self.assertEqual([item.identity for item in one], sorted(item.identity for item in one))
+
+	def test_guard_key_input_is_bounded_and_rejects_noncanonical_types(self):
+		valid = budget_control_key(key())
+		for invalid in ([], [valid, key()], [valid] * 1001, iter([valid])):
+			with self.subTest(value_type=type(invalid).__name__), self.assertRaises(ValueError):
+				ordered_budget_keys(invalid)
+
+	def test_guard_key_hash_collision_fails_closed(self):
+		first = budget_control_key(key())
+		second = budget_control_key(key(organization_unit="Department B"))
+		with patch.object(BudgetControlKey, "identity", new_callable=PropertyMock, return_value="0" * 64):
+			with self.assertRaisesRegex(ValueError, "identity collision"):
+				ordered_budget_keys([first, second])
+
+	def test_lexical_aliases_are_not_mistaken_for_database_identity_resolution(self):
+		original = budget_control_key(key(organization_unit="Department A"))
+		alias = budget_control_key(key(organization_unit="department a"))
+		self.assertNotEqual(original.identity, alias.identity)
+		# A future service must resolve both to the actual persisted document name
+		# before acquiring any guard; this pure function cannot determine collation.
 
 	def test_formula_uses_complete_components_and_does_not_mutate_input(self):
 		values = components()
