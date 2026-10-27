@@ -9,7 +9,7 @@
 		"ADR-0031",
 		"ADR-0032"
 	],
-	"current_scope": "COD-033 In Progress. c0eea4c full456 local quality,1449 committed blobs and full446 native PASSED; all9 preserved-state guards passed. Native isolated backup/restore PASSED across984 tables/113143 rows with only the native System Settings.modified timestamp difference retained. All14802 completed encrypted receipts valid; authorized statement220 rows/first50 identical. Source has0 attachments; separate positive native file lab restored1 public/1 private file with exact content/permissions. All18 final checks passed: source data/configuration/services/roles/queues preserved; default386,short0,long0,workers0; no added DB restart. Initial operator config-API and strict-equality failures retained; corrected relative archive context verified, original artifacts preserved. Only frontendJS/docs changed after c0ee; actual new-page validation pending. Public8291 unchanged. Capacity/UI/protectedCI/promotion and whole HRP remain incomplete.",
+	"current_scope": "COD-033 In Progress. c0ee full456 local/1449 blobs/full446 native passed;9 guards passed. Isolated recovery984tables/113143rows/14802encrypted receipts passed with only native System Settings.modified timestamp retained. Actual e87d901 UI accepted eligible-source to Prepared creation, same-value filter retention, missing-required clear/export disable, native scope narrowing B403/A200 and exact restoration. Financial delta1/0/0/0;2source lines in snapshot;no authorization,posting orOutbox. Native deletion cleanup for only the newly removed restriction executed in isolated long queue;original386default IDs/order retained,long0,workers0. Both benches/configs/existing services unchanged;public8291. Link validation settling/first-query UX,directory performance,new-source positive file export,protectedCI/promotion and whole HRP remain incomplete.",
 	"checks": {
 		"pure_tests_expected": 456,
 		"complete_frappe_tests_expected": 446,
@@ -59,7 +59,7 @@
 				"Outbox stale-snapshot full transaction retry"
 			]
 		},
-		"current_local_quality": "Full456 passed atc0ee,1449 committed blobs; later two-page JS/docs scoped QA passed atd0c42e8. Current documentation update requires scoped checks.",
+		"current_local_quality": "Full456 passed atc0ee;backend Python/models/tests identical through e87. e87 scoped contract/package/checksums/governance and1449committed blobs passed;JS static proofd0 unchanged. Current docs-only checkpoint requires scoped checks.",
 		"runtime_native_partial": {
 			"source_commit": "daaed16f7765c0fb2e796fa100ca817970585499",
 			"passed_counts": [
@@ -1082,18 +1082,195 @@
 		}
 	],
 	"operations_link_filter_followup": {
-		"status": "implemented; ESLint/Prettier passed; browser validation pending",
+		"status": "observable browser behavior passed at e87d901 with explicit limits",
 		"file": "medops/hrp_budget/page/hrp_budget_operations/hrp_budget_operations.js",
 		"trigger": "Native Link validation can invoke onchange again with an identical value; operations page previously invalidated every callback.",
 		"result": "Bind current normalized filter signature during queries and programmatic record loads; invalidate only on an actual filter change.",
 		"server_api_permission_or_financial_changes": false,
 		"native_full_source_left_frozen": "c0eea4c3e1fc40f05c7a7a10bc6a6eb2dc1c7572",
-		"not_yet_deployed_to_validation_site": true,
+		"not_yet_deployed_to_validation_site": false,
 		"files": [
 			"medops/hrp_budget/page/hrp_budget_operations/hrp_budget_operations.js",
 			"medops/hrp_budget/page/hrp_budget_statements/hrp_budget_statements.js"
 		],
 		"missing_required_filters_clear_previous_results_and_export": true,
-		"browser_validation_pending": true
-	}
+		"browser_validation_pending": false,
+		"verified_source_commit": "e87d9011e768043a6019e989803a75f32b384889",
+		"browser_proof": "cod033-e87d901-ui-browser-observations.json",
+		"same_value_reentry_preserved_current_results": true,
+		"missing_required_query_cleared_results_and_export": true,
+		"scope_limit": "Native Link input values sometimes needed to settle before query; no universal first-click/latency guarantee. Current positive exported file not repeated."
+	},
+	"operator_ui_acceptance": {
+		"status": "passed",
+		"source_commit": "e87d9011e768043a6019e989803a75f32b384889",
+		"native_backend_base": "c0eea4c3e1fc40f05c7a7a10bc6a6eb2dc1c7572",
+		"fresh_loopback_browser_origin": true,
+		"existing_synthetic_actors_only": true,
+		"eligible_source_first_query_returned_first50": true,
+		"operations_same_year_value_preserved_50_source_buttons": true,
+		"approved_source_to_prepared_release_ui_completed": true,
+		"new_record_displayed_source_lines": 2,
+		"new_record_displayed_status": "Prepared",
+		"authorization_and_posting_fields_displayed_empty": true,
+		"operations_missing_year_prompt_and_old_results_clear": true,
+		"manager_statement_first_page": {
+			"total_rows": 220,
+			"returned_rows": 50
+		},
+		"statement_same_year_kept_table_and_export_state": true,
+		"statement_missing_currency_prompt_cleared_table_and_disabled_export": true,
+		"existing_maker_statement_first_page": {
+			"total_rows": 220,
+			"returned_rows": 50
+		},
+		"existing_maker_export_failed_with_explicit_ui_hint": true,
+		"scope_validation": {
+			"baseline_synthetic_actor_could_read_A_and_B": true,
+			"baseline_B_success_not_counted_as_access_control_failure": true,
+			"native_User_Permission_temporarily_narrowed_only_this_actor_to_A": true,
+			"B_then_denied_and_old_table_export_cleared": true,
+			"A_still_readable_with_same_restriction": true,
+			"all_original_User_Permission_rows_restored_verified_by_private_native_helper": true,
+			"new_user_grants": false
+		},
+		"synthetic_manager_logged_out_via_native_ui": true,
+		"synthetic_maker_logged_out_via_native_ui": true,
+		"temporary_created_tab_closed": true,
+		"screenshots": [
+			"cod033-e87d901-ui-created-prepared.png",
+			"cod033-e87d901-ui-missing-filter.png",
+			"cod033-e87d901-ui-scope-denied.png"
+		],
+		"native_data_and_http_counter_proof": "cod033-e87d901-recovery-ui-integrity-v3.json",
+		"temporary_loopback_service_and_local_tunnel_stopped": true,
+		"only_new_native_permission_delete_cleanup_job_processed": true,
+		"original_default386_jobs_exactly_retained": true,
+		"limits": [
+			"Native Link validation sometimes required waiting for the value to settle before a new query; no universal first-click or latency guarantee.",
+			"No positive export file repeated at this source; prior e311174 browser XLSX proof retains its own source.",
+			"Directory performance and hospital-scale capacity not accepted; no protected CI or public promotion."
+		]
+	},
+	"operator_ui_integrity": {
+		"status": "passed",
+		"commit": "e87d9011e768043a6019e989803a75f32b384889",
+		"native_backend_base": "c0eea4c3e1fc40f05c7a7a10bc6a6eb2dc1c7572",
+		"checks": {
+			"old_budget_rows_unchanged": true,
+			"existing_user_profile_roles_unchanged": true,
+			"financial_model_delta_exact": true,
+			"prepared_record_read_only_verification": true,
+			"original_queues_gl_stock_roles_and_settings_unchanged": true,
+			"actual_create_200_exactly_once": true,
+			"actual_read_and_cross_scope_denial_statuses_present": true,
+			"actual_export_denied_without_new_grants": true,
+			"original_user_permission_rows_restored": true,
+			"temporary_loopback_helper_stopped": true,
+			"all_preexisting_frappe_service_states_and_pids_unchanged": true,
+			"only_owned_native_permission_delete_cleanup_completed": true,
+			"preexisting_configs_and_both_bench_source_versions_unchanged": true
+		},
+		"financial_model_delta": {
+			"HRP Budget Release": 1,
+			"HRP Budget Release Entry": 0,
+			"HRP Budget Ledger": 0,
+			"HRP Integration Outbox": 0
+		},
+		"persisted_record": {
+			"status": "passed",
+			"created_prepared_release": 1,
+			"source_snapshot_lines": 2,
+			"authorization_revision_event_rows": 0,
+			"created_release_ledger_rows": 0,
+			"authorization_fields_empty": true,
+			"posted_timestamp_empty": true,
+			"reason_and_actor_match": true,
+			"read_only_connection": true,
+			"financial_amounts_or_private_values_returned": false
+		},
+		"prior_operator_assertion_failure_preserved": true,
+		"route_counters": {
+			"release.eligible_sources": {
+				"count": 1,
+				"statuses": [
+					"200"
+				]
+			},
+			"release.create": {
+				"count": 1,
+				"statuses": [
+					"200"
+				]
+			},
+			"release.get_record": {
+				"count": 1,
+				"statuses": [
+					"200"
+				]
+			},
+			"release.list_records": {
+				"count": 1,
+				"statuses": [
+					"200"
+				]
+			},
+			"ledger.statement": {
+				"count": 5,
+				"statuses": [
+					"200",
+					"200",
+					"200",
+					"403",
+					"200"
+				]
+			},
+			"ledger.export_statement": {
+				"count": 1,
+				"statuses": [
+					"403"
+				]
+			}
+		},
+		"queue_counts": {
+			"short": 0,
+			"default": 386,
+			"long": 0
+		},
+		"workers": 0,
+		"public_sites_untouched": true,
+		"new_user_grants": false,
+		"financial_amounts_or_private_values_returned": false,
+		"scope": "Native cleanup job from deleting only the new temporary test restriction was moved atomically to the empty long queue and processed by a standard burst worker. All original386 default IDs exactly retained. Source/browser evidence remains e87d901;public unchanged.",
+		"native_delete_cleanup": {
+			"status": "passed",
+			"checks": {
+				"original_default_queue_exactly_retained": true,
+				"owned_long_queue_empty": true,
+				"short_queue_unchanged": true,
+				"workers_stopped": true,
+				"native_job_finished": true,
+				"permissions_financial_gl_stock_error_counts_unchanged": true
+			},
+			"processed_jobs": 1,
+			"native_method": "frappe.model.delete_doc.delete_dynamic_links",
+			"reference_is_only_newly_removed_synthetic_User_Permission": true,
+			"standard_rq_worker": true,
+			"original_default_jobs": 386,
+			"queue_counts": {
+				"default": 386,
+				"long": 0,
+				"short": 0
+			},
+			"payload_values_returned": false
+		},
+		"prior_strict_queue_check_failure_preserved": true,
+		"proof": "cod033-e87d901-recovery-ui-integrity-v3.json"
+	},
+	"next_unblocked_tasks": [
+		"Native Link input settling/first-query UX and directory performance on a fixed dataset",
+		"Positive browser XLSX acceptance at final source;prior e311 proof not relabeled",
+		"ProtectedCI and complete release/promotion gates;no partial releasePR",
+		"COD034/035 and remainingHRP;actual hospital capacity/interfaces/UAT"
+	]
 }
