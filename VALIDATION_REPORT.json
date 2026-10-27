@@ -746,7 +746,10 @@
       "guarded_release_inventory_native_tested": false,
       "guarded_release_inventory_complete_for_all_event_types": false,
       "guarded_release_history_compatibility_implemented": true,
-      "guarded_release_history_compatibility_native_tested": false
+      "guarded_release_history_compatibility_native_tested": false,
+      "focused_budget_ci_implemented": true,
+      "focused_budget_ci_executed": false,
+      "focused_budget_ci_replaces_required": false
     },
     "ci_bootstrap_search_isolation": {
       "status": "implemented_not_retested",
