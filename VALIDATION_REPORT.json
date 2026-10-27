@@ -9,7 +9,7 @@
 		"ADR-0031",
 		"ADR-0032"
 	],
-	"current_scope": "COD-033 In Progress. Local9d4727a passed455 quality and1449 committed blob checks. Same459 candidates:77.527s/88042 SQL at162 baseline,61.792s/63225 SQL at9d with identical candidate/list/page digests and all protected state unchanged; failed complete-document cache removed. First targeted native at9d safely rejected explicit refresh within active outer graph; shared authority guard requires no active graph. New candidate clears and suspends outer graph during owned RO authority refresh, restores empty context even on failure; financial command guard unchanged. Current inventory456 pure/446 native, verification pending. Prior full443 had440passed/3 fixture or catalog failures;all9guards true. Three fixes and real INFO audit sink fix await current native validation. Public8291 unchanged. Hospital capacity/interfaces/UAT, UI eligible-source creation, full new native run, backup/CI/promotion incomplete.",
+	"current_scope": "COD-033 In Progress. Source86ba9b0 passed full456 local quality,1449 committed blob checks and all6 targeted native cases (outer-graph authority refresh,scope memo/revocation,real audit file plus3 prior fixture/catalog failures). All9 preserved-state checks true. Full446 native suite running on frozen private source86, PID3683057. Same459 profile at9d measured61.792s/63225 SQL versus16277.527s/88042 SQL, identical candidate/list/page digests, all protected state unchanged. Complete-document cache removed; only immutable authority results memoized in owned RO actor/connection/phase. Public8291 unchanged. Hospital capacity/interfaces/UAT, UI eligible-source creation, backup/CI/promotion incomplete.",
 	"checks": {
 		"pure_tests_expected": 456,
 		"complete_frappe_tests_expected": 446,
@@ -34,9 +34,9 @@
 			"migrations": 0
 		},
 		"protected_ci": "not run for COD-033",
-		"local_quality": "9d4727a full455 passed; current authority-refresh correction adds one pure case, full456 pending",
-		"pure_tests_passed": 455,
-		"complete_frappe_tests": "446 expected for current candidate; prior443 had3 test fixture/catalog failures, fixed and awaiting revalidation",
+		"local_quality": "86ba9b0 full456 passed, all quality steps and1449 committed blobs passed",
+		"pure_tests_passed": 456,
+		"complete_frappe_tests": "Full446 running at86ba9b0; all6 targeted cases passed; prior162 full443 had440passing/3test failures now individually fixed and passed",
 		"current_protocol": {
 			"status": "full local quality passed",
 			"tests": 11,
@@ -817,21 +817,19 @@
 		"coverage_limit": "Injected after native HTTPRequest construction and before before_request; earlier connection/session-constructor branches and proxy/server sinks not certified."
 	},
 	"full_native_suite": {
-		"status": "failed",
-		"expected_tests": 443,
-		"commit": "1627858250777ed0b34149459a61717ad7fcee57",
-		"driver_pid": 2330748,
-		"proof_when_complete": "cod033-1627858-full-native-suite-memory4g.json",
-		"first_attempt": "failed after7 tests/73 cascading errors due confirmed isolated-database cgroup OOM; nine recovery integrity checks passed",
-		"resource_change": "private database memory limit1.5GiB to4GiB,live update,compose persisted;no restart or public service change",
-		"completed_tests": 443,
-		"passed_tests": 440,
-		"failures": 3,
-		"all_preserved_state_checks_passed": true,
-		"proof": "cod033-1627858-full-native-suite-memory4g.json"
+		"status": "running",
+		"expected_tests": 446,
+		"commit": "86ba9b00f0db3a6b978135c4ee263b78d8778ab7",
+		"driver_pid": 3683057,
+		"proof_when_complete": "cod033-86ba9b0-full-native-suite-authority-read.json",
+		"source_frozen_during_run": true,
+		"public_sites_untouched": true,
+		"prior_privacy_evidence_source": "1627858250777ed0b34149459a61717ad7fcee57",
+		"diagnostic_source_identical_to_prior_cookie_csrf_probe": true,
+		"scope_limit": "Native full suite is still pending. Performance capacity, actual UI, backup, protected CI, hospital interfaces/UAT and promotion remain separate."
 	},
 	"pending_read_optimization": {
-		"status": "same459 profile passed at9d; explicit authority-refresh native correction pending",
+		"status": "measured61.792s at9d; two current native authority/cache cases passed at86; full446 running",
 		"rejected_prototype": {
 			"source": "33709af",
 			"candidates": 459,
@@ -878,11 +876,12 @@
 			"cause": "shared authority reader refuses an active graph, even when cleared",
 			"all9_preserved_state_checks_passed": true,
 			"correction": "owned RO statement adapter suspends graph during fresh authority read and restores empty context, including exception paths; financial guard unchanged",
-			"verification_pending": true
+			"verification_pending": false,
+			"corrected_native_tests_passed": 2
 		}
 	},
 	"full_native_failure_fixes": {
-		"status": "implemented; runtime revalidation pending",
+		"status": "All3 formerly failed tests passed individually at86; full446 running",
 		"change_governance": "Compare HTTP counts with actual change/ADR catalogs instead of obsolete34/29 constants.",
 		"planning_fixtures": "Per-test HTTP idempotency namespace and unique fund code preserve within-test replay while avoiding prior committed fixtures/expired receipts.",
 		"history_fixtures": "Unique quality rule/initial-evaluation identity; verify recorded zero separately from a day before real capture epoch and from future unknown coverage.",
@@ -897,7 +896,39 @@
 		"fix": "Set only validated named MedOps audit logger to INFO; native/global levels untouched; sensitive fields rejected before logger creation.",
 		"native_real_file_case_added": 1,
 		"native_tests_expected_for_candidate": 446,
-		"runtime_fix_verification_pending": true,
-		"historical_records_backfilled": false
+		"runtime_fix_verification_pending": false,
+		"historical_records_backfilled": false,
+		"verified_source_commit": "86ba9b00f0db3a6b978135c4ee263b78d8778ab7",
+		"real_file_native_case_passed": true
+	},
+	"previous_full_native_suite": {
+		"status": "failed",
+		"expected_tests": 443,
+		"commit": "1627858250777ed0b34149459a61717ad7fcee57",
+		"driver_pid": 2330748,
+		"proof_when_complete": "cod033-1627858-full-native-suite-memory4g.json",
+		"first_attempt": "failed after7 tests/73 cascading errors due confirmed isolated-database cgroup OOM; nine recovery integrity checks passed",
+		"resource_change": "private database memory limit1.5GiB to4GiB,live update,compose persisted;no restart or public service change",
+		"completed_tests": 443,
+		"passed_tests": 440,
+		"failures": 3,
+		"all_preserved_state_checks_passed": true,
+		"proof": "cod033-1627858-full-native-suite-memory4g.json"
+	},
+	"targeted_read_audit_and_fixture_validation": {
+		"status": "passed",
+		"source_commit": "86ba9b00f0db3a6b978135c4ee263b78d8778ab7",
+		"tests": 6,
+		"native_counts": [
+			1,
+			1,
+			1,
+			1,
+			1,
+			1
+		],
+		"all9_preserved_state_checks_passed": true,
+		"proof": "cod033-86ba9b0-read-optimization-focused.json",
+		"complete_native_suite_not_replaced": true
 	}
 }
