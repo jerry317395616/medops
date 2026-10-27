@@ -252,7 +252,7 @@ class TestBudgetMaterialAuthorizationObservation(IntegrationTestCase):
 			with self.assertRaises(IoneApplicationError):
 				assert_budget_guards([item.key])
 
-	def verify_progressed_source(self, *, financial_change=False):
+	def verify_progressed_source(self, *, financial_change=False, backdated_field=None):
 		historical, item, root, events, confirmation, decision = synthetic_rows()
 		current = replace(
 			historical,
@@ -260,6 +260,8 @@ class TestBudgetMaterialAuthorizationObservation(IntegrationTestCase):
 			request_modified="2026-01-02 09:00:00",
 			amount="31.000000000" if financial_change else historical.amount,
 		)
+		if backdated_field:
+			current = replace(current, **{backdated_field: "2025-12-31 23:59:59"})
 		self.insert_row("tabHRP Budget Reservation", root)
 		self.insert_row("tabHRP Budget Reservation Event", events[0])
 		self.insert_row("tabHRP Budget Reservation Authorization", confirmation)
@@ -277,7 +279,7 @@ class TestBudgetMaterialAuthorizationObservation(IntegrationTestCase):
 			positions = material_usage_sources.guarded_verify_provisional_material_usage_sources(
 				[item.key], (current,), discovered=discovered
 			)
-			if financial_change:
+			if financial_change or backdated_field:
 				with self.assertRaises(IoneApplicationError):
 					observation.verify_guarded_initial_authorizations([item.key], (current,), positions)
 				with self.assertRaises(IoneApplicationError):
@@ -295,3 +297,9 @@ class TestBudgetMaterialAuthorizationObservation(IntegrationTestCase):
 
 	def test_historical_decision_rejects_changed_financial_source(self):
 		self.verify_progressed_source(financial_change=True)
+
+	def test_historical_decision_rejects_backdated_parent(self):
+		self.verify_progressed_source(backdated_field="request_modified")
+
+	def test_historical_decision_rejects_backdated_line(self):
+		self.verify_progressed_source(backdated_field="line_modified")

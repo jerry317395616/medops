@@ -188,6 +188,11 @@ def compare_material_source_history(
 	progress = {"request_modified", "line_modified", "status"}
 	if any(historical[field] != current[field] for field in SOURCE_FIELDS - progress):
 		raise ValueError("material source financial facts changed")
+	if any(
+		datetime.fromisoformat(current[field]) < datetime.fromisoformat(historical[field])
+		for field in ("request_modified", "line_modified")
+	):
+		raise ValueError("material source modification time regressed")
 	_, current_digest = material_source_snapshot(current)
 	return MaterialSourceComparison(
 		historical_digest=normalize_sha256(expected_digest, label="expected_digest"),
