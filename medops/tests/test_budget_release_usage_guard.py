@@ -18,6 +18,9 @@ from medops.tests.test_budget_control_guards import synthetic_key
 class TestBudgetReleaseUsageGuard(IntegrationTestCase):
 	def setUp(self):
 		super().setUp()
+		# The owned test starts with a clean transaction. Frappe conservatively
+		# rejects DDL after writes, even for MariaDB connection-local tables.
+		frappe.db.rollback()
 		self.table = "medops_test_usage_" + uuid4().hex
 		self.key = budget_control_key(synthetic_key(uuid4().hex))
 		# This is a connection-local temporary table, not an HRP ledger or model.
@@ -33,6 +36,9 @@ class TestBudgetReleaseUsageGuard(IntegrationTestCase):
 		self.addCleanup(self.registry.stop)
 
 	def tearDown(self):
+		# Roll back synthetic rows before the native implicit-commit guard sees
+		# DROP. The table belongs only to this test connection.
+		frappe.db.rollback()
 		frappe.db.sql(f"DROP TEMPORARY TABLE IF EXISTS `{self.table}`")  # nosec B608 - generated test identifier
 		super().tearDown()
 
