@@ -16,7 +16,7 @@ from medops.common.budget_release_control import ReleaseExecutionLease, release_
 from medops.common.error_catalog import IoneApplicationError
 from medops.common.integration_outbox import OUTBOX
 from medops.hrp_budget.jobs import release as jobs
-from medops.hrp_budget.services import control_release
+from medops.hrp_budget.services import control_inventory, control_release
 from medops.hrp_budget.services import release_execution as execution
 from medops.hrp_budget.services.control_guards import assert_budget_guards
 from medops.hrp_budget.services.release_access import get_release
@@ -536,5 +536,50 @@ class TestBudgetReleaseExecution(FrappeAPITestCase):
 		self.assertEqual({key.organization_unit for key in keys}, {self.units["A"], self.units["B"]})
 		assert_budget_guards(keys)
 		self.assertEqual(frappe.db.count(LEDGER, {"voucher_no": original_release}), 2)
+		self.assertEqual(frappe.db.count(LEDGER, {"voucher_no": self.release}), 0)
+		frappe.db.rollback()
+
+	def test_guarded_release_inventory_reconciles_posted_batches_and_physical_entries(self):
+		self.assertEqual(self.execute(self.claim())["status"], "Posted")
+		original_release = self.release
+		self.login_actor(source_fixture.MANAGER)
+		self.release = self.success(
+			self.post_command(
+				"release.create_reversal",
+				dict(
+					release=original_release,
+					expected_revision=3,
+					posting_date="2026-10-27",
+					reason="合成预算台账核对",
+				),
+			)
+		)["name"]
+		self.authorize()
+		frappe.db.rollback()
+		frappe.set_user("Administrator")
+		frappe.db.sql("SET SESSION TRANSACTION ISOLATION LEVEL READ COMMITTED")
+		frappe.db.begin()
+		revision = int(frappe.db.get_value(RELEASE, self.release, "revision"))
+		keys = control_release.prepare_persisted_release_guards(self.release, revision)
+		entries = control_inventory.guarded_release_inventory(keys)
+		original_names = set(frappe.get_all(LEDGER, filters={"voucher_no": original_release}, pluck="name"))
+		self.assertEqual(len(original_names), 2)
+		self.assertTrue(original_names.issubset({entry.name for entry in entries}))
+		self.assertEqual(
+			{entry.key.organization_unit for entry in entries}, {self.units["A"], self.units["B"]}
+		)
+		original_get_all = frappe.get_all
+
+		def hide_physical_entry(doctype, *args, **kwargs):
+			result = original_get_all(doctype, *args, **kwargs)
+			if doctype == LEDGER and kwargs.get("pluck") == "name" and result:
+				return result[1:]
+			return result
+
+		with patch.object(frappe, "get_all", side_effect=hide_physical_entry):
+			with self.assertRaises(IoneApplicationError):
+				control_inventory.guarded_release_inventory(keys)
+		with self.assertRaises(IoneApplicationError):
+			assert_budget_guards(keys)
 		self.assertEqual(frappe.db.count(LEDGER, {"voucher_no": self.release}), 0)
 		frappe.db.rollback()
