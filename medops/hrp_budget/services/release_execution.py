@@ -92,7 +92,22 @@ def refresh_financial_authority(actor):
 	this batch. Repeated at result validation, after the financial writes.
 	"""
 	require_current_read_transaction()
-	frappe.set_user(actor)
+	if frappe.session.user != actor:
+		# Workers may assume the independently verified decision actor. A live
+		# request must never replace its authenticated user or session.
+		if getattr(frappe.local, "request", None):
+			raise_ione_error("OPERATION_NOT_ALLOWED")
+		frappe.set_user(actor)
+	else:
+		# frappe.set_user() also overwrites the session id, session data and
+		# request form. Refresh the same request-local permission caches without
+		# changing the authenticated session or proof-bearing request carrier.
+		frappe.local.cache = {}
+		frappe.local.jenv_restricted = None
+		frappe.local.jenv_unrestricted = None
+		frappe.local.role_permissions = {}
+		frappe.local.new_doc_templates = {}
+		frappe.local.user_perms = None
 	frappe.db.value_cache.clear()
 	# Use the pinned native role semantics, but read the assignments directly.
 	# Deleting a Redis key alone races with another old transaction repopulating

@@ -95,6 +95,30 @@ def _recheck(item, source, actor, session):
 	_require_actor_scope(item, actor, session)
 
 
+def revalidate_reservation_intent(item, *, actor, session):
+	"""Recheck current access, source and guard, including on idempotent replay.
+
+	The caller must start in an owned transaction and roll back after failure.
+	This does not authorize a reservation or calculate available funds.
+	"""
+	try:
+		require_web_session()
+		_require_actor_scope(item, actor, session)
+		if getattr(frappe.local.db, "_medops_budget_guard_marker", None) is None:
+			_inspect_intent(item, actor, session)
+		else:
+			facts = parse_material_source_snapshot(
+				item.source_snapshot, expected_digest=item.source_snapshot_digest
+			)
+			source = locked_material_request_source(
+				facts["request"], facts["line"], item.key.organization_unit
+			)
+			_recheck(item, source, actor, session)
+	except BaseException:
+		invalidate_budget_guards()
+		raise
+
+
 def _append(item, confirmed, decision=None):
 	with expected_reservation_evidence(item, confirmed, decision) as values:
 		row = frappe.get_doc(dict(doctype=DOCTYPE, **values))

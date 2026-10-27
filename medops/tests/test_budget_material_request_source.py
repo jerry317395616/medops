@@ -9,6 +9,7 @@ import sys
 import tempfile
 from contextlib import contextmanager
 from dataclasses import asdict
+from datetime import datetime, timedelta
 from pathlib import Path
 from unittest.mock import patch
 from uuid import uuid4
@@ -21,6 +22,8 @@ from medops.common.budget_control import budget_control_key, budget_guard_names
 from medops.common.budget_control_history import ReleaseInventoryEntry
 from medops.common.budget_reservation_anchor import ANCHOR_ROW_FIELDS
 from medops.common.budget_reservation_storage import ROW_FIELDS
+from medops.common.budget_workflow import build_human_confirmation
+from medops.common.domain_service import idempotency_record_name
 from medops.common.error_catalog import IoneApplicationError
 from medops.common.material_source_snapshot import compare_material_source_history, material_source_snapshot
 from medops.common.reservation_authorization import (
@@ -33,7 +36,9 @@ from medops.hrp_budget.services import (
 	material_request_source,
 	material_usage_preview,
 	purchase_order_source,
+	release_execution,
 	reservation_confirmation,
+	reservation_confirmation_service,
 )
 from medops.hrp_budget.services.control_guards import acquire_budget_guards, assert_budget_guards
 from medops.hrp_budget.services.material_budget_guards import acquire_material_budget_guards
@@ -327,6 +332,116 @@ class TestBudgetMaterialRequestSource(FrappeTestCase):
 				frappe.session.sid = previous_sid
 				frappe.get_doc("Material Request", self.request.name).cancel()
 				primary.commit()
+
+	def test_authority_refresh_preserves_web_session_and_request_form(self):
+		original_request = getattr(frappe.local, "request", None)
+		original_sid, original_data, original_form = (
+			frappe.session.sid,
+			frappe.session.data,
+			frappe.local.form_dict,
+		)
+		try:
+			set_request(method="POST", path="/")
+			frappe.session.sid = "synthetic-test-web-session"
+			frappe.session.data = frappe._dict(synthetic_session_value="preserve")
+			frappe.local.form_dict = frappe._dict(payload="synthetic-proof-carrier")
+			session_data, form = frappe.session.data, frappe.local.form_dict
+			release_execution.refresh_financial_authority("Administrator")
+			self.assertEqual(frappe.session.user, "Administrator")
+			self.assertEqual(frappe.session.sid, "synthetic-test-web-session")
+			self.assertIs(frappe.session.data, session_data)
+			self.assertIs(frappe.local.form_dict, form)
+			with self.assertRaises(IoneApplicationError):
+				release_execution.refresh_financial_authority("other-synthetic-user")
+			self.assertEqual(frappe.session.user, "Administrator")
+			self.assertEqual(frappe.session.sid, "synthetic-test-web-session")
+			self.assertIs(frappe.local.form_dict, form)
+		finally:
+			frappe.local.request = original_request
+			frappe.session.sid, frappe.session.data, frappe.local.form_dict = (
+				original_sid,
+				original_data,
+				original_form,
+			)
+
+	def test_reservation_domain_services_replay_and_protect_confirmation_proof(self):
+		"""Exercise encrypted receipts and evidence rows; source/session are substituted."""
+		self.request.items[0].rate = 10
+		self.request.items[0].amount = 10
+		self.request.save(ignore_permissions=True)
+		self.request.submit()
+		source = material_request_source.locked_material_request_source(
+			self.request.name, self.line, self.units["A"]
+		)
+		snapshot, digest = material_source_snapshot(asdict(source))
+		values = synthetic_key(uuid4().hex)
+		values.update(
+			company=source.company,
+			hospital=source.hospital,
+			organization_unit=source.organization_unit,
+			project=source.project,
+			period_start="2026-01-01",
+			period_end="2026-12-31",
+		)
+		item = reservation_intent(
+			source_snapshot=snapshot,
+			source_snapshot_digest=digest,
+			allocation="test-allocation",
+			key=budget_control_key(values),
+			currency=source.currency,
+			precision=2,
+			amount="10.00",
+			budget_date="2026-10-26",
+			reason="Synthetic test",
+		)
+		preview_key, confirm_key = "preview-" + uuid4().hex, "confirm-" + uuid4().hex
+		with (
+			patch.object(reservation_confirmation, "require_web_session"),
+			patch.object(reservation_confirmation, "_session", return_value="a" * 64),
+			patch.object(reservation_confirmation, "_inspect_intent", return_value=source),
+			patch.object(reservation_confirmation, "_recheck"),
+			patch.object(reservation_confirmation_service, "require_web_session"),
+			patch.object(reservation_confirmation_service, "session_digest", return_value="a" * 64),
+		):
+			service = reservation_confirmation_service.PrepareReservationConfirmation
+			first = service().execute(item, idempotency_key=preview_key)
+			replay = service().execute(item, idempotency_key=preview_key)
+			self.assertFalse(first.idempotency_replayed)
+			self.assertTrue(replay.idempotency_replayed)
+			self.assertEqual(first.result, replay.result)
+			proof = first.result["proof"]
+			receipt_name = idempotency_record_name(service.definition.name, preview_key)
+			receipt = frappe.get_doc("HRP Service Idempotency", receipt_name)
+			self.assertNotIn(proof, receipt.response_snapshot)
+			with patch.object(reservation_confirmation_service, "session_digest", return_value="b" * 64):
+				with self.assertRaises(IoneApplicationError):
+					service().execute(item, idempotency_key=preview_key)
+			with patch.object(
+				reservation_confirmation_service, "session_digest", side_effect=["a" * 64, "b" * 64]
+			):
+				with self.assertRaises(IoneApplicationError):
+					service().execute(item, idempotency_key=preview_key)
+			expiry = datetime.fromisoformat(str(first.result["expires_at"]))
+			with patch.object(
+				reservation_confirmation_service,
+				"now_datetime",
+				side_effect=[expiry - timedelta(seconds=1), expiry],
+			):
+				with self.assertRaises(IoneApplicationError):
+					service().execute(item, idempotency_key=preview_key)
+			command = build_human_confirmation(
+				{"confirmation": first.result["confirmation"], "proof": proof, "acknowledge": True}
+			)
+			confirm = reservation_confirmation_service.ConfirmReservationDecision
+			decision = confirm().execute(command, idempotency_key=confirm_key)
+			self.assertFalse(decision.idempotency_replayed)
+			future = reservation_confirmation_service.now_datetime() + timedelta(days=1)
+			with patch.object(reservation_confirmation_service, "now_datetime", return_value=future):
+				with self.assertRaises(IoneApplicationError):
+					service().execute(item, idempotency_key=preview_key)
+				repeated = confirm().execute(command, idempotency_key=confirm_key)
+			self.assertTrue(repeated.idempotency_replayed)
+			self.assertEqual(decision.result, repeated.result)
 
 	@contextmanager
 	def committed_source_fixture(self):
