@@ -50,24 +50,45 @@ cd "$BENCH_DIR"
   --correlation-id "FOCUSED-${GITHUB_RUN_ID:-local}-verify"
 bench --site "$SITE_NAME" migrate --skip-search-index
 
-test_log="$BENCH_DIR/logs/focused-budget-tests.log"
+test_log="$BENCH_DIR/logs/focused-release-inventory.log"
 bench --site "$SITE_NAME" run-tests --app medops --module medops.tests.test_budget_release_execution \
-  --test test_persisted_authorized_release_guard_checks_original_units_without_posting \
-  --test test_persisted_release_guard_poisoned_when_actor_check_is_revoked \
-  --test test_persisted_release_guard_detects_role_revocation_from_another_transaction \
-  --test test_persisted_reversal_guard_verifies_the_complete_original_batch \
   --test test_guarded_release_inventory_reconciles_posted_batches_and_physical_entries \
+  --test test_guarded_purchase_match_reads_real_posted_release_without_financial_writes \
   2>&1 | tee "$test_log"
-if ! grep -Eq 'Ran 5 tests? in [0-9.]+s' "$test_log"; then
-  echo "Focused CI did not execute the expected five tests" >&2
+if ! grep -Eq 'Ran 2 tests? in [0-9.]+s' "$test_log"; then
+  echo "Focused CI did not execute both release and purchase tests" >&2
   exit 1
 fi
 
-storage_log="$BENCH_DIR/logs/focused-budget-storage-tests.log"
-bench --site "$SITE_NAME" run-tests --app medops --module medops.tests.test_budget_reservation_storage \
-  --case TestBudgetReservationStorage 2>&1 | tee "$storage_log"
-if ! grep -Eq 'Ran 3 tests? in [0-9.]+s' "$storage_log"; then
-  echo "Focused CI did not execute the expected three storage tests" >&2
+candidate_log="$BENCH_DIR/logs/focused-material-candidates.log"
+bench --site "$SITE_NAME" run-tests --app medops --module medops.tests.test_budget_material_candidates \
+  --case TestBudgetMaterialCandidates 2>&1 | tee "$candidate_log"
+if ! grep -Eq 'Ran 6 tests? in [0-9.]+s' "$candidate_log"; then
+  echo "Focused CI did not execute six guarded candidate tests" >&2
+  exit 1
+fi
+
+source_log="$BENCH_DIR/logs/focused-material-source.log"
+bench --site "$SITE_NAME" run-tests --app medops --module medops.tests.test_budget_material_request_source \
+  --case TestBudgetMaterialRequestSource 2>&1 | tee "$source_log"
+if ! grep -Eq 'Ran 7 tests? in [0-9.]+s' "$source_log"; then
+  echo "Focused CI did not execute seven source tests" >&2
+  exit 1
+fi
+
+observation_log="$BENCH_DIR/logs/focused-reservation-observation.log"
+bench --site "$SITE_NAME" run-tests --app medops --module medops.tests.test_budget_reservation_observation \
+  --case TestBudgetReservationObservation 2>&1 | tee "$observation_log"
+if ! grep -Eq 'Ran 11 tests? in [0-9.]+s' "$observation_log"; then
+  echo "Focused CI did not execute eleven reservation observation tests" >&2
+  exit 1
+fi
+
+guards_log="$BENCH_DIR/logs/focused-budget-guards.log"
+bench --site "$SITE_NAME" run-tests --app medops --module medops.tests.test_budget_control_guards \
+  --case TestBudgetControlGuards 2>&1 | tee "$guards_log"
+if ! grep -Eq 'Ran 9 tests? in [0-9.]+s' "$guards_log"; then
+  echo "Focused CI did not execute nine guard regression tests" >&2
   exit 1
 fi
 
