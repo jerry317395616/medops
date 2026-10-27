@@ -11,6 +11,7 @@ from medops.common.budget_control import (
 	budget_guard_names,
 	fits_available_budget,
 	ordered_budget_keys,
+	require_nonoverlapping_budget_periods,
 )
 from medops.common.exact_money import ExactMoneyError
 
@@ -130,6 +131,45 @@ class BudgetControlContractTest(unittest.TestCase):
 		self.assertEqual(forward, budget_guard_names([second, first]))
 		self.assertEqual(forward, tuple(sorted(forward)))
 		self.assertTrue(all(len(name) <= 100 for name in forward))
+
+	def test_period_check_rejects_inclusive_overlaps_across_years_and_orderings(self):
+		first = budget_control_key(key())
+		for changes in (
+			{"period_start": "2026-01-31", "period_end": "2026-02-28"},
+			{"period_start": "2026-01-10", "period_end": "2026-01-20"},
+			{"fiscal_year": "FY-other"},
+			{"fiscal_year": "FY-other", "period_start": "2026-01-15", "period_end": "2026-02-15"},
+		):
+			other = budget_control_key(key(**changes))
+			for values in ([first, other], [other, first]):
+				with (
+					self.subTest(changes=changes, values=values),
+					self.assertRaisesRegex(ValueError, "overlapping budget periods"),
+				):
+					require_nonoverlapping_budget_periods(values)
+
+	def test_period_check_allows_duplicate_keys_and_adjacent_nonoverlapping_ranges(self):
+		first = budget_control_key(key())
+		second = budget_control_key(key(period_start="2026-02-01", period_end="2026-02-28"))
+		require_nonoverlapping_budget_periods([second, first, first])
+
+	def test_period_check_does_not_merge_distinct_budget_scopes(self):
+		first = budget_control_key(key())
+		for changes in (
+			{"company": "Other"},
+			{"hospital": "Other"},
+			{"organization_unit": "Other"},
+			{"budget_subject": "Other"},
+			{"funding_source": "Other"},
+			{"project": "Other"},
+		):
+			with self.subTest(changes=changes):
+				require_nonoverlapping_budget_periods([first, budget_control_key(key(**changes))])
+
+	def test_period_check_requires_bounded_canonical_keys(self):
+		for values in ([], [key()], [budget_control_key(key())] * 1001):
+			with self.subTest(values_type=type(values).__name__), self.assertRaises(ValueError):
+				require_nonoverlapping_budget_periods(values)
 
 	def test_formula_uses_complete_components_and_does_not_mutate_input(self):
 		values = components()

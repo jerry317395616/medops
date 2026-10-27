@@ -8,6 +8,7 @@ from __future__ import annotations
 
 from dataclasses import asdict, dataclass
 from decimal import Decimal, localcontext
+from itertools import pairwise
 
 from medops.common.budget_planning import object_payload
 from medops.common.domain_service import fingerprint_json
@@ -116,17 +117,39 @@ def budget_guard_names(value: object) -> tuple[str, ...]:
 	ordered = ordered_budget_keys(value)
 	names: set[str] = set()
 	for key in ordered:
-		scope = {
-			"company": key.company,
-			"hospital": key.hospital,
-			"organization_unit": key.organization_unit,
-			"budget_subject": key.budget_subject,
-			"funding_source": key.funding_source,
-			"project": key.project,
-		}
-		names.add(GUARD_SCOPE_PREFIX + fingerprint_json(scope))
+		names.add(GUARD_SCOPE_PREFIX + fingerprint_json(_budget_scope(key)))
 		names.add(GUARD_PERIOD_PREFIX + key.identity)
 	return tuple(sorted(names))
+
+
+def _budget_scope(key: BudgetControlKey) -> dict[str, str | None]:
+	return {
+		"company": key.company,
+		"hospital": key.hospital,
+		"organization_unit": key.organization_unit,
+		"budget_subject": key.budget_subject,
+		"funding_source": key.funding_source,
+		"project": key.project,
+	}
+
+
+def require_nonoverlapping_budget_periods(value: object) -> None:
+	"""Reject different overlapping keys in the same scope, inclusively.
+
+	Callers must supply the complete relevant existing and proposed keys while
+	holding their common scope guards; this pure check proves neither condition.
+	Persisted names must already be resolved, as for budget_guard_names.
+	Exact duplicate keys are one period. Different fiscal-year identities with
+	the same dates are rejected as ambiguous rather than silently merged.
+	"""
+	groups: dict[tuple[str | None, ...], list[BudgetControlKey]] = {}
+	for key in ordered_budget_keys(value):
+		groups.setdefault(tuple(_budget_scope(key).values()), []).append(key)
+	for keys in groups.values():
+		ordered = sorted(keys, key=lambda key: (key.period_start, key.period_end, key.fiscal_year))
+		for previous, current in pairwise(ordered):
+			if current.period_start <= previous.period_end:
+				raise ValueError("overlapping budget periods")
 
 
 def available_budget(value: object, precision: int) -> str:
