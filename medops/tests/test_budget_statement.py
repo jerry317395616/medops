@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 import json
+import subprocess
+import sys
 from contextlib import contextmanager
 from copy import deepcopy
 from decimal import Decimal
@@ -13,6 +15,7 @@ import frappe
 from frappe.core.doctype.user_permission.user_permission import get_user_permissions
 from frappe.custom.doctype.property_setter.property_setter import make_property_setter
 from frappe.tests.test_api import FrappeAPITestCase
+from frappe.utils import get_bench_path
 
 from medops.api.v1.finance import ledger as ledger_api
 from medops.common.budget_ledger import LEDGER, LEDGER_PUBLIC_FIELDS, RELEASE
@@ -272,6 +275,48 @@ class TestBudgetStatement(FrappeAPITestCase):
 		with patch.object(statements, "statement_batches", side_effect=changed_final_set):
 			self.denied(self.statement(), ("IONE-CORE-0005",))
 		self.assertEqual(len(calls), 2)
+
+	def test_committed_release_between_physical_read_and_final_check_is_rejected(self):
+		# Prepare and claim through the actual authorized workflow. An independent
+		# process posts it only after this statement has collected physical rows.
+		self.new_release()
+		self.authorize()
+		receipt = self.claim()
+		message = self.message
+		self.login_actor(ACTOR)
+		original = statements.physical_statement_entries
+		fired = False
+		child = """
+import json, sys
+from frappe.utils.background_jobs import execute_job
+from medops.hrp_budget.jobs.release import EXECUTE_JOB
+site, message, receipt = json.load(sys.stdin)
+result = execute_job(site, EXECUTE_JOB, None, 'COD033 concurrent statement',
+    {'message': message, 'receipt': receipt}, user='Administrator', is_async=True)
+print(json.dumps({'status': result.get('status')}))
+"""
+
+		def post_after_physical(context, *, export=False):
+			nonlocal fired
+			rows = original(context, export=export)
+			if not fired:
+				fired = True
+				result = subprocess.run(
+					[sys.executable, "-c", child],
+					input=json.dumps([frappe.local.site, message, receipt]),
+					text=True,
+					capture_output=True,
+					cwd=f"{get_bench_path()}/sites",
+					timeout=120,
+					check=False,
+				)
+				self.assertEqual(result.returncode, 0, "isolated posting process failed")
+				self.assertEqual(json.loads(result.stdout.strip().splitlines()[-1]), {"status": "Posted"})
+			return rows
+
+		with patch.object(statements, "physical_statement_entries", side_effect=post_after_physical):
+			self.denied(self.statement(), ("IONE-CORE-0005",))
+		self.assertTrue(fired)
 
 	def test_missing_or_tampered_query_rows_cannot_become_partial_totals(self):
 		original = frappe.get_all
