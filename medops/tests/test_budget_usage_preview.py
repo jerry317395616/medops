@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from contextlib import ExitStack
 from dataclasses import asdict, replace
+from types import SimpleNamespace
 from unittest.mock import patch
 from uuid import uuid4
 
@@ -12,8 +13,12 @@ from frappe.tests import IntegrationTestCase
 
 from medops.common.budget_control import budget_control_key
 from medops.common.budget_control_history import ReleaseInventoryEntry
+from medops.common.budget_material_match import PurchaseBudgetCandidate
 from medops.common.error_catalog import IoneApplicationError
+from medops.common.material_source_snapshot import material_source_snapshot
+from medops.common.reservation_authorization import reservation_intent
 from medops.hrp_budget.services import material_usage_preview as preview
+from medops.hrp_budget.services import reservation_confirmation
 from medops.hrp_budget.services.control_guards import (
 	acquire_multi_source_bound_budget_guards,
 	assert_budget_guards,
@@ -115,6 +120,71 @@ class TestBudgetUsagePreview(IntegrationTestCase):
 				proposed_keys=[asdict(self.key)],
 			)
 		return result, stages
+
+	def confirmation_intent(self):
+		snapshot, digest = material_source_snapshot(asdict(self.first))
+		return reservation_intent(
+			source_snapshot=snapshot,
+			source_snapshot_digest=digest,
+			allocation="test-allocation",
+			key=self.key,
+			currency="CNY",
+			precision=2,
+			amount="6.00",
+			budget_date="2026-01-15",
+			reason="Synthetic test",
+		)
+
+	def guarded_confirmation_inspection(self, *args, **kwargs):
+		del args, kwargs
+		binding = (self.first.request, self.first.line, self.first.organization_unit, self.first.digest())
+		acquire_multi_source_bound_budget_guards([self.key], source_bindings=(binding,))
+		return preview.PurchaseUsageInspection(
+			self.first, "2026-01-15", (PurchaseBudgetCandidate(self.key, "CNY", 2),), ()
+		)
+
+	def test_reservation_inspection_rechecks_guard_source_and_scope(self):
+		item = self.confirmation_intent()
+		with (
+			patch.object(reservation_confirmation, "require_web_session"),
+			patch.object(reservation_confirmation, "session_digest", return_value="a" * 64),
+			patch.object(reservation_confirmation, "require_roles"),
+			patch.object(reservation_confirmation, "require_scope") as scopes,
+			patch.object(
+				reservation_confirmation,
+				"inspect_purchase_usage",
+				side_effect=self.guarded_confirmation_inspection,
+			),
+			patch.object(reservation_confirmation, "locked_material_request_source", return_value=self.first),
+			patch.object(reservation_confirmation, "_append", return_value=SimpleNamespace(name="synthetic")),
+		):
+			result = reservation_confirmation.prepare_reservation_confirmation(item)
+			self.assertEqual(result["confirmation"], "synthetic")
+			self.assertGreaterEqual(scopes.call_count, 6)
+			assert_budget_guards([self.key])
+
+	def test_reservation_confirmation_rejects_session_change_and_invalidates_guard(self):
+		item = self.confirmation_intent()
+		with (
+			patch.object(reservation_confirmation, "require_web_session"),
+			patch.object(
+				reservation_confirmation, "session_digest", side_effect=["a" * 64, "a" * 64, "b" * 64]
+			),
+			patch.object(reservation_confirmation, "require_roles"),
+			patch.object(reservation_confirmation, "require_scope"),
+			patch.object(
+				reservation_confirmation,
+				"inspect_purchase_usage",
+				side_effect=self.guarded_confirmation_inspection,
+			),
+			patch.object(reservation_confirmation, "locked_material_request_source", return_value=self.first),
+			patch.object(reservation_confirmation, "_append") as append,
+		):
+			with self.assertRaises(IoneApplicationError):
+				reservation_confirmation.prepare_reservation_confirmation(item)
+			append.assert_not_called()
+			with self.assertRaises(IoneApplicationError):
+				assert_budget_guards([self.key])
 
 	def test_historical_and_proposed_sources_are_checked_before_and_after_releases(self):
 		result, stages = self.run_inspection()

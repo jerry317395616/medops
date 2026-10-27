@@ -22,11 +22,17 @@ from medops.common.budget_reservation_anchor import ANCHOR_ROW_FIELDS
 from medops.common.budget_reservation_storage import ROW_FIELDS
 from medops.common.error_catalog import IoneApplicationError
 from medops.common.material_source_snapshot import compare_material_source_history, material_source_snapshot
+from medops.common.reservation_authorization import (
+	AUTHORIZATION_ROW_FIELDS,
+	reservation_intent,
+	verify_reservation_authorization_rows,
+)
 from medops.hrp_budget.services import (
 	material_budget_guards,
 	material_request_source,
 	material_usage_preview,
 	purchase_order_source,
+	reservation_confirmation,
 )
 from medops.hrp_budget.services.control_guards import acquire_budget_guards, assert_budget_guards
 from medops.hrp_budget.services.material_budget_guards import acquire_material_budget_guards
@@ -170,6 +176,73 @@ class TestBudgetMaterialRequestSource(FrappeTestCase):
 			)
 		).insert(ignore_permissions=True)
 		self.line = self.request.items[0].name
+
+	def test_private_reservation_confirmation_persists_exact_append_only_evidence(self):
+		"""Real documents and MariaDB rows; source inspection is a test substitute."""
+		self.request.items[0].rate = 10
+		self.request.items[0].amount = 10
+		self.request.save(ignore_permissions=True)
+		self.request.submit()
+		source = material_request_source.locked_material_request_source(
+			self.request.name, self.line, self.units["A"]
+		)
+		snapshot, digest = material_source_snapshot(asdict(source))
+		values = synthetic_key(uuid4().hex)
+		values.update(
+			company=source.company,
+			hospital=source.hospital,
+			organization_unit=source.organization_unit,
+			project=source.project,
+			period_start="2026-01-01",
+			period_end="2026-12-31",
+		)
+		item = reservation_intent(
+			source_snapshot=snapshot,
+			source_snapshot_digest=digest,
+			allocation="test-allocation",
+			key=budget_control_key(values),
+			currency=source.currency,
+			precision=2,
+			amount="10.00",
+			budget_date="2026-10-26",
+			reason="Synthetic test",
+		)
+		doctype = reservation_confirmation.DOCTYPE
+		before = frappe.db.count(doctype)
+		with (
+			patch.object(reservation_confirmation, "require_web_session"),
+			patch.object(reservation_confirmation, "_session", return_value="a" * 64),
+			patch.object(reservation_confirmation, "_inspect_intent", return_value=source),
+			patch.object(reservation_confirmation, "_recheck"),
+		):
+			prepared = reservation_confirmation.prepare_reservation_confirmation(item)
+			with self.assertRaises(ValueError):
+				reservation_confirmation.confirm_reservation_confirmation(
+					prepared["confirmation"], "wrong_confirmation_proof_1234567890", True
+				)
+			self.assertEqual(frappe.db.count(doctype), before + 1)
+			result = reservation_confirmation.confirm_reservation_confirmation(
+				prepared["confirmation"], prepared["proof"], True
+			)
+			self.assertEqual(frappe.db.count(doctype), before + 2)
+			first = frappe.get_doc(doctype, prepared["confirmation"])
+			second = frappe.get_doc(doctype, result["decision"])
+			first_row = {field: first.get(field) for field in AUTHORIZATION_ROW_FIELDS}
+			second_row = {field: second.get(field) for field in AUTHORIZATION_ROW_FIELDS}
+			self.assertEqual(verify_reservation_authorization_rows(first_row, second_row)[0], item)
+			with self.assertRaises(IoneApplicationError):
+				second.db_set("acknowledged", 0)
+			with self.assertRaises(IoneApplicationError):
+				reservation_confirmation.confirm_reservation_confirmation(
+					prepared["confirmation"], prepared["proof"], True
+				)
+			self.assertEqual(frappe.db.count(doctype), before + 2)
+			another = reservation_confirmation.prepare_reservation_confirmation(item)
+			with self.assertRaises(IoneApplicationError):
+				reservation_confirmation.confirm_reservation_confirmation(
+					another["confirmation"], another["proof"], True
+				)
+			self.assertEqual(frappe.db.count(doctype), before + 3)
 
 	@contextmanager
 	def committed_source_fixture(self):

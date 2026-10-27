@@ -531,17 +531,11 @@ def _stored_row(value: object) -> dict[str, object]:
 	return row
 
 
-def verify_reservation_authorization_rows(
-	confirmation_row: object, decision_row: object
-) -> tuple[ReservationIntent, ReservationDecision]:
-	"""Verify exact stored projections, but not their human or storage authority.
-
-	The caller must establish immutable controlled insertion, unique consumption,
-	a real authenticated web session, full source access and transactional scope.
-	A self-consistent row pair alone never authorizes a financial action.
-	"""
+def verify_reservation_confirmation_row(
+	confirmation_row: object,
+) -> tuple[ReservationIntent, ReservationConfirmation]:
+	"""Reconstruct a confirmation without treating its contents as authority."""
 	first = _stored_row(confirmation_row)
-	second = _stored_row(decision_row)
 	item = parse_reservation_intent_snapshot(
 		first["intent_snapshot_json"], source_snapshot=first["source_snapshot_json"]
 	)
@@ -555,6 +549,20 @@ def verify_reservation_authorization_rows(
 	)
 	if reservation_authorization_row(item, confirmed) != first:
 		raise ValueError("stored confirmation differs from intent")
+	return item, confirmed
+
+
+def verify_reservation_authorization_rows(
+	confirmation_row: object, decision_row: object
+) -> tuple[ReservationIntent, ReservationDecision]:
+	"""Verify exact stored projections, but not their human or storage authority.
+
+	The caller must establish immutable controlled insertion, unique consumption,
+	a real authenticated web session, full source access and transactional scope.
+	A self-consistent row pair alone never authorizes a financial action.
+	"""
+	item, confirmed = verify_reservation_confirmation_row(confirmation_row)
+	second = _stored_row(decision_row)
 	if not isinstance(second["recorded_at"], str):
 		raise ValueError("canonical decision time required")
 	decision = _decision_record(item, confirmed, second["recorded_at"])
