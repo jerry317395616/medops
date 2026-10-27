@@ -9,9 +9,47 @@ from medops.common.error_catalog import IoneApplicationError
 
 DOCTYPE = "HRP Budget Reservation Event"
 AGGREGATE = "HRP Budget Reservation"
+AUTHORIZATION = "HRP Budget Reservation Authorization"
 
 
 class TestBudgetReservationStorage(FrappeTestCase):
+	def test_reservation_authorization_storage_is_closed_and_has_unique_keys(self):
+		before = frappe.db.count(AUTHORIZATION)
+		doc = frappe.get_doc(dict(doctype=AUTHORIZATION))
+		for action in (
+			lambda: doc.insert(ignore_permissions=True, ignore_links=True, ignore_mandatory=True),
+			doc.db_insert,
+			doc.db_update,
+			lambda: doc.db_set("acknowledged", 1),
+			doc.on_trash,
+			lambda: doc.before_rename("old", "new", False),
+		):
+			with self.subTest(action=action), self.assertRaises(IoneApplicationError):
+				action()
+		self.assertEqual(frappe.db.count(AUTHORIZATION), before)
+		meta = frappe.get_meta(AUTHORIZATION)
+		self.assertFalse(meta.istable or meta.issingle or meta.is_submittable or meta.allow_rename)
+		self.assertEqual(meta.permissions, [])
+		for name in ("intent_snapshot_json", "source_snapshot_json", "proof_hash", "session_digest"):
+			self.assertTrue(meta.get_field(name).hidden and int(meta.get_field(name).permlevel) == 1)
+		for name in ("evidence_key", "confirmation", "one_time_key", "event_digest"):
+			self.assertTrue(meta.get_field(name).unique)
+			self.assertTrue(frappe.db.has_column(AUTHORIZATION, name))
+		rows = frappe.db.sql(
+			"""SELECT COLUMN_NAME, INDEX_NAME, NON_UNIQUE, SEQ_IN_INDEX FROM information_schema.STATISTICS
+			WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME=%s""",
+			("tabHRP Budget Reservation Authorization",),
+			as_dict=True,
+		)
+		indexes = {}
+		for row in rows:
+			if not int(row.NON_UNIQUE):
+				indexes.setdefault(row.INDEX_NAME, []).append((int(row.SEQ_IN_INDEX), row.COLUMN_NAME))
+		unique_columns = {
+			columns[0][1] for columns in indexes.values() if len(columns) == 1 and columns[0][0] == 1
+		}
+		self.assertTrue({"evidence_key", "confirmation", "one_time_key", "event_digest"} <= unique_columns)
+
 	def test_standard_document_writes_are_closed_even_with_permission_bypass(self):
 		before = frappe.db.count(DOCTYPE)
 		doc = frappe.get_doc(dict(doctype=DOCTYPE))

@@ -47,12 +47,17 @@
 		"medops/common/material_source_snapshot.py",
 		"tests/test_material_source_snapshot.py",
 		"doctype_blueprints/hrp_budget/hrp_budget_reservation.json",
-		"medops/hrp_budget/doctype/hrp_budget_reservation/hrp_budget_reservation.json"
+		"medops/hrp_budget/doctype/hrp_budget_reservation/hrp_budget_reservation.json",
+		"medops/common/reservation_authorization.py",
+		"tests/test_reservation_authorization.py",
+		"design/doctype_catalog.csv",
+		"doctype_blueprints/hrp_budget/hrp_budget_reservation_authorization.json",
+		"medops/hrp_budget/doctype/hrp_budget_reservation_authorization/**"
 	],
 	"permissions_impact": "无新API或角色；内部核查先验证当前预算台账读取权限、字段和组织范围，再读取预占结构。预占事件与聚合写入仍关闭。",
-	"migration_impact": "事件表来源名称新增索引；预占聚合新增可选隐藏只读历史来源长文本字段，不回填历史记录。标准站点迁移可能耗时或锁表，须在隔离副本评估、备份并安排维护；本次未对服务器执行迁移。",
+	"migration_impact": "新增无权限且写入关闭的预占授权证据表；事件表新增来源索引；预占聚合新增可选隐藏只读来源快照长文本字段，不回填历史。标准站点迁移须在隔离副本验证并评估大表锁表、备份及维护窗口；本次未对服务器执行迁移。",
 	"rollback_plan": "本次预占写入仍关闭。上线或回退前停止全部受影响写入口和新旧 worker；保留事件证据并核对一致性。索引不能在运行反向查询的版本中移除，否则会拒绝查询；按站点制定备份与迁移回退。",
-	"security_impact": "聚合和事件链只能证明结构一致，不能证明历史源事实、人工审批、事件授权或余额；禁止把返回结果作为业务写入许可。",
+	"security_impact": "预占确认和决定结构仅绑定来源、预算、金额、操作者、会话和凭证摘要，不证明真人授权。证据表无 DocPerm 且拒绝写入；安全确认服务及预算写入均未开放。",
 	"test_plan": [
 		"隔离CI 40578844791通过同预算范围多个采购来源、状态转移及101范围分组等31项专项",
 		"拒绝孤立事件、缺失事件、跨范围父子不一致、未知来源、重复动作与超限并失效预算围栏",
@@ -76,7 +81,8 @@
 		"隔离站点真实提交的合成采购订单与物料申请原生来源读取和取消清理，待执行。",
 		"隔离CI 40587600709通过90项专项含真实合成采购订单；跨订单数量累计、物理索引和范围拒绝的13项新增测试待运行。",
 		"13项规范来源快照及历史状态变化/关键事实变化/独立摘要/预占投影测试；真实订单状态变化与隔离字段迁移待验证。",
-		"隔离CI 40588663313通过103项专项含多订单及真实合成采购订单；历史快照版本另行验证。"
+		"隔离CI 40588663313通过103项专项含多订单及真实合成采购订单；历史快照版本另行验证。",
+		"10项意图/会话/一次性凭证/确认时间/显式同意/历史决定篡改纯逻辑测试；独立证据表原生迁移与拒绝写入待执行。"
 	],
 	"owner": "MedOps Maintainers",
 	"created_on": "2026-10-27",
