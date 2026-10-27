@@ -220,7 +220,13 @@ class TestBudgetUsagePreview(IntegrationTestCase):
 		assert_budget_guards([self.key])
 
 	def test_first_source_does_not_require_a_historical_reservation(self):
-		result, stages = self.run_inspection(discovered=())
+		with patch.object(
+			preview,
+			"verify_guarded_initial_authorizations",
+			wraps=preview.verify_guarded_initial_authorizations,
+		) as authorization_check:
+			result, stages = self.run_inspection(discovered=())
+			authorization_check.assert_called_once()
 		self.assertEqual(result.source, self.second)
 		self.assertEqual(stages, ["discover", "lock", "usage", "releases", "usage"])
 
