@@ -15,9 +15,10 @@ from uuid import uuid4
 
 import frappe
 from frappe.tests.utils import FrappeTestCase
-from frappe.utils import get_bench_path
+from frappe.utils import get_bench_path, set_request
 
 from medops.common.budget_control import budget_control_key, budget_guard_names
+from medops.common.budget_control_history import ReleaseInventoryEntry
 from medops.common.budget_reservation_anchor import ANCHOR_ROW_FIELDS
 from medops.common.budget_reservation_storage import ROW_FIELDS
 from medops.common.error_catalog import IoneApplicationError
@@ -243,6 +244,89 @@ class TestBudgetMaterialRequestSource(FrappeTestCase):
 					another["confirmation"], another["proof"], True
 				)
 			self.assertEqual(frappe.db.count(doctype), before + 3)
+
+	def test_reservation_preview_uses_real_session_source_and_budget_guard(self):
+		"""Native source and evidence with synthetic session and mocked release inventory."""
+		self.request.items[0].rate = 10
+		self.request.items[0].amount = 10
+		self.request.save(ignore_permissions=True)
+		self.request.submit()
+		with self.committed_source_fixture():
+			primary = frappe.local.db
+			previous_request = getattr(frappe.local, "request", None)
+			previous_sid = frappe.session.sid
+			try:
+				source = material_request_source.locked_material_request_source(
+					self.request.name, self.line, self.units["A"]
+				)
+				primary.rollback()
+				snapshot, digest = material_source_snapshot(asdict(source))
+				if source.expense_account is None:
+					raise AssertionError("synthetic source expense account required")
+				values = synthetic_key(uuid4().hex)
+				values.update(
+					company=source.company,
+					hospital=source.hospital,
+					organization_unit=source.organization_unit,
+					project=source.project,
+					period_start="2026-01-01",
+					period_end="2026-12-31",
+				)
+				key = budget_control_key(values)
+				item = reservation_intent(
+					source_snapshot=snapshot,
+					source_snapshot_digest=digest,
+					allocation="test-allocation",
+					key=key,
+					currency=source.currency,
+					precision=2,
+					amount="10.00",
+					budget_date="2026-10-26",
+					reason="Synthetic test",
+				)
+				entry = ReleaseInventoryEntry(
+					"release-row",
+					key,
+					source.currency,
+					2,
+					"20.00",
+					source.expense_account,
+					source.cost_center,
+				)
+				for method, headers, sid in (
+					("GET", {}, "synthetic-test-web-session"),
+					("POST", {"Authorization": "token synthetic:synthetic"}, "synthetic-test-web-session"),
+					("POST", {}, "Guest"),
+				):
+					set_request(method=method, path="/", headers=headers)
+					frappe.session.sid = sid
+					with self.assertRaises(IoneApplicationError):
+						reservation_confirmation.prepare_reservation_confirmation(item)
+					self.assertIsNone(getattr(primary, "_medops_budget_guard_marker", None))
+				set_request(method="POST", path="/")
+				frappe.session.sid = "synthetic-test-web-session"
+				with (
+					patch.object(material_usage_preview, "resolve_budget_control_key", return_value=key),
+					patch.object(material_usage_preview, "discover_material_usage_sources", return_value=()),
+					patch.object(
+						material_usage_preview, "guarded_verify_material_usage_sources", return_value=()
+					),
+					patch.object(material_usage_preview, "guarded_release_inventory", return_value=(entry,)),
+				):
+					result = reservation_confirmation.prepare_reservation_confirmation(item)
+					self.assertTrue(
+						frappe.db.exists(reservation_confirmation.DOCTYPE, result["confirmation"])
+					)
+					assert_budget_guards([key])
+				primary.rollback()
+				self.assertFalse(frappe.db.exists(reservation_confirmation.DOCTYPE, result["confirmation"]))
+			finally:
+				frappe.local.db = primary
+				primary.rollback()
+				frappe.local.request = previous_request
+				frappe.session.sid = previous_sid
+				frappe.get_doc("Material Request", self.request.name).cancel()
+				primary.commit()
 
 	@contextmanager
 	def committed_source_fixture(self):
