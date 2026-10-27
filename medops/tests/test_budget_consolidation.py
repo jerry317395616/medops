@@ -74,6 +74,10 @@ def fixture_master(kind, payload):
 
 def fixtures():
 	frappe.set_user("Administrator")
+	# A fresh isolated site may not have run ERPNext's setup wizard.
+	# Company creation requires the standard Transit warehouse type.
+	if not frappe.db.exists("Warehouse Type", "Transit"):
+		frappe.get_doc(dict(doctype="Warehouse Type", name="Transit")).insert(ignore_permissions=True)
 	if not frappe.db.exists("Company", COMPANY):
 		frappe.get_doc(
 			dict(
