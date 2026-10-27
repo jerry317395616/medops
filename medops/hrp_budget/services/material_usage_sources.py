@@ -21,13 +21,13 @@ from medops.services.errors import raise_ione_error
 
 
 def _roots(keys, actor):
-	scopes = sorted({observation._scope(key) for key in keys})
+	scopes = sorted({observation.usage_scope(key) for key in keys})
 	units = sorted({(key.company, key.hospital, key.organization_unit) for key in keys})
-	observation._access(units, actor)
-	rows = observation._scope_query(
+	observation.check_usage_access(units, actor)
+	rows = observation.query_usage_scope(
 		"tabHRP Budget Reservation", ANCHOR_ROW_FIELDS, scopes, observation.MAX_USAGE_ROOTS
 	)
-	observation._access(units, actor)
+	observation.check_usage_access(units, actor)
 	return rows
 
 

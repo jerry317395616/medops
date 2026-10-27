@@ -119,7 +119,7 @@ class TestBudgetUsageObservation(IntegrationTestCase):
 			self.insert("tabHRP Budget Reservation Event", event)
 
 	def observe(self):
-		with patch.object(observation, "_access"):
+		with patch.object(observation, "check_usage_access"):
 			return observation.guarded_budget_usage_observation([self.key])
 
 	def test_distinct_sources_and_state_transfers_are_not_double_counted(self):
@@ -204,7 +204,7 @@ class TestBudgetUsageObservation(IntegrationTestCase):
 		keys = [replace(self.key, budget_subject=f"subject-{index:03}") for index in range(101)]
 		acquire_budget_guards(keys)
 		self.add_evidence(*self.evidence("a", key=keys[-1]))
-		with patch.object(observation, "_access"):
+		with patch.object(observation, "check_usage_access"):
 			positions = observation.guarded_budget_usage_observation(keys)
 		self.assertEqual((len(positions), positions[0].key), (1, keys[-1]))
 
@@ -218,7 +218,7 @@ class TestBudgetUsageObservation(IntegrationTestCase):
 			assert_budget_guards([self.key])
 
 	def test_late_access_denial_invalidates_the_guard(self):
-		with patch.object(observation, "_access", side_effect=[None, PermissionError("synthetic denial")]):
+		with patch.object(observation, "check_usage_access", side_effect=[None, PermissionError("synthetic denial")]):
 			with self.assertRaises(PermissionError):
 				observation.guarded_budget_usage_observation([self.key])
 		with self.assertRaises(IoneApplicationError):
@@ -253,7 +253,7 @@ class TestBudgetUsageObservation(IntegrationTestCase):
 		frappe.db.rollback()
 		source = self.source_snapshot()
 		self.add_evidence(*self.evidence("a", digest=source.digest(), center=center))
-		with patch.object(observation, "_access"):
+		with patch.object(observation, "check_usage_access"):
 			refs = material_usage_sources.discover_material_usage_sources([self.key])
 		self.assertEqual(len(refs), 1)
 		self.assertEqual(refs[0].expected_digest, source.digest())
@@ -265,7 +265,7 @@ class TestBudgetUsageObservation(IntegrationTestCase):
 
 	def verify_source(self, source, *, current=None):
 		with (
-			patch.object(observation, "_access"),
+			patch.object(observation, "check_usage_access"),
 			patch.object(
 				material_usage_sources, "locked_material_request_source", return_value=current or source
 			),
@@ -305,7 +305,7 @@ class TestBudgetUsageObservation(IntegrationTestCase):
 	def test_discovery_denies_guest_before_query(self):
 		frappe.db.rollback()
 		frappe.set_user("Guest")
-		with patch.object(observation, "_scope_query") as query:
+		with patch.object(observation, "query_usage_scope") as query:
 			with self.assertRaises(IoneApplicationError):
 				material_usage_sources.discover_material_usage_sources([self.key])
 			query.assert_not_called()

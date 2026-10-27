@@ -29,7 +29,7 @@ def _chunks(values):
 		yield values[start : start + QUERY_CHUNK]
 
 
-def _scope(key: BudgetControlKey) -> tuple[str, str, str, str, str, str]:
+def usage_scope(key: BudgetControlKey) -> tuple[str, str, str, str, str, str]:
 	return (
 		key.company,
 		key.hospital,
@@ -44,7 +44,7 @@ def _fields(fields: frozenset[str]) -> str:
 	return ", ".join(f"`{name}`" for name in sorted(fields))
 
 
-def _access(units, actor):
+def check_usage_access(units, actor):
 	from medops.hrp_budget.services.release_execution import refresh_financial_authority
 
 	if frappe.session.user != actor:
@@ -84,7 +84,7 @@ def _merge_rows(target, rows, limit):
 			raise ValueError("usage observation exceeds bound")
 
 
-def _scope_query(table, fields, scopes, limit):
+def query_usage_scope(table, fields, scopes, limit):
 	if (table, fields) not in {
 		("tabHRP Budget Reservation", ANCHOR_ROW_FIELDS),
 		("tabHRP Budget Reservation Event", ROW_FIELDS),
@@ -131,12 +131,12 @@ def guarded_budget_usage_observation(value: object) -> tuple[ReservationPosition
 	try:
 		keys = ordered_budget_keys(value)
 		assert_budget_guards(keys)
-		scopes = sorted({_scope(key) for key in keys})
+		scopes = sorted({usage_scope(key) for key in keys})
 		units = sorted({(key.company, key.hospital, key.organization_unit) for key in keys})
-		_access(units, actor)
+		check_usage_access(units, actor)
 		require_valid_usage_storage(keys)
-		roots = _scope_query("tabHRP Budget Reservation", ANCHOR_ROW_FIELDS, scopes, MAX_USAGE_ROOTS)
-		events = _scope_query("tabHRP Budget Reservation Event", ROW_FIELDS, scopes, MAX_USAGE_EVENTS)
+		roots = query_usage_scope("tabHRP Budget Reservation", ANCHOR_ROW_FIELDS, scopes, MAX_USAGE_ROOTS)
+		events = query_usage_scope("tabHRP Budget Reservation Event", ROW_FIELDS, scopes, MAX_USAGE_EVENTS)
 		_parent_events(tuple(sorted(roots)), events)
 		groups: dict[str, list[Mapping]] = {name: [] for name in roots}
 		actions = set()
@@ -195,10 +195,10 @@ def guarded_budget_usage_observation(value: object) -> tuple[ReservationPosition
 				source_snapshot_digest=row["source_snapshot_digest"],
 				cost_center=row["cost_center"],
 			)
-			if position.reservation != name or _scope(position.key) not in scopes:
+			if position.reservation != name or usage_scope(position.key) not in scopes:
 				raise ValueError("usage scope differs from aggregate")
 			positions.append(position)
-		_access(units, actor)
+		check_usage_access(units, actor)
 		require_valid_usage_storage(keys)
 		assert_budget_guards(keys)
 		return tuple(sorted(positions, key=lambda item: item.reservation))
