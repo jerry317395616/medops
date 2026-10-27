@@ -5,6 +5,7 @@ import json
 import unittest
 from dataclasses import replace
 from datetime import datetime, timezone
+from types import MappingProxyType
 
 from medops.common.budget_control import budget_control_key
 from medops.common.domain_service import canonical_json
@@ -18,8 +19,10 @@ from medops.common.reservation_authorization import (
 	reservation_intent_snapshot,
 	verify_reservation_authorization_rows,
 	verify_reservation_confirmation_proof,
+	verify_reservation_confirmation_row,
 	verify_reservation_decision_evidence,
 )
+from medops.common.reservation_evidence_control import expected_evidence_values, expected_reservation_evidence
 from tests.test_budget_control import key
 from tests.test_material_source_snapshot import facts
 
@@ -399,3 +402,23 @@ class ReservationAuthorizationTest(unittest.TestCase):
 			reservation_authorization_row(replace(item, amount="11.00"), first)
 		with self.assertRaises(ValueError):
 			reservation_authorization_row(item, first, replace(decision, acknowledged=False))
+
+	def test_confirmation_row_is_reconstructed_without_assuming_authority(self):
+		item, _, first, _ = self.evidence_rows()
+		self.assertEqual(verify_reservation_confirmation_row(first), (item, confirmation(item)))
+		with self.assertRaises(ValueError):
+			verify_reservation_confirmation_row(first | {"organization_unit": "other"})
+
+	def test_exact_write_context_is_immutable_non_nested_and_cleared_on_error(self):
+		item = intent()
+		first = confirmation(item)
+		self.assertIsNone(expected_evidence_values())
+		with self.assertRaisesRegex(RuntimeError, "synthetic"):
+			with expected_reservation_evidence(item, first) as expected:
+				self.assertEqual(dict(expected), reservation_authorization_row(item, first))
+				self.assertIsInstance(expected, MappingProxyType)
+				with self.assertRaises(ValueError):
+					with expected_reservation_evidence(item, first):
+						pass
+				raise RuntimeError("synthetic")
+		self.assertIsNone(expected_evidence_values())

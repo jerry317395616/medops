@@ -1,0 +1,182 @@
+"""Private reservation confirmation primitives; not a posting or public API."""
+
+from __future__ import annotations
+
+import hashlib
+import hmac
+import secrets
+from dataclasses import asdict
+from datetime import timedelta
+
+import frappe
+from frappe.utils import now_datetime
+
+from medops.common.budget_ledger import LEDGER
+from medops.common.budget_workflow import CONFIRMATION_SECONDS
+from medops.common.confirmation_privacy import ConfirmationProof
+from medops.common.material_source_snapshot import material_source_snapshot, parse_material_source_snapshot
+from medops.common.reservation_authorization import (
+	AUTHORIZATION_ROW_FIELDS,
+	ReservationIntent,
+	reservation_confirmation,
+	reservation_decision,
+	verify_reservation_confirmation_proof,
+	verify_reservation_confirmation_row,
+)
+from medops.common.reservation_evidence_control import expected_reservation_evidence
+from medops.hrp_budget.services.approval import require_web_session, session_digest
+from medops.hrp_budget.services.control_guards import assert_budget_guards, invalidate_budget_guards
+from medops.hrp_budget.services.material_budget_guards import assert_material_budget_guards
+from medops.hrp_budget.services.material_request_source import locked_material_request_source
+from medops.hrp_budget.services.material_usage_preview import inspect_purchase_usage
+from medops.hrp_budget.services.planning_access import MANAGER_ROLES
+from medops.services.data_access import require_scope
+from medops.services.errors import raise_ione_error, require_roles
+
+DOCTYPE = "HRP Budget Reservation Authorization"
+RESERVATION = "HRP Budget Reservation"
+
+
+def _timestamp(value):
+	return value.isoformat(sep=" ", timespec="microseconds")
+
+
+def _session(item):
+	return session_digest("budget-reservation:" + item.reservation_identity)
+
+
+def _require_actor_scope(item, actor, session):
+	require_web_session()
+	require_roles(MANAGER_ROLES)
+	if frappe.session.user != actor or not hmac.compare_digest(_session(item), session):
+		raise_ione_error("CONFLICT")
+	for doctype, action in ((RESERVATION, "write"), (LEDGER, "read")):
+		require_scope(
+			doctype,
+			company=item.key.company,
+			hospital=item.key.hospital,
+			organization_unit=item.key.organization_unit,
+			action=action,
+		)
+
+
+def _inspect_intent(item, actor, session):
+	if type(item) is not ReservationIntent:
+		raise ValueError("validated reservation intent required")
+	_require_actor_scope(item, actor, session)
+	facts = parse_material_source_snapshot(item.source_snapshot, expected_digest=item.source_snapshot_digest)
+	inspection = inspect_purchase_usage(
+		facts["request"],
+		facts["line"],
+		item.key.organization_unit,
+		expected_source_digest=item.source_snapshot_digest,
+		budget_date=item.budget_date,
+		proposed_keys=[item.key],
+	)
+	if not any(
+		candidate.key == item.key
+		and candidate.currency == item.currency
+		and candidate.precision == item.precision
+		for candidate in inspection.candidates
+	):
+		raise_ione_error("CONFLICT")
+	_recheck(item, inspection.source, actor, session)
+	return inspection.source
+
+
+def _recheck(item, source, actor, session):
+	_require_actor_scope(item, actor, session)
+	assert_material_budget_guards(source, [item.key])
+	current = locked_material_request_source(source.request, source.line, source.organization_unit)
+	snapshot, digest = material_source_snapshot(asdict(current))
+	if current != source or snapshot != item.source_snapshot or digest != item.source_snapshot_digest:
+		raise_ione_error("CONFLICT")
+	assert_budget_guards([item.key])
+	_require_actor_scope(item, actor, session)
+
+
+def _append(item, confirmed, decision=None):
+	with expected_reservation_evidence(item, confirmed, decision) as values:
+		row = frappe.get_doc(dict(doctype=DOCTYPE, **values))
+		row.insert(ignore_permissions=True)
+	return row
+
+
+def prepare_reservation_confirmation(item):
+	"""Create a private preview in the caller's transaction; never posts funds.
+
+	The caller must own a fresh transaction, enforce idempotency and audit, and
+	protect the returned proof before exposing this through an HTTP endpoint.
+	"""
+	try:
+		require_web_session()
+		actor = frappe.session.user
+		session = _session(item)
+		source = _inspect_intent(item, actor, session)
+		proof = ConfirmationProof(secrets.token_urlsafe(32))
+		now = now_datetime()
+		confirmed = reservation_confirmation(
+			item,
+			actor=actor,
+			proof_hash=hashlib.sha256(proof.encode()).hexdigest(),
+			session_digest=session,
+			recorded_at=_timestamp(now),
+			expires_at=_timestamp(now + timedelta(seconds=CONFIRMATION_SECONDS)),
+		)
+		row = _append(item, confirmed)
+		_recheck(item, source, actor, session)
+		return {
+			"confirmation": row.name,
+			"proof": proof,
+			"expires_at": confirmed.expires_at,
+			"intent_digest": item.intent_digest,
+		}
+	except BaseException:
+		invalidate_budget_guards()
+		raise
+
+
+def confirm_reservation_confirmation(name, proof, acknowledge):
+	"""Record an explicit session-bound decision; this does not reserve funds.
+
+	The caller owns rollback/idempotency/audit and must keep proof out of logs.
+	This function is deliberately not whitelisted or connected to a financial writer.
+	"""
+	try:
+		require_web_session()
+		require_roles(MANAGER_ROLES)
+		if acknowledge is not True:
+			raise_ione_error("INVALID_REQUEST")
+		row = frappe.get_doc(DOCTYPE, name)
+		data = {field: row.get(field) for field in AUTHORIZATION_ROW_FIELDS}
+		item, confirmed = verify_reservation_confirmation_row(data)
+		actor = frappe.session.user
+		session = _session(item)
+		verify_reservation_confirmation_proof(
+			item,
+			confirmed,
+			proof=proof,
+			actor=actor,
+			session_digest=session,
+			now=_timestamp(now_datetime()),
+		)
+		source = _inspect_intent(item, actor, session)
+		decision = reservation_decision(
+			item,
+			confirmed,
+			proof=proof,
+			actor=actor,
+			session_digest=session,
+			recorded_at=_timestamp(now_datetime()),
+			acknowledge=True,
+		)
+		if frappe.db.get_value(
+			DOCTYPE, {"confirmation": confirmed.name}, "name", for_update=True
+		) or frappe.db.get_value(DOCTYPE, {"one_time_key": decision.one_time_key}, "name", for_update=True):
+			raise_ione_error("CONFLICT")
+		row = _append(item, confirmed, decision)
+		_recheck(item, source, actor, session)
+		return {"decision": row.name, "intent_digest": item.intent_digest}
+	except BaseException:
+		invalidate_budget_guards()
+		raise
