@@ -15,7 +15,7 @@ from frappe.custom.doctype.property_setter.property_setter import make_property_
 from frappe.tests.test_api import FrappeAPITestCase
 
 from medops.api.v1.finance import ledger as ledger_api
-from medops.common.budget_ledger import LEDGER, LEDGER_PUBLIC_FIELDS
+from medops.common.budget_ledger import LEDGER, LEDGER_PUBLIC_FIELDS, RELEASE
 from medops.common.budget_planning import VALUE
 from medops.common.error_catalog import IoneApplicationError
 from medops.hrp_budget.api.statement_reads import statement_connection
@@ -240,6 +240,38 @@ class TestBudgetStatement(FrappeAPITestCase):
 		self.assertEqual(self.execute(self.claim())["status"], "Posted")
 		self.login_actor(ACTOR)
 		self.denied(self.statement(expected_digest=first["statement_digest"]), ("IONE-CORE-0005",))
+
+	def test_parent_cursor_and_changed_final_batch_set_fail_closed(self):
+		original_get_all = frappe.get_all
+		queries = []
+
+		def track_parent_queries(doctype, *args, **kwargs):
+			filters = kwargs.get("filters") or {}
+			result = original_get_all(doctype, *args, **kwargs)
+			if doctype == RELEASE and filters.get("status") == "Posted" and kwargs.get("pluck") == "name":
+				queries.append((dict(filters), result))
+			return result
+
+		with (
+			patch.object(statements, "STATEMENT_PARENT_PAGE_SIZE", 1),
+			patch.object(frappe, "get_all", side_effect=track_parent_queries),
+		):
+			book = self.success(self.statement(limit=1))
+		self.assertGreaterEqual(book["total_rows"], 1)
+		self.assertGreaterEqual(len(queries), 2)
+		self.assertEqual(queries[1][0]["name"], [">", queries[0][1][-1]])
+
+		original_batches = statements.statement_batches
+		calls = []
+
+		def changed_final_set(context, *, export=False):
+			names = original_batches(context, export=export)
+			calls.append(names)
+			return (*names, "synthetic-concurrent-parent") if len(calls) == 2 else names
+
+		with patch.object(statements, "statement_batches", side_effect=changed_final_set):
+			self.denied(self.statement(), ("IONE-CORE-0005",))
+		self.assertEqual(len(calls), 2)
 
 	def test_missing_or_tampered_query_rows_cannot_become_partial_totals(self):
 		original = frappe.get_all
