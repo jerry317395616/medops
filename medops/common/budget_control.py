@@ -91,7 +91,9 @@ def available_budget(value: object, precision: int) -> str:
 
 	A negative result remains visible for reconciliation and cannot authorize a
 	new reservation. Completeness, event linkage, currency, and locking are the
-	responsibility of the future transactional service, not this reducer.
+	responsibility of the future transactional service, not this reducer. Its
+	approved component must come from executed budget release facts, not an
+	approval that has not been released.
 	"""
 	data = object_payload(value, set(BALANCE_FIELDS))
 	if set(data) != BALANCE_FIELDS:

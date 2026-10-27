@@ -17,7 +17,8 @@
 		"backlog/**",
 		"changes/COD-034.json",
 		"medops/common/budget_control.py",
-		"tests/test_budget_control.py"
+		"tests/test_budget_control.py",
+		"tests/test_change_governance.py"
 	],
 	"permissions_impact": "当前仅纯计算，无 API、用户授权、范围或财务写入；后续事务须重新校验权限与来源。",
 	"migration_impact": "当前无运行模型、字段、索引、迁移或数据种子；后续数据库模型及升级需单独实现和验收。",
