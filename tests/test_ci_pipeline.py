@@ -1,9 +1,14 @@
 from __future__ import annotations
 
+import os
 import shutil
+import subprocess
+import sys
 import tempfile
 import unittest
 from pathlib import Path
+
+import yaml
 
 from scripts.repository_contract import validate_ci_pipeline
 
@@ -83,9 +88,60 @@ class CIPipelineTest(unittest.TestCase):
 			)
 			workflow_path.write_text(workflow, encoding="utf-8")
 			self.assertIn(
-				"CI required job must aggregate quality, security and integration",
+				"CI required job must aggregate quality, security, integration and IONE Core",
 				validate_ci_pipeline(root),
 			)
+
+	def test_rejects_missing_or_forged_core_result(self) -> None:
+		for original, replacement, expected in (
+			(
+				"      - integration-core\n",
+				"",
+				"CI required job must aggregate quality, security, integration and IONE Core",
+			),
+			(
+				"${{ needs.integration-core.result }}",
+				"success",
+				"CI required job must use the actual result of every required job",
+			),
+		):
+			with self.subTest(replacement=replacement), tempfile.TemporaryDirectory() as temp:
+				root = Path(temp)
+				copy_ci_files(root)
+				path = root / ".github/workflows/ci.yml"
+				workflow = path.read_text(encoding="utf-8")
+				self.assertEqual(workflow.count(original), 1)
+				path.write_text(workflow.replace(original, replacement, 1), encoding="utf-8")
+				self.assertIn(expected, validate_ci_pipeline(root))
+
+	def test_actual_required_script_rejects_every_non_success_result(self) -> None:
+		workflow = yaml.load(
+			(ROOT / ".github/workflows/ci.yml").read_text(encoding="utf-8"), Loader=yaml.BaseLoader
+		)
+		step = next(
+			step
+			for step in workflow["jobs"]["required"]["steps"]
+			if step.get("name") == "Enforce required job results"
+		)
+		run = step["run"]
+		_, separator, body = run.partition("python - <<'PY'\n")
+		self.assertTrue(separator)
+		program, separator, remainder = body.partition("\nPY")
+		self.assertTrue(separator)
+		self.assertFalse(remainder.strip())
+		fields = ("QUALITY_RESULT", "SECURITY_RESULT", "INTEGRATION_RESULT", "INTEGRATION_CORE_RESULT")
+		base = {**os.environ, **dict.fromkeys(fields, "success")}
+
+		def run_result(env):
+			return subprocess.run(
+				[sys.executable, "-c", program], env=env, capture_output=True, check=False
+			).returncode
+
+		self.assertEqual(run_result(base), 0)
+		for field in fields:
+			for result in ("failure", "cancelled", "skipped"):
+				with self.subTest(field=field, result=result):
+					self.assertNotEqual(run_result({**base, field: result}), 0)
 
 	def test_rejects_missing_secret_scan(self) -> None:
 		with tempfile.TemporaryDirectory() as temp:

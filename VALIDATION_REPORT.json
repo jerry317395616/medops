@@ -9,9 +9,9 @@
     "ADR-0031",
     "ADR-0032"
   ],
-  "current_scope": "COD-033 remains In Progress: run 40486315663 passed 448 native tests in both plain and IONE Core environments but failed the zero Error Log gate; test-local diagnostic cleanup is not yet native verified. COD-034 prework adds an unconnected MariaDB v3 scope-and-period guard with fail-closed one-shot connection markers. Expected 477 pure/454 native; actual lock, savepoint, commit and rollback tests have not run. A pure overlap check is implemented but does not prove complete data or locking. An unconnected resolver reads persisted reference names with standard read permissions; it has not been native tested and does not validate relationships or grant write authority. Canonical source identity, overlap business validation, reservations, shared release fence, permissions, API and UI remain incomplete. Protected PR and hospital acceptance remain pending.",
+  "current_scope": "COD-033 remains In Progress: run 40486315663 passed 448 native tests in both plain and IONE Core environments but failed the zero Error Log gate; test-local diagnostic cleanup is not yet native verified. COD-034 prework adds an unconnected MariaDB v3 scope-and-period guard with fail-closed one-shot connection markers. Expected 479 pure/454 native; actual lock, savepoint, commit and rollback tests have not run. A pure overlap check is implemented but does not prove complete data or locking. An unconnected resolver reads persisted reference names with standard read permissions; it has not been native tested and does not validate relationships or grant write authority. Canonical source identity, overlap business validation, reservations, shared release fence, permissions, API and UI remain incomplete. Protected PR and hospital acceptance remain pending. The candidate Required aggregate includes IONE Core but has not been verified on GitHub or the protected branch.",
   "checks": {
-    "pure_tests_expected": 477,
+    "pure_tests_expected": 479,
     "complete_frappe_tests_expected": 454,
     "exact_foundation_pure_tests_passed": 21,
     "native_foundation": {
@@ -665,6 +665,8 @@
       "source": "https://github.com/jerry317395616/ione_core.git",
       "separate_job": true,
       "required_check": false,
+      "candidate_required_aggregate_includes_core": true,
+      "candidate_aggregate_native_ci_verified": false,
       "fresh_ci_sites_only": true,
       "existing_ci_without_core_retained": true,
       "real_hospital_acceptance": false
