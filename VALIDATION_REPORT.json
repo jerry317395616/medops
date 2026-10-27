@@ -9,7 +9,7 @@
 		"ADR-0031",
 		"ADR-0032"
 	],
-	"current_scope": "COD-033 In Progress. c0eea4c full456 local quality/1449 committed blobs passed. Complete modules13/settings11 each ran twice:48 native executions (24 distinct cases),all9 preserved-state checks passed. Production app code is identical to86; only two HTTP tests receive per-execution UUID keys and preserve within-run replay. New full446 running on frozen private c0ee,PID4036727. Prior86 full446 ended with2 fixture request-key collisions/all9guards passed. Same459 optimization61.792s/63225SQL measured at9d with identical digests. INFO audit real-file and six targeted86 native passed. Backup/restore adapters/plan prepared but not executed; capacity/UI/CI/promotion and whole HRP goal remain incomplete. Public8291 unchanged. Local frontend follow-up aligns operations-page Link callbacks with the previously verified statement-page filter signature rule: unchanged normalized filters preserve current queries/dialogs; real changes still invalidate old results. ESLint/Prettier passed; actual operations-page browser validation pending. Private c0ee full run remains untouched and does not certify this new frontend change.",
+	"current_scope": "COD-033 In Progress. c0eea4c full456 local quality,1449 committed blobs and full446 native PASSED; all9 preserved-state guards passed. Native isolated backup/restore PASSED across984 tables/113143 rows with only the native System Settings.modified timestamp difference retained. All14802 completed encrypted receipts valid; authorized statement220 rows/first50 identical. Source has0 attachments; separate positive native file lab restored1 public/1 private file with exact content/permissions. All18 final checks passed: source data/configuration/services/roles/queues preserved; default386,short0,long0,workers0; no added DB restart. Initial operator config-API and strict-equality failures retained; corrected relative archive context verified, original artifacts preserved. Only frontendJS/docs changed after c0ee; actual new-page validation pending. Public8291 unchanged. Capacity/UI/protectedCI/promotion and whole HRP remain incomplete.",
 	"checks": {
 		"pure_tests_expected": 456,
 		"complete_frappe_tests_expected": 446,
@@ -36,7 +36,7 @@
 		"protected_ci": "not run for COD-033",
 		"local_quality": "c0eea4c full456 passed,1449 committed blobs passed; production code identical86",
 		"pure_tests_passed": 456,
-		"complete_frappe_tests": "Newfull446 running atc0ee after repeated whole-modules counts13/11/13/11 passed. Prior86 complete446 had2 test-identity failures/all9guardspassed.",
+		"complete_frappe_tests": "Full446 PASSED atc0ee with all9 preserved-state checks. Two whole modules repeated twice separately:13/11/13/11,24 distinct cases/48 executions.",
 		"current_protocol": {
 			"status": "full local quality passed",
 			"tests": 11,
@@ -59,7 +59,7 @@
 				"Outbox stale-snapshot full transaction retry"
 			]
 		},
-		"current_local_quality": "Full444 passed at65f43ef;production backend unchanged at709/e311;709 test-only ande311 frontend scoped checks passed;no new full suite at UI-only source",
+		"current_local_quality": "Full456 passed atc0ee,1449 committed blobs; later two-page JS/docs scoped QA passed atd0c42e8. Current documentation update requires scoped checks.",
 		"runtime_native_partial": {
 			"source_commit": "daaed16f7765c0fb2e796fa100ca817970585499",
 			"passed_counts": [
@@ -657,7 +657,8 @@
 			"wire_schema_fingerprint_and_encryption_content_change": false,
 			"new_tables_or_user_grants": false,
 			"early_http_request_boundary": "still not fixed"
-		}
+		},
+		"complete_frappe_tests_passed": 446
 	},
 	"previous_verified_release": {
 		"schema_version": 1,
@@ -817,21 +818,26 @@
 		"coverage_limit": "Injected after native HTTPRequest construction and before before_request; earlier connection/session-constructor branches and proxy/server sinks not certified."
 	},
 	"full_native_suite": {
-		"status": "running",
+		"status": "passed",
 		"expected_tests": 446,
 		"commit": "c0eea4c3e1fc40f05c7a7a10bc6a6eb2dc1c7572",
 		"driver_pid": 4036727,
-		"proof_when_complete": "cod033-c0eea4c-full-native-suite-authority-read.json",
 		"source_frozen_during_run": true,
 		"production_source_identical_to": "86ba9b00f0db3a6b978135c4ee263b78d8778ab7",
 		"only_application_tree_changes": [
 			"medops/hrp_foundation/tests/test_modules.py",
 			"medops/hrp_foundation/tests/test_system_settings.py"
 		],
-		"public_sites_untouched": true
+		"public_sites_untouched": true,
+		"completed_tests": 446,
+		"passed_tests": 446,
+		"failures": 0,
+		"all9_preserved_state_checks_passed": true,
+		"driver_completed": true,
+		"proof": "cod033-c0eea4c-full-native-suite-authority-read.json"
 	},
 	"pending_read_optimization": {
-		"status": "measured61.792s at9d; two current native authority/cache cases passed at86; full446 running",
+		"status": "Same459 measured61.792s/63225SQL at9d; corrected native authority/cache tests passed at86 and full446 passed atc0ee. Hospital performance/capacity acceptance pending.",
 		"rejected_prototype": {
 			"source": "33709af",
 			"candidates": 459,
@@ -883,7 +889,7 @@
 		}
 	},
 	"full_native_failure_fixes": {
-		"status": "All3 formerly failed tests passed individually at86; full446 running",
+		"status": "All3 formerly failed tests passed individually at86 and full446 passed atc0ee.",
 		"change_governance": "Compare HTTP counts with actual change/ADR catalogs instead of obsolete34/29 constants.",
 		"planning_fixtures": "Per-test HTTP idempotency namespace and unique fund code preserve within-test replay while avoiding prior committed fixtures/expired receipts.",
 		"history_fixtures": "Unique quality rule/initial-evaluation identity; verify recorded zero separately from a day before real capture epoch and from future unknown coverage.",
@@ -934,7 +940,7 @@
 		"complete_native_suite_not_replaced": true
 	},
 	"committed_http_fixture_isolation": {
-		"status": "complete two modules repeated twice passed; full446 running",
+		"status": "Two complete modules repeated twice passed; full446 passed atc0ee.",
 		"production_source_unchanged_since": "86ba9b00f0db3a6b978135c4ee263b78d8778ab7",
 		"failures": [
 			"test_http_command_reads_idempotency_header_and_replays_response",
@@ -945,7 +951,7 @@
 			409
 		],
 		"correction": "Fresh key per test execution; same key retained across first/second requests; first-not-replayed and second-replayed assertions retained; no receipt deletion/expiry extension or command relaxation.",
-		"planned_regression": "Complete module13 and settings11 tests, each twice on persistent private site, then full446.",
+		"planned_regression": "Completed13/11/13/11 then full446; persistent historical receipts preserved.",
 		"verified_source_commit": "c0eea4c3e1fc40f05c7a7a10bc6a6eb2dc1c7572",
 		"repeat_counts": [
 			13,
@@ -959,16 +965,68 @@
 		"proof": "cod033-c0eea4c-foundation-repeat.json"
 	},
 	"backup_restore_rehearsal": {
-		"status": "adapters prepared and parsed; native API/required tools and read-only plan checked, not executed",
-		"gate": "full446 passed plus all preserved-state checks",
-		"target_is_new_isolated_site": true,
-		"planned_scope": [
-			"all physical table-row hashes",
-			"public/private file hashes",
-			"business encryption key and persisted receipt validation",
-			"preexisting services/configuration/queues unchanged"
-		],
-		"not_a_hospital_rpo_rto_certificate": true
+		"status": "passed",
+		"source_commit": "c0eea4c3e1fc40f05c7a7a10bc6a6eb2dc1c7572",
+		"checks": {
+			"source_all_tables_files_receipts_unchanged_since_before_backup": true,
+			"restored_all_tables_files_receipts_unchanged_since_postcheck": true,
+			"only_changed_physical_table_is_tabSingles": true,
+			"only_native_System_Settings_modified_value_differs": true,
+			"every_table_row_count_matches": true,
+			"public_private_files_match": true,
+			"encrypted_receipts_match_and_all_valid": true,
+			"installed_apps_match": true,
+			"real_authorized_budget_statement_matches": true,
+			"positive_native_public_private_file_recovery_passed": true,
+			"corrected_native_file_archive_layout_passed": true,
+			"source_roles_queues_settings_unchanged_since_full446": true,
+			"existing_configs_unchanged": true,
+			"target_config_unchanged": true,
+			"all_existing_frappe_service_states_and_pids_unchanged": true,
+			"no_database_restart_added": true,
+			"source_commit_unchanged": true,
+			"target_quarantined": true
+		},
+		"physical_tables": 984,
+		"physical_rows": 113143,
+		"raw_physical_equality": false,
+		"permitted_native_difference": {
+			"table": "tabSingles",
+			"doctype": "System Settings",
+			"field": "modified"
+		},
+		"actual_source_attachment_files": 0,
+		"encrypted_receipts": {
+			"invalid_existing": 0,
+			"valid": 14802
+		},
+		"positive_file_lab": {
+			"public_files": 1,
+			"private_files": 1,
+			"content_and_permissions_match": true
+		},
+		"queue_counts": {
+			"short": 0,
+			"default": 386,
+			"long": 0
+		},
+		"workers": 0,
+		"database_recreated_after_initial_import": false,
+		"native_timestamp_rewritten": false,
+		"original_failed_proofs_and_archives_preserved": true,
+		"public_sites_untouched": true,
+		"native_backend_source": "c0eea4c3e1fc40f05c7a7a10bc6a6eb2dc1c7572",
+		"frontend_not_deployed": true,
+		"hospital_rpo_rto_or_capacity_certified": false,
+		"private_values_returned": false,
+		"proof": "cod033-c0eea4c-backup-restore/final-result.json",
+		"postcheck_proof": "cod033-c0eea4c-backup-restore/native-postcheck-v2.json",
+		"positive_file_proof": "cod033-c0eea4c-backup-restore/native-file-lab-v2.json",
+		"operator_failure_history": [
+			"Initial config API error after DB import; corrected with explicit frappe.installer.update_site_config path, no DB recreation.",
+			"Strict physical equality failed only on native restore System Settings.modified; preserve timestamp and permit exactly that one field.",
+			"Initial empty-file archives used absolute paths; corrected archives use native relative site context; original archives retained."
+		]
 	},
 	"completed_full_native_attempts": [
 		{
@@ -1002,6 +1060,25 @@
 			"all9_preserved_state_checks_passed": true,
 			"proof": "cod033-86ba9b0-full-native-suite-authority-read.json",
 			"driver_completed": true
+		},
+		{
+			"status": "passed",
+			"expected_tests": 446,
+			"commit": "c0eea4c3e1fc40f05c7a7a10bc6a6eb2dc1c7572",
+			"driver_pid": 4036727,
+			"source_frozen_during_run": true,
+			"production_source_identical_to": "86ba9b00f0db3a6b978135c4ee263b78d8778ab7",
+			"only_application_tree_changes": [
+				"medops/hrp_foundation/tests/test_modules.py",
+				"medops/hrp_foundation/tests/test_system_settings.py"
+			],
+			"public_sites_untouched": true,
+			"completed_tests": 446,
+			"passed_tests": 446,
+			"failures": 0,
+			"all9_preserved_state_checks_passed": true,
+			"driver_completed": true,
+			"proof": "cod033-c0eea4c-full-native-suite-authority-read.json"
 		}
 	],
 	"operations_link_filter_followup": {
