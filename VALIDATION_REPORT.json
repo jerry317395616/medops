@@ -9,7 +9,7 @@
 		"ADR-0031",
 		"ADR-0032"
 	],
-	"current_scope": "COD-033 In Progress. f500cf4 full458 local,1449 committed blobs,8337 old-source differential and focused43 native/10guards passed. Identical frozen598 clean cProfile83.251->71.544s (single observation14.06%);82245SQL,candidate/list/page digests/controller calls equal;984tables113143rows/files14802 encrypted receipts unchanged. Current full446 native running; private source frozen. No models/API/hooks/permission/transaction changes. Public8291 untouched;71s still slow;CI/promotion,Link mouse selection,remaining HRP and hospital capacity/interfaces/UAT incomplete.",
+	"current_scope": "COD-033 In Progress. f500cf4 full458 local/1449 committed blobs/8337 differential/full446 native with446 success rows,0skips,10guards passed;focused43 overlaps full. Current native Link mouse selection and first query completed on both Pages, exactly one200 each;statement243 total/50 visible,operations expected empty scoped list. Original data/roles/models/GLStock/386queue IDs/configs/source and all preexisting active units preserved. Strict all-service snapshot unequal: retain successful periodic rehab backup timestamps and concurrent new rehab QA activity; original failure retained, v3 explicit12checks passed. Native UI logout and helper/tunnel/tab cleanup complete. Public8291 untouched;label/layout usability,performance,CI/promotion,remainingHRP and hospital acceptance incomplete.",
 	"checks": {
 		"pure_tests_expected": 458,
 		"complete_frappe_tests_expected": 446,
@@ -36,7 +36,7 @@
 		"protected_ci": "not run for COD-033",
 		"local_quality": "Full458/11 quality steps and1449 committed Git blobs passed at f500cf4; proof cod033-f500cf4-quality.json",
 		"pure_tests_passed": 458,
-		"complete_frappe_tests": "Current f500cf4 full446 RUNNING; prior c0ee full446 passed at its own source. Focused43 does not replace the full suite.",
+		"complete_frappe_tests": "Full446 PASSED atf500cf4 with all10 state protection checks; prior c0ee source proof remains historical.",
 		"current_protocol": {
 			"status": "full local quality passed",
 			"tests": 11,
@@ -818,12 +818,15 @@
 		"coverage_limit": "Injected after native HTTPRequest construction and before before_request; earlier connection/session-constructor branches and proxy/server sinks not certified."
 	},
 	"full_native_suite": {
-		"status": "running",
+		"status": "passed",
 		"commit": "f500cf4e8b7e5f2f3c0b662027fbd68e3f82af57",
 		"expected_tests": 446,
-		"driver_pid": 1834842,
+		"completed_tests": 446,
+		"passed_tests": 446,
+		"failures": 0,
+		"all10_preserved_state_checks_passed": true,
 		"source_frozen_during_run": true,
-		"proof_when_complete": "cod033-f500cf4-text-scan-full-native.json",
+		"proof": "cod033-f500cf4-text-scan-full-native.json",
 		"public_sites_untouched": true
 	},
 	"pending_read_optimization": {
@@ -1258,8 +1261,8 @@
 		"proof": "cod033-e87d901-recovery-ui-integrity-v3.json"
 	},
 	"next_unblocked_tasks": [
-		"Reduce repeated native source-query overhead after the measured pure scan optimization; retain full source identity and independent final authorization on the immutable598 dataset",
-		"Native Link suggestion mouse-selection query UX check",
+		"Provide authorized display names and improve long-identifier table layout, using current field checks rather than an unguarded title lookup",
+		"Evaluate bounded cross-document native source reads on the exact immutable598 dataset, preserving full source identity and independent final authorization",
 		"ProtectedCI and complete release/promotion gates; no partial releasePR",
 		"COD034/035 and remaining HRP; actual hospital capacity/interfaces/UAT"
 	],
@@ -1432,7 +1435,7 @@
 		"source_data_returned": false
 	},
 	"text_scan_optimization": {
-		"status": "focused_and_profile_passed_full_native_running",
+		"status": "full_native_passed",
 		"baseline_commit": "2600589c0da56a6d8b6a400f0881d9dda8daad2f",
 		"candidate_source_git_blobs": {
 			"medops/common/domain_service.py": "996fd49906951fd090bd7be743360c754abf31db",
@@ -1444,7 +1447,7 @@
 		"pure_tests_expected": 458,
 		"native_tests_expected": 446,
 		"current_full_quality_pending": false,
-		"current_full_native_pending": true,
+		"current_full_native_pending": false,
 		"frozen598_performance_pending": false,
 		"models_api_hooks_permissions_and_transactions_unchanged": true,
 		"subclass_legacy_iteration_preserved": true,
@@ -1469,7 +1472,12 @@
 		"sql_controller_counts_and_result_digests_equal": true,
 		"performance_limit": "One cProfile run per source on the exact frozen598 dataset; still slow, no throughput/concurrency/hospital SLA claim.",
 		"private_runtime_source": "f500cf4e8b7e5f2f3c0b662027fbd68e3f82af57",
-		"public_runtime_unchanged": "8291fba67d5b6a9452422a2986f7d2b831a970e0"
+		"public_runtime_unchanged": "8291fba67d5b6a9452422a2986f7d2b831a970e0",
+		"full_native_proof": "cod033-f500cf4-text-scan-full-native.json",
+		"full_native_counts": [
+			446
+		],
+		"full_all10_guards_passed": true
 	},
 	"prior_verified_full_native_suite_before_text_scan": {
 		"status": "passed",
@@ -1489,5 +1497,140 @@
 		"all9_preserved_state_checks_passed": true,
 		"driver_completed": true,
 		"proof": "cod033-c0eea4c-full-native-suite-authority-read.json"
+	},
+	"native_link_mouse_acceptance": {
+		"status": "observed",
+		"commit": "f500cf4e8b7e5f2f3c0b662027fbd68e3f82af57",
+		"existingSyntheticAdministrator": true,
+		"statement": {
+			"unitAndYearChosenByMouse": true,
+			"suggestionsCollapsedBeforeQuery": true,
+			"firstQueryClickBecameBusy": true,
+			"firstQueryClickCompleted": true,
+			"visibleDataRows": 50,
+			"visibleTotalRows": 243,
+			"exportEnabled": true
+		},
+		"operations": {
+			"allFiveLinksChosenByMouse": true,
+			"suggestionsCollapsedBeforeQuery": true,
+			"firstDirectoryClickBecameBusy": true,
+			"firstDirectoryClickCompleted": true,
+			"expectedEmptyUnitScopeRendered": true
+		},
+		"newFinancialCommands": 0,
+		"limits": "Native suggestion-selection flow only; does not establish every raw-typing or first-pointer-click timing, hospital capacity, or current full XLSX file verification.",
+		"transientObservations": [
+			"Initial Page.navigate observation timed out; verified and resumed the same local tab without navigation restart.",
+			"Two stale suggestion node clicks failed after asynchronous list replacement; refreshed the AX state before selecting the visible target."
+		],
+		"screenshots": [
+			"cod033-f500cf4-native-link-first-query.png",
+			"cod033-f500cf4-native-link-operations-query.png"
+		],
+		"nativeUiLogoutConfirmed": true
+	},
+	"native_link_integrity": {
+		"status": "passed_with_observed_service_activity",
+		"commit": "f500cf4e8b7e5f2f3c0b662027fbd68e3f82af57",
+		"checks": {
+			"state": true,
+			"runtime": true,
+			"configs": true,
+			"database_restarts": true,
+			"every_preexisting_running_unit_all_pids_states_and_timestamps_unchanged": true,
+			"all_other_preexisting_inactive_units_unchanged": true,
+			"only_two_inactive_backup_timestamps_changed": true,
+			"backup_is_preexisting_successful_timer_triggered_oneshot": true,
+			"only_concurrent_new_unit_is_unrelated_equipment_qa": true,
+			"concurrent_qa_is_separate_transient_or_no_longer_loaded": true,
+			"owned_server_port_closed": true,
+			"exact_one_successful_read_per_ui_flow": true
+		},
+		"strict_all_service_snapshot_equal": false,
+		"original_strict_failure_retained": true,
+		"existing_running_unit_count": 44,
+		"backup_delta_fields": [
+			"InactiveEnterTimestampMonotonic",
+			"InactiveExitTimestampMonotonic"
+		],
+		"concurrent_new_unit_was_not_preexisting": true,
+		"other_service_started_stopped_or_reverted_by_this_cleanup": false,
+		"all_original386_queue_ids_and_order_unchanged": true,
+		"workers": 0,
+		"all_financial_models_roles_source_configs_gl_stock_unchanged": true,
+		"route_counters": {
+			"ledger.statement": {
+				"count": 1,
+				"statuses": [
+					"200"
+				]
+			},
+			"release.list_records": {
+				"count": 1,
+				"statuses": [
+					"200"
+				]
+			}
+		},
+		"helper_and_port_stopped": true,
+		"public_app_source_unchanged": true,
+		"private_values_returned": false,
+		"scope": "Fresh application/runtime/config/source/queue equality and strict preservation of every preexisting running service. Preserve the original failed all-unit snapshot; explicitly record two inactive backup timestamps and a separate newly observed transient rehab QA service, without reverting either service.",
+		"observed_service_activity": [
+			"Two inactive timestamps changed after an existing successful timer-triggered backup.",
+			"A separate transient QA service was first observed during the window; it was not in the preexisting service set."
+		],
+		"proof": "cod033-f500cf4-native-link-browser-integrity-v3.json"
+	},
+	"native_test_completion_attestation": {
+		"status": "passed",
+		"commit": "f500cf4e8b7e5f2f3c0b662027fbd68e3f82af57",
+		"native": {
+			"focused": {
+				"test_counts": [
+					5,
+					6,
+					14,
+					16,
+					2
+				],
+				"standard_OK_summaries": 5,
+				"skipped": 0,
+				"pinned_native_success_rows": 43,
+				"pinned_native_failure_and_skip_rows": 0,
+				"failed_summary": false,
+				"all10_state_guards_passed": true
+			},
+			"full": {
+				"test_counts": [
+					446
+				],
+				"standard_OK_summaries": 1,
+				"skipped": 0,
+				"pinned_native_success_rows": 446,
+				"pinned_native_failure_and_skip_rows": 0,
+				"failed_summary": false,
+				"all10_state_guards_passed": true
+			}
+		},
+		"raw_logs_returned": false,
+		"scope": "Attestation of complete standard unittest summaries and original root-private state proofs; no new test execution."
+	},
+	"review_history_batch_evaluation": {
+		"status": "observed",
+		"source_commit": "f500cf4e8b7e5f2f3c0b662027fbd68e3f82af57",
+		"frozen_site": true,
+		"decision_history_length_histogram": {
+			"1": 1989,
+			"2": 24
+		},
+		"decision_case_count": 2013,
+		"decision_record_count": 2037,
+		"read_only": true,
+		"private_values_returned": false,
+		"per_case_get_docs_adopted": false,
+		"per_case_experiment_dispatched": false,
+		"decision": "Per-case batching offers negligible query reduction for mostly single-record histories; evaluate cross-case batching with bounded private data and independent final reads before adoption."
 	}
 }
