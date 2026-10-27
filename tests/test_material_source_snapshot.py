@@ -74,6 +74,23 @@ class MaterialSourceSnapshotTest(unittest.TestCase):
 		self.assertTrue(result.timestamps_changed)
 		self.assertNotEqual(result.historical_digest, result.current_digest)
 
+	def test_source_modification_time_must_not_regress(self):
+		payload, digest = material_source_snapshot(facts())
+		for field in ("request_modified", "line_modified"):
+			with self.subTest(field=field), self.assertRaises(ValueError):
+				compare_material_source_history(
+					payload,
+					expected_digest=digest,
+					current_facts=facts(**{field: "2026-01-01 08:59:59.999999"}),
+				)
+		# Different canonical precisions representing the same instant are allowed.
+		result = compare_material_source_history(
+			payload,
+			expected_digest=digest,
+			current_facts=facts(request_modified="2026-01-01 09:00:00.000000"),
+		)
+		self.assertTrue(result.timestamps_changed)
+
 	def test_unchanged_snapshot_is_not_reported_as_progress(self):
 		payload, digest = material_source_snapshot(facts())
 		result = compare_material_source_history(payload, expected_digest=digest, current_facts=facts())
