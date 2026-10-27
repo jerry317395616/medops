@@ -163,6 +163,33 @@ class TestBudgetUsagePreview(IntegrationTestCase):
 			self.assertGreaterEqual(scopes.call_count, 6)
 			assert_budget_guards([self.key])
 
+	def test_reservation_prepare_calls_real_purchase_inspector_with_canonical_key(self):
+		item = self.confirmation_intent()
+		entry = ReleaseInventoryEntry("release-row", self.key, "CNY", 2, "10.00", "account", "center")
+
+		def acquire(references, keys):
+			self.assertEqual(references, (self.ref(self.first),))
+			binding = (self.first.request, self.first.line, self.first.organization_unit, self.first.digest())
+			acquire_multi_source_bound_budget_guards(keys, source_bindings=(binding,))
+			return (self.first,)
+
+		with (
+			patch.object(reservation_confirmation, "require_web_session"),
+			patch.object(reservation_confirmation, "session_digest", return_value="a" * 64),
+			patch.object(reservation_confirmation, "require_roles"),
+			patch.object(reservation_confirmation, "require_scope"),
+			patch.object(reservation_confirmation, "locked_material_request_source", return_value=self.first),
+			patch.object(reservation_confirmation, "_append", return_value=SimpleNamespace(name="synthetic")),
+			patch.object(preview, "resolve_budget_control_key", return_value=self.key),
+			patch.object(preview, "discover_material_usage_sources", return_value=()),
+			patch.object(preview, "acquire_material_budget_guards_for_sources", side_effect=acquire),
+			patch.object(preview, "guarded_verify_material_usage_sources", return_value=()),
+			patch.object(preview, "guarded_release_inventory", return_value=(entry,)),
+		):
+			result = reservation_confirmation.prepare_reservation_confirmation(item)
+			self.assertEqual(result["confirmation"], "synthetic")
+			assert_budget_guards([self.key])
+
 	def test_reservation_confirmation_rejects_session_change_and_invalidates_guard(self):
 		item = self.confirmation_intent()
 		with (
