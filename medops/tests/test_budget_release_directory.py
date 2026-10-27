@@ -160,7 +160,13 @@ class TestBudgetReleaseDirectory(FrappeAPITestCase):
 			return original(connection, query, *args, **kwargs)
 
 		try:
-			with patch.object(database_class, "sql", new=sql):
+			with (
+				patch.object(database_class, "sql", new=sql),
+				patch(
+					"medops.hrp_workflow_authorization.services.access_scope.nowdate",
+					return_value="2026-10-27",
+				),
+			):
 				with access_graph():
 					self.assertTrue(grants_for(ACTOR, CASE, "read"))
 					self.assertTrue(grants_for(ACTOR, CASE, "read"))

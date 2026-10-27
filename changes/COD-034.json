@@ -59,6 +59,7 @@
 		"medops/tests/test_budget_control_sources.py",
 		"medops/tests/test_budget_consolidation.py",
 		"medops/tests/test_budget_release_execution.py",
+		"medops/tests/test_budget_release_directory.py",
 		"tests/test_budget_control.py",
 		"tests/test_budget_control_history.py",
 		"tests/test_budget_control_release.py",
@@ -99,7 +100,7 @@
 		"事务见证对取锁前后保存点、早晚回调失败、动态回调、提交失败重试及成功清理的真实数据库验证",
 		"0至9位精确金额、负余额、溢出、非有限值与错误输入",
 		"后续真实数据库同键/跨键竞争、单次锁请求及保存点/完整事务回滚、死锁整笔重试",
-		"真实下达/冲销接入共同围栏；模拟占用拒绝、双连接争用和任务重试，临时表实测期间、科室、项目及数据损坏查询",
+		"真实下达/冲销接入共同围栏；模拟占用拒绝、双连接争用和任务重试，临时表实测范围查询；目录权限缓存测试固定两个不同日期",
 		"领域服务普通异常持预算锁时完整回滚、无锁时保存点隔离；模拟及真实死锁的有界整笔回滚重试、直接保存点、提交回调和跨写入口锁序",
 		"完整工作流、HTTP/UI、重复迁移、保护CI与医院验收"
 	],
