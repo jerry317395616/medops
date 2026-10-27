@@ -1,0 +1,36 @@
+{
+	"schema_version": 1,
+	"task_id": "COD-034",
+	"title": "实现预算并发控制服务",
+	"status": "In Progress",
+	"risk_level": "critical",
+	"change_types": ["application", "architecture", "documentation", "security"],
+	"affected_modules": ["HRP Budget", "HRP Foundation", "HRP Workflow Authorization"],
+	"breaking_change": false,
+	"adr_ids": ["ADR-0030", "ADR-0031"],
+	"path_globs": [
+		"README.md",
+		"DELIVERY_MANIFEST.json",
+		"VALIDATION_REPORT.json",
+		"SHA256SUMS.txt",
+		"architecture/budget_control.md",
+		"backlog/**",
+		"changes/COD-034.json",
+		"medops/common/budget_control.py",
+		"tests/test_budget_control.py"
+	],
+	"permissions_impact": "当前仅纯计算，无 API、用户授权、范围或财务写入；后续事务须重新校验权限与来源。",
+	"migration_impact": "当前无运行模型、字段、索引、迁移或数据种子；后续数据库模型及升级需单独实现和验收。",
+	"rollback_plan": "当前纯函数未接线，可回退代码；未来不得删除已产生的财务证据或以旧版本绕过额度锁。",
+	"security_impact": "未建立预占权限，纯比较不等于授权；完整来源、数据库锁、独立人工确认及额度冲销围栏仍须实现。",
+	"test_plan": [
+		"完整维度、空项目和不同维度键隔离",
+		"0至9位精确金额、负余额、溢出、非有限值与错误输入",
+		"后续真实数据库同键/跨键竞争、死锁整笔重试及回滚",
+		"额度使用与下达冲销共同围栏、权限撤销与来源完整性",
+		"完整工作流、HTTP/UI、重复迁移、保护CI与医院验收"
+	],
+	"owner": "MedOps Maintainers",
+	"created_on": "2026-10-27",
+	"updated_on": "2026-10-27"
+}

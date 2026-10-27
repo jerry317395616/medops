@@ -9,9 +9,9 @@
 		"ADR-0031",
 		"ADR-0032"
 	],
-	"current_scope": "COD-033 In Progress. Current candidate adds authorized statement display labels and a separate GitHub CI IONE Core compatibility profile pinned to the owner repository. Expected 461 pure/448 native; the new CI profile and full current validation remain pending. Original strict server-service guard failed during user-confirmed maintenance, despite 14/14 native functional tests passing. Public8291 unchanged; all HRP and hospital acceptance remain incomplete.",
+	"current_scope": "COD-033 remains In Progress and pending full release gates. COD-034 parallel prework adds pure budget-key and exact availability contracts only; no database lock, persisted reservation, API, UI or production budget authority. Expected 467 pure/448 native. Core compatibility CI, full native, protected PR and hospital acceptance remain pending.",
 	"checks": {
-		"pure_tests_expected": 461,
+		"pure_tests_expected": 467,
 		"complete_frappe_tests_expected": 448,
 		"exact_foundation_pure_tests_passed": 21,
 		"native_foundation": {
@@ -668,6 +668,16 @@
 			"fresh_ci_sites_only": true,
 			"existing_ci_without_core_retained": true,
 			"real_hospital_acceptance": false
+		},
+		"budget_control_prework": {
+			"status": "pure_contracts_only",
+			"pure_tests_added": 6,
+			"database_lock_implemented": false,
+			"persisted_reservation_implemented": false,
+			"api_or_ui_implemented": false,
+			"concurrent_acceptance": false,
+			"release_reversal_shared_fence": false,
+			"hospital_acceptance": false
 		}
 	},
 	"previous_verified_release": {
