@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from collections import deque
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from secrets import token_hex
 
 import frappe
@@ -15,10 +15,16 @@ from medops.services.errors import raise_ione_error
 # InnoDB row per name. Guard names contain hashes, not source identifiers.
 
 
+@dataclass(slots=True)
+class _GuardState:
+	invalidated: bool = False
+
+
 @dataclass(frozen=True, slots=True)
 class _GuardMarker:
 	keys: tuple[BudgetControlKey, ...]
 	witness: str
+	state: _GuardState = field(default_factory=_GuardState)
 
 
 def _witness_present(db, marker):
@@ -36,8 +42,23 @@ def assert_budget_guards(keys):
 	ordered = ordered_budget_keys(keys)
 	db = frappe.local.db
 	marker = getattr(db, "_medops_budget_guard_marker", None)
-	if not isinstance(marker, _GuardMarker) or marker.keys != ordered or not _witness_present(db, marker):
+	if (
+		not isinstance(marker, _GuardMarker)
+		or marker.state.invalidated
+		or marker.keys != ordered
+		or not _witness_present(db, marker)
+	):
 		raise_ione_error("OPERATION_NOT_ALLOWED")
+
+
+def invalidate_budget_guards():
+	"""Poison an active guard until full rollback, including across savepoints."""
+	db = getattr(frappe.local, "db", None)
+	marker = getattr(db, "_medops_budget_guard_marker", None)
+	if not isinstance(marker, _GuardMarker):
+		return False
+	marker.state.invalidated = True
+	return True
 
 
 def _before_guard_commit(db, marker):
@@ -45,7 +66,11 @@ def _before_guard_commit(db, marker):
 	# marker cleanup in case this callback or a later callback fails.
 	db.after_rollback.add(lambda: _finish_guard_transaction(db, marker))
 	try:
-		if getattr(db, "_medops_budget_guard_marker", None) is not marker or not _witness_present(db, marker):
+		if (
+			getattr(db, "_medops_budget_guard_marker", None) is not marker
+			or marker.state.invalidated
+			or not _witness_present(db, marker)
+		):
 			raise_ione_error("OPERATION_NOT_ALLOWED")
 		# The pinned Frappe CallbackManager drains this deque in order. Recheck
 		# after all other callbacks, including ones they add, so a later callback

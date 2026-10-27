@@ -7,6 +7,7 @@ import sys
 import tempfile
 import time
 from pathlib import Path
+from typing import cast
 from unittest.mock import patch
 from uuid import uuid4
 
@@ -15,14 +16,17 @@ from frappe.tests import IntegrationTestCase
 from frappe.utils import get_bench_path
 
 from medops.common.budget_control import budget_control_key, budget_guard_names
+from medops.common.budget_ledger import BudgetReleaseFacts
 from medops.common.domain_service import DomainServiceDefinition
 from medops.common.error_catalog import IoneApplicationError
 from medops.hrp_budget.services.control_guards import acquire_budget_guards, assert_budget_guards
+from medops.hrp_budget.services.control_release import prepare_release_guards
 from medops.services.domain_service import DomainService
 
 CHILD = r"""
 import json, sys, time, traceback
 from pathlib import Path
+from typing import cast
 import frappe
 from medops.common.budget_control import budget_control_key
 from medops.hrp_budget.services.control_guards import acquire_budget_guards
@@ -471,6 +475,102 @@ class TestBudgetControlGuards(IntegrationTestCase):
 						acquire_budget_guards([guard])
 				self.assertEqual(incompatible.exception.code, "IONE-CORE-0009")
 				self.assertIsNone(getattr(db, "_medops_budget_guard_marker", None))
+		finally:
+			if db is not None:
+				frappe.local.db = db
+				try:
+					db.rollback()
+					db.sql("SET SESSION TRANSACTION ISOLATION LEVEL REPEATABLE READ")
+					db.begin()
+				finally:
+					frappe.local.db = primary
+			else:
+				frappe.local.db = primary
+
+	def test_release_guard_preparation_rechecks_sources_under_guard(self):
+		guard = budget_control_key(synthetic_key(uuid4().hex))
+		facts = cast(BudgetReleaseFacts, object())
+		primary = frappe.local.db
+		db = None
+		try:
+			with self.secondary_connection():
+				db = frappe.local.db
+				db.rollback()
+				db.sql("SET SESSION TRANSACTION ISOLATION LEVEL READ COMMITTED")
+				db.begin()
+				with patch(
+					"medops.hrp_budget.services.control_release.resolve_release_control_keys",
+					side_effect=[(guard,), (guard,)],
+				) as resolve:
+					keys = prepare_release_guards(facts)
+				self.assertEqual(keys, (guard,))
+				self.assertEqual(resolve.call_count, 2)
+				assert_budget_guards(keys)
+				db.rollback()
+				with patch(
+					"medops.hrp_budget.services.control_release.resolve_release_control_keys",
+					side_effect=PermissionError("synthetic denial"),
+				):
+					with self.assertRaises(PermissionError):
+						prepare_release_guards(facts)
+				self.assertIsNone(getattr(db, "_medops_budget_guard_marker", None))
+		finally:
+			if db is not None:
+				frappe.local.db = db
+				try:
+					db.rollback()
+					db.sql("SET SESSION TRANSACTION ISOLATION LEVEL REPEATABLE READ")
+					db.begin()
+				finally:
+					frappe.local.db = primary
+			else:
+				frappe.local.db = primary
+
+	def test_release_guard_source_failure_invalidates_even_after_savepoint_rollback(self):
+		guard = budget_control_key(synthetic_key(uuid4().hex))
+		other = budget_control_key(synthetic_key(uuid4().hex))
+		facts = cast(BudgetReleaseFacts, object())
+		primary = frappe.local.db
+		db = None
+		try:
+			with self.secondary_connection():
+				db = frappe.local.db
+				db.rollback()
+				db.sql("SET SESSION TRANSACTION ISOLATION LEVEL READ COMMITTED")
+				db.begin()
+				for kind, error_type in (
+					("changed", IoneApplicationError),
+					("denied", PermissionError),
+					("timeout", frappe.QueryTimeoutError),
+				):
+					with self.subTest(kind=kind):
+						calls = []
+
+						def resolve(*args, kind=kind, calls=calls, **kwargs):
+							calls.append(1)
+							if len(calls) == 1:
+								return (guard,)
+							db.savepoint("cod034_after_guard_resolution")
+							if kind == "changed":
+								return (other,)
+							if kind == "denied":
+								raise PermissionError("synthetic denial")
+							raise frappe.QueryTimeoutError("synthetic timeout")
+
+						with patch(
+							"medops.hrp_budget.services.control_release.resolve_release_control_keys",
+							side_effect=resolve,
+						):
+							with self.assertRaises(error_type):
+								prepare_release_guards(facts)
+						self.assertEqual(len(calls), 2)
+						db.rollback(save_point="cod034_after_guard_resolution")
+						with self.assertRaises(IoneApplicationError):
+							assert_budget_guards([guard])
+						with self.assertRaises(IoneApplicationError):
+							db.commit()
+						db.rollback()
+						self.assertIsNone(getattr(db, "_medops_budget_guard_marker", None))
 		finally:
 			if db is not None:
 				frappe.local.db = db
