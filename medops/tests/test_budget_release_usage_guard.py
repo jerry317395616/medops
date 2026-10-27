@@ -67,7 +67,10 @@ class TestBudgetReleaseUsageGuard(IntegrationTestCase):
 	def check(self, keys):
 		# The query predicates use a test-only temporary table; the transaction
 		# witness and production table engines are covered by other native tests.
-		with patch.object(usage, "assert_budget_guards"), patch.object(usage, "_table_engines"):
+		with (
+			patch.object(usage, "assert_budget_guards"),
+			patch.object(usage, "_table_engines", return_value=()),
+		):
 			usage.assert_no_unreconciled_reversal_usage(keys)
 
 	def assert_denied(self, keys, code):
@@ -115,3 +118,16 @@ class TestBudgetReleaseUsageGuard(IntegrationTestCase):
 		self.insert(keys[-1])
 		self.assert_denied(keys, "IONE-CORE-0006")
 		self.check(keys[:-1])
+
+	def test_empty_unadapted_table_is_allowed_but_any_record_blocks_reversal(self):
+		with (
+			patch.object(usage, "TABLES", ()),
+			patch.object(usage, "UNSUPPORTED_TABLES", (self.table,)),
+			patch.object(usage, "assert_budget_guards"),
+			patch.object(usage, "_table_engines", return_value=(self.table,)),
+		):
+			usage.assert_no_unreconciled_reversal_usage([self.key])
+			self.insert(self.key)
+			with self.assertRaises(IoneApplicationError) as denied:
+				usage.assert_no_unreconciled_reversal_usage([self.key])
+			self.assertEqual(denied.exception.code, "IONE-CORE-0006")

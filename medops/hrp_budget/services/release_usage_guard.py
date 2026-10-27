@@ -22,7 +22,7 @@ def _chunks(values, size=QUERY_CHUNK):
 		yield values[index : index + size]
 
 
-def _table_engines() -> None:
+def _table_engines() -> tuple[str, ...]:
 	names = TABLES + UNSUPPORTED_TABLES
 	placeholders = ", ".join(["%s"] * len(names))
 	rows = frappe.db.sql(
@@ -32,9 +32,16 @@ def _table_engines() -> None:
 	)
 	engines = {str(name): str(engine).upper() for name, engine in rows}
 	if any(engines.get(name) != "INNODB" for name in TABLES) or any(
-		name in engines for name in UNSUPPORTED_TABLES
+		name in engines and engines[name] != "INNODB" for name in UNSUPPORTED_TABLES
 	):
 		raise_ione_error("CONFIGURATION_INVALID")
+	return tuple(name for name in UNSUPPORTED_TABLES if name in engines)
+
+
+def _has_unsupported_rows(table: str) -> bool:
+	if table not in UNSUPPORTED_TABLES:
+		raise ValueError("unsupported budget usage table")
+	return bool(frappe.db.sql(f"SELECT 1 FROM `{table}` LIMIT 1"))  # nosec B608 - fixed table registry
 
 
 def _has_unscoped_rows(table: str) -> bool:
@@ -109,7 +116,10 @@ def assert_no_unreconciled_reversal_usage(value: object) -> None:
 	try:
 		keys = ordered_budget_keys(value)
 		assert_budget_guards(keys)
-		_table_engines()
+		unsupported = _table_engines()
+		for table in unsupported:
+			if _has_unsupported_rows(table):
+				raise_ione_error("INVALID_STATE_TRANSITION")
 		units = sorted({(key.company, key.hospital, key.organization_unit) for key in keys})
 		for table in TABLES:
 			if _has_unscoped_rows(table) or _has_malformed_unit_rows(table, units):
