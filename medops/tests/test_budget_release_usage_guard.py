@@ -119,6 +119,23 @@ class TestBudgetReleaseUsageGuard(IntegrationTestCase):
 		self.assert_denied(keys, "IONE-CORE-0006")
 		self.check(keys[:-1])
 
+	def test_whitespace_and_control_characters_cannot_hide_usage(self):
+		for field in ("company", "hospital", "organization_unit"):
+			for padded in (" " + getattr(self.key, field), getattr(self.key, field) + "\u00a0"):
+				with self.subTest(field=field, value=repr(padded)):
+					self.clear()
+					self.insert(self.key, **{field: padded})
+					self.assert_denied([self.key], "IONE-CORE-0009")
+		for field in ("budget_subject", "funding_source", "project"):
+			for invalid in ("\u2003hidden", "hidden\t"):
+				with self.subTest(field=field, value=repr(invalid)):
+					self.clear()
+					self.insert(self.key, **{field: invalid})
+					self.assert_denied([self.key], "IONE-CORE-0009")
+		self.clear()
+		self.insert(self.key, budget_subject="clinical oncology")
+		self.check([self.key])
+
 	def test_empty_unadapted_table_is_allowed_but_any_record_blocks_reversal(self):
 		with (
 			patch.object(usage, "TABLES", ()),

@@ -15,6 +15,11 @@ UNSUPPORTED_TABLES = (
 	"tabHRP Budget Actualization",
 )
 QUERY_CHUNK = 100
+# Python's reference normalizer strips Unicode whitespace and rejects control
+# characters. Detect such physical values before matching canonical keys; a
+# padded scope must not disappear from an equality predicate.
+_UNICODE_SPACES = "\u0085\u00a0\u1680\u2000-\u200a\u2028\u2029\u202f\u205f\u3000"
+_INVALID_REFERENCE = rf"(^[[:space:]{_UNICODE_SPACES}]|[[:space:]{_UNICODE_SPACES}]$|[[:cntrl:]])"
 
 
 def _chunks(values, size=QUERY_CHUNK):
@@ -52,7 +57,10 @@ def _has_unscoped_rows(table: str) -> bool:
 		frappe.db.sql(
 			f"""SELECT 1 FROM `{table}` WHERE
 			`company` IS NULL OR `company`='' OR `hospital` IS NULL OR `hospital`=''
-			OR `organization_unit` IS NULL OR `organization_unit`='' LIMIT 1"""  # nosec B608 - fixed table
+			OR `organization_unit` IS NULL OR `organization_unit`=''
+			OR `company` REGEXP %s OR `hospital` REGEXP %s OR `organization_unit` REGEXP %s
+			LIMIT 1""",  # nosec B608 - fixed table and bound pattern
+			(_INVALID_REFERENCE,) * 3,
 		)
 	)
 
@@ -62,10 +70,11 @@ def _has_malformed_unit_rows(table: str, units: list[tuple[str, str, str]]) -> b
 		raise ValueError("unsupported budget usage table")
 	for chunk in _chunks(units):
 		clauses = " OR ".join(["(`company`=%s AND `hospital`=%s AND `organization_unit`=%s)"] * len(chunk))
-		parameters = tuple(value for unit in chunk for value in unit)
+		parameters = tuple(value for unit in chunk for value in unit) + (_INVALID_REFERENCE,) * 3
 		if frappe.db.sql(
 			f"""SELECT 1 FROM `{table}` WHERE ({clauses}) AND
 			(`budget_subject` IS NULL OR `budget_subject`='' OR `funding_source` IS NULL OR `funding_source`=''
+			OR `budget_subject` REGEXP %s OR `funding_source` REGEXP %s OR `project` REGEXP %s
 			OR `period_start` IS NULL OR `period_end` IS NULL OR `period_start`>`period_end`) LIMIT 1""",  # nosec B608 - fixed table and placeholders
 			parameters,
 		):
