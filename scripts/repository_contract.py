@@ -473,8 +473,29 @@ def validate_ci_pipeline(root: Path) -> list[str]:
 
 	required = jobs["required"]
 	if isinstance(required, dict):
-		if set(required.get("needs", [])) != {"quality", "security", "integration"}:
-			violations.append("CI required job must aggregate quality, security and integration")
+		if set(required.get("needs", [])) != {"quality", "security", "integration", "integration-core"}:
+			violations.append("CI required job must aggregate quality, security, integration and IONE Core")
+		steps = required.get("steps", [])
+		enforce = (
+			next(
+				(
+					step
+					for step in steps
+					if isinstance(step, dict) and step.get("name") == "Enforce required job results"
+				),
+				{},
+			)
+			if isinstance(steps, list)
+			else {}
+		)
+		expected_results = {
+			"QUALITY_RESULT": "${{ needs.quality.result }}",
+			"SECURITY_RESULT": "${{ needs.security.result }}",
+			"INTEGRATION_RESULT": "${{ needs.integration.result }}",
+			"INTEGRATION_CORE_RESULT": "${{ needs.integration-core.result }}",
+		}
+		if enforce.get("env") != expected_results:
+			violations.append("CI required job must use the actual result of every required job")
 		if required.get("if") != "always()":
 			violations.append("CI required job must run with always()")
 

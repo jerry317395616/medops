@@ -9,9 +9,9 @@
 		"ADR-0031",
 		"ADR-0032"
 	],
-	"current_scope": "COD-033 In Progress. GitHub run 40486315663 ran 448 native tests successfully in both plain and IONE Core environments, without bootstrap search-index queueing; both jobs failed the zero Error Log gate with one QueryDeadlockError each. Timestamp and method align with the immediate synthetic diagnostic test, but the ephemeral rows were not inspected directly. Test-local savepoint cleanup is implemented but not yet verified in native CI. Protected CI, native browser, full release and hospital acceptance remain pending.",
+	"current_scope": "COD-033 In Progress. GitHub run 40486315663 ran 448 native tests successfully in both plain and IONE Core environments, without bootstrap search-index queueing; both jobs failed the zero Error Log gate with one QueryDeadlockError each. Timestamp and method align with the immediate synthetic diagnostic test, but the ephemeral rows were not inspected directly. Test-local savepoint cleanup is implemented but not yet verified in native CI. Protected CI, native browser, full release and hospital acceptance remain pending. The candidate Required aggregate now includes IONE Core; its actual GitHub and protected-branch behavior remain unverified.",
 	"checks": {
-		"pure_tests_expected": 461,
+		"pure_tests_expected": 463,
 		"complete_frappe_tests_expected": 448,
 		"exact_foundation_pure_tests_passed": 21,
 		"native_foundation": {
@@ -665,6 +665,8 @@
 			"source": "https://github.com/jerry317395616/ione_core.git",
 			"separate_job": true,
 			"required_check": false,
+			"candidate_required_aggregate_includes_core": true,
+			"candidate_aggregate_native_ci_verified": false,
 			"fresh_ci_sites_only": true,
 			"existing_ci_without_core_retained": true,
 			"real_hospital_acceptance": false

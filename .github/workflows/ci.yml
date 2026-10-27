@@ -279,6 +279,7 @@ jobs:
       - quality
       - security
       - integration
+      - integration-core
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
@@ -287,6 +288,7 @@ jobs:
           QUALITY_RESULT: ${{ needs.quality.result }}
           SECURITY_RESULT: ${{ needs.security.result }}
           INTEGRATION_RESULT: ${{ needs.integration.result }}
+          INTEGRATION_CORE_RESULT: ${{ needs.integration-core.result }}
         run: |
           python - <<'PY'
           import json
@@ -297,6 +299,7 @@ jobs:
               "quality": os.environ["QUALITY_RESULT"],
               "security": os.environ["SECURITY_RESULT"],
               "integration": os.environ["INTEGRATION_RESULT"],
+              "integration_core": os.environ["INTEGRATION_CORE_RESULT"],
           }
           print(json.dumps(results, sort_keys=True))
           if any(result != "success" for result in results.values()):
