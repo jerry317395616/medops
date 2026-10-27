@@ -193,6 +193,15 @@ class TestBudgetUsageObservation(IntegrationTestCase):
 		self.add_evidence(*self.evidence("a", key=other))
 		self.assertEqual(self.observe(), ())
 
+	def test_scope_query_checks_later_chunk(self):
+		frappe.db.rollback()
+		keys = [replace(self.key, budget_subject=f"subject-{index:03}") for index in range(101)]
+		acquire_budget_guards(keys)
+		self.add_evidence(*self.evidence("a", key=keys[-1]))
+		with patch.object(observation, "_access"):
+			positions = observation.guarded_budget_usage_observation(keys)
+		self.assertEqual((len(positions), positions[0].key), (1, keys[-1]))
+
 	def test_guest_cannot_inspect_usage(self):
 		frappe.set_user("Guest")
 		with patch.object(observation, "require_valid_usage_storage") as storage:
