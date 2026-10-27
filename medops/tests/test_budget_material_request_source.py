@@ -840,6 +840,7 @@ class TestBudgetMaterialRequestSource(FrappeTestCase):
 					)
 				self.assertEqual(inspection.source, material)
 				self.assertEqual(len(inspection.usage), 1)
+				self.assertEqual(inspection.source_usage, inspection.usage)
 				self.assertEqual(inspection.usage[0].open_reservation, "1.00")
 				self.assertEqual(inspection.candidates[0].key, intent.key)
 				assert_budget_guards([intent.key])

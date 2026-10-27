@@ -240,7 +240,11 @@ class TestBudgetMaterialAuthorizationObservation(IntegrationTestCase):
 		with patch.object(
 			observation, "locked_material_request_source", side_effect=lambda *identity: by_id[identity]
 		) as read:
-			observation.verify_guarded_initial_authorizations([item.key], sources, tuple(positions))
+			by_source = observation.verify_guarded_initial_authorizations(
+				[item.key], sources, tuple(positions)
+			)
+			self.assertEqual(len(by_source[(first.request, first.line, first.organization_unit)]), 51)
+			self.assertEqual(len(by_source[(second.request, second.line, second.organization_unit)]), 50)
 			self.assertEqual(read.call_count, 4)
 			assert_budget_guards([item.key])
 			frappe.db.sql(
