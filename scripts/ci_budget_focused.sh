@@ -50,26 +50,78 @@ cd "$BENCH_DIR"
   --correlation-id "FOCUSED-${GITHUB_RUN_ID:-local}-verify"
 bench --site "$SITE_NAME" migrate --skip-search-index
 
-test_log="$BENCH_DIR/logs/focused-budget-tests.log"
+release_log="$BENCH_DIR/logs/focused-release-jobs.log"
 bench --site "$SITE_NAME" run-tests --app medops --module medops.tests.test_budget_release_execution \
-  --test test_persisted_authorized_release_guard_checks_original_units_without_posting \
-  --test test_persisted_release_guard_poisoned_when_actor_check_is_revoked \
-  --test test_persisted_release_guard_detects_role_revocation_from_another_transaction \
-  --test test_persisted_reversal_guard_verifies_the_complete_original_batch \
-  --test test_guarded_release_inventory_reconciles_posted_batches_and_physical_entries \
-  2>&1 | tee "$test_log"
-if ! grep -Eq 'Ran 5 tests? in [0-9.]+s' "$test_log"; then
-  echo "Focused CI did not execute the expected five tests" >&2
-  exit 1
-fi
+  --test test_actual_framework_jobs_post_and_completely_reverse_exact_original_grain 2>&1 | tee "$release_log"
+if ! grep -Eq 'Ran 1 tests? in [0-9.]+s' "$release_log"; then echo "Missing release regression" >&2; exit 1; fi
+usage_log="$BENCH_DIR/logs/focused-usage-observation.log"
+bench --site "$SITE_NAME" run-tests --app medops --module medops.tests.test_budget_usage_observation \
+  --case TestBudgetUsageObservation 2>&1 | tee "$usage_log"
+if ! grep -Eq 'Ran 32 tests? in [0-9.]+s' "$usage_log"; then echo "Missing scope observation tests" >&2; exit 1; fi
+reversal_log="$BENCH_DIR/logs/focused-reversal-usage.log"
+bench --site "$SITE_NAME" run-tests --app medops --module medops.tests.test_budget_release_usage_guard \
+  --case TestBudgetReleaseUsageGuard 2>&1 | tee "$reversal_log"
+if ! grep -Eq 'Ran 6 tests? in [0-9.]+s' "$reversal_log"; then echo "Missing reversal checks" >&2; exit 1; fi
+source_log="$BENCH_DIR/logs/focused-source-observation.log"
+bench --site "$SITE_NAME" run-tests --app medops --module medops.tests.test_budget_reservation_observation \
+  --case TestBudgetReservationObservation 2>&1 | tee "$source_log"
+if ! grep -Eq 'Ran 11 tests? in [0-9.]+s' "$source_log"; then echo "Missing source observations" >&2; exit 1; fi
 
-storage_log="$BENCH_DIR/logs/focused-budget-storage-tests.log"
+multi_log="$BENCH_DIR/logs/focused-multi-source-guards.log"
+bench --site "$SITE_NAME" run-tests --app medops --module medops.tests.test_budget_multi_source_guards \
+  --case TestBudgetMultiSourceGuards 2>&1 | tee "$multi_log"
+if ! grep -Eq 'Ran 6 tests? in [0-9.]+s' "$multi_log"; then echo "Missing multi-source guard checks" >&2; exit 1; fi
+real_multi_log="$BENCH_DIR/logs/focused-real-multi-source.log"
+bench --site "$SITE_NAME" run-tests --app medops --module medops.tests.test_budget_material_request_source \
+  --test test_two_real_purchase_sources_are_locked_before_shared_budget_guard 2>&1 | tee "$real_multi_log"
+if ! grep -Eq 'Ran 1 tests? in [0-9.]+s' "$real_multi_log"; then echo "Missing real multi-source check" >&2; exit 1; fi
+guard_log="$BENCH_DIR/logs/focused-generic-guard.log"
+bench --site "$SITE_NAME" run-tests --app medops --module medops.tests.test_budget_control_guards \
+  --case TestBudgetControlGuards 2>&1 | tee "$guard_log"
+if ! grep -Eq 'Ran 9 tests? in [0-9.]+s' "$guard_log"; then echo "Missing generic guard checks" >&2; exit 1; fi
+
+preview_log="$BENCH_DIR/logs/focused-usage-preview.log"
+bench --site "$SITE_NAME" run-tests --app medops --module medops.tests.test_budget_usage_preview \
+  --case TestBudgetUsagePreview 2>&1 | tee "$preview_log"
+if ! grep -Eq 'Ran 11 tests? in [0-9.]+s' "$preview_log"; then echo "Missing usage preview checks" >&2; exit 1; fi
+
+native_preview_log="$BENCH_DIR/logs/focused-native-usage-preview.log"
+bench --site "$SITE_NAME" run-tests --app medops --module medops.tests.test_budget_material_request_source \
+  --test test_real_purchase_source_flows_through_empty_usage_inspection 2>&1 | tee "$native_preview_log"
+if ! grep -Eq 'Ran 1 tests? in [0-9.]+s' "$native_preview_log"; then echo "Missing native source preview check" >&2; exit 1; fi
+
+storage_log="$BENCH_DIR/logs/focused-reservation-storage.log"
 bench --site "$SITE_NAME" run-tests --app medops --module medops.tests.test_budget_reservation_storage \
   --case TestBudgetReservationStorage 2>&1 | tee "$storage_log"
-if ! grep -Eq 'Ran 3 tests? in [0-9.]+s' "$storage_log"; then
-  echo "Focused CI did not execute the expected three storage tests" >&2
-  exit 1
-fi
+if ! grep -Eq 'Ran 4 tests? in [0-9.]+s' "$storage_log"; then echo "Missing migrated storage checks" >&2; exit 1; fi
+
+po_source_log="$BENCH_DIR/logs/focused-purchase-order-source.log"
+bench --site "$SITE_NAME" run-tests --app medops --module medops.tests.test_budget_purchase_order_source \
+  --case TestBudgetPurchaseOrderSource 2>&1 | tee "$po_source_log"
+if ! grep -Eq 'Ran 18 tests? in [0-9.]+s' "$po_source_log"; then echo "Missing purchase-order source checks" >&2; exit 1; fi
+
+reservation_confirmation_log="$BENCH_DIR/logs/focused-native-reservation-confirmation.log"
+bench --site "$SITE_NAME" run-tests --app medops --module medops.tests.test_budget_material_request_source \
+  --test test_private_reservation_confirmation_persists_exact_append_only_evidence 2>&1 | tee "$reservation_confirmation_log"
+if ! grep -Eq 'Ran 1 tests? in [0-9.]+s' "$reservation_confirmation_log"; then echo "Missing native reservation confirmation check" >&2; exit 1; fi
+
+native_po_log="$BENCH_DIR/logs/focused-native-purchase-order.log"
+bench --site "$SITE_NAME" run-tests --app medops --module medops.tests.test_budget_material_request_source \
+  --test test_real_submitted_purchase_order_is_linked_to_material_request 2>&1 | tee "$native_po_log"
+if ! grep -Eq 'Ran 1 tests? in [0-9.]+s' "$native_po_log"; then echo "Missing native purchase order check" >&2; exit 1; fi
+
+po_discovery_log="$BENCH_DIR/logs/focused-purchase-order-discovery.log"
+bench --site "$SITE_NAME" run-tests --app medops --module medops.tests.test_budget_purchase_order_source \
+  --case TestBudgetPurchaseOrderDiscovery 2>&1 | tee "$po_discovery_log"
+if ! grep -Eq 'Ran 6 tests? in [0-9.]+s' "$po_discovery_log"; then echo "Missing purchase-order discovery checks" >&2; exit 1; fi
+
+historical_log="$BENCH_DIR/logs/focused-material-snapshot-contract.log"
+(cd "$ROOT_DIR" && "$BENCH_DIR/env/bin/python" -m unittest tests.test_material_source_snapshot) 2>&1 | tee "$historical_log"
+if ! grep -Eq 'Ran 13 tests? in [0-9.]+s' "$historical_log"; then echo "Missing historical source contract checks" >&2; exit 1; fi
+
+authorization_log="$BENCH_DIR/logs/focused-reservation-authorization-contract.log"
+(cd "$ROOT_DIR" && "$BENCH_DIR/env/bin/python" -m unittest tests.test_reservation_authorization) 2>&1 | tee "$authorization_log"
+if ! grep -Eq 'Ran 22 tests? in [0-9.]+s' "$authorization_log"; then echo "Missing reservation authorization contract checks" >&2; exit 1; fi
 
 "$BENCH_DIR/env/bin/python" - "$BENCH_DIR" "$SITE_NAME" <<'PY'
 import json

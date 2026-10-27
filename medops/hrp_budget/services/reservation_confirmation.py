@@ -71,7 +71,7 @@ def _inspect_intent(item, actor, session):
 		item.key.organization_unit,
 		expected_source_digest=item.source_snapshot_digest,
 		budget_date=item.budget_date,
-		proposed_keys=[item.key],
+		proposed_keys=[asdict(item.key)],
 	)
 	if not any(
 		candidate.key == item.key
