@@ -24,7 +24,13 @@ from medops.common.budget_reservation_proof import (
 from medops.common.budget_reservation_storage import ROW_FIELDS, reservation_record_row
 from medops.common.error_catalog import IoneApplicationError
 from medops.hrp_budget.services import budget_usage_observation as observation
-from medops.hrp_budget.services.control_guards import acquire_budget_guards, assert_budget_guards
+from medops.hrp_budget.services import material_usage_sources
+from medops.hrp_budget.services.control_guards import (
+	acquire_budget_guards,
+	acquire_multi_source_bound_budget_guards,
+	assert_budget_guards,
+)
+from medops.hrp_budget.services.material_request_source import MaterialRequestSource
 from medops.tests.test_budget_control_sources import input_key
 
 
@@ -67,11 +73,11 @@ class TestBudgetUsageObservation(IntegrationTestCase):
 		frappe.db.begin()
 		super().tearDown()
 
-	def evidence(self, suffix, *, key=None, amount="6.00", commit=None):
+	def evidence(self, suffix, *, key=None, amount="6.00", commit=None, digest="a" * 64, center="center"):
 		key = key or self.key
 		name = "reservation-" + suffix
 		source = ReservationSource(
-			"Material Request", "request-" + suffix, "a" * 64, "line", "allocation", "Reserve"
+			"Material Request", "request-" + suffix, digest, "line", "allocation", "Reserve"
 		)
 		first = reservation_record(
 			ReservationEvent(reservation_event_key(name, 1), name, 1, key, "CNY", 2, "Reserve", amount),
@@ -94,7 +100,7 @@ class TestBudgetUsageObservation(IntegrationTestCase):
 				)
 			)
 		anchor = reservation_anchor(
-			records, expected_source=source, source_snapshot_digest="a" * 64, cost_center="center"
+			records, expected_source=source, source_snapshot_digest=digest, cost_center=center
 		)
 		return reservation_anchor_row(anchor), [reservation_record_row(record) for record in records]
 
@@ -217,3 +223,89 @@ class TestBudgetUsageObservation(IntegrationTestCase):
 				observation.guarded_budget_usage_observation([self.key])
 		with self.assertRaises(IoneApplicationError):
 			assert_budget_guards([self.key])
+
+	def source_snapshot(self):
+		return MaterialRequestSource(
+			request="request-a",
+			line="line",
+			request_modified="2026-01-01 00:00:00",
+			line_modified="2026-01-01 00:00:00",
+			company=self.key.company,
+			hospital=self.key.hospital,
+			organization_unit=self.key.organization_unit,
+			organization_version="version",
+			mapping_revision=1,
+			cost_center="center",
+			currency="CNY",
+			transaction_date="2026-01-15",
+			docstatus=1,
+			status="Submitted",
+			item_code="item",
+			uom="unit",
+			expense_account=None,
+			project=None,
+			quantity="1.000000000",
+			rate="6.000000000",
+			amount="6.000000000",
+		)
+
+	def prepare_source_verification(self, *, center="center"):
+		frappe.db.rollback()
+		source = self.source_snapshot()
+		self.add_evidence(*self.evidence("a", digest=source.digest(), center=center))
+		with patch.object(observation, "_access"):
+			refs = material_usage_sources.discover_material_usage_sources([self.key])
+		self.assertEqual(len(refs), 1)
+		self.assertEqual(refs[0].expected_digest, source.digest())
+		acquire_multi_source_bound_budget_guards(
+			[self.key],
+			source_bindings=((source.request, source.line, source.organization_unit, source.digest()),),
+		)
+		return source
+
+	def verify_source(self, source, *, current=None):
+		with (
+			patch.object(observation, "_access"),
+			patch.object(
+				material_usage_sources, "locked_material_request_source", return_value=current or source
+			),
+		):
+			return material_usage_sources.guarded_verify_material_usage_sources([self.key], [source])
+
+	def test_current_source_is_checked_against_complete_guarded_reservation(self):
+		source = self.prepare_source_verification()
+		positions = self.verify_source(source)
+		self.assertEqual(
+			[(p.reservation, p.open_reservation) for p in positions], [("reservation-a", "6.00")]
+		)
+		assert_budget_guards([self.key])
+
+	def test_changed_native_source_invalidates_the_guard(self):
+		source = self.prepare_source_verification()
+		with self.assertRaises(IoneApplicationError):
+			self.verify_source(source, current=replace(source, amount="7.000000000"))
+		with self.assertRaises(IoneApplicationError):
+			assert_budget_guards([self.key])
+
+	def test_changed_source_set_invalidates_the_guard(self):
+		source = self.prepare_source_verification()
+		self.add_evidence(*self.evidence("b"))
+		with self.assertRaises(IoneApplicationError):
+			self.verify_source(source)
+		with self.assertRaises(IoneApplicationError):
+			assert_budget_guards([self.key])
+
+	def test_independently_checked_cost_center_cannot_be_forged(self):
+		source = self.prepare_source_verification(center="other-center")
+		with self.assertRaises(IoneApplicationError):
+			self.verify_source(source)
+		with self.assertRaises(IoneApplicationError):
+			assert_budget_guards([self.key])
+
+	def test_discovery_denies_guest_before_query(self):
+		frappe.db.rollback()
+		frappe.set_user("Guest")
+		with patch.object(observation, "_scope_query") as query:
+			with self.assertRaises(IoneApplicationError):
+				material_usage_sources.discover_material_usage_sources([self.key])
+			query.assert_not_called()

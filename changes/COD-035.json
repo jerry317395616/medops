@@ -34,6 +34,7 @@
 		"medops/tests/test_budget_material_request_source.py",
 		"medops/hrp_budget/services/budget_usage_observation.py",
 		"medops/tests/test_budget_usage_observation.py",
+		"medops/hrp_budget/services/material_usage_sources.py",
 		"tests/test_change_governance.py"
 	],
 	"permissions_impact": "无新API或角色；内部核查先验证当前预算台账读取权限、字段和组织范围，再读取预占结构。预占事件与聚合写入仍关闭。",
@@ -46,7 +47,8 @@
 		"同范围跨期间及超过100个范围的后续查询分组不静默遗漏；不同组织不返回",
 		"访客在读取使用表前拒绝；读取后权限撤销时拒绝并失效围栏",
 		"既有冲销占用检测回归；未知表和非InnoDB失败关闭",
-		"多采购源的父凭证排序预锁、单次围栏、来源重读、非法迟锁和保存点失效；真实双来源锁测试与跨事务竞争仍须验证。"
+		"多采购源的父凭证排序预锁、单次围栏、来源重读、非法迟锁和保存点失效；真实双来源锁测试与跨事务竞争仍须验证。",
+		"预算占用来源在锁前发现、锁后重新枚举，与锁定的真实采购快照、成本中心和币种比较；新增隔离数据库用例待运行。"
 	],
 	"owner": "MedOps Maintainers",
 	"created_on": "2026-10-27",
