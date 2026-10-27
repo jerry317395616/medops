@@ -9,10 +9,10 @@
     "ADR-0031",
     "ADR-0032"
   ],
-  "current_scope": "COD-033 remains In Progress: run 40486315663 passed 448 native tests in both plain and IONE Core environments but failed the zero Error Log gate; test-local diagnostic cleanup is not yet native verified. COD-034 prework adds an unconnected MariaDB v3 scope-and-period guard with fail-closed one-shot connection markers. Expected 477 pure/451 native; actual lock, savepoint, commit and rollback tests have not run. A pure overlap check is implemented but does not prove complete data or locking. Canonical source identity, overlap business validation, reservations, shared release fence, permissions, API and UI remain incomplete. Protected PR and hospital acceptance remain pending.",
+  "current_scope": "COD-033 remains In Progress: run 40486315663 passed 448 native tests in both plain and IONE Core environments but failed the zero Error Log gate; test-local diagnostic cleanup is not yet native verified. COD-034 prework adds an unconnected MariaDB v3 scope-and-period guard with fail-closed one-shot connection markers. Expected 477 pure/454 native; actual lock, savepoint, commit and rollback tests have not run. A pure overlap check is implemented but does not prove complete data or locking. An unconnected resolver reads persisted reference names with standard read permissions; it has not been native tested and does not validate relationships or grant write authority. Canonical source identity, overlap business validation, reservations, shared release fence, permissions, API and UI remain incomplete. Protected PR and hospital acceptance remain pending.",
   "checks": {
     "pure_tests_expected": 477,
-    "complete_frappe_tests_expected": 451,
+    "complete_frappe_tests_expected": 454,
     "exact_foundation_pure_tests_passed": 21,
     "native_foundation": {
       "status": "passed",
@@ -672,7 +672,7 @@
     "budget_control_prework": {
       "status": "pure_contracts_and_unconnected_lock_prototype",
       "pure_tests_added": 16,
-      "native_tests_added": 3,
+      "native_tests_added": 6,
       "database_lock_implemented": true,
       "database_lock_native_tested": false,
       "business_writers_use_guard": false,
@@ -697,7 +697,11 @@
       "stale_result_after_savepoint_invalidation_detected": false,
       "outer_full_rollback_after_savepoint_required": true,
       "pure_overlap_check_implemented": true,
-      "pure_overlap_check_proves_source_completeness_or_lock": false
+      "pure_overlap_check_proves_source_completeness_or_lock": false,
+      "reference_name_resolver_implemented": true,
+      "reference_name_resolver_native_tested": false,
+      "reference_name_resolver_mocked_tests": 2,
+      "standard_reader_real_database_alias_test": "added_not_run"
     },
     "ci_bootstrap_search_isolation": {
       "status": "implemented_not_retested",
