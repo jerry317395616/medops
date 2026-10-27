@@ -9,9 +9,9 @@
     "ADR-0031",
     "ADR-0032"
   ],
-  "current_scope": "COD-033 manual workflow 40497550894 passed 448 native tests in both plain and IONE Core configurations with zero Error Logs in all six fresh site checks; Required aggregate passed, but protected PR, server and hospital acceptance remain pending. COD-034 is unconnected prework: 483 pure and 460 expected native tests; actual current-source transaction, witness and callback tests have not run. It derives release/reversal keys, resolves reference names and has scope locks, overlap checks, guarded service rollback and a transaction witness candidate. Callback ordering uses pinned Frappe internals and fails closed on incompatible queues; direct or nested commits, manual queue changes, source completeness, permissions, write fencing, business retries, API/UI and hospital acceptance remain unverified or incomplete.",
+  "current_scope": "COD-033 manual workflow 40497550894 passed 448 native tests in both plain and IONE Core configurations with zero Error Logs in all six fresh site checks; Required passed. The 90-minute timeout candidate, protected PR, server and hospital acceptance remain pending. COD-034 is unconnected prework: 484 pure and 460 expected native tests; current-source witness and callback tests have not run. It derives release/reversal keys, resolves reference names, and includes scope locks, overlap checks and guarded rollback. Callback ordering depends on pinned Frappe internals; direct or nested commits, manual queue changes, source completeness, permissions, writer fencing, business retries and hospital acceptance remain unverified or incomplete.",
   "checks": {
-    "pure_tests_expected": 483,
+    "pure_tests_expected": 484,
     "complete_frappe_tests_expected": 460,
     "exact_foundation_pure_tests_passed": 21,
     "native_foundation": {
@@ -745,7 +745,7 @@
       "unknown_jobs_deleted_or_consumed": false
     },
     "ci_diagnostic_fixture_cleanup": {
-      "status": "implemented_not_retested",
+      "status": "manual_workflow_passed_on_05e8646",
       "failed_run": 40486315663,
       "plain_native_tests": 448,
       "core_native_tests": 448,
@@ -762,12 +762,18 @@
       "pinned_frappe_error_log_engine": "MyISAM",
       "candidate_cleanup": "rollback transactional writes; delete only the recorded synthetic Error Log after verifying name, owner, fingerprint and sanitized method",
       "candidate_native_retested": true,
-      "zero_error_log_gate_unchanged": true,
-      "original_errors_deleted_by_ci": false,
       "successful_run": 40497550894,
-      "successful_plain_native_tests": 448,
-      "successful_core_native_tests": 448,
-      "successful_error_logs_per_site": 0
+      "successful_plain_and_core_tests": 448,
+      "successful_error_logs_per_site": 0,
+      "zero_error_log_gate_unchanged": true,
+      "original_errors_deleted_by_ci": false
+    },
+    "integration_timeout_candidate": {
+      "minutes": 90,
+      "prior_plain_run": 40497912798,
+      "prior_plain_cancelled_at_approximately_minutes": 45,
+      "cancellation_reason_directly_verified": false,
+      "candidate_github_tested": false
     }
   },
   "previous_verified_release": {
