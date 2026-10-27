@@ -9,7 +9,7 @@
 		"ADR-0031",
 		"ADR-0032"
 	],
-	"current_scope": "COD-033 In Progress. Current candidate adds authorized statement labels, separate IONE Core compatibility CI, and CI-only bootstrap search-index queue isolation. Earlier GitHub run 40480393108 executed 448 native tests with one failure because the real-worker test found a pre-existing long-queue item; its bootstrap logged a native search-index enqueue. The fix is not yet verified by a new CI run. Expected461 pure/448 native; protected CI, native browser, full release and hospital acceptance remain pending.",
+	"current_scope": "COD-033 In Progress. GitHub run 40486315663 ran 448 native tests successfully in both plain and IONE Core environments, without bootstrap search-index queueing; both jobs failed the zero Error Log gate with one QueryDeadlockError each. Timestamp and method align with the immediate synthetic diagnostic test, but the ephemeral rows were not inspected directly. Test-local savepoint cleanup is implemented but not yet verified in native CI. Protected CI, native browser, full release and hospital acceptance remain pending.",
 	"checks": {
 		"pure_tests_expected": 461,
 		"complete_frappe_tests_expected": 448,
@@ -679,6 +679,20 @@
 			"identity_of_queued_job_confirmed": false,
 			"default_bootstrap_search_index_preserved": true,
 			"unknown_jobs_deleted_or_consumed": false
+		},
+		"ci_diagnostic_fixture_cleanup": {
+			"status": "implemented_not_retested",
+			"failed_run": 40486315663,
+			"plain_native_tests": 448,
+			"core_native_tests": 448,
+			"native_failures": 0,
+			"error_log_count_per_test_site": 1,
+			"error_method": "QueryDeadlockError",
+			"timestamp_matches_synthetic_diagnostic_test": true,
+			"row_identity_directly_verified": false,
+			"cleanup": "test-local savepoint rollback and exact created-name absence check",
+			"zero_error_log_gate_unchanged": true,
+			"original_errors_deleted_by_ci": false
 		}
 	},
 	"previous_verified_release": {
