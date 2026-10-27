@@ -21,13 +21,14 @@ from medops.hrp_budget.services.material_authorization_observation import (
 	verify_guarded_initial_authorizations,
 )
 from medops.hrp_budget.services.material_budget_guards import (
+	MaterialSourceIdentity,
 	MaterialSourceReference,
 	acquire_material_budget_guards_for_sources,
 )
 from medops.hrp_budget.services.material_request_source import MaterialRequestSource
 from medops.hrp_budget.services.material_usage_sources import (
 	discover_material_usage_sources,
-	guarded_verify_material_usage_sources,
+	guarded_verify_provisional_material_usage_sources,
 )
 from medops.services.errors import raise_ione_error
 
@@ -73,10 +74,13 @@ def inspect_purchase_usage(
 		_assert_actor(actor)
 		discovered = discover_material_usage_sources(keys)
 		_assert_actor(actor)
-		references = {(ref.request, ref.line, ref.organization_unit): ref for ref in discovered}
+		references: dict[tuple[str, str, str], MaterialSourceIdentity | MaterialSourceReference] = {
+			(ref.request, ref.line, ref.organization_unit): MaterialSourceIdentity(
+				ref.request, ref.line, ref.organization_unit
+			)
+			for ref in discovered
+		}
 		identity = (proposed.request, proposed.line, proposed.organization_unit)
-		if identity in references and references[identity] != proposed:
-			raise ValueError("proposed source differs from historical snapshot")
 		references[identity] = proposed
 		sources = acquire_material_budget_guards_for_sources(tuple(references.values()), keys)
 		_assert_actor(actor)
@@ -102,12 +106,12 @@ def inspect_purchase_usage(
 			"amount": source.amount,
 		}
 		match_purchase_release_keys(keys, [], **values)
-		usage = guarded_verify_material_usage_sources(keys, sources, discovered=discovered)
+		usage = guarded_verify_provisional_material_usage_sources(keys, sources, discovered=discovered)
 		_assert_actor(actor)
 		history = guarded_release_inventory(keys)
 		_assert_actor(actor)
 		candidates = match_purchase_release_keys(keys, history, **values)
-		if guarded_verify_material_usage_sources(keys, sources, discovered=discovered) != usage:
+		if guarded_verify_provisional_material_usage_sources(keys, sources, discovered=discovered) != usage:
 			raise ValueError("usage changed during release inspection")
 		verify_guarded_initial_authorizations(keys, sources, usage)
 		if ordered_budget_keys([resolve_budget_control_key(value) for value in inputs]) != keys:

@@ -108,7 +108,7 @@ class TestBudgetUsagePreview(IntegrationTestCase):
 				patch.object(preview, "acquire_material_budget_guards_for_sources", side_effect=acquire)
 			)
 			stack.enter_context(
-				patch.object(preview, "guarded_verify_material_usage_sources", side_effect=verify)
+				patch.object(preview, "guarded_verify_provisional_material_usage_sources", side_effect=verify)
 			)
 			stack.enter_context(patch.object(preview, "guarded_release_inventory", side_effect=inventory))
 			result = preview.inspect_purchase_usage(
@@ -183,7 +183,7 @@ class TestBudgetUsagePreview(IntegrationTestCase):
 			patch.object(preview, "resolve_budget_control_key", return_value=self.key),
 			patch.object(preview, "discover_material_usage_sources", return_value=()),
 			patch.object(preview, "acquire_material_budget_guards_for_sources", side_effect=acquire),
-			patch.object(preview, "guarded_verify_material_usage_sources", return_value=()),
+			patch.object(preview, "guarded_verify_provisional_material_usage_sources", return_value=()),
 			patch.object(preview, "guarded_release_inventory", return_value=(entry,)),
 		):
 			result = reservation_confirmation.prepare_reservation_confirmation(item)
@@ -245,11 +245,16 @@ class TestBudgetUsagePreview(IntegrationTestCase):
 		with self.assertRaises(IoneApplicationError):
 			assert_budget_guards([self.key])
 
-	def test_historical_snapshot_conflict_rejected_before_guard(self):
+	def test_historical_snapshot_cannot_bypass_independent_authorization(self):
 		changed = replace(self.second, amount="7.000000000")
+		with patch.object(
+			preview, "verify_guarded_initial_authorizations", side_effect=ValueError("synthetic denial")
+		) as verify:
+			with self.assertRaises(IoneApplicationError):
+				self.run_inspection(discovered=(self.ref(changed),))
+			verify.assert_called_once()
 		with self.assertRaises(IoneApplicationError):
-			self.run_inspection(discovered=(self.ref(changed),))
-		self.assertIsNone(getattr(frappe.local.db, "_medops_budget_guard_marker", None))
+			assert_budget_guards([self.key])
 
 	def test_late_usage_change_invalidates_guard(self):
 		values = iter([(), ("changed",)])

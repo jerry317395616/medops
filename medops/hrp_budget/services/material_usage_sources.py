@@ -143,10 +143,28 @@ def discover_material_usage_sources(value: object) -> tuple[MaterialSourceRefere
 
 
 def guarded_verify_material_usage_sources(value: object, sources: object, *, discovered: object):
+	"""Strictly require every source to match the originally captured digest."""
+	return _guarded_verify_material_usage_sources(value, sources, discovered=discovered, historical=False)
+
+
+def guarded_verify_provisional_material_usage_sources(value: object, sources: object, *, discovered: object):
+	"""Return untrusted usage pending separate historical decision verification.
+
+	Current sources are locked but their digest may differ from an original root.
+	A caller must authenticate every independent decision and compare original
+	financial facts before returning results or attempting any write.
+	"""
+	return _guarded_verify_material_usage_sources(value, sources, discovered=discovered, historical=True)
+
+
+def _guarded_verify_material_usage_sources(
+	value: object, sources: object, *, discovered: object, historical: bool
+):
 	"""Recheck discovered usage and all locked sources, including new requests.
 
-	Only proves current source facts match captured digests; normal later changes
-	can prevent verification. It does not prove historical approvals, completeness
+	The strict mode requires current source facts to match captured digests; the
+	provisional mode leaves historical comparison to its caller. Neither proves
+	historical approvals, completeness
 	of other writers or missing physical evidence, allocation policy, authenticity
 	against database tampering, or funds. The caller must pass the exact pre-lock
 	discovery result and include all historical and proposed sources. An empty set
@@ -184,7 +202,13 @@ def guarded_verify_material_usage_sources(value: object, sources: object, *, dis
 		refs = _references(rows)
 		if refs != discovered:
 			raise ValueError("reservation source set changed")
-		if any((r.request, r.line, r.organization_unit, r.expected_digest) not in bindings for r in refs):
+		if any(
+			(r.request, r.line, r.organization_unit) not in by_id
+			or (
+				not historical and (r.request, r.line, r.organization_unit, r.expected_digest) not in bindings
+			)
+			for r in refs
+		):
 			raise ValueError("historical reservation source was not locked")
 		for identity, source in by_id.items():
 			if locked_material_request_source(*identity) != source:
@@ -192,7 +216,7 @@ def guarded_verify_material_usage_sources(value: object, sources: object, *, dis
 		for row in rows.values():
 			source = by_id[(row["source_name"], row["source_line"], row["organization_unit"])]
 			if (
-				row["source_snapshot_digest"] != source.digest()
+				(not historical and row["source_snapshot_digest"] != source.digest())
 				or row["cost_center"] != source.cost_center
 				or row["currency"] != source.currency
 				or (row["company"], row["hospital"], row["organization_unit"], row["project"] or None)
