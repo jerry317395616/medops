@@ -28,6 +28,10 @@
 		"backlog/**",
 		"changes/COD-035.json",
 		"medops/hrp_budget/services/release_usage_guard.py",
+		"medops/hrp_budget/services/control_guards.py",
+		"medops/hrp_budget/services/material_budget_guards.py",
+		"medops/tests/test_budget_multi_source_guards.py",
+		"medops/tests/test_budget_material_request_source.py",
 		"medops/hrp_budget/services/budget_usage_observation.py",
 		"medops/tests/test_budget_usage_observation.py",
 		"tests/test_change_governance.py"
@@ -42,7 +46,7 @@
 		"同范围跨期间及超过100个范围的后续查询分组不静默遗漏；不同组织不返回",
 		"访客在读取使用表前拒绝；读取后权限撤销时拒绝并失效围栏",
 		"既有冲销占用检测回归；未知表和非InnoDB失败关闭",
-		"825bed1分页版完整CI通过；当前候选仍须验证可信来源、人工确认、全部写入口围栏、重复动作、余额、同键并发和真实业务验收"
+		"多采购源的父凭证排序预锁、单次围栏、来源重读、非法迟锁和保存点失效；真实双来源锁测试与跨事务竞争仍须验证。"
 	],
 	"owner": "MedOps Maintainers",
 	"created_on": "2026-10-27",

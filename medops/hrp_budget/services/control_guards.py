@@ -15,6 +15,8 @@ from medops.services.errors import raise_ione_error
 
 # Frappe's standard MariaDB tabSeries has a 100-character primary key and an
 # InnoDB row per name. Guard names contain hashes, not source identifiers.
+MAX_BOUND_MATERIAL_SOURCES = 100
+MaterialBinding = tuple[str, str, str, str]
 
 
 @dataclass(slots=True)
@@ -26,7 +28,7 @@ class _GuardState:
 class _GuardMarker:
 	keys: tuple[BudgetControlKey, ...]
 	witness: str
-	source_binding: tuple[str, str, str, str] | None = None
+	source_bindings: tuple[MaterialBinding, ...] = ()
 	state: _GuardState = field(default_factory=_GuardState)
 
 
@@ -76,19 +78,27 @@ def require_material_source_lock_order(request: str, line: str, unit: str) -> No
 	if (
 		not isinstance(marker, _GuardMarker)
 		or marker.state.invalidated
-		or marker.source_binding is None
-		or marker.source_binding[:3] != (request, line, unit)
+		or not any(binding[:3] == (request, line, unit) for binding in marker.source_bindings)
 	):
 		invalidate_budget_guards()
 		raise_ione_error("OPERATION_NOT_ALLOWED")
 	assert_budget_guards(marker.keys)
 
 
-def assert_material_guard_binding(keys, binding: tuple[str, str, str, str]) -> None:
+def assert_material_guard_binding(keys, binding: MaterialBinding) -> None:
 	"""Require the source snapshot associated with a live budget guard."""
 	assert_budget_guards(keys)
 	marker = getattr(frappe.local.db, "_medops_budget_guard_marker", None)
-	if not isinstance(marker, _GuardMarker) or marker.source_binding != binding:
+	if not isinstance(marker, _GuardMarker) or binding not in marker.source_bindings:
+		invalidate_budget_guards()
+		raise_ione_error("OPERATION_NOT_ALLOWED")
+
+
+def assert_material_guard_bindings(keys, bindings: tuple[MaterialBinding, ...]) -> None:
+	"""Require the complete canonical source set associated with a live guard."""
+	assert_budget_guards(keys)
+	marker = getattr(frappe.local.db, "_medops_budget_guard_marker", None)
+	if not isinstance(marker, _GuardMarker) or marker.source_bindings != bindings:
 		invalidate_budget_guards()
 		raise_ione_error("OPERATION_NOT_ALLOWED")
 
@@ -131,7 +141,13 @@ def acquire_budget_guards(keys):
 	return acquire_source_bound_budget_guards(keys, source_binding=None)
 
 
-def acquire_source_bound_budget_guards(keys, *, source_binding: tuple[str, str, str, str] | None):
+def acquire_source_bound_budget_guards(keys, *, source_binding: MaterialBinding | None):
+	return acquire_multi_source_bound_budget_guards(
+		keys, source_bindings=() if source_binding is None else (source_binding,)
+	)
+
+
+def acquire_multi_source_bound_budget_guards(keys, *, source_bindings: tuple[MaterialBinding, ...]):
 	"""Acquire same-key exclusive locks until the caller commits or rolls back.
 
 	This internal helper trusts a cooperating caller to have locked any bound
@@ -149,13 +165,20 @@ def acquire_source_bound_budget_guards(keys, *, source_binding: tuple[str, str, 
 	"""
 	ordered = ordered_budget_keys(keys)
 	names = budget_guard_names(ordered)
-	if source_binding is not None:
-		if not isinstance(source_binding, tuple) or len(source_binding) != 4:
+	if not isinstance(source_bindings, tuple) or len(source_bindings) > MAX_BOUND_MATERIAL_SOURCES:
+		raise ValueError("bounded material source bindings required")
+	identities = set()
+	for binding in source_bindings:
+		if not isinstance(binding, tuple) or len(binding) != 4:
 			raise ValueError("canonical material source binding required")
-		for value in source_binding[:3]:
+		for value in binding[:3]:
 			if normalize_reference(value, label="material source") != value:
 				raise ValueError("canonical material source binding required")
-		normalize_sha256(source_binding[3], label="source_digest")
+		if normalize_sha256(binding[3], label="source_digest") != binding[3] or binding[:3] in identities:
+			raise ValueError("unique canonical material source binding required")
+		identities.add(binding[:3])
+	if tuple(sorted(source_bindings)) != source_bindings:
+		raise ValueError("ordered material source bindings required")
 	db = frappe.local.db
 	if getattr(db, "_medops_budget_guard_marker", None) is not None:
 		raise_ione_error("OPERATION_NOT_ALLOWED")
@@ -180,7 +203,7 @@ def acquire_source_bound_budget_guards(keys, *, source_binding: tuple[str, str, 
 	pending = getattr(db.before_commit, "_functions", None)
 	if not isinstance(pending, deque):
 		raise_ione_error("CONFIGURATION_INVALID")
-	marker = _GuardMarker(ordered, "medops:budget:witness:" + token_hex(16), source_binding)
+	marker = _GuardMarker(ordered, "medops:budget:witness:" + token_hex(16), source_bindings)
 	db._medops_budget_guard_marker = marker
 	pending.appendleft(lambda: _before_guard_commit(db, marker))
 	db.after_commit.add(lambda: _finish_guard_transaction(db, marker))

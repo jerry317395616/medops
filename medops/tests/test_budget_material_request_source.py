@@ -18,7 +18,7 @@ from frappe.utils import get_bench_path
 
 from medops.common.budget_control import budget_control_key, budget_guard_names
 from medops.common.error_catalog import IoneApplicationError
-from medops.hrp_budget.services import material_request_source
+from medops.hrp_budget.services import material_budget_guards, material_request_source
 from medops.hrp_budget.services.control_guards import acquire_budget_guards, assert_budget_guards
 from medops.hrp_budget.services.material_budget_guards import acquire_material_budget_guards
 from medops.tests import test_budget_consolidation as source_fixture
@@ -276,6 +276,51 @@ class TestBudgetMaterialRequestSource(FrappeTestCase):
 				other = frappe.local.db
 				other.set_value("Material Request Item", self.line, "amount", "10.000000000")
 				other.rollback()
+
+	def test_two_real_purchase_sources_are_locked_before_shared_budget_guard(self):
+		second = frappe.copy_doc(self.request).insert(ignore_permissions=True)
+		with self.committed_source_fixture():
+			primary = frappe.local.db
+			try:
+				first_source = material_request_source.locked_material_request_source(
+					self.request.name, self.line, self.units["A"]
+				)
+				second_source = material_request_source.locked_material_request_source(
+					second.name, second.items[0].name, self.units["A"]
+				)
+				primary.rollback()
+				values = synthetic_key(uuid4().hex)
+				values.update(
+					company=first_source.company,
+					hospital=first_source.hospital,
+					organization_unit=first_source.organization_unit,
+					project=first_source.project,
+				)
+				key = budget_control_key(values)
+				references = [
+					material_budget_guards.MaterialSourceReference(
+						source.request, source.line, source.organization_unit, source.digest()
+					)
+					for source in (second_source, first_source)
+				]
+				locked = material_budget_guards.acquire_material_budget_guards_for_sources(references, [key])
+				self.assertEqual({item.request for item in locked}, {self.request.name, second.name})
+				with self.secondary_connection():
+					other = frappe.local.db
+					other.rollback()
+					other.sql("SET SESSION innodb_lock_wait_timeout = 1")
+					for name in (self.request.name, second.name):
+						with self.subTest(request=name), self.assertRaises(frappe.QueryTimeoutError):
+							other.get_value("Material Request", name, "name", for_update=True)
+						other.rollback()
+				self.assertIs(frappe.local.db, primary)
+				assert_budget_guards([key])
+			finally:
+				frappe.local.db = primary
+				primary.rollback()
+				if frappe.db.exists("Material Request", second.name):
+					frappe.delete_doc("Material Request", second.name, ignore_permissions=True)
+				primary.commit()
 
 	def test_generic_budget_guard_denies_late_source_lock(self):
 		guard = budget_control_key(synthetic_key(uuid4().hex))
