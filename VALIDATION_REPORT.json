@@ -9,10 +9,10 @@
 		"ADR-0031",
 		"ADR-0032"
 	],
-	"current_scope": "COD-033 remains In Progress and prior CI failure has a pending queue-isolation rerun. COD-034 prework adds an unconnected MariaDB v3 scope-and-period transaction guard, exact budget contracts and cross-period native tests. Expected 473 pure/450 native; v3 real-DB tests have not run, and one-shot transaction-wide lock acquisition, canonical source identity, overlap business validation, reservations, shared release fence, permissions, API and UI remain incomplete. Protected PR and hospital acceptance remain pending.",
+	"current_scope": "COD-033 remains In Progress and prior CI failure has a pending queue-isolation rerun. COD-034 prework adds an unconnected MariaDB v3 scope-and-period guard with fail-closed one-shot connection markers. Expected 473 pure/451 native; actual lock, savepoint, commit and rollback tests have not run. Canonical source identity, overlap business validation, reservations, shared release fence, permissions, API and UI remain incomplete. Protected PR and hospital acceptance remain pending.",
 	"checks": {
 		"pure_tests_expected": 473,
-		"complete_frappe_tests_expected": 450,
+		"complete_frappe_tests_expected": 451,
 		"exact_foundation_pure_tests_passed": 21,
 		"native_foundation": {
 			"status": "passed",
@@ -672,7 +672,7 @@
 		"budget_control_prework": {
 			"status": "pure_contracts_and_unconnected_lock_prototype",
 			"pure_tests_added": 12,
-			"native_tests_added": 2,
+			"native_tests_added": 3,
 			"database_lock_implemented": true,
 			"database_lock_native_tested": false,
 			"business_writers_use_guard": false,
@@ -691,7 +691,11 @@
 			"scope_guard_native_tested": false,
 			"transaction_wide_one_shot_enforced": false,
 			"overlapping_period_business_check_implemented": false,
-			"native_tests_for_v3_run": false
+			"native_tests_for_v3_run": false,
+			"transaction_callback_native_tested": false,
+			"repeated_guard_call_rejected_within_connection_transaction": true,
+			"stale_result_after_savepoint_invalidation_detected": false,
+			"outer_full_rollback_after_savepoint_required": true
 		},
 		"ci_bootstrap_search_isolation": {
 			"status": "implemented_not_retested",

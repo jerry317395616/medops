@@ -11,6 +11,12 @@ from medops.services.errors import raise_ione_error
 # InnoDB row per name. Guard names contain hashes, not source identifiers.
 
 
+def _finish_guard_transaction(db, marker):
+	"""Clear only this connection's marker after a full transaction boundary."""
+	if getattr(db, "_medops_budget_guard_marker", None) is marker:
+		delattr(db, "_medops_budget_guard_marker")
+
+
 def acquire_budget_guards(keys):
 	"""Acquire same-key exclusive locks until the caller commits or rolls back.
 
@@ -19,15 +25,21 @@ def acquire_budget_guards(keys):
 	not establish source completeness, authorization, or usable funds. Callers
 	must first resolve every reference to its actual persisted document name;
 	lexical normalization alone cannot model the database's collation aliases.
-	The future transaction boundary must gather its full key set and acquire it
-	once; incremental acquisitions are not prevented by this primitive.
+	The transaction must gather its full key set and acquire it once. A second
+	call is rejected even after rollback to a savepoint, because Frappe does not
+	run transaction callbacks for savepoint rollback. This marker cannot detect
+	lost locks or invalidate a previously returned result after such a rollback;
+	the future outer service must abort the entire transaction on that path.
 	"""
 	ordered = ordered_budget_keys(keys)
 	names = budget_guard_names(ordered)
-	if frappe.db.db_type != "mariadb" or frappe.db.auto_commit_on_many_writes:
+	db = frappe.local.db
+	if getattr(db, "_medops_budget_guard_marker", None) is not None:
+		raise_ione_error("OPERATION_NOT_ALLOWED")
+	if db.db_type != "mariadb" or db.auto_commit_on_many_writes:
 		raise_ione_error("CONFIGURATION_INVALID")
-	state = frappe.db.sql("SELECT @@tx_isolation, @@autocommit")
-	engine = frappe.db.sql(
+	state = db.sql("SELECT @@tx_isolation, @@autocommit")
+	engine = db.sql(
 		"SELECT ENGINE FROM information_schema.TABLES WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = %s",
 		("tabSeries",),
 	)
@@ -39,13 +51,17 @@ def acquire_budget_guards(keys):
 		or str(engine[0][0]).upper() != "INNODB"
 	):
 		raise_ione_error("CONFIGURATION_INVALID")
+	marker = object()
+	db._medops_budget_guard_marker = marker
+	db.after_commit.add(lambda: _finish_guard_transaction(db, marker))
+	db.after_rollback.add(lambda: _finish_guard_transaction(db, marker))
 	for name in names:
-		frappe.db.sql(
+		db.sql(
 			"""INSERT INTO `tabSeries` (`name`, `current`) VALUES (%s, 0)
 			ON DUPLICATE KEY UPDATE `current` = `current`""",
 			(name,),
 		)
-		locked = frappe.db.sql("SELECT `current` FROM `tabSeries` WHERE `name` = %s FOR UPDATE", (name,))
+		locked = db.sql("SELECT `current` FROM `tabSeries` WHERE `name` = %s FOR UPDATE", (name,))
 		if len(locked) != 1:
 			raise_ione_error("CONFIGURATION_INVALID")
 	return ordered

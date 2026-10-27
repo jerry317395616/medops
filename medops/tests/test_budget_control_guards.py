@@ -178,3 +178,55 @@ class TestBudgetControlGuards(IntegrationTestCase):
 				acquire_budget_guards([guard])
 		self.assertEqual(denied.exception.code, "IONE-CORE-0009")
 		self.assertEqual(sql.call_count, 2)
+
+	def test_one_shot_guard_survives_savepoint_rollback_and_resets_on_full_boundaries(self):
+		first = budget_control_key(synthetic_key(uuid4().hex))
+		second = budget_control_key(synthetic_key(uuid4().hex))
+		names = budget_guard_names([first, second])
+		primary = frappe.local.db
+		db = None
+		cleanup_allowed = False
+		try:
+			with self.secondary_connection():
+				db = frappe.local.db
+				db.rollback()
+				db.sql("SET SESSION TRANSACTION ISOLATION LEVEL READ COMMITTED")
+				db.begin()
+				for name in names:
+					self.assertEqual(
+						db.sql("SELECT COUNT(*) FROM `tabSeries` WHERE `name` = %s", (name,))[0][0], 0
+					)
+				cleanup_allowed = True
+				db.savepoint("cod034_guard_before")
+				acquire_budget_guards([first])
+				with self.assertRaises(IoneApplicationError) as duplicate:
+					acquire_budget_guards([second])
+				self.assertEqual(duplicate.exception.code, "IONE-CORE-0008")
+				db.rollback(save_point="cod034_guard_before")
+				with self.assertRaises(IoneApplicationError) as after_savepoint:
+					acquire_budget_guards([second])
+				self.assertEqual(after_savepoint.exception.code, "IONE-CORE-0008")
+				db.rollback()
+				acquire_budget_guards([second])
+				db.rollback()
+				acquire_budget_guards([first])
+				db.commit()
+				self.assertIsNone(getattr(db, "_medops_budget_guard_marker", None))
+				acquire_budget_guards([second])
+				db.rollback()
+		finally:
+			if db is not None:
+				frappe.local.db = db
+				try:
+					db.rollback()
+					if cleanup_allowed:
+						for name in names:
+							db.sql("DELETE FROM `tabSeries` WHERE `name` = %s", (name,))
+						db.commit()
+					db.rollback()
+					db.sql("SET SESSION TRANSACTION ISOLATION LEVEL REPEATABLE READ")
+					db.begin()
+				finally:
+					frappe.local.db = primary
+			else:
+				frappe.local.db = primary
