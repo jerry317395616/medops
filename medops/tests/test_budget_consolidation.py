@@ -74,6 +74,10 @@ def fixture_master(kind, payload):
 
 def fixtures():
 	frappe.set_user("Administrator")
+	# Company creates an in-transit warehouse. A focused fresh test site has not
+	# necessarily run ERPNext's setup wizard or another suite's shared fixtures.
+	if not frappe.db.exists("Warehouse Type", "Transit"):
+		frappe.get_doc(dict(doctype="Warehouse Type", name="Transit")).insert(ignore_permissions=True)
 	if not frappe.db.exists("Company", COMPANY):
 		frappe.get_doc(
 			dict(

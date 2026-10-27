@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import frappe
 
-from medops.common.budget_control import budget_control_key, ordered_budget_keys
+from medops.common.budget_control import ordered_budget_keys
 from medops.common.budget_control_history import ReleaseInventoryEntry
 from medops.common.budget_ledger import LEDGER, LEDGER_PUBLIC_FIELDS, RELEASE
 from medops.common.budget_statement_access import native_ledger_base_check
@@ -153,24 +153,20 @@ def guarded_release_inventory(value: object) -> tuple[ReleaseInventoryEntry, ...
 		currencies = {}
 		for row in rows.values():
 			key = resolve_budget_control_key(
-				budget_control_key(
-					{
-						field: str(row.get(field))
-						if field in {"period_start", "period_end"}
-						else row.get(field)
-						for field in (
-							"company",
-							"hospital",
-							"organization_unit",
-							"fiscal_year",
-							"budget_subject",
-							"funding_source",
-							"project",
-							"period_start",
-							"period_end",
-						)
-					}
-				)
+				{
+					field: str(row.get(field)) if field in {"period_start", "period_end"} else row.get(field)
+					for field in (
+						"company",
+						"hospital",
+						"organization_unit",
+						"fiscal_year",
+						"budget_subject",
+						"funding_source",
+						"project",
+						"period_start",
+						"period_end",
+					)
+				}
 			)
 			if _scope(key) in scopes:
 				precision = int(row.currency_precision)
