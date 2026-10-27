@@ -9,7 +9,7 @@
 		"ADR-0031",
 		"ADR-0032"
 	],
-	"current_scope": "COD-033 In Progress. Source86 full456 local quality/1449 blobs and6 targeted native passed. Full446 finished with2 HTTP fixture failures;all9 preserved-state checks passed and default386/short0/long0/workers0 preserved. Failures are409 on first module/settings commands because fixed request keys collide with earlier committed receipts and different current state/version. Current test-only correction uses a fresh UUID key per execution while preserving the identical key for within-run replay. No production Python changes after86. Two full module suites will run twice before another full446. Same459 optimization profile remains9d61.792s/63225SQL with unchanged digests. Native INFO audit passed. Backup/restore adapters prepared/plan-only checked; execution correctly remains gated off by failed full result. Public8291 unchanged; hospital capacity/interfaces/UAT, remaining UI/performance, protected CI/promotion incomplete.",
+	"current_scope": "COD-033 In Progress. c0eea4c full456 local quality/1449 committed blobs passed. Complete modules13/settings11 each ran twice:48 native executions (24 distinct cases),all9 preserved-state checks passed. Production app code is identical to86; only two HTTP tests receive per-execution UUID keys and preserve within-run replay. New full446 running on frozen private c0ee,PID4036727. Prior86 full446 ended with2 fixture request-key collisions/all9guards passed. Same459 optimization61.792s/63225SQL measured at9d with identical digests. INFO audit real-file and six targeted86 native passed. Backup/restore adapters/plan prepared but not executed; capacity/UI/CI/promotion and whole HRP goal remain incomplete. Public8291 unchanged.",
 	"checks": {
 		"pure_tests_expected": 456,
 		"complete_frappe_tests_expected": 446,
@@ -34,9 +34,9 @@
 			"migrations": 0
 		},
 		"protected_ci": "not run for COD-033",
-		"local_quality": "86ba9b0 full456 passed, all quality steps and1449 committed blobs passed",
+		"local_quality": "c0eea4c full456 passed,1449 committed blobs passed; production code identical86",
 		"pure_tests_passed": 456,
-		"complete_frappe_tests": "86 full446 completed with2 HTTP idempotency-fixture failures and all9 preserved-state checks passed. Test-only key isolation correction pending repeat-module and full verification.",
+		"complete_frappe_tests": "Newfull446 running atc0ee after repeated whole-modules counts13/11/13/11 passed. Prior86 complete446 had2 test-identity failures/all9guardspassed.",
 		"current_protocol": {
 			"status": "full local quality passed",
 			"tests": 11,
@@ -817,22 +817,18 @@
 		"coverage_limit": "Injected after native HTTPRequest construction and before before_request; earlier connection/session-constructor branches and proxy/server sinks not certified."
 	},
 	"full_native_suite": {
-		"status": "failed",
+		"status": "running",
 		"expected_tests": 446,
-		"commit": "86ba9b00f0db3a6b978135c4ee263b78d8778ab7",
-		"driver_pid": 3683057,
-		"proof_when_complete": "cod033-86ba9b0-full-native-suite-authority-read.json",
+		"commit": "c0eea4c3e1fc40f05c7a7a10bc6a6eb2dc1c7572",
+		"driver_pid": 4036727,
+		"proof_when_complete": "cod033-c0eea4c-full-native-suite-authority-read.json",
 		"source_frozen_during_run": true,
-		"public_sites_untouched": true,
-		"prior_privacy_evidence_source": "1627858250777ed0b34149459a61717ad7fcee57",
-		"diagnostic_source_identical_to_prior_cookie_csrf_probe": true,
-		"scope_limit": "Native full suite is still pending. Performance capacity, actual UI, backup, protected CI, hospital interfaces/UAT and promotion remain separate.",
-		"completed_tests": 446,
-		"failures": 2,
-		"exit_code": 1,
-		"all9_preserved_state_checks_passed": true,
-		"proof": "cod033-86ba9b0-full-native-suite-authority-read.json",
-		"driver_completed": true
+		"production_source_identical_to": "86ba9b00f0db3a6b978135c4ee263b78d8778ab7",
+		"only_application_tree_changes": [
+			"medops/hrp_foundation/tests/test_modules.py",
+			"medops/hrp_foundation/tests/test_system_settings.py"
+		],
+		"public_sites_untouched": true
 	},
 	"pending_read_optimization": {
 		"status": "measured61.792s at9d; two current native authority/cache cases passed at86; full446 running",
@@ -938,7 +934,7 @@
 		"complete_native_suite_not_replaced": true
 	},
 	"committed_http_fixture_isolation": {
-		"status": "implemented; runtime verification pending",
+		"status": "complete two modules repeated twice passed; full446 running",
 		"production_source_unchanged_since": "86ba9b00f0db3a6b978135c4ee263b78d8778ab7",
 		"failures": [
 			"test_http_command_reads_idempotency_header_and_replays_response",
@@ -949,7 +945,18 @@
 			409
 		],
 		"correction": "Fresh key per test execution; same key retained across first/second requests; first-not-replayed and second-replayed assertions retained; no receipt deletion/expiry extension or command relaxation.",
-		"planned_regression": "Complete module13 and settings11 tests, each twice on persistent private site, then full446."
+		"planned_regression": "Complete module13 and settings11 tests, each twice on persistent private site, then full446.",
+		"verified_source_commit": "c0eea4c3e1fc40f05c7a7a10bc6a6eb2dc1c7572",
+		"repeat_counts": [
+			13,
+			11,
+			13,
+			11
+		],
+		"distinct_cases": 24,
+		"native_executions": 48,
+		"all9_preserved_state_checks_passed": true,
+		"proof": "cod033-c0eea4c-foundation-repeat.json"
 	},
 	"backup_restore_rehearsal": {
 		"status": "adapters prepared and parsed; native API/required tools and read-only plan checked, not executed",
@@ -962,5 +969,39 @@
 			"preexisting services/configuration/queues unchanged"
 		],
 		"not_a_hospital_rpo_rto_certificate": true
-	}
+	},
+	"completed_full_native_attempts": [
+		{
+			"status": "failed",
+			"expected_tests": 443,
+			"commit": "1627858250777ed0b34149459a61717ad7fcee57",
+			"driver_pid": 2330748,
+			"proof_when_complete": "cod033-1627858-full-native-suite-memory4g.json",
+			"first_attempt": "failed after7 tests/73 cascading errors due confirmed isolated-database cgroup OOM; nine recovery integrity checks passed",
+			"resource_change": "private database memory limit1.5GiB to4GiB,live update,compose persisted;no restart or public service change",
+			"completed_tests": 443,
+			"passed_tests": 440,
+			"failures": 3,
+			"all_preserved_state_checks_passed": true,
+			"proof": "cod033-1627858-full-native-suite-memory4g.json"
+		},
+		{
+			"status": "failed",
+			"expected_tests": 446,
+			"commit": "86ba9b00f0db3a6b978135c4ee263b78d8778ab7",
+			"driver_pid": 3683057,
+			"proof_when_complete": "cod033-86ba9b0-full-native-suite-authority-read.json",
+			"source_frozen_during_run": true,
+			"public_sites_untouched": true,
+			"prior_privacy_evidence_source": "1627858250777ed0b34149459a61717ad7fcee57",
+			"diagnostic_source_identical_to_prior_cookie_csrf_probe": true,
+			"scope_limit": "Native full suite is still pending. Performance capacity, actual UI, backup, protected CI, hospital interfaces/UAT and promotion remain separate.",
+			"completed_tests": 446,
+			"failures": 2,
+			"exit_code": 1,
+			"all9_preserved_state_checks_passed": true,
+			"proof": "cod033-86ba9b0-full-native-suite-authority-read.json",
+			"driver_completed": true
+		}
+	]
 }
