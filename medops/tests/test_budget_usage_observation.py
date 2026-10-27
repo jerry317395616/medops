@@ -218,7 +218,9 @@ class TestBudgetUsageObservation(IntegrationTestCase):
 			assert_budget_guards([self.key])
 
 	def test_late_access_denial_invalidates_the_guard(self):
-		with patch.object(observation, "check_usage_access", side_effect=[None, PermissionError("synthetic denial")]):
+		with patch.object(
+			observation, "check_usage_access", side_effect=[None, PermissionError("synthetic denial")]
+		):
 			with self.assertRaises(PermissionError):
 				observation.guarded_budget_usage_observation([self.key])
 		with self.assertRaises(IoneApplicationError):
