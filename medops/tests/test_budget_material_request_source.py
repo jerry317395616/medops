@@ -17,8 +17,10 @@ from frappe.tests.utils import FrappeTestCase
 from frappe.utils import get_bench_path
 
 from medops.common.budget_control import budget_control_key, budget_guard_names
+from medops.common.budget_reservation_anchor import ANCHOR_ROW_FIELDS
+from medops.common.budget_reservation_storage import ROW_FIELDS
 from medops.common.error_catalog import IoneApplicationError
-from medops.hrp_budget.services import material_budget_guards, material_request_source
+from medops.hrp_budget.services import material_budget_guards, material_request_source, material_usage_preview
 from medops.hrp_budget.services.control_guards import acquire_budget_guards, assert_budget_guards
 from medops.hrp_budget.services.material_budget_guards import acquire_material_budget_guards
 from medops.tests import test_budget_consolidation as source_fixture
@@ -321,6 +323,69 @@ class TestBudgetMaterialRequestSource(FrappeTestCase):
 				if frappe.db.exists("Material Request", second.name):
 					frappe.delete_doc("Material Request", second.name, ignore_permissions=True)
 				primary.commit()
+
+	def test_real_purchase_source_flows_through_empty_usage_inspection(self):
+		# The only changed ERPNext document is this isolated synthetic draft.
+		self.request.items[0].rate = 10
+		self.request.items[0].amount = 10
+		self.request.save(ignore_permissions=True)
+		with self.committed_source_fixture():
+			primary = frappe.local.db
+			tables = (
+				("tabHRP Budget Reservation", ANCHOR_ROW_FIELDS),
+				("tabHRP Budget Reservation Event", ROW_FIELDS),
+			)
+			try:
+				for table, fields in tables:
+					columns = []
+					for field in sorted(fields):
+						if field in {"event_count", "sequence", "currency_precision", "proof_version"}:
+							kind = "INT"
+						elif field in {"period_start", "period_end"}:
+							kind = "DATE"
+						elif field == "occurred_at":
+							kind = "DATETIME(6)"
+						else:
+							kind = "VARCHAR(255)"
+						columns.append(f"`{field}` {kind}")
+					primary.sql(
+						f"CREATE TEMPORARY TABLE `{table}` ({', '.join(columns)}) ENGINE=InnoDB "
+						"DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci"  # nosec B608 - fixed test tables and fields
+					)
+				source = material_request_source.locked_material_request_source(
+					self.request.name, self.line, self.units["A"]
+				)
+				primary.rollback()
+				values = synthetic_key(uuid4().hex)
+				values.update(
+					company=source.company,
+					hospital=source.hospital,
+					organization_unit=source.organization_unit,
+					project=source.project,
+					period_start="2026-10-01",
+					period_end="2026-10-31",
+				)
+				key = budget_control_key(values)
+				with (
+					patch.object(material_usage_preview, "resolve_budget_control_key", return_value=key),
+					patch.object(material_usage_preview, "guarded_release_inventory", return_value=()),
+				):
+					result = material_usage_preview.inspect_purchase_usage(
+						source.request,
+						source.line,
+						source.organization_unit,
+						expected_source_digest=source.digest(),
+						budget_date="2026-10-26",
+						proposed_keys=[values],
+					)
+				self.assertEqual((result.source, result.candidates, result.usage), (source, (), ()))
+				assert_budget_guards([key])
+			finally:
+				frappe.local.db = primary
+				primary.rollback()
+				for table, _ in reversed(tables):
+					primary.sql(f"DROP TEMPORARY TABLE IF EXISTS `{table}`")  # nosec B608 - fixed test tables
+				primary.rollback()
 
 	def test_generic_budget_guard_denies_late_source_lock(self):
 		guard = budget_control_key(synthetic_key(uuid4().hex))
