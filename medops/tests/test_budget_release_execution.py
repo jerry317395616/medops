@@ -253,12 +253,18 @@ class TestBudgetReleaseExecution(FrappeAPITestCase):
 
 	def test_guard_deadlock_aborts_whole_job_and_new_attempt_posts_once(self):
 		receipt = self.claim()
-		with patch.object(
-			control_release,
-			"prepare_persisted_release_inventory",
-			side_effect=frappe.QueryDeadlockError("synthetic lock conflict"),
-		):
+		calls = 0
+
+		def conflict_after_first_row(*args, **kwargs):
+			nonlocal calls
+			calls += 1
+			if calls == 2:
+				raise frappe.QueryDeadlockError("synthetic lock conflict after first row")
+			return append_immutable_entry(*args, **kwargs)
+
+		with patch.object(execution, "append_immutable_entry", side_effect=conflict_after_first_row):
 			self.assert_failed_atomic(self.execute(receipt))
+		self.assertEqual(calls, 2)
 		future = now_datetime() + timedelta(seconds=61)
 		with (
 			patch.object(jobs, "now_datetime", return_value=future),
