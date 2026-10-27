@@ -53,8 +53,8 @@ bench --site "$SITE_NAME" migrate --skip-search-index
 test_log="$BENCH_DIR/logs/focused-material-request-tests.log"
 bench --site "$SITE_NAME" run-tests --app medops --module medops.tests.test_budget_material_request_source \
   --case TestBudgetMaterialRequestSource 2>&1 | tee "$test_log"
-if ! grep -Eq 'Ran 1 tests? in [0-9.]+s' "$test_log"; then
-  echo "Focused CI did not execute the expected material request source test" >&2
+if ! grep -Eq 'Ran 3 tests? in [0-9.]+s' "$test_log"; then
+  echo "Focused CI did not execute the expected three material request source tests" >&2
   exit 1
 fi
 
