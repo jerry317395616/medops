@@ -4,6 +4,8 @@ from __future__ import annotations
 
 from dataclasses import asdict, dataclass
 
+import frappe
+
 from medops.common.budget_control import MAX_CONTROL_KEYS, budget_control_key, ordered_budget_keys
 from medops.common.budget_material_match import (
 	PurchaseBudgetCandidate,
@@ -35,6 +37,11 @@ class PurchaseUsageInspection:
 	usage: tuple[ReservationPosition, ...]
 
 
+def _assert_actor(actor: str) -> None:
+	if frappe.session.user != actor:
+		raise_ione_error("CONFLICT")
+
+
 def inspect_purchase_usage(
 	request: str,
 	line: str,
@@ -53,19 +60,23 @@ def inspect_purchase_usage(
 	prerequisites. The pre-lock discovery tuple comes only from this function.
 	"""
 	try:
+		actor = frappe.session.user
 		proposed = MaterialSourceReference(request, line, organization_unit, expected_source_digest)
 		date = normalize_required_date(budget_date, label="budget_date")
 		if not isinstance(proposed_keys, (tuple, list)) or not 1 <= len(proposed_keys) <= MAX_CONTROL_KEYS:
 			raise ValueError("bounded proposed budget keys required")
 		inputs = tuple(asdict(budget_control_key(value)) for value in proposed_keys)
 		keys = ordered_budget_keys([resolve_budget_control_key(value) for value in inputs])
+		_assert_actor(actor)
 		discovered = discover_material_usage_sources(keys)
+		_assert_actor(actor)
 		references = {(ref.request, ref.line, ref.organization_unit): ref for ref in discovered}
 		identity = (proposed.request, proposed.line, proposed.organization_unit)
 		if identity in references and references[identity] != proposed:
 			raise ValueError("proposed source differs from historical snapshot")
 		references[identity] = proposed
 		sources = acquire_material_budget_guards_for_sources(tuple(references.values()), keys)
+		_assert_actor(actor)
 		selected = [
 			source
 			for source in sources
@@ -89,12 +100,15 @@ def inspect_purchase_usage(
 		}
 		match_purchase_release_keys(keys, [], **values)
 		usage = guarded_verify_material_usage_sources(keys, sources, discovered=discovered)
+		_assert_actor(actor)
 		history = guarded_release_inventory(keys)
+		_assert_actor(actor)
 		candidates = match_purchase_release_keys(keys, history, **values)
 		if guarded_verify_material_usage_sources(keys, sources, discovered=discovered) != usage:
 			raise ValueError("usage changed during release inspection")
 		if ordered_budget_keys([resolve_budget_control_key(value) for value in inputs]) != keys:
 			raise ValueError("budget key references changed")
+		_assert_actor(actor)
 		assert_budget_guards(keys)
 		return PurchaseUsageInspection(source, date, candidates, usage)
 	except ValueError as error:

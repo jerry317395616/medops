@@ -163,3 +163,13 @@ class TestBudgetUsagePreview(IntegrationTestCase):
 			self.run_inspection(inventory_side_effect=deny)
 		with self.assertRaises(IoneApplicationError):
 			assert_budget_guards([self.key])
+
+	def test_actor_change_during_release_inspection_invalidates_guard(self):
+		def change_actor():
+			frappe.set_user("Guest")
+			return ()
+
+		with self.assertRaises(IoneApplicationError):
+			self.run_inspection(inventory_side_effect=change_actor)
+		with self.assertRaises(IoneApplicationError):
+			assert_budget_guards([self.key])
