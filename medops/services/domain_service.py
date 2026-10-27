@@ -147,7 +147,14 @@ class DomainService(ABC, Generic[CommandT]):
 
 	@staticmethod
 	def _rollback(savepoint: str | None) -> None:
-		if savepoint is not None:
+		# A budget guard may have been acquired after an enclosing savepoint.
+		# Rolling back only this service can discard its database locks while a
+		# caller still holds the returned key set. Abort the entire transaction
+		# on ordinary failures whenever this connection has an active guard.
+		# Deadlock/timeout errors continue to propagate for outer retry unchanged.
+		if getattr(getattr(frappe.local, "db", None), "_medops_budget_guard_marker", None) is not None:
+			frappe.db.rollback()
+		elif savepoint is not None:
 			frappe.db.rollback(save_point=savepoint)
 
 	def _audit_failure(

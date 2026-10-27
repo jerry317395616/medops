@@ -15,8 +15,10 @@ from frappe.tests import IntegrationTestCase
 from frappe.utils import get_bench_path
 
 from medops.common.budget_control import budget_control_key, budget_guard_names
+from medops.common.domain_service import DomainServiceDefinition
 from medops.common.error_catalog import IoneApplicationError
 from medops.hrp_budget.services.control_guards import acquire_budget_guards
+from medops.services.domain_service import DomainService
 
 CHILD = r"""
 import json, sys, time, traceback
@@ -45,8 +47,20 @@ try:
             time.sleep(0.05)
     else:
         Path(start_file).write_text('started', encoding='utf-8')
-        acquire_budget_guards([key])
-        Path(done_file).write_text('acquired', encoding='utf-8')
+        for attempt in range(4):
+            try:
+                acquire_budget_guards([key])
+                if mode == 'retry_once' and attempt == 0:
+                    raise frappe.QueryDeadlockError('synthetic whole-transaction retry')
+                Path(done_file).write_text(str(attempt), encoding='utf-8')
+                break
+            except (frappe.QueryDeadlockError, frappe.QueryTimeoutError):
+                # Retry only from a new full transaction. A savepoint would not
+                # clear the connection marker or safely restore all locks.
+                frappe.db.rollback()
+                if attempt == 3:
+                    raise
+                time.sleep(0.05 * (attempt + 1))
 except Exception as error:
     frames = [{'file': Path(frame.filename).name, 'line': frame.lineno, 'function': frame.name}
               for frame in traceback.extract_tb(error.__traceback__)[-6:]]
@@ -137,13 +151,14 @@ class TestBudgetControlGuards(IntegrationTestCase):
 				same, same_started, same_done, same_error = launch(one, "try", "same")
 				overlapping, overlap_started, overlap_done, overlap_error = launch(overlap, "try", "overlap")
 				different, different_started, different_done, different_error = launch(
-					other, "try", "different"
+					other, "retry_once", "different"
 				)
 				wait_for_file(same_started, same, error_file=same_error)
 				wait_for_file(overlap_started, overlapping, error_file=overlap_error)
 				wait_for_file(different_started, different, error_file=different_error)
 				wait_for_file(different_done, different, error_file=different_error)
 				self.assertEqual(different.wait(timeout=10), 0)
+				self.assertGreaterEqual(int(different_done.read_text(encoding="utf-8")), 1)
 				self.assertIsNone(holder.poll())
 				self.assertIsNone(same.poll())
 				self.assertIsNone(overlapping.poll())
@@ -230,3 +245,80 @@ class TestBudgetControlGuards(IntegrationTestCase):
 					frappe.local.db = primary
 			else:
 				frappe.local.db = primary
+
+	def test_domain_service_failure_rolls_back_whole_guarded_transaction(self):
+		guard = budget_control_key(synthetic_key(uuid4().hex))
+		guard_names = budget_guard_names([guard])
+		before = "medops:guard-test:before:" + uuid4().hex
+		after = "medops:guard-test:after:" + uuid4().hex
+		names = (*guard_names, before, after)
+		primary = frappe.local.db
+		previous_user = frappe.session.user
+		db = None
+		reached = []
+
+		class FailingService(DomainService[bool]):
+			definition = DomainServiceDefinition(
+				name="hrp_budget.test.guard_failure",
+				version=1,
+				kind="command",
+				required_roles=frozenset({"System Manager"}),
+			)
+
+			def request_payload(self, command):
+				return {"guarded": command}
+
+			def perform(self, command):
+				reached.append(command)
+				if command:
+					acquire_budget_guards([guard])
+				frappe.db.sql("INSERT INTO `tabSeries` (`name`, `current`) VALUES (%s, 0)", (after,))
+				raise RuntimeError("synthetic service failure")
+
+		try:
+			frappe.set_user("Administrator")
+			with self.secondary_connection():
+				db = frappe.local.db
+				db.rollback()
+				db.sql("SET SESSION TRANSACTION ISOLATION LEVEL READ COMMITTED")
+				db.begin()
+				for name in names:
+					self.assertEqual(
+						db.sql("SELECT COUNT(*) FROM `tabSeries` WHERE `name` = %s", (name,))[0][0], 0
+					)
+				db.sql("INSERT INTO `tabSeries` (`name`, `current`) VALUES (%s, 0)", (before,))
+				with self.assertRaises(IoneApplicationError) as unguarded:
+					FailingService().execute(False, idempotency_key="COD034-unguarded-" + uuid4().hex)
+				self.assertEqual(unguarded.exception.code, "IONE-CORE-0012")
+				self.assertEqual(reached, [False])
+				self.assertEqual(
+					db.sql("SELECT COUNT(*) FROM `tabSeries` WHERE `name` = %s", (before,))[0][0], 1
+				)
+				self.assertEqual(
+					db.sql("SELECT COUNT(*) FROM `tabSeries` WHERE `name` = %s", (after,))[0][0], 0
+				)
+				db.rollback()
+				db.sql("INSERT INTO `tabSeries` (`name`, `current`) VALUES (%s, 0)", (before,))
+				with self.assertRaises(IoneApplicationError) as guarded:
+					FailingService().execute(True, idempotency_key="COD034-guarded-" + uuid4().hex)
+				self.assertEqual(guarded.exception.code, "IONE-CORE-0012")
+				self.assertEqual(reached, [False, True])
+				for name in names:
+					self.assertEqual(
+						db.sql("SELECT COUNT(*) FROM `tabSeries` WHERE `name` = %s", (name,))[0][0], 0
+					)
+				self.assertIsNone(getattr(db, "_medops_budget_guard_marker", None))
+				acquire_budget_guards([guard])
+				db.rollback()
+		finally:
+			if db is not None:
+				frappe.local.db = db
+				try:
+					db.rollback()
+					db.sql("SET SESSION TRANSACTION ISOLATION LEVEL REPEATABLE READ")
+					db.begin()
+				finally:
+					frappe.local.db = primary
+			else:
+				frappe.local.db = primary
+			frappe.set_user(previous_user)
