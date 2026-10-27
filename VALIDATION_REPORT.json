@@ -9,9 +9,9 @@
 		"ADR-0031",
 		"ADR-0032"
 	],
-	"current_scope": "COD-033 In Progress. GitHub run 40486315663 ran 448 native tests successfully in both plain and IONE Core environments, without bootstrap search-index queueing; both jobs failed the zero Error Log gate with one QueryDeadlockError each. Timestamp and method align with the immediate synthetic diagnostic test, but the ephemeral rows were not inspected directly. Savepoint-only cleanup failed in native CI because the pinned Error Log uses MyISAM; exact identity-checked synthetic cleanup is implemented but not yet native tested. Protected CI, native browser, full release and hospital acceptance remain pending. The candidate Required aggregate now includes IONE Core; its actual GitHub and protected-branch behavior remain unverified.",
+	"current_scope": "COD-033 In Progress. GitHub workflow 40497550894 passed all jobs including Required and both integrations: 448 tests and zero Error Logs across each set of three isolated sites. It was a manual run on 05e8646, not a protected PR check. A separate 630307d plain integration was cancelled around its 45-minute limit after 454 tests; the cause is not directly confirmed. The timeout increase is a new unverified candidate. Server testing, protected PR, actual hospital capacity, interfaces and acceptance remain pending.",
 	"checks": {
-		"pure_tests_expected": 463,
+		"pure_tests_expected": 464,
 		"complete_frappe_tests_expected": 448,
 		"exact_foundation_pure_tests_passed": 21,
 		"native_foundation": {
@@ -666,7 +666,7 @@
 			"separate_job": true,
 			"required_check": false,
 			"candidate_required_aggregate_includes_core": true,
-			"candidate_aggregate_native_ci_verified": false,
+			"candidate_aggregate_native_ci_verified": true,
 			"fresh_ci_sites_only": true,
 			"existing_ci_without_core_retained": true,
 			"real_hospital_acceptance": false
@@ -683,7 +683,7 @@
 			"unknown_jobs_deleted_or_consumed": false
 		},
 		"ci_diagnostic_fixture_cleanup": {
-			"status": "implemented_not_retested",
+			"status": "manual_workflow_passed_on_05e8646",
 			"failed_run": 40486315663,
 			"plain_native_tests": 448,
 			"core_native_tests": 448,
@@ -699,7 +699,10 @@
 			"followup_failure": "synthetic Error Log survived savepoint rollback",
 			"pinned_frappe_error_log_engine": "MyISAM",
 			"candidate_cleanup": "rollback transactional writes; delete only the recorded synthetic Error Log after verifying name, owner, fingerprint and sanitized method",
-			"candidate_native_retested": false,
+			"candidate_native_retested": true,
+			"successful_run": 40497550894,
+			"successful_plain_and_core_tests": 448,
+			"successful_error_logs_per_site": 0,
 			"zero_error_log_gate_unchanged": true,
 			"original_errors_deleted_by_ci": false
 		}

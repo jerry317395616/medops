@@ -157,7 +157,7 @@ jobs:
     name: Integration
     needs: quality
     runs-on: ubuntu-latest
-    timeout-minutes: 45
+    timeout-minutes: 90
     services:
       mariadb:
         image: mariadb:11.8

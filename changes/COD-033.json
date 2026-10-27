@@ -95,7 +95,8 @@
 		"独立CI在临时站点验证个人仓库固定ione_core版本与MedOps完整组合；保留无core的基准及首轮失败证据。",
 		"CI初始化跳过搜索索引排队，保留普通bootstrap索引默认行为及财务测试对原有长队列的拒绝；重新执行完整集成。",
 		"即时诊断隐私测试回滚自身事务写入；对MyISAM中的合成Error Log核对名称、所有者、指纹及方法后仅清理该记录，保留其他日志及CI零日志门槛。",
-		"候选Required汇总必须等待并检查IONE Core任务；通过、失败、取消及跳过均验证。"
+		"候选Required汇总必须等待并检查IONE Core任务；通过、失败、取消及跳过均验证。",
+		"普通及IONE Core集成任务提供至少90分钟并验证取消仍使Required失败。"
 	],
 	"owner": "MedOps Maintainers",
 	"created_on": "2026-10-26",
