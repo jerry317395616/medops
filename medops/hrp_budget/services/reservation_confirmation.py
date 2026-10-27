@@ -7,6 +7,7 @@ import hmac
 import secrets
 from dataclasses import asdict
 from datetime import timedelta
+from decimal import Decimal, localcontext
 
 import frappe
 from frappe.utils import now_datetime
@@ -80,6 +81,21 @@ def _inspect_intent(item, actor, session):
 		for candidate in inspection.candidates
 	):
 		raise_ione_error("CONFLICT")
+	# This is a source-line limit, not a budget availability calculation.
+	# Usage was independently bound to this locked source by the inspector.
+	with localcontext() as context:
+		context.prec = 48
+		exposure = sum(
+			(
+				Decimal(position.open_reservation)
+				+ Decimal(position.open_commitment)
+				+ Decimal(position.actual)
+				for position in inspection.source_usage
+			),
+			Decimal(0),
+		)
+		if exposure + Decimal(item.amount) > Decimal(inspection.source.amount):
+			raise_ione_error("CONFLICT")
 	_recheck(item, inspection.source, actor, session)
 	return inspection.source
 

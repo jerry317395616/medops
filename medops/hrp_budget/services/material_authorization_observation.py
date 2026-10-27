@@ -115,6 +115,7 @@ def verify_guarded_initial_authorizations(keys, sources, positions):
 		used_identities = set()
 		used_decisions = set()
 		used_confirmations = set()
+		positions_by_source = {identity: [] for identity in by_id}
 		for position, (root, events, confirmation, decision) in zip(
 			ordered_positions, _read_projections(ordered_positions), strict=True
 		):
@@ -139,12 +140,14 @@ def verify_guarded_initial_authorizations(keys, sources, positions):
 			)
 			if verified != position or position.key not in ordered or frappe.session.user != actor:
 				raise ValueError("authorized position differs from guarded usage")
+			positions_by_source[identity].append(position)
 		for identity in sorted(used_sources):
 			if locked_material_request_source(*identity) != by_id[identity]:
 				raise ValueError("authorized source changed during verification")
 		assert_material_guard_bindings(ordered, bindings)
 		if frappe.session.user != actor:
 			raise_ione_error("CONFLICT")
+		return {identity: tuple(positions) for identity, positions in positions_by_source.items()}
 	except (ValueError, TypeError, KeyError) as error:
 		invalidate_budget_guards()
 		raise_ione_error("CONFLICT", cause=error)

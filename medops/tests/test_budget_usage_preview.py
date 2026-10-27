@@ -14,6 +14,7 @@ from frappe.tests import IntegrationTestCase
 from medops.common.budget_control import budget_control_key
 from medops.common.budget_control_history import ReleaseInventoryEntry
 from medops.common.budget_material_match import PurchaseBudgetCandidate
+from medops.common.budget_reservation_events import ReservationPosition
 from medops.common.error_catalog import IoneApplicationError
 from medops.common.material_source_snapshot import material_source_snapshot
 from medops.common.reservation_authorization import reservation_intent
@@ -121,7 +122,7 @@ class TestBudgetUsagePreview(IntegrationTestCase):
 			)
 		return result, stages
 
-	def confirmation_intent(self):
+	def confirmation_intent(self, amount="6.00"):
 		snapshot, digest = material_source_snapshot(asdict(self.first))
 		return reservation_intent(
 			source_snapshot=snapshot,
@@ -130,7 +131,7 @@ class TestBudgetUsagePreview(IntegrationTestCase):
 			key=self.key,
 			currency="CNY",
 			precision=2,
-			amount="6.00",
+			amount=amount,
 			budget_date="2026-01-15",
 			reason="Synthetic test",
 		)
@@ -140,8 +141,57 @@ class TestBudgetUsagePreview(IntegrationTestCase):
 		binding = (self.first.request, self.first.line, self.first.organization_unit, self.first.digest())
 		acquire_multi_source_bound_budget_guards([self.key], source_bindings=(binding,))
 		return preview.PurchaseUsageInspection(
-			self.first, "2026-01-15", (PurchaseBudgetCandidate(self.key, "CNY", 2),), ()
+			self.first, "2026-01-15", (PurchaseBudgetCandidate(self.key, "CNY", 2),), (), ()
 		)
+
+	def test_confirmation_checks_existing_exposure_on_selected_source(self):
+		position = ReservationPosition(
+			"existing", self.key, "CNY", 2, 1, "1.00", "0.00", "0.00", "0.00", "1.00", "0.00"
+		)
+
+		def inspection(*args, **kwargs):
+			result = self.guarded_confirmation_inspection(*args, **kwargs)
+			return replace(result, usage=(position,), source_usage=(position,))
+
+		with (
+			patch.object(reservation_confirmation, "require_web_session"),
+			patch.object(reservation_confirmation, "session_digest", return_value="a" * 64),
+			patch.object(reservation_confirmation, "require_roles"),
+			patch.object(reservation_confirmation, "require_scope"),
+			patch.object(reservation_confirmation, "inspect_purchase_usage", side_effect=inspection),
+			patch.object(reservation_confirmation, "locked_material_request_source", return_value=self.first),
+			patch.object(reservation_confirmation, "_append") as append,
+		):
+			with self.assertRaises(IoneApplicationError):
+				reservation_confirmation.prepare_reservation_confirmation(self.confirmation_intent())
+			append.assert_not_called()
+			with self.assertRaises(IoneApplicationError):
+				assert_budget_guards([self.key])
+
+	def test_confirmation_accepts_exact_remaining_source_amount(self):
+		position = ReservationPosition(
+			"existing", self.key, "CNY", 2, 1, "1.00", "0.00", "0.00", "0.00", "1.00", "0.00"
+		)
+		other = replace(position, reservation="other-source", reserved="6.00", open_reservation="6.00")
+
+		def inspection(*args, **kwargs):
+			result = self.guarded_confirmation_inspection(*args, **kwargs)
+			return replace(result, usage=(position, other), source_usage=(position,))
+
+		with (
+			patch.object(reservation_confirmation, "require_web_session"),
+			patch.object(reservation_confirmation, "session_digest", return_value="a" * 64),
+			patch.object(reservation_confirmation, "require_roles"),
+			patch.object(reservation_confirmation, "require_scope"),
+			patch.object(reservation_confirmation, "inspect_purchase_usage", side_effect=inspection),
+			patch.object(reservation_confirmation, "locked_material_request_source", return_value=self.first),
+			patch.object(reservation_confirmation, "_append", return_value=SimpleNamespace(name="synthetic")),
+		):
+			result = reservation_confirmation.prepare_reservation_confirmation(
+				self.confirmation_intent("5.00")
+			)
+			self.assertEqual(result["confirmation"], "synthetic")
+			assert_budget_guards([self.key])
 
 	def test_reservation_inspection_rechecks_guard_source_and_scope(self):
 		item = self.confirmation_intent()

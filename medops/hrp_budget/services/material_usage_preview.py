@@ -39,6 +39,7 @@ class PurchaseUsageInspection:
 	budget_date: str
 	candidates: tuple[PurchaseBudgetCandidate, ...]
 	usage: tuple[ReservationPosition, ...]
+	source_usage: tuple[ReservationPosition, ...]
 
 
 def _assert_actor(actor: str) -> None:
@@ -113,12 +114,13 @@ def inspect_purchase_usage(
 		candidates = match_purchase_release_keys(keys, history, **values)
 		if guarded_verify_provisional_material_usage_sources(keys, sources, discovered=discovered) != usage:
 			raise ValueError("usage changed during release inspection")
-		verify_guarded_initial_authorizations(keys, sources, usage)
+		positions_by_source = verify_guarded_initial_authorizations(keys, sources, usage)
+		source_usage = positions_by_source[identity]
 		if ordered_budget_keys([resolve_budget_control_key(value) for value in inputs]) != keys:
 			raise ValueError("budget key references changed")
 		_assert_actor(actor)
 		assert_budget_guards(keys)
-		return PurchaseUsageInspection(source, date, candidates, usage)
+		return PurchaseUsageInspection(source, date, candidates, usage, source_usage)
 	except ValueError as error:
 		invalidate_budget_guards()
 		raise_ione_error("CONFLICT", cause=error)
