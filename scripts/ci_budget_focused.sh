@@ -50,24 +50,27 @@ cd "$BENCH_DIR"
   --correlation-id "FOCUSED-${GITHUB_RUN_ID:-local}-verify"
 bench --site "$SITE_NAME" migrate --skip-search-index
 
-test_log="$BENCH_DIR/logs/focused-budget-tests.log"
+release_log="$BENCH_DIR/logs/focused-partial-retry.log"
 bench --site "$SITE_NAME" run-tests --app medops --module medops.tests.test_budget_release_execution \
-  --test test_persisted_authorized_release_guard_checks_original_units_without_posting \
-  --test test_persisted_release_guard_poisoned_when_actor_check_is_revoked \
-  --test test_persisted_release_guard_detects_role_revocation_from_another_transaction \
-  --test test_persisted_reversal_guard_verifies_the_complete_original_batch \
-  --test test_guarded_release_inventory_reconciles_posted_batches_and_physical_entries \
-  2>&1 | tee "$test_log"
-if ! grep -Eq 'Ran 5 tests? in [0-9.]+s' "$test_log"; then
-  echo "Focused CI did not execute the expected five tests" >&2
+  --test test_guard_deadlock_aborts_whole_job_and_new_attempt_posts_once 2>&1 | tee "$release_log"
+if ! grep -Eq 'Ran 1 tests? in [0-9.]+s' "$release_log"; then
+  echo "Focused CI did not execute the partial-write retry test" >&2
   exit 1
 fi
 
-storage_log="$BENCH_DIR/logs/focused-budget-storage-tests.log"
-bench --site "$SITE_NAME" run-tests --app medops --module medops.tests.test_budget_reservation_storage \
-  --case TestBudgetReservationStorage 2>&1 | tee "$storage_log"
-if ! grep -Eq 'Ran 3 tests? in [0-9.]+s' "$storage_log"; then
-  echo "Focused CI did not execute the expected three storage tests" >&2
+usage_log="$BENCH_DIR/logs/focused-reversal-usage-sql.log"
+bench --site "$SITE_NAME" run-tests --app medops --module medops.tests.test_budget_release_usage_guard \
+  --case TestBudgetReleaseUsageGuard 2>&1 | tee "$usage_log"
+if ! grep -Eq 'Ran 5 tests? in [0-9.]+s' "$usage_log"; then
+  echo "Focused CI did not execute five usage SQL tests" >&2
+  exit 1
+fi
+
+scope_log="$BENCH_DIR/logs/focused-scope-date.log"
+bench --site "$SITE_NAME" run-tests --app medops --module medops.tests.test_budget_release_directory \
+  --test test_scope_grants_reuse_only_the_current_owned_phase_and_refresh_after_revocation 2>&1 | tee "$scope_log"
+if ! grep -Eq 'Ran 1 tests? in [0-9.]+s' "$scope_log"; then
+  echo "Focused CI did not execute the scope-date regression" >&2
   exit 1
 fi
 
