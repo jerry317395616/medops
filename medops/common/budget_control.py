@@ -31,6 +31,8 @@ BALANCE_FIELDS = frozenset(
 	{"approved", "adjustment_in", "adjustment_out", "reserved", "committed", "actual", "released"}
 )
 MAX_CONTROL_KEYS = 1000
+GUARD_SCOPE_PREFIX = "medops:budget:guard:v3:scope:"
+GUARD_PERIOD_PREFIX = "medops:budget:guard:v3:period:"
 
 
 @dataclass(frozen=True, slots=True)
@@ -103,6 +105,28 @@ def ordered_budget_keys(value: object) -> tuple[BudgetControlKey, ...]:
 			raise ValueError("budget key identity collision")
 		keys[identity] = key
 	return tuple(keys[identity] for identity in sorted(keys))
+
+
+def budget_guard_names(value: object) -> tuple[str, ...]:
+	"""Generate globally ordered scope and period locks for canonical keys.
+
+	The common scope excludes year and dates so overlapping periods across
+	versions and fiscal years cannot run concurrently when all writers comply.
+	"""
+	ordered = ordered_budget_keys(value)
+	names: set[str] = set()
+	for key in ordered:
+		scope = {
+			"company": key.company,
+			"hospital": key.hospital,
+			"organization_unit": key.organization_unit,
+			"budget_subject": key.budget_subject,
+			"funding_source": key.funding_source,
+			"project": key.project,
+		}
+		names.add(GUARD_SCOPE_PREFIX + fingerprint_json(scope))
+		names.add(GUARD_PERIOD_PREFIX + key.identity)
+	return tuple(sorted(names))
 
 
 def available_budget(value: object, precision: int) -> str:

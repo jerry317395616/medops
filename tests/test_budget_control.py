@@ -8,6 +8,7 @@ from medops.common.budget_control import (
 	BudgetControlKey,
 	available_budget,
 	budget_control_key,
+	budget_guard_names,
 	fits_available_budget,
 	ordered_budget_keys,
 )
@@ -109,6 +110,26 @@ class BudgetControlContractTest(unittest.TestCase):
 		self.assertNotEqual(original.identity, alias.identity)
 		# A future service must resolve both to the actual persisted document name
 		# before acquiring any guard; this pure function cannot determine collation.
+
+	def test_different_periods_and_fiscal_years_share_one_scope_guard(self):
+		first = budget_control_key(key())
+		overlap = budget_control_key(
+			key(fiscal_year="FY-other", period_start="2026-01-15", period_end="2026-02-15")
+		)
+		disjoint = budget_control_key(key(period_start="2026-03-01", period_end="2026-03-31"))
+		first_names = set(budget_guard_names([first]))
+		self.assertEqual(len(first_names), 2)
+		self.assertEqual(len(first_names & set(budget_guard_names([overlap]))), 1)
+		self.assertEqual(len(first_names & set(budget_guard_names([disjoint]))), 1)
+
+	def test_scope_guards_separate_different_units_and_have_global_order(self):
+		first = budget_control_key(key())
+		second = budget_control_key(key(organization_unit="Department B"))
+		self.assertTrue(set(budget_guard_names([first])).isdisjoint(budget_guard_names([second])))
+		forward = budget_guard_names([first, second, first])
+		self.assertEqual(forward, budget_guard_names([second, first]))
+		self.assertEqual(forward, tuple(sorted(forward)))
+		self.assertTrue(all(len(name) <= 100 for name in forward))
 
 	def test_formula_uses_complete_components_and_does_not_mutate_input(self):
 		values = components()

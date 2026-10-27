@@ -1,7 +1,7 @@
 ---
 id: ADR-0034
 title: 预算锁的实际期间身份与重叠边界
-status: Accepted
+status: Superseded
 date: 2026-10-27
 deciders:
   - MedOps Maintainers
@@ -9,7 +9,7 @@ task_ids:
   - COD-034
 supersedes:
   - ADR-0033
-superseded_by:
+superseded_by: ADR-0035
 ---
 
 # ADR-0034 预算锁的实际期间身份与重叠边界

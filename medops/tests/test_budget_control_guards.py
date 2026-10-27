@@ -14,9 +14,9 @@ import frappe
 from frappe.tests import IntegrationTestCase
 from frappe.utils import get_bench_path
 
-from medops.common.budget_control import budget_control_key
+from medops.common.budget_control import budget_control_key, budget_guard_names
 from medops.common.error_catalog import IoneApplicationError
-from medops.hrp_budget.services.control_guards import GUARD_PREFIX, acquire_budget_guards
+from medops.hrp_budget.services.control_guards import acquire_budget_guards
 
 CHILD = r"""
 import json, sys, time, traceback
@@ -91,14 +91,18 @@ def wait_for_file(path, process, timeout=25, error_file=None):
 
 
 class TestBudgetControlGuards(IntegrationTestCase):
-	def test_same_key_waits_different_key_proceeds_and_rollbacks_leave_no_guards(self):
+	def test_same_scope_waits_different_unit_proceeds_and_rollbacks_leave_no_guards(self):
 		one = synthetic_key(uuid4().hex)
 		other = synthetic_key(uuid4().hex)
-		names = [GUARD_PREFIX + budget_control_key(row).identity for row in (one, other)]
-		self.assertTrue(all(len(name) <= 100 for name in names))
-		self.assertEqual(
-			frappe.db.sql("SELECT COUNT(*) FROM `tabSeries` WHERE `name` IN (%s, %s)", tuple(names))[0][0], 0
+		overlap = dict(
+			one, fiscal_year="synthetic-other-year", period_start="2026-01-15", period_end="2026-02-15"
 		)
+		names = budget_guard_names([budget_control_key(row) for row in (one, other, overlap)])
+		self.assertTrue(all(len(name) <= 100 for name in names))
+		for name in names:
+			self.assertEqual(
+				frappe.db.sql("SELECT COUNT(*) FROM `tabSeries` WHERE `name` = %s", (name,))[0][0], 0
+			)
 		processes = []
 		with tempfile.TemporaryDirectory(prefix="medops-budget-guard-") as temp:
 			root = Path(temp)
@@ -131,20 +135,26 @@ class TestBudgetControlGuards(IntegrationTestCase):
 				holder, holder_ready, _, holder_error = launch(one, "hold", "holder")
 				wait_for_file(holder_ready, holder, error_file=holder_error)
 				same, same_started, same_done, same_error = launch(one, "try", "same")
+				overlapping, overlap_started, overlap_done, overlap_error = launch(overlap, "try", "overlap")
 				different, different_started, different_done, different_error = launch(
 					other, "try", "different"
 				)
 				wait_for_file(same_started, same, error_file=same_error)
+				wait_for_file(overlap_started, overlapping, error_file=overlap_error)
 				wait_for_file(different_started, different, error_file=different_error)
 				wait_for_file(different_done, different, error_file=different_error)
 				self.assertEqual(different.wait(timeout=10), 0)
 				self.assertIsNone(holder.poll())
 				self.assertIsNone(same.poll())
+				self.assertIsNone(overlapping.poll())
 				self.assertFalse(same_done.exists(), "same-key guard must wait until the holder rolls back")
+				self.assertFalse(overlap_done.exists(), "overlapping periods must wait on the common scope")
 				release.write_text("release", encoding="utf-8")
 				self.assertEqual(holder.wait(timeout=10), 0)
 				wait_for_file(same_done, same, error_file=same_error)
 				self.assertEqual(same.wait(timeout=10), 0)
+				wait_for_file(overlap_done, overlapping, error_file=overlap_error)
+				self.assertEqual(overlapping.wait(timeout=10), 0)
 			finally:
 				release.touch()
 				for process in processes:
@@ -156,9 +166,10 @@ class TestBudgetControlGuards(IntegrationTestCase):
 							process.kill()
 							process.wait(timeout=5)
 		frappe.db.rollback()
-		self.assertEqual(
-			frappe.db.sql("SELECT COUNT(*) FROM `tabSeries` WHERE `name` IN (%s, %s)", tuple(names))[0][0], 0
-		)
+		for name in names:
+			self.assertEqual(
+				frappe.db.sql("SELECT COUNT(*) FROM `tabSeries` WHERE `name` = %s", (name,))[0][0], 0
+			)
 
 	def test_incorrect_transaction_mode_is_denied_before_guard_writes(self):
 		guard = budget_control_key(synthetic_key(uuid4().hex))

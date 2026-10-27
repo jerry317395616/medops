@@ -4,13 +4,11 @@ from __future__ import annotations
 
 import frappe
 
-from medops.common.budget_control import ordered_budget_keys
+from medops.common.budget_control import budget_guard_names, ordered_budget_keys
 from medops.services.errors import raise_ione_error
 
 # Frappe's standard MariaDB tabSeries has a 100-character primary key and an
-# InnoDB row per name. The prefix cannot collide with ordinary naming patterns
-# accidentally; the 64-character suffix never contains source identifiers.
-GUARD_PREFIX = "medops:budget:guard:v2:"
+# InnoDB row per name. Guard names contain hashes, not source identifiers.
 
 
 def acquire_budget_guards(keys):
@@ -21,8 +19,11 @@ def acquire_budget_guards(keys):
 	not establish source completeness, authorization, or usable funds. Callers
 	must first resolve every reference to its actual persisted document name;
 	lexical normalization alone cannot model the database's collation aliases.
+	The future transaction boundary must gather its full key set and acquire it
+	once; incremental acquisitions are not prevented by this primitive.
 	"""
 	ordered = ordered_budget_keys(keys)
+	names = budget_guard_names(ordered)
 	if frappe.db.db_type != "mariadb" or frappe.db.auto_commit_on_many_writes:
 		raise_ione_error("CONFIGURATION_INVALID")
 	state = frappe.db.sql("SELECT @@tx_isolation, @@autocommit")
@@ -38,8 +39,7 @@ def acquire_budget_guards(keys):
 		or str(engine[0][0]).upper() != "INNODB"
 	):
 		raise_ione_error("CONFIGURATION_INVALID")
-	for key in ordered:
-		name = GUARD_PREFIX + key.identity
+	for name in names:
 		frappe.db.sql(
 			"""INSERT INTO `tabSeries` (`name`, `current`) VALUES (%s, 0)
 			ON DUPLICATE KEY UPDATE `current` = `current`""",
