@@ -42,6 +42,21 @@ class MaterialSourceReference:
 			raise ValueError("canonical source digest required")
 
 
+@dataclass(frozen=True, slots=True)
+class MaterialSourceIdentity:
+	"""Untrusted historical identity; current facts are obtained under native locks."""
+
+	request: str
+	line: str
+	organization_unit: str
+
+	def __post_init__(self):
+		for field in ("request", "line", "organization_unit"):
+			value = getattr(self, field)
+			if normalize_reference(value, label=field) != value:
+				raise ValueError("canonical material source identity required")
+
+
 def _binding(source: MaterialRequestSource) -> tuple[str, str, str, str]:
 	if type(source) is not MaterialRequestSource:
 		raise ValueError("material source snapshot required")
@@ -91,7 +106,9 @@ def acquire_material_budget_guards_for_sources(
 	helper must start before other source or master locks in an owned transaction;
 	it cannot detect arbitrary prior locks. It does not prove source completeness,
 	approval, or available funds. It grants no write authority and the caller must
-	fully roll back on any failure.
+	fully roll back on any failure. A MaterialSourceIdentity binds current facts
+	without checking a historical digest; callers must independently authenticate
+	and compare every historical snapshot before using any resulting observation.
 	"""
 	try:
 		if getattr(frappe.local.db, "_medops_budget_guard_marker", None) is not None:
@@ -101,7 +118,10 @@ def acquire_material_budget_guards_for_sources(
 			or not 1 <= len(references) <= MAX_BOUND_MATERIAL_SOURCES
 		):
 			raise ValueError("bounded material source references required")
-		if any(type(reference) is not MaterialSourceReference for reference in references):
+		if any(
+			type(reference) not in {MaterialSourceReference, MaterialSourceIdentity}
+			for reference in references
+		):
 			raise ValueError("canonical material source references required")
 		ordered_refs = tuple(
 			sorted(references, key=lambda item: (item.request, item.line, item.organization_unit))
@@ -127,7 +147,9 @@ def acquire_material_budget_guards_for_sources(
 				reference.request,
 				reference.line,
 				reference.organization_unit,
-			) or source.digest() != reference.expected_digest:
+			) or (
+				type(reference) is MaterialSourceReference and source.digest() != reference.expected_digest
+			):
 				raise_ione_error("CONFLICT")
 			sources.append(source)
 

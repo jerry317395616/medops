@@ -145,6 +145,21 @@ class TestBudgetMultiSourceGuards(IntegrationTestCase):
 		with self.assertRaises(IoneApplicationError):
 			assert_budget_guards([self.key])
 
+	def test_historical_identity_locks_current_facts_without_authorizing_history(self):
+		current = replace(self.first, status="Ordered", request_modified="2026-01-02 00:00:00")
+		identity = material_guards.MaterialSourceIdentity(
+			self.first.request, self.first.line, self.first.organization_unit
+		)
+		values = {current.request: current, self.second.request: self.second}
+		sources, _ = self.acquire(
+			references=[identity, self.reference(self.second)],
+			source_reads=lambda request, line, unit: values[request],
+		)
+		self.assertEqual(sources, (current, self.second))
+		material_guards.assert_material_budget_guards(current, [self.key])
+		with self.assertRaises(IoneApplicationError):
+			material_guards.assert_material_budget_guards(self.first, [self.key])
+
 	def test_duplicate_reference_and_scope_mismatch_are_rejected(self):
 		with self.assertRaises(ValueError):
 			self.acquire(references=[self.references[0], self.references[0]])

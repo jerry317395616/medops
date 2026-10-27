@@ -31,6 +31,7 @@ from medops.common.reservation_authorization import (
 	reservation_decision,
 	reservation_intent,
 )
+from medops.hrp_budget.services import budget_usage_observation, material_usage_sources
 from medops.hrp_budget.services import material_authorization_observation as observation
 from medops.hrp_budget.services.control_guards import (
 	acquire_multi_source_bound_budget_guards,
@@ -241,3 +242,47 @@ class TestBudgetMaterialAuthorizationObservation(IntegrationTestCase):
 				observation.verify_guarded_initial_authorizations([item.key], sources, tuple(positions))
 			with self.assertRaises(IoneApplicationError):
 				assert_budget_guards([item.key])
+
+	def verify_progressed_source(self, *, financial_change=False):
+		historical, item, root, events, confirmation, decision = synthetic_rows()
+		current = replace(
+			historical,
+			status="Ordered",
+			request_modified="2026-01-02 09:00:00",
+			amount="31.000000000" if financial_change else historical.amount,
+		)
+		self.insert_row("tabHRP Budget Reservation", root)
+		self.insert_row("tabHRP Budget Reservation Event", events[0])
+		self.insert_row("tabHRP Budget Reservation Authorization", confirmation)
+		self.insert_row("tabHRP Budget Reservation Authorization", decision)
+		with patch.object(budget_usage_observation, "check_usage_access"):
+			discovered = material_usage_sources.discover_material_usage_sources([item.key])
+		self.assertEqual(discovered[0].expected_digest, historical.digest())
+		binding = (current.request, current.line, current.organization_unit, current.digest())
+		acquire_multi_source_bound_budget_guards([item.key], source_bindings=(binding,))
+		with (
+			patch.object(budget_usage_observation, "check_usage_access"),
+			patch.object(material_usage_sources, "locked_material_request_source", return_value=current),
+			patch.object(observation, "locked_material_request_source", return_value=current),
+		):
+			positions = material_usage_sources.guarded_verify_provisional_material_usage_sources(
+				[item.key], (current,), discovered=discovered
+			)
+			if financial_change:
+				with self.assertRaises(IoneApplicationError):
+					observation.verify_guarded_initial_authorizations([item.key], (current,), positions)
+				with self.assertRaises(IoneApplicationError):
+					assert_budget_guards([item.key])
+			else:
+				observation.verify_guarded_initial_authorizations([item.key], (current,), positions)
+				assert_budget_guards([item.key])
+				with self.assertRaises(IoneApplicationError):
+					material_usage_sources.guarded_verify_material_usage_sources(
+						[item.key], (current,), discovered=discovered
+					)
+
+	def test_historical_decision_allows_only_nonfinancial_source_progress(self):
+		self.verify_progressed_source()
+
+	def test_historical_decision_rejects_changed_financial_source(self):
+		self.verify_progressed_source(financial_change=True)

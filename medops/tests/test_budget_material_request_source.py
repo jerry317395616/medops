@@ -315,7 +315,9 @@ class TestBudgetMaterialRequestSource(FrappeTestCase):
 					patch.object(material_usage_preview, "resolve_budget_control_key", return_value=key),
 					patch.object(material_usage_preview, "discover_material_usage_sources", return_value=()),
 					patch.object(
-						material_usage_preview, "guarded_verify_material_usage_sources", return_value=()
+						material_usage_preview,
+						"guarded_verify_provisional_material_usage_sources",
+						return_value=(),
 					),
 					patch.object(material_usage_preview, "guarded_release_inventory", return_value=(entry,)),
 				):
