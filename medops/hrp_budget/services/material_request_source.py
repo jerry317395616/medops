@@ -114,6 +114,12 @@ def locked_material_request_source(
 	request_name = normalize_reference(request, label="material_request")
 	line_name = normalize_reference(line, label="material_request_line")
 	unit_name = normalize_reference(organization_unit, label="organization_unit")
+	# A caller holding a generic budget guard must not acquire a new purchase
+	# source lock in the reverse order. A purchase-bound guard can only revisit
+	# the same source after its snapshot was locked before guard acquisition.
+	from medops.hrp_budget.services.control_guards import require_material_source_lock_order
+
+	require_material_source_lock_order(request_name, line_name, unit_name)
 	actor = frappe.session.user
 	require_roles(READ_ROLES)
 	refresh_financial_authority(actor)

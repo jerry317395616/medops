@@ -19,6 +19,8 @@ from frappe.utils import get_bench_path
 from medops.common.budget_control import budget_control_key, budget_guard_names
 from medops.common.error_catalog import IoneApplicationError
 from medops.hrp_budget.services import material_request_source
+from medops.hrp_budget.services.control_guards import acquire_budget_guards, assert_budget_guards
+from medops.hrp_budget.services.material_budget_guards import acquire_material_budget_guards
 from medops.tests import test_budget_consolidation as source_fixture
 from medops.tests.test_budget_control_guards import synthetic_key, wait_for_file
 
@@ -60,7 +62,9 @@ try:
         acquire_budget_guards([key])
         (root / 'guard-locked').write_text('ready', encoding='utf-8')
         wait_for('source-waiting')
-        locked_material_request_source(request, line, unit)
+        # Deliberately bypass the cooperating source-reader ordering check to
+        # demonstrate the underlying database risk of acquiring a raw lock late.
+        frappe.db.get_value('Material Request', request, 'name', for_update=True)
     assert_budget_guards([key])
     result = {'status': 'success'}
 except frappe.QueryDeadlockError:
@@ -272,6 +276,67 @@ class TestBudgetMaterialRequestSource(FrappeTestCase):
 				other = frappe.local.db
 				other.set_value("Material Request Item", self.line, "amount", "10.000000000")
 				other.rollback()
+
+	def test_generic_budget_guard_denies_late_source_lock(self):
+		guard = budget_control_key(synthetic_key(uuid4().hex))
+		acquire_budget_guards([guard])
+		with patch.object(material_request_source, "native_document") as read_document:
+			with self.assertRaises(IoneApplicationError) as denied:
+				material_request_source.locked_material_request_source(
+					self.request.name, self.line, self.units["A"]
+				)
+		self.assertEqual(denied.exception.code, "IONE-CORE-0008")
+		read_document.assert_not_called()
+		with self.assertRaises(IoneApplicationError):
+			assert_budget_guards([guard])
+
+	def test_bound_guard_rejects_a_different_source_before_locking(self):
+		source = material_request_source.locked_material_request_source(
+			self.request.name, self.line, self.units["A"]
+		)
+		values = synthetic_key(uuid4().hex)
+		values.update(
+			company=source.company,
+			hospital=source.hospital,
+			organization_unit=source.organization_unit,
+			project=source.project,
+		)
+		guard = budget_control_key(values)
+		acquire_material_budget_guards(source, [guard])
+		with patch.object(material_request_source, "native_document") as read_document:
+			with self.assertRaises(IoneApplicationError) as denied:
+				material_request_source.locked_material_request_source(
+					self.request.name, self.line, self.units["B"]
+				)
+		self.assertEqual(denied.exception.code, "IONE-CORE-0008")
+		read_document.assert_not_called()
+		with self.assertRaises(IoneApplicationError):
+			assert_budget_guards([guard])
+
+	def test_source_lock_rollback_invalidates_bound_guard_before_relocking(self):
+		frappe.db.savepoint("cod034_before_material_source")
+		source = material_request_source.locked_material_request_source(
+			self.request.name, self.line, self.units["A"]
+		)
+		values = synthetic_key(uuid4().hex)
+		values.update(
+			company=source.company,
+			hospital=source.hospital,
+			organization_unit=source.organization_unit,
+			project=source.project,
+		)
+		guard = budget_control_key(values)
+		acquire_material_budget_guards(source, [guard])
+		frappe.db.rollback(save_point="cod034_before_material_source")
+		with patch.object(material_request_source, "native_document") as read_document:
+			with self.assertRaises(IoneApplicationError) as denied:
+				material_request_source.locked_material_request_source(
+					self.request.name, self.line, self.units["A"]
+				)
+		self.assertEqual(denied.exception.code, "IONE-CORE-0008")
+		read_document.assert_not_called()
+		with self.assertRaises(IoneApplicationError):
+			assert_budget_guards([guard])
 
 	def test_reversed_source_and_guard_lock_order_deadlocks_and_rolls_back(self):
 		"""A late source lock can deadlock a transaction that locked source first."""

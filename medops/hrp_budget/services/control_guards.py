@@ -9,6 +9,8 @@ from secrets import token_hex
 import frappe
 
 from medops.common.budget_control import BudgetControlKey, budget_guard_names, ordered_budget_keys
+from medops.common.domain_service import normalize_sha256
+from medops.common.organization import normalize_reference
 from medops.services.errors import raise_ione_error
 
 # Frappe's standard MariaDB tabSeries has a 100-character primary key and an
@@ -24,6 +26,7 @@ class _GuardState:
 class _GuardMarker:
 	keys: tuple[BudgetControlKey, ...]
 	witness: str
+	source_binding: tuple[str, str, str, str] | None = None
 	state: _GuardState = field(default_factory=_GuardState)
 
 
@@ -61,6 +64,35 @@ def invalidate_budget_guards():
 	return True
 
 
+def require_material_source_lock_order(request: str, line: str, unit: str) -> None:
+	"""Reject late source locks unless this guard was bound to that source.
+
+	The binding is a cooperating-code ordering check, not an authorization or
+	proof against direct SQL, implicit commits, or a forged private marker.
+	"""
+	marker = getattr(getattr(frappe.local, "db", None), "_medops_budget_guard_marker", None)
+	if marker is None:
+		return
+	if (
+		not isinstance(marker, _GuardMarker)
+		or marker.state.invalidated
+		or marker.source_binding is None
+		or marker.source_binding[:3] != (request, line, unit)
+	):
+		invalidate_budget_guards()
+		raise_ione_error("OPERATION_NOT_ALLOWED")
+	assert_budget_guards(marker.keys)
+
+
+def assert_material_guard_binding(keys, binding: tuple[str, str, str, str]) -> None:
+	"""Require the source snapshot associated with a live budget guard."""
+	assert_budget_guards(keys)
+	marker = getattr(frappe.local.db, "_medops_budget_guard_marker", None)
+	if not isinstance(marker, _GuardMarker) or marker.source_binding != binding:
+		invalidate_budget_guards()
+		raise_ione_error("OPERATION_NOT_ALLOWED")
+
+
 def _before_guard_commit(db, marker):
 	# Frappe clears rollback callbacks before running before_commit. Restore the
 	# marker cleanup in case this callback or a later callback fails.
@@ -96,9 +128,15 @@ def _finish_guard_transaction(db, marker):
 
 
 def acquire_budget_guards(keys):
+	return acquire_source_bound_budget_guards(keys, source_binding=None)
+
+
+def acquire_source_bound_budget_guards(keys, *, source_binding: tuple[str, str, str, str] | None):
 	"""Acquire same-key exclusive locks until the caller commits or rolls back.
 
-	Every writer, including release and reversal, must use the same protocol.
+	This internal helper trusts a cooperating caller to have locked any bound
+	source first. Every writer, including release and reversal, must use the
+	same protocol.
 	This preliminary primitive is not connected to a business endpoint; it does
 	not establish source completeness, authorization, or usable funds. Callers
 	must first resolve every reference to its actual persisted document name;
@@ -111,6 +149,13 @@ def acquire_budget_guards(keys):
 	"""
 	ordered = ordered_budget_keys(keys)
 	names = budget_guard_names(ordered)
+	if source_binding is not None:
+		if not isinstance(source_binding, tuple) or len(source_binding) != 4:
+			raise ValueError("canonical material source binding required")
+		for value in source_binding[:3]:
+			if normalize_reference(value, label="material source") != value:
+				raise ValueError("canonical material source binding required")
+		normalize_sha256(source_binding[3], label="source_digest")
 	db = frappe.local.db
 	if getattr(db, "_medops_budget_guard_marker", None) is not None:
 		raise_ione_error("OPERATION_NOT_ALLOWED")
@@ -135,7 +180,7 @@ def acquire_budget_guards(keys):
 	pending = getattr(db.before_commit, "_functions", None)
 	if not isinstance(pending, deque):
 		raise_ione_error("CONFIGURATION_INVALID")
-	marker = _GuardMarker(ordered, "medops:budget:witness:" + token_hex(16))
+	marker = _GuardMarker(ordered, "medops:budget:witness:" + token_hex(16), source_binding)
 	db._medops_budget_guard_marker = marker
 	pending.appendleft(lambda: _before_guard_commit(db, marker))
 	db.after_commit.add(lambda: _finish_guard_transaction(db, marker))

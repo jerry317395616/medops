@@ -20,6 +20,7 @@ from medops.common.budget_reservation_proof import (
 )
 from medops.common.budget_reservation_storage import reservation_record_from_row, reservation_record_row
 from medops.common.error_catalog import IoneApplicationError
+from medops.hrp_budget.services import material_budget_guards as material_guards
 from medops.hrp_budget.services import material_reservation_observation as observation
 from medops.hrp_budget.services.control_guards import acquire_budget_guards, assert_budget_guards
 from medops.hrp_budget.services.material_request_source import MaterialRequestSource
@@ -57,7 +58,8 @@ class TestBudgetReservationObservation(IntegrationTestCase):
 			rate="10.000000000",
 			amount="10.000000000",
 		)
-		acquire_budget_guards([self.key])
+		with patch.object(material_guards, "locked_material_request_source", return_value=self.source):
+			material_guards.acquire_material_budget_guards(self.source, [self.key])
 
 	def tearDown(self):
 		frappe.set_user("Administrator")
@@ -248,5 +250,25 @@ class TestBudgetReservationObservation(IntegrationTestCase):
 		self.assertEqual(error.exception.code, "IONE-CORE-0002")
 		read_rows.assert_not_called()
 		frappe.set_user("Administrator")
+		with self.assertRaises(IoneApplicationError):
+			assert_budget_guards([self.key])
+
+	def test_unbound_guard_cannot_acquire_a_purchase_source_late(self):
+		frappe.db.rollback()
+		acquire_budget_guards([self.key])
+		with patch.object(observation, "locked_material_request_source") as read_source:
+			with self.assertRaises(IoneApplicationError) as denied:
+				observation.guarded_material_reservation_observation(self.source, [self.key], allocations={})
+		self.assertEqual(denied.exception.code, "IONE-CORE-0008")
+		read_source.assert_not_called()
+		with self.assertRaises(IoneApplicationError):
+			assert_budget_guards([self.key])
+
+	def test_second_guard_request_does_not_read_source_after_guard(self):
+		with patch.object(material_guards, "locked_material_request_source") as read_source:
+			with self.assertRaises(IoneApplicationError) as denied:
+				material_guards.acquire_material_budget_guards(self.source, [self.key])
+		self.assertEqual(denied.exception.code, "IONE-CORE-0008")
+		read_source.assert_not_called()
 		with self.assertRaises(IoneApplicationError):
 			assert_budget_guards([self.key])

@@ -12,7 +12,8 @@ from medops.common.budget_reservation_anchor import ANCHOR_ROW_FIELDS
 from medops.common.budget_reservation_events import MAX_RESERVATION_EVENTS, ReservationPosition
 from medops.common.budget_reservation_storage import ROW_FIELDS
 from medops.common.organization import normalize_reference
-from medops.hrp_budget.services.control_guards import assert_budget_guards, invalidate_budget_guards
+from medops.hrp_budget.services.control_guards import invalidate_budget_guards
+from medops.hrp_budget.services.material_budget_guards import assert_material_budget_guards
 from medops.hrp_budget.services.material_request_source import (
 	MaterialRequestSource,
 	locked_material_request_source,
@@ -129,7 +130,7 @@ def guarded_material_reservation_observation(
 				source.project,
 			):
 				raise ValueError("budget keys differ from source scope")
-		assert_budget_guards(ordered)
+		assert_material_budget_guards(source, ordered)
 		_check_permissions(source, actor)
 		if locked_material_request_source(source.request, source.line, source.organization_unit) != source:
 			raise_ione_error("CONFLICT")
@@ -188,7 +189,7 @@ def guarded_material_reservation_observation(
 			_check_row(RESERVATION, row, ANCHOR_ROW_FIELDS, actor)
 		for row in events:
 			_check_row(EVENT, row, ROW_FIELDS, actor)
-		assert_budget_guards(ordered)
+		assert_material_budget_guards(source, ordered)
 		return tuple(sorted(positions, key=lambda item: item.reservation))
 	except ValueError as error:
 		invalidate_budget_guards()

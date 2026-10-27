@@ -13,6 +13,7 @@ from medops.common.budget_control import budget_control_key
 from medops.common.budget_control_history import ReleaseInventoryEntry
 from medops.common.error_catalog import IoneApplicationError
 from medops.hrp_budget.services import material_budget_candidates as candidates
+from medops.hrp_budget.services import material_budget_guards as material_guards
 from medops.hrp_budget.services.control_guards import assert_budget_guards
 from medops.hrp_budget.services.material_request_source import MaterialRequestSource
 from medops.tests.test_budget_control_sources import input_key
@@ -51,6 +52,9 @@ class TestBudgetMaterialCandidates(IntegrationTestCase):
 			amount="10.000000000",
 		)
 		self.entry = ReleaseInventoryEntry("entry", self.key, "CNY", 2, "100.00", "account", "center")
+		reader = patch.object(material_guards, "locked_material_request_source", return_value=self.source)
+		reader.start()
+		self.addCleanup(reader.stop)
 
 	def tearDown(self):
 		frappe.set_user("Administrator")
@@ -146,7 +150,7 @@ class TestBudgetMaterialCandidates(IntegrationTestCase):
 		with (
 			patch.object(candidates, "locked_material_request_source", return_value=self.source),
 			patch.object(candidates, "resolve_budget_control_key", side_effect=budget_control_key),
-			patch.object(candidates, "acquire_budget_guards") as acquire,
+			patch.object(candidates, "acquire_material_budget_guards") as acquire,
 		):
 			with self.assertRaises(IoneApplicationError):
 				self.prepare()

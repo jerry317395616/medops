@@ -13,12 +13,12 @@ from medops.common.budget_material_match import (
 from medops.common.domain_service import normalize_sha256
 from medops.common.organization import normalize_required_date
 from medops.hrp_budget.services.control_guards import (
-	acquire_budget_guards,
 	assert_budget_guards,
 	invalidate_budget_guards,
 )
 from medops.hrp_budget.services.control_inventory import guarded_release_inventory
 from medops.hrp_budget.services.control_sources import resolve_budget_control_key
+from medops.hrp_budget.services.material_budget_guards import acquire_material_budget_guards
 from medops.hrp_budget.services.material_request_source import (
 	MaterialRequestSource,
 	locked_material_request_source,
@@ -73,7 +73,7 @@ def prepare_purchase_release_match(
 		}
 		# Reject unscoped or out-of-period proposals before acquiring any guard.
 		match_purchase_release_keys(keys, [], **values)
-		acquire_budget_guards(keys)
+		acquire_material_budget_guards(source, keys)
 		current = locked_material_request_source(request, line, organization_unit)
 		if current != source or current.digest() != digest:
 			raise_ione_error("CONFLICT")
