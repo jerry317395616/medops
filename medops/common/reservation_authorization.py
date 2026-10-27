@@ -260,6 +260,9 @@ def reservation_confirmation(
 	seconds = (end - start).total_seconds()
 	if not 0 < seconds <= CONFIRMATION_SECONDS:
 		raise ValueError("confirmation lifetime exceeds policy")
+	source = parse_material_source_snapshot(item.source_snapshot, expected_digest=item.source_snapshot_digest)
+	if any(datetime.fromisoformat(source[field]) > start for field in ("request_modified", "line_modified")):
+		raise ValueError("confirmation predates the source snapshot")
 	content = {
 		"schema_version": 1,
 		"kind": "reservation_confirmation",

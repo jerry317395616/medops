@@ -138,6 +138,12 @@ class ReservationAuthorizationTest(unittest.TestCase):
 			with self.subTest(changes=changes), self.assertRaises(ValueError):
 				verify_reservation_confirmation_proof(item, first, **args)
 
+	def test_confirmation_cannot_predate_either_source_modification(self):
+		for field in ("request_modified", "line_modified"):
+			snapshot, digest = material_source_snapshot(facts(**{field: "2026-01-01 10:00:01.000000"}))
+			with self.subTest(field=field), self.assertRaises(ValueError):
+				confirmation(intent(source_snapshot=snapshot, source_snapshot_digest=digest))
+
 	def test_confirmation_cannot_be_reused_for_changed_source_or_amount(self):
 		item = intent()
 		first = confirmation(item)
