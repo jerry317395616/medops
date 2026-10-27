@@ -48,6 +48,8 @@
 		"medops/hrp_budget/services/control_guards.py",
 		"medops/hrp_budget/services/control_inventory.py",
 		"medops/hrp_budget/services/control_release.py",
+		"medops/hrp_budget/services/release_execution.py",
+		"medops/hrp_budget/services/release_usage_guard.py",
 		"medops/hrp_budget/services/control_sources.py",
 		"medops/hrp_budget/services/material_request_source.py",
 		"medops/tests/test_budget_material_request_source.py",
@@ -64,9 +66,9 @@
 		"tests/test_budget_reservation_storage.py",
 		"tests/test_change_governance.py"
 	],
-	"permissions_impact": "当前未接线锁原型无 API、用户授权、范围或财务写入；持预算锁时领域服务普通异常完整回滚同一事务的所有未提交写入，后续事务须重新校验权限与来源。",
-	"migration_impact": "新增未接线预占聚合和事件 DocType 及唯一索引；迁移会创建两张空表，不创建业务数据或用户授权。行锁与事件写入尚未接线，须在隔离站点完成迁移及回退验收。",
-	"rollback_plan": "当前事件表和锁原型均未接线；上线前可回退代码。若曾启用或写入，回退前必须停止所有新旧写入和旧冲销，保留及核对事件和财务事实，不删除证据或以旧版本绕过额度锁。",
+	"permissions_impact": "现有人工授权的下达及冲销工作任务接入预算围栏；未新增用户授权或API。冲销的内部占用存在性检查不返回明细，持锁失败须完整回滚。其他使用路径尚未启用。",
+	"migration_impact": "预占聚合和事件表须先完成迁移且为 InnoDB；没有新用户权限。下达工作进程已接入围栏，预占事件写入尚关闭；升级需停止全部旧进程并验证迁移及回退。",
+	"rollback_plan": "下达/冲销写入已接入共同围栏。回退前必须停止全部新旧写入及工作进程，保留并核对预算事实；若存在预占等使用记录，不得以旧版本绕过冲销检查。",
 	"security_impact": "未建立预占权限，纯比较或锁原型不等于授权；数据库锁真实验收、完整来源、独立人工确认及额度冲销共享围栏仍须完成。",
 	"test_plan": [
 		"完整维度、空项目和不同维度键隔离",
@@ -96,7 +98,7 @@
 		"事务见证对取锁前后保存点、早晚回调失败、动态回调、提交失败重试及成功清理的真实数据库验证",
 		"0至9位精确金额、负余额、溢出、非有限值与错误输入",
 		"后续真实数据库同键/跨键竞争、单次锁请求及保存点/完整事务回滚、死锁整笔重试",
-		"额度使用与下达冲销共同围栏、权限撤销与来源完整性",
+		"真实下达/冲销接入共同围栏；模拟未核验占用阻止冲销、双连接争用、死锁后完整任务重试及原批次保持",
 		"领域服务普通异常持预算锁时完整回滚、无锁时保存点隔离；模拟及真实死锁的有界整笔回滚重试、直接保存点、提交回调和跨写入口锁序",
 		"完整工作流、HTTP/UI、重复迁移、保护CI与医院验收"
 	],

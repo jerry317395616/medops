@@ -276,6 +276,20 @@ class ExecuteBudgetRelease(DomainService[ExecuteRelease]):
 			raise_ione_error("CONFLICT")
 		facts = require_financial_actor(doc)
 		enforce_business_rules(doc, "post")
+		# Source and outbox are already locked in the owned job. The common
+		# budget guard serializes allocation and reversal with cooperating usage
+		# writers; unsupported usage keeps reversal closed until reconciled.
+		from medops.hrp_budget.services.control_guards import assert_budget_guards
+		from medops.hrp_budget.services.control_release import prepare_persisted_release_inventory
+		from medops.hrp_budget.services.release_usage_guard import assert_no_unreconciled_reversal_usage
+
+		keys, _ = prepare_persisted_release_inventory(doc.name, int(doc.revision))
+		if facts.operation == "Reverse":
+			assert_no_unreconciled_reversal_usage(keys)
+		require_execution(message)
+		if require_financial_actor(get_release(doc.name, lock=True)) != facts:
+			raise_ione_error("CONFLICT")
+		assert_budget_guards(keys)
 		with release_write("post", facts, int(doc.revision)):
 			count, digest = write_complete_batch(doc, facts)
 			# Complete and submit are part of this same transaction/savepoint.
@@ -297,6 +311,7 @@ class ExecuteBudgetRelease(DomainService[ExecuteRelease]):
 				doc.update(values)
 				doc.flags.ignore_permissions = True
 				doc.submit()
+		assert_budget_guards(keys)
 		emit_audit_event(
 			"budget_release_batch_written",
 			logger_name="medops.budget",

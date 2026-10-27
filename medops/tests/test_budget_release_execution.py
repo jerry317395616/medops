@@ -28,9 +28,9 @@ from medops.common.error_catalog import IoneApplicationError
 from medops.common.exact_money import exact_decimal_amount
 from medops.common.integration_outbox import OUTBOX
 from medops.hrp_budget.jobs import release as jobs
-from medops.hrp_budget.services import control_inventory, control_release
+from medops.hrp_budget.services import control_inventory, control_release, release_usage_guard
 from medops.hrp_budget.services import release_execution as execution
-from medops.hrp_budget.services.control_guards import assert_budget_guards
+from medops.hrp_budget.services.control_guards import acquire_budget_guards, assert_budget_guards
 from medops.hrp_budget.services.material_budget_candidates import prepare_purchase_release_match
 from medops.hrp_budget.services.material_request_source import locked_material_request_source
 from medops.hrp_budget.services.material_reservation_anchor import verify_material_reservation_evidence
@@ -218,6 +218,78 @@ class TestBudgetReleaseExecution(FrappeAPITestCase):
 			receipt = self.claim(attempt=2)
 		self.assertEqual(self.execute(receipt)["status"], "Posted")
 		self.assertEqual(frappe.db.count(LEDGER, {"voucher_no": self.release}), 2)
+
+	def test_release_job_holds_budget_guard_during_real_posting(self):
+		original = execution.write_complete_batch
+		observed = []
+
+		def inspect_guard(doc, facts):
+			primary = frappe.local.db
+			marker = getattr(primary, "_medops_budget_guard_marker", None)
+			self.assertIsNotNone(marker)
+			assert_budget_guards(marker.keys)
+			with self.secondary_connection():
+				other = frappe.local.db
+				other.rollback()
+				other.sql("SET SESSION TRANSACTION ISOLATION LEVEL READ COMMITTED")
+				other.sql("SET SESSION innodb_lock_wait_timeout = 1")
+				other.begin()
+				try:
+					with self.assertRaises(frappe.QueryTimeoutError):
+						acquire_budget_guards(marker.keys)
+				finally:
+					other.rollback()
+			self.assertIs(frappe.local.db, primary)
+			assert_budget_guards(marker.keys)
+			observed.append(len(marker.keys))
+			return original(doc, facts)
+
+		with patch.object(execution, "write_complete_batch", side_effect=inspect_guard):
+			self.assertEqual(self.execute(self.claim())["status"], "Posted")
+		self.assertEqual(len(observed), 1)
+		self.assertGreater(observed[0], 0)
+		self.assertEqual(frappe.db.count(LEDGER, {"voucher_no": self.release}), 2)
+
+	def test_guard_deadlock_aborts_whole_job_and_new_attempt_posts_once(self):
+		receipt = self.claim()
+		with patch.object(
+			control_release,
+			"prepare_persisted_release_inventory",
+			side_effect=frappe.QueryDeadlockError("synthetic lock conflict"),
+		):
+			self.assert_failed_atomic(self.execute(receipt))
+		future = now_datetime() + timedelta(seconds=61)
+		with (
+			patch.object(jobs, "now_datetime", return_value=future),
+			patch("medops.services.transactional_message.now_datetime", return_value=future),
+		):
+			receipt = self.claim(attempt=2)
+		self.assertEqual(self.execute(receipt)["status"], "Posted")
+		self.assertEqual(frappe.db.count(LEDGER, {"voucher_no": self.release}), 2)
+
+	def test_reversal_is_atomic_when_relevant_usage_is_unreconciled(self):
+		self.assertEqual(self.execute(self.claim())["status"], "Posted")
+		original_release = self.release
+		original_rows = frappe.get_all(LEDGER, filters={"voucher_no": original_release}, fields=["*"])
+		self.login_actor(source_fixture.MANAGER)
+		self.release = self.success(
+			self.post_command(
+				"release.create_reversal",
+				dict(
+					release=original_release,
+					expected_revision=3,
+					posting_date="2026-10-27",
+					reason="合成占用冲销保护",
+				),
+			)
+		)["name"]
+		self.authorize()
+		receipt = self.claim()
+		with patch.object(release_usage_guard, "_has_overlapping_usage", return_value=True):
+			self.assert_failed_atomic(self.execute(receipt))
+		self.assertEqual(
+			original_rows, frappe.get_all(LEDGER, filters={"voucher_no": original_release}, fields=["*"])
+		)
 
 	def test_superseded_authorization_cannot_execute_an_old_claim(self):
 		old_message = self.message
