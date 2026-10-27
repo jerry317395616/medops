@@ -71,6 +71,16 @@ if ! grep -Eq 'Ran 3 tests? in [0-9.]+s' "$storage_log"; then
   exit 1
 fi
 
+directory_log="$BENCH_DIR/logs/focused-budget-directory-tests.log"
+bench --site "$SITE_NAME" run-tests --app medops --module medops.tests.test_budget_release_directory \
+  --test test_eligible_sources_are_approved_consolidated_and_not_already_prepared \
+  --test test_eligible_filters_exclude_unrelated_volume_without_reusing_consumed_sources \
+  2>&1 | tee "$directory_log"
+if ! grep -Eq 'Ran 2 tests? in [0-9.]+s' "$directory_log"; then
+  echo "Focused CI did not execute the expected two directory tests" >&2
+  exit 1
+fi
+
 "$BENCH_DIR/env/bin/python" - "$BENCH_DIR" "$SITE_NAME" <<'PY'
 import json
 import os
