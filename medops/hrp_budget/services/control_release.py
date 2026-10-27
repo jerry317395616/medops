@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import frappe
 
+from medops.common.budget_control_history import require_compatible_release_history
 from medops.common.budget_ledger import BudgetReleaseFacts
 from medops.common.organization import normalize_positive_integer, normalize_reference
 from medops.hrp_budget.services.control_guards import (
@@ -88,3 +89,35 @@ def prepare_persisted_release_guards(release: object, expected_revision: object)
 		invalidate_budget_guards()
 		raise
 	return keys
+
+
+def prepare_persisted_release_inventory(release: object, expected_revision: object):
+	"""Reconcile allocation history and reject ambiguous period/currency intent.
+
+	This candidate does not authorize a financial write or a reversal: other
+	budget event types, shared writer fencing, balance, the execution lease and
+	transaction-wide retry still require implementation and validation.
+	"""
+	from medops.hrp_budget.services.control_inventory import guarded_release_inventory
+	from medops.hrp_budget.services.planning import native_document
+
+	keys = prepare_persisted_release_guards(release, expected_revision)
+	try:
+		entries = guarded_release_inventory(keys)
+		doc = get_release(normalize_reference(release, label="release"), lock=True)
+		revision = normalize_positive_integer(expected_revision, label="expected_revision")
+		if doc.status != "Authorized" or int(doc.docstatus) != 0 or int(doc.revision) != revision:
+			raise_ione_error("CONFLICT")
+		facts = require_financial_actor(doc)
+		currency = native_document("Currency", facts.snapshot.context.currency, {"name"}).name
+		try:
+			require_compatible_release_history(
+				keys, entries, currency=currency, precision=facts.snapshot.context.currency_precision
+			)
+		except ValueError as error:
+			raise_ione_error("CONFLICT", cause=error)
+		assert_budget_guards(keys)
+		return keys, entries
+	except BaseException:
+		invalidate_budget_guards()
+		raise

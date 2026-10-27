@@ -2,11 +2,10 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass
-
 import frappe
 
-from medops.common.budget_control import BudgetControlKey, budget_control_key, ordered_budget_keys
+from medops.common.budget_control import budget_control_key, ordered_budget_keys
+from medops.common.budget_control_history import ReleaseInventoryEntry
 from medops.common.budget_ledger import LEDGER, LEDGER_PUBLIC_FIELDS, RELEASE
 from medops.common.budget_statement_access import native_ledger_base_check
 from medops.common.exact_money import signed_decimal_amount
@@ -19,20 +18,12 @@ from medops.hrp_budget.services.consolidation_access import approved_department
 from medops.hrp_budget.services.control_guards import assert_budget_guards, invalidate_budget_guards
 from medops.hrp_budget.services.control_sources import resolve_budget_control_key
 from medops.hrp_budget.services.ledger_integrity import complete_batch
+from medops.hrp_budget.services.planning import native_document
 from medops.hrp_budget.services.planning_access import READ_ROLES
 from medops.hrp_budget.services.release_sources import stored_release_facts
 from medops.hrp_workflow_authorization.services.rule_contracts import can_read_named_fields
 from medops.services.data_access import require_scope, scope_allowed
 from medops.services.errors import raise_ione_error
-
-
-@dataclass(frozen=True, slots=True)
-class ReleaseInventoryEntry:
-	name: str
-	key: BudgetControlKey
-	currency: str
-	precision: int
-	amount: str
 
 
 def _scope(key):
@@ -159,6 +150,7 @@ def guarded_release_inventory(value: object) -> tuple[ReleaseInventoryEntry, ...
 		if len(physical) != len(set(physical)) or set(physical) != set(rows):
 			raise_ione_error("CONFIGURATION_INVALID")
 		entries = []
+		currencies = {}
 		for row in rows.values():
 			key = resolve_budget_control_key(
 				budget_control_key(
@@ -182,9 +174,15 @@ def guarded_release_inventory(value: object) -> tuple[ReleaseInventoryEntry, ...
 			)
 			if _scope(key) in scopes:
 				precision = int(row.currency_precision)
+				if row.currency not in currencies:
+					currencies[row.currency] = native_document("Currency", row.currency, {"name"}).name
 				entries.append(
 					ReleaseInventoryEntry(
-						row.name, key, row.currency, precision, signed_decimal_amount(row.amount, precision)
+						row.name,
+						key,
+						currencies[row.currency],
+						precision,
+						signed_decimal_amount(row.amount, precision),
 					)
 				)
 		if frappe.session.user != actor:
@@ -193,6 +191,9 @@ def guarded_release_inventory(value: object) -> tuple[ReleaseInventoryEntry, ...
 		_check_context(units, actor)
 		for name, row in rows.items():
 			_check_entry(row, references[name], actor)
+		for name, resolved in currencies.items():
+			if native_document("Currency", name, {"name"}).name != resolved:
+				raise_ione_error("CONFLICT")
 		assert_budget_guards(keys)
 		return tuple(sorted(entries, key=lambda entry: entry.name))
 	except BaseException:
