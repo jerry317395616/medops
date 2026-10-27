@@ -9,7 +9,7 @@
 		"ADR-0031",
 		"ADR-0032"
 	],
-	"current_scope": "COD-033 In Progress. Pure C0 scan candidate changes two shared Python helpers; 8337 differential comparisons against2600589 passed with exact bytes/types/errors, including PrivateText and custom string iteration. Expected458 pure/446 native; current full quality/native and same frozen598 performance pending. Prior c0ee full446 and bcc browser220 XLSX retain their own source attribution. No schema/API/hook/permission/transaction changes; public8291 unchanged. ProtectedCI/promotion, remaining HRP modules and hospital acceptance remain.",
+	"current_scope": "COD-033 In Progress. f500cf4 full458 local,1449 committed blobs,8337 old-source differential and focused43 native/10guards passed. Identical frozen598 clean cProfile83.251->71.544s (single observation14.06%);82245SQL,candidate/list/page digests/controller calls equal;984tables113143rows/files14802 encrypted receipts unchanged. Current full446 native running; private source frozen. No models/API/hooks/permission/transaction changes. Public8291 untouched;71s still slow;CI/promotion,Link mouse selection,remaining HRP and hospital capacity/interfaces/UAT incomplete.",
 	"checks": {
 		"pure_tests_expected": 458,
 		"complete_frappe_tests_expected": 446,
@@ -34,9 +34,9 @@
 			"migrations": 0
 		},
 		"protected_ci": "not run for COD-033",
-		"local_quality": "c0eea4c full456 passed,1449 committed blobs passed; production code identical86",
-		"pure_tests_passed": 456,
-		"complete_frappe_tests": "Full446 PASSED atc0ee with all9 preserved-state checks. Two whole modules repeated twice separately:13/11/13/11,24 distinct cases/48 executions.",
+		"local_quality": "Full458/11 quality steps and1449 committed Git blobs passed at f500cf4; proof cod033-f500cf4-quality.json",
+		"pure_tests_passed": 458,
+		"complete_frappe_tests": "Current f500cf4 full446 RUNNING; prior c0ee full446 passed at its own source. Focused43 does not replace the full suite.",
 		"current_protocol": {
 			"status": "full local quality passed",
 			"tests": 11,
@@ -818,23 +818,13 @@
 		"coverage_limit": "Injected after native HTTPRequest construction and before before_request; earlier connection/session-constructor branches and proxy/server sinks not certified."
 	},
 	"full_native_suite": {
-		"status": "passed",
+		"status": "running",
+		"commit": "f500cf4e8b7e5f2f3c0b662027fbd68e3f82af57",
 		"expected_tests": 446,
-		"commit": "c0eea4c3e1fc40f05c7a7a10bc6a6eb2dc1c7572",
-		"driver_pid": 4036727,
+		"driver_pid": 1834842,
 		"source_frozen_during_run": true,
-		"production_source_identical_to": "86ba9b00f0db3a6b978135c4ee263b78d8778ab7",
-		"only_application_tree_changes": [
-			"medops/hrp_foundation/tests/test_modules.py",
-			"medops/hrp_foundation/tests/test_system_settings.py"
-		],
-		"public_sites_untouched": true,
-		"completed_tests": 446,
-		"passed_tests": 446,
-		"failures": 0,
-		"all9_preserved_state_checks_passed": true,
-		"driver_completed": true,
-		"proof": "cod033-c0eea4c-full-native-suite-authority-read.json"
+		"proof_when_complete": "cod033-f500cf4-text-scan-full-native.json",
+		"public_sites_untouched": true
 	},
 	"pending_read_optimization": {
 		"status": "Same459 measured61.792s/63225SQL at9d; corrected native authority/cache tests passed at86 and full446 passed atc0ee. Hospital performance/capacity acceptance pending.",
@@ -1268,10 +1258,10 @@
 		"proof": "cod033-e87d901-recovery-ui-integrity-v3.json"
 	},
 	"next_unblocked_tasks": [
-		"Directory performance using frozen598 baseline without weakening source/current authority checks;consider measured pure normalization hotspots",
-		"Native Link suggestion mouse-selection query UX check;do not infer server timing defect from an overlaid button",
-		"ProtectedCI and complete release/promotion gates;no partial releasePR",
-		"COD034/035 and remainingHRP;actual hospital capacity/interfaces/UAT"
+		"Reduce repeated native source-query overhead after the measured pure scan optimization; retain full source identity and independent final authorization on the immutable598 dataset",
+		"Native Link suggestion mouse-selection query UX check",
+		"ProtectedCI and complete release/promotion gates; no partial releasePR",
+		"COD034/035 and remaining HRP; actual hospital capacity/interfaces/UAT"
 	],
 	"input_invalidation_followup": {
 		"status": "actual browser verification passed at bcc952c",
@@ -1442,7 +1432,7 @@
 		"source_data_returned": false
 	},
 	"text_scan_optimization": {
-		"status": "differential_passed_runtime_pending",
+		"status": "focused_and_profile_passed_full_native_running",
 		"baseline_commit": "2600589c0da56a6d8b6a400f0881d9dda8daad2f",
 		"candidate_source_git_blobs": {
 			"medops/common/domain_service.py": "996fd49906951fd090bd7be743360c754abf31db",
@@ -1453,12 +1443,51 @@
 		"pure_cases_added": 2,
 		"pure_tests_expected": 458,
 		"native_tests_expected": 446,
-		"current_full_quality_pending": true,
+		"current_full_quality_pending": false,
 		"current_full_native_pending": true,
-		"frozen598_performance_pending": true,
+		"frozen598_performance_pending": false,
 		"models_api_hooks_permissions_and_transactions_unchanged": true,
 		"subclass_legacy_iteration_preserved": true,
 		"hospital_capacity_established": false,
-		"rollback": "Revert only the two shared scanner implementations; retain all data, ledgers and authorization facts. No migration or data rewriting."
+		"rollback": "Revert only the two shared scanner implementations; retain all data, ledgers and authorization facts. No migration or data rewriting.",
+		"commit": "f500cf4e8b7e5f2f3c0b662027fbd68e3f82af57",
+		"full_quality_proof": "cod033-f500cf4-quality.json",
+		"focused_native_proof": "cod033-f500cf4-text-scan-focused-native.json",
+		"focused_native_counts": [
+			5,
+			6,
+			14,
+			16,
+			2
+		],
+		"focused_all10_guards_passed": true,
+		"profile_proof": "cod033-f500cf4-frozen-directory-profile.json",
+		"profile_elapsed_seconds": 71.544,
+		"baseline_elapsed_seconds": 83.251,
+		"elapsed_reduction_percent": 14.06,
+		"all984_tables_files_receipts_unchanged": true,
+		"sql_controller_counts_and_result_digests_equal": true,
+		"performance_limit": "One cProfile run per source on the exact frozen598 dataset; still slow, no throughput/concurrency/hospital SLA claim.",
+		"private_runtime_source": "f500cf4e8b7e5f2f3c0b662027fbd68e3f82af57",
+		"public_runtime_unchanged": "8291fba67d5b6a9452422a2986f7d2b831a970e0"
+	},
+	"prior_verified_full_native_suite_before_text_scan": {
+		"status": "passed",
+		"expected_tests": 446,
+		"commit": "c0eea4c3e1fc40f05c7a7a10bc6a6eb2dc1c7572",
+		"driver_pid": 4036727,
+		"source_frozen_during_run": true,
+		"production_source_identical_to": "86ba9b00f0db3a6b978135c4ee263b78d8778ab7",
+		"only_application_tree_changes": [
+			"medops/hrp_foundation/tests/test_modules.py",
+			"medops/hrp_foundation/tests/test_system_settings.py"
+		],
+		"public_sites_untouched": true,
+		"completed_tests": 446,
+		"passed_tests": 446,
+		"failures": 0,
+		"all9_preserved_state_checks_passed": true,
+		"driver_completed": true,
+		"proof": "cod033-c0eea4c-full-native-suite-authority-read.json"
 	}
 }
