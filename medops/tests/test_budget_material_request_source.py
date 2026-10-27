@@ -8,6 +8,7 @@ import subprocess
 import sys
 import tempfile
 from contextlib import contextmanager
+from dataclasses import asdict
 from pathlib import Path
 from unittest.mock import patch
 from uuid import uuid4
@@ -20,6 +21,7 @@ from medops.common.budget_control import budget_control_key, budget_guard_names
 from medops.common.budget_reservation_anchor import ANCHOR_ROW_FIELDS
 from medops.common.budget_reservation_storage import ROW_FIELDS
 from medops.common.error_catalog import IoneApplicationError
+from medops.common.material_source_snapshot import compare_material_source_history, material_source_snapshot
 from medops.hrp_budget.services import (
 	material_budget_guards,
 	material_request_source,
@@ -413,6 +415,11 @@ class TestBudgetMaterialRequestSource(FrappeTestCase):
 		self.request.items[0].amount = 10
 		self.request.save(ignore_permissions=True)
 		self.request.submit()
+		initial_material = material_request_source.locked_material_request_source(
+			self.request.name, self.line, self.units["A"]
+		)
+		historical_snapshot, historical_digest = material_source_snapshot(asdict(initial_material))
+		self.assertEqual(historical_digest, initial_material.digest())
 		item = self.request.items[0]
 		order = frappe.get_doc(
 			dict(
@@ -448,6 +455,11 @@ class TestBudgetMaterialRequestSource(FrappeTestCase):
 				material = material_request_source.locked_material_request_source(
 					self.request.name, self.line, self.units["A"]
 				)
+				comparison = compare_material_source_history(
+					historical_snapshot, expected_digest=historical_digest, current_facts=asdict(material)
+				)
+				self.assertEqual(comparison.current_digest, material.digest())
+				self.assertTrue(comparison.status_changed or comparison.timestamps_changed)
 				primary.rollback()
 				verified, purchase = purchase_order_source.locked_purchase_order_source(
 					order.name,

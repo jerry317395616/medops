@@ -98,6 +98,12 @@ class TestBudgetReservationStorage(FrappeTestCase):
 			self.assertEqual(meta.get_field(field).fieldtype, "Data")
 		for field in ("reservation_key", "source_identity_key"):
 			self.assertTrue(meta.get_field(field).unique)
+		snapshot = meta.get_field("source_snapshot_json")
+		self.assertTrue(
+			snapshot and snapshot.fieldtype == "Long Text" and snapshot.hidden and snapshot.read_only
+		)
+		self.assertFalse(snapshot.reqd or snapshot.allow_on_submit)
+		self.assertTrue(frappe.db.has_column(AGGREGATE, "source_snapshot_json"))
 		rows = frappe.db.sql(
 			"""SELECT COLUMN_NAME, INDEX_NAME, NON_UNIQUE, SEQ_IN_INDEX
 			FROM information_schema.STATISTICS

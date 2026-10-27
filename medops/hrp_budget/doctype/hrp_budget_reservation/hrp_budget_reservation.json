@@ -57,7 +57,8 @@
 		"last_event_digest",
 		"anchor_digest",
 		"proof_version",
-		"created_by"
+		"created_by",
+		"source_snapshot_json"
 	],
 	"fields": [
 		{
@@ -446,6 +447,15 @@
 			"read_only": 1,
 			"reqd": 1,
 			"options": "User"
+		},
+		{
+			"fieldname": "source_snapshot_json",
+			"label": "来源事实快照",
+			"fieldtype": "Long Text",
+			"read_only": 1,
+			"hidden": 1,
+			"reqd": 0,
+			"description": "历史来源事实快照；内容与人工授权须独立验证。"
 		}
 	],
 	"permissions": [],

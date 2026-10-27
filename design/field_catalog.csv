@@ -1320,6 +1320,7 @@ medops,HRP Budget,HRP Budget Reservation,42,last_event_digest,最后事件摘要
 medops,HRP Budget,HRP Budget Reservation,43,anchor_digest,聚合锚点摘要,Data,,1,0,0,1,0,,,,聚合锚点摘要,Finance
 medops,HRP Budget,HRP Budget Reservation,44,proof_version,证明版本,Int,,1,0,0,1,0,,,,证明版本,Finance
 medops,HRP Budget,HRP Budget Reservation,45,created_by,创建人,Link,User,1,0,0,1,0,,,,创建人,Finance
+medops,HRP Budget,HRP Budget Reservation,46,source_snapshot_json,来源事实快照,Long Text,,0,0,0,1,0,,,,历史来源事实快照；内容与人工授权须独立验证。,Finance
 medops,HRP Budget,HRP Budget Commitment,10,company,法人,Link,Company,1,0,1,0,1,,,,法人,Finance
 medops,HRP Budget,HRP Budget Commitment,11,hospital,医院,Link,HRP Hospital,1,0,1,0,0,,,,医院,Finance
 medops,HRP Budget,HRP Budget Commitment,12,campus,院区,Link,HRP Campus,0,0,1,0,0,,,,院区,Finance
