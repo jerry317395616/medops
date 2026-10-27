@@ -1,0 +1,253 @@
+{
+	"doctype": "DocType",
+	"name": "HRP Budget Reservation Event",
+	"module": "HRP Budget",
+	"custom": 0,
+	"engine": "InnoDB",
+	"autoname": "field:event_key",
+	"title_field": "event_key",
+	"is_submittable": 0,
+	"istable": 0,
+	"issingle": 0,
+	"track_changes": 0,
+	"allow_rename": 0,
+	"editable_grid": 0,
+	"field_order": [
+		"event_key",
+		"reservation",
+		"sequence",
+		"sequence_key",
+		"source_action_key",
+		"company",
+		"hospital",
+		"organization_unit",
+		"fiscal_year",
+		"budget_subject",
+		"funding_source",
+		"project",
+		"period_start",
+		"period_end",
+		"currency",
+		"currency_precision",
+		"kind",
+		"amount",
+		"source_doctype",
+		"source_name",
+		"source_revision",
+		"actor",
+		"occurred_at",
+		"previous_digest",
+		"event_digest"
+	],
+	"fields": [
+		{
+			"fieldname": "event_key",
+			"label": "事件标识",
+			"fieldtype": "Data",
+			"read_only": 1,
+			"reqd": 1,
+			"unique": 1
+		},
+		{
+			"fieldname": "reservation",
+			"label": "预占标识",
+			"fieldtype": "Data",
+			"read_only": 1,
+			"reqd": 1,
+			"search_index": 1
+		},
+		{
+			"fieldname": "sequence",
+			"label": "链内序号",
+			"fieldtype": "Int",
+			"read_only": 1,
+			"reqd": 1
+		},
+		{
+			"fieldname": "sequence_key",
+			"label": "预占序号唯一键",
+			"fieldtype": "Data",
+			"read_only": 1,
+			"reqd": 1,
+			"unique": 1,
+			"hidden": 1
+		},
+		{
+			"fieldname": "source_action_key",
+			"label": "来源动作唯一键",
+			"fieldtype": "Data",
+			"read_only": 1,
+			"reqd": 1,
+			"unique": 1,
+			"hidden": 1
+		},
+		{
+			"fieldname": "company",
+			"label": "法人",
+			"fieldtype": "Link",
+			"read_only": 1,
+			"reqd": 1,
+			"options": "Company",
+			"search_index": 1
+		},
+		{
+			"fieldname": "hospital",
+			"label": "医院",
+			"fieldtype": "Link",
+			"read_only": 1,
+			"reqd": 1,
+			"options": "HRP Hospital",
+			"search_index": 1
+		},
+		{
+			"fieldname": "organization_unit",
+			"label": "原始科室",
+			"fieldtype": "Link",
+			"read_only": 1,
+			"reqd": 1,
+			"options": "HRP Organization Unit",
+			"search_index": 1
+		},
+		{
+			"fieldname": "fiscal_year",
+			"label": "财政年度",
+			"fieldtype": "Link",
+			"read_only": 1,
+			"reqd": 1,
+			"options": "Fiscal Year",
+			"search_index": 1
+		},
+		{
+			"fieldname": "budget_subject",
+			"label": "预算科目",
+			"fieldtype": "Link",
+			"read_only": 1,
+			"reqd": 1,
+			"options": "HRP Dimension Value",
+			"search_index": 1
+		},
+		{
+			"fieldname": "funding_source",
+			"label": "资金来源",
+			"fieldtype": "Link",
+			"read_only": 1,
+			"reqd": 1,
+			"options": "HRP Funding Source",
+			"search_index": 1
+		},
+		{
+			"fieldname": "project",
+			"label": "项目",
+			"fieldtype": "Link",
+			"read_only": 1,
+			"reqd": 0,
+			"options": "Project"
+		},
+		{
+			"fieldname": "period_start",
+			"label": "期间开始",
+			"fieldtype": "Date",
+			"read_only": 1,
+			"reqd": 1
+		},
+		{
+			"fieldname": "period_end",
+			"label": "期间结束",
+			"fieldtype": "Date",
+			"read_only": 1,
+			"reqd": 1
+		},
+		{
+			"fieldname": "currency",
+			"label": "币种",
+			"fieldtype": "Link",
+			"read_only": 1,
+			"reqd": 1,
+			"options": "Currency"
+		},
+		{
+			"fieldname": "currency_precision",
+			"label": "捕获精度",
+			"fieldtype": "Int",
+			"read_only": 1,
+			"reqd": 1
+		},
+		{
+			"fieldname": "kind",
+			"label": "事件类型",
+			"fieldtype": "Select",
+			"read_only": 1,
+			"reqd": 1,
+			"options": "Reserve\nRelease Reservation\nCommit\nRelease Commitment\nActual"
+		},
+		{
+			"fieldname": "amount",
+			"label": "精确金额",
+			"fieldtype": "Data",
+			"read_only": 1,
+			"reqd": 1
+		},
+		{
+			"fieldname": "source_doctype",
+			"label": "来源单据类型",
+			"fieldtype": "Link",
+			"read_only": 1,
+			"reqd": 1,
+			"options": "DocType"
+		},
+		{
+			"fieldname": "source_name",
+			"label": "来源单据",
+			"fieldtype": "Dynamic Link",
+			"read_only": 1,
+			"reqd": 1,
+			"options": "source_doctype"
+		},
+		{
+			"fieldname": "source_revision",
+			"label": "来源修订",
+			"fieldtype": "Data",
+			"read_only": 1,
+			"reqd": 1
+		},
+		{
+			"fieldname": "actor",
+			"label": "操作者",
+			"fieldtype": "Link",
+			"read_only": 1,
+			"reqd": 1,
+			"options": "User"
+		},
+		{
+			"fieldname": "occurred_at",
+			"label": "业务时间",
+			"fieldtype": "Datetime",
+			"read_only": 1,
+			"reqd": 1
+		},
+		{
+			"fieldname": "previous_digest",
+			"label": "前序事件摘要",
+			"fieldtype": "Data",
+			"read_only": 1,
+			"reqd": 0,
+			"hidden": 1
+		},
+		{
+			"fieldname": "event_digest",
+			"label": "事件摘要",
+			"fieldtype": "Data",
+			"read_only": 1,
+			"reqd": 1,
+			"unique": 1,
+			"hidden": 1
+		}
+	],
+	"permissions": [],
+	"sort_field": "creation",
+	"sort_order": "ASC",
+	"description": "预占事件存储基础；未接入授权写入，所有文档写入均关闭。",
+	"actions": [],
+	"links": [],
+	"states": []
+}

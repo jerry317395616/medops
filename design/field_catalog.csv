@@ -13618,3 +13618,32 @@ medops,HRP Integration,HRP Integration Outbox,200,result_json,结果载荷,Code,
 medops,HRP Integration,HRP Integration Outbox,210,result_hash,结果摘要,Data,,0,0,0,1,0,,,,结果摘要,Platform
 medops,HRP Integration,HRP Integration Outbox,220,last_error_code,受控错误代码,Data,,0,0,0,1,0,,,,受控错误代码,Platform
 medops,HRP Integration,HRP Integration Outbox,230,last_error_message,受控错误说明,Small Text,,0,0,0,1,0,,,,受控错误说明,Platform
+medops,HRP Budget,HRP Budget Reservation Event,1,event_key,事件标识,Data,,1,1,1,1,0,,,,事件标识,Finance
+medops,HRP Budget,HRP Budget Reservation Event,2,reservation,预占标识,Data,,1,0,1,1,0,,,,预占标识,Finance
+medops,HRP Budget,HRP Budget Reservation Event,3,sequence,链内序号,Int,,1,0,0,1,0,,,,链内序号,Finance
+medops,HRP Budget,HRP Budget Reservation Event,4,sequence_key,预占序号唯一键,Data,,1,1,0,1,0,,,,预占序号唯一键,Finance
+medops,HRP Budget,HRP Budget Reservation Event,5,source_action_key,来源动作唯一键,Data,,1,1,0,1,0,,,,来源动作唯一键,Finance
+medops,HRP Budget,HRP Budget Reservation Event,6,company,法人,Link,Company,1,0,1,1,0,,,,法人,Finance
+medops,HRP Budget,HRP Budget Reservation Event,7,hospital,医院,Link,HRP Hospital,1,0,1,1,0,,,,医院,Finance
+medops,HRP Budget,HRP Budget Reservation Event,8,organization_unit,原始科室,Link,HRP Organization Unit,1,0,1,1,0,,,,原始科室,Finance
+medops,HRP Budget,HRP Budget Reservation Event,9,fiscal_year,财政年度,Link,Fiscal Year,1,0,1,1,0,,,,财政年度,Finance
+medops,HRP Budget,HRP Budget Reservation Event,10,budget_subject,预算科目,Link,HRP Dimension Value,1,0,1,1,0,,,,预算科目,Finance
+medops,HRP Budget,HRP Budget Reservation Event,11,funding_source,资金来源,Link,HRP Funding Source,1,0,1,1,0,,,,资金来源,Finance
+medops,HRP Budget,HRP Budget Reservation Event,12,project,项目,Link,Project,0,0,0,1,0,,,,项目,Finance
+medops,HRP Budget,HRP Budget Reservation Event,13,period_start,期间开始,Date,,1,0,0,1,0,,,,期间开始,Finance
+medops,HRP Budget,HRP Budget Reservation Event,14,period_end,期间结束,Date,,1,0,0,1,0,,,,期间结束,Finance
+medops,HRP Budget,HRP Budget Reservation Event,15,currency,币种,Link,Currency,1,0,0,1,0,,,,币种,Finance
+medops,HRP Budget,HRP Budget Reservation Event,16,currency_precision,捕获精度,Int,,1,0,0,1,0,,,,捕获精度,Finance
+medops,HRP Budget,HRP Budget Reservation Event,17,kind,事件类型,Select,"Reserve
+Release Reservation
+Commit
+Release Commitment
+Actual",1,0,0,1,0,,,,事件类型,Finance
+medops,HRP Budget,HRP Budget Reservation Event,18,amount,精确金额,Data,,1,0,0,1,0,,,,精确金额,Finance
+medops,HRP Budget,HRP Budget Reservation Event,19,source_doctype,来源单据类型,Link,DocType,1,0,0,1,0,,,,来源单据类型,Finance
+medops,HRP Budget,HRP Budget Reservation Event,20,source_name,来源单据,Dynamic Link,source_doctype,1,0,0,1,0,,,,来源单据,Finance
+medops,HRP Budget,HRP Budget Reservation Event,21,source_revision,来源修订,Data,,1,0,0,1,0,,,,来源修订,Finance
+medops,HRP Budget,HRP Budget Reservation Event,22,actor,操作者,Link,User,1,0,0,1,0,,,,操作者,Finance
+medops,HRP Budget,HRP Budget Reservation Event,23,occurred_at,业务时间,Datetime,,1,0,0,1,0,,,,业务时间,Finance
+medops,HRP Budget,HRP Budget Reservation Event,24,previous_digest,前序事件摘要,Data,,0,0,0,1,0,,,,前序事件摘要,Finance
+medops,HRP Budget,HRP Budget Reservation Event,25,event_digest,事件摘要,Data,,1,1,0,1,0,,,,事件摘要,Finance

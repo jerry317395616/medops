@@ -9,10 +9,10 @@
     "ADR-0031",
     "ADR-0032"
   ],
-  "current_scope": "COD-033 manual workflow 40497550894 passed 448 native tests in both plain and IONE Core configurations with zero Error Logs in all six fresh site checks; Required passed. The 90-minute timeout candidate, protected PR, server and hospital acceptance remain pending. COD-034 is unconnected prework: 497 pure and 467 expected native tests; current-source witness and callback tests have not run on this exact head. It derives release/reversal keys, resolves reference names, and includes scope locks, overlap checks and guarded rollback. Callback ordering depends on pinned Frappe internals; direct or nested commits, manual queue changes, source completeness, permissions, writer fencing, business retries and hospital acceptance remain unverified or incomplete. An unconnected helper now locks and re-resolves release names; failures poison the guard across savepoints, but complete persisted facts and permissions remain pending. An unconnected persisted-release candidate rechecks the authorized document and original reversal batch under guard; it does not prove all budget events or authorize posting.",
+  "current_scope": "COD-033 manual workflow 40497550894 passed 448 native tests in both plain and IONE Core configurations with zero Error Logs in all six fresh site checks; Required passed. The 90-minute timeout candidate, protected PR, server and hospital acceptance remain pending. COD-034 is unconnected prework: 497 pure and 469 expected native tests; current-source witness and callback tests have not run on this exact head. It derives release/reversal keys, resolves reference names, and includes scope locks, overlap checks and guarded rollback. Callback ordering depends on pinned Frappe internals; direct or nested commits, manual queue changes, source completeness, permissions, writer fencing, business retries and hospital acceptance remain unverified or incomplete. An unconnected helper now locks and re-resolves release names; failures poison the guard across savepoints, but complete persisted facts and permissions remain pending. An unconnected persisted-release candidate rechecks the authorized document and original reversal batch under guard; it does not prove all budget events or authorize posting.",
   "checks": {
     "pure_tests_expected": 497,
-    "complete_frappe_tests_expected": 467,
+    "complete_frappe_tests_expected": 469,
     "exact_foundation_pure_tests_passed": 21,
     "native_foundation": {
       "status": "passed",
@@ -759,7 +759,11 @@
       "focused_budget_ci_replaces_required": false,
       "focused_runner_path_traversal_denied_locally": true,
       "reservation_backed_event_replay_implemented": true,
-      "reservation_event_storage_or_writes_implemented": false,
+      "reservation_event_storage_model_implemented": true,
+      "reservation_event_storage_migration_native_tested": false,
+      "focused_storage_checks_implemented": true,
+      "focused_storage_checks_native_tested": false,
+      "reservation_event_business_writes_implemented": false,
       "reservation_event_replay_authorizes_spending": false
     },
     "ci_bootstrap_search_isolation": {
