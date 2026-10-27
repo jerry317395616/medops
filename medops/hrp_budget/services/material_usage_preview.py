@@ -17,6 +17,9 @@ from medops.common.organization import normalize_required_date
 from medops.hrp_budget.services.control_guards import assert_budget_guards, invalidate_budget_guards
 from medops.hrp_budget.services.control_inventory import guarded_release_inventory
 from medops.hrp_budget.services.control_sources import resolve_budget_control_key
+from medops.hrp_budget.services.material_authorization_observation import (
+	verify_guarded_initial_authorizations,
+)
 from medops.hrp_budget.services.material_budget_guards import (
 	MaterialSourceReference,
 	acquire_material_budget_guards_for_sources,
@@ -106,6 +109,7 @@ def inspect_purchase_usage(
 		candidates = match_purchase_release_keys(keys, history, **values)
 		if guarded_verify_material_usage_sources(keys, sources, discovered=discovered) != usage:
 			raise ValueError("usage changed during release inspection")
+		verify_guarded_initial_authorizations(keys, sources, usage)
 		if ordered_budget_keys([resolve_budget_control_key(value) for value in inputs]) != keys:
 			raise ValueError("budget key references changed")
 		_assert_actor(actor)
