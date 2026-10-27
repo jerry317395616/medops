@@ -225,6 +225,93 @@ class TestBudgetReleaseDirectory(FrappeAPITestCase):
 			self.success(self.listing(self.filters(name=case), endpoint="eligible_sources"))["items"], []
 		)
 
+	def test_eligible_filters_exclude_unrelated_volume_without_reusing_consumed_sources(self):
+		self.sources = self.new_sources()
+		submission = self.success(self.seal())["name"]
+		case = self.request_approval(submission)
+		self.login_actor(source_fixture.REVIEWER)
+		self.success(self.decide(case))
+		self.login_actor(ACTOR)
+		frappe.set_user(ACTOR)
+		unit, currency = frappe.db.get_value(CASE, case, ["organization_unit", "currency"])
+		actual_list, actual_all = frappe.get_list, frappe.get_all
+		seen_sources, seen_releases = [], []
+		add_unrelated_submissions = True
+		add_relevant_releases = False
+
+		def noisy_list(doctype, *args, **kwargs):
+			rows = actual_list(doctype, *args, **kwargs)
+			filters = kwargs.get("filters", {})
+			if (
+				doctype == "HRP Budget Submission"
+				and kwargs.get("pluck") == "name"
+				and filters.get("submission_type") == "Consolidated"
+			):
+				seen_sources.append(dict(filters))
+				if add_unrelated_submissions and "name" not in filters:
+					return list(rows) + ["unrelated-submission"] * (directory.MAX_DIRECTORY_CANDIDATES + 1)
+			return rows
+
+		def noisy_all(doctype, *args, **kwargs):
+			rows = actual_all(doctype, *args, **kwargs)
+			filters = kwargs.get("filters", {})
+			if doctype == RELEASE and kwargs.get("pluck") == "source_approval":
+				seen_releases.append(dict(filters))
+				if filters.get("organization_unit") != unit or add_relevant_releases:
+					return list(rows) + ["bounded-case"] * (directory.MAX_DIRECTORY_CANDIDATES + 1)
+			return rows
+
+		with patch("frappe.get_list", side_effect=noisy_list), patch("frappe.get_all", side_effect=noisy_all):
+			# More than the limit of unrelated submissions must not hide an exact case.
+			items = self.success(self.listing(self.filters(name=case), endpoint="eligible_sources"))["items"]
+			self.assertEqual([item["name"] for item in items], [case])
+			self.assertTrue(seen_sources)
+			self.assertTrue(all(row.get("name") == submission for row in seen_sources))
+			self.assertFalse(seen_releases)
+			# A unit/currency filter must exclude unrelated releases before the bound.
+			add_unrelated_submissions = False
+			items = self.success(
+				self.listing(
+					self.filters(organization_unit=unit, currency=currency), endpoint="eligible_sources"
+				)
+			)["items"]
+			self.assertIn(case, [item["name"] for item in items])
+			self.assertTrue(seen_releases)
+			self.assertTrue(
+				all(
+					row.get("organization_unit") == unit and row.get("currency") == currency
+					for row in seen_releases
+				)
+			)
+			# Relevant excess is still rejected instead of returning a partial directory.
+			add_relevant_releases = True
+			self.assertEqual(
+				self.listing(
+					self.filters(organization_unit=unit, currency=currency), endpoint="eligible_sources"
+				).status_code,
+				400,
+			)
+
+		# The global existence check and per-source check still suppress a prepared source.
+		self.success(
+			self.post_command(
+				"release.create",
+				dict(
+					approval_case=case,
+					expected_approval_revision=2,
+					posting_date="2026-10-26",
+					reason="来源目录范围验证",
+				),
+			)
+		)
+		self.assertEqual(
+			self.success(self.listing(self.filters(name=case), endpoint="eligible_sources"))["items"], []
+		)
+		items = self.success(
+			self.listing(self.filters(organization_unit=unit, currency=currency), endpoint="eligible_sources")
+		)["items"]
+		self.assertNotIn(case, [item["name"] for item in items])
+
 	def test_scope_filters_bounds_and_ordinary_department_role_do_not_expose_parent_records(self):
 		self.assertEqual(
 			self.success(self.listing(self.filters(organization_unit=self.units["A"])))["items"], []

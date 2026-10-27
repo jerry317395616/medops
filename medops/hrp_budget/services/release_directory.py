@@ -167,8 +167,19 @@ def directory_candidates(command):
 		with release_query_scope():
 			return bounded_names(RELEASE, filters, "prepared_at desc,name asc")
 	# Start with native, scoped consolidated sources so approved department
-	# cases cannot become financial release proposals.
+	# cases cannot become financial release proposals. If a specific case was
+	# requested, scope and resolve it first; otherwise unrelated submissions
+	# could exhaust the candidate limit before we look at the requested case.
 	source_filters = {key: value for key, value in filters.items() if key != "name"}
+	if filters.get("name"):
+		with case_query_scope():
+			selected = bounded_names(CASE, dict(filters, status="Approved", docstatus=1), "name asc")
+		if not selected:
+			return ()
+		submission = frappe.db.get_value(CASE, selected[0], "submission")
+		if not submission:
+			return ()
+		source_filters["name"] = submission
 	with submission_query_scope():
 		sources = bounded_names(
 			SUBMISSION,
@@ -177,16 +188,26 @@ def directory_candidates(command):
 		)
 	if not sources:
 		return ()
-	consumed = frappe.get_all(
-		RELEASE,
-		filters={key: filters[key] for key in CONTEXT_FIELDS} | {"operation": "Release"},
-		pluck="source_approval",
-		limit_page_length=MAX_DIRECTORY_CANDIDATES + 1,
-	)
-	if len(consumed) > MAX_DIRECTORY_CANDIDATES:
-		raise_ione_error("INVALID_REQUEST")
-	if filters.get("name") in consumed:
-		return ()
+	if filters.get("name"):
+		# A single source must not be rejected because the hospital has many
+		# unrelated releases. Check the source globally, even if a corrupt or
+		# historical release has a different organization or currency.
+		if frappe.db.exists(RELEASE, {"operation": "Release", "source_approval": filters["name"]}):
+			return ()
+		consumed = []
+	else:
+		consumed_filters = {key: filters[key] for key in CONTEXT_FIELDS} | {"operation": "Release"}
+		for field in ("organization_unit", "currency"):
+			if field in filters:
+				consumed_filters[field] = filters[field]
+		consumed = frappe.get_all(
+			RELEASE,
+			filters=consumed_filters,
+			pluck="source_approval",
+			limit_page_length=MAX_DIRECTORY_CANDIDATES + 1,
+		)
+		if len(consumed) > MAX_DIRECTORY_CANDIDATES:
+			raise_ione_error("INVALID_REQUEST")
 	case_filters = dict(filters, submission=["in", list(sources)], status="Approved", docstatus=1)
 	if consumed and "name" not in case_filters:
 		case_filters["name"] = ["not in", list(consumed)]
