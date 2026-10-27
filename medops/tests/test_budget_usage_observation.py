@@ -73,11 +73,22 @@ class TestBudgetUsageObservation(IntegrationTestCase):
 		frappe.db.begin()
 		super().tearDown()
 
-	def evidence(self, suffix, *, key=None, amount="6.00", commit=None, digest="a" * 64, center="center"):
+	def evidence(
+		self,
+		suffix,
+		*,
+		key=None,
+		amount="6.00",
+		commit=None,
+		digest="a" * 64,
+		center="center",
+		source_name=None,
+		allocation="allocation",
+	):
 		key = key or self.key
 		name = "reservation-" + suffix
 		source = ReservationSource(
-			"Material Request", "request-" + suffix, digest, "line", "allocation", "Reserve"
+			"Material Request", source_name or "request-" + suffix, digest, "line", allocation, "Reserve"
 		)
 		first = reservation_record(
 			ReservationEvent(reservation_event_key(name, 1), name, 1, key, "CNY", 2, "Reserve", amount),
@@ -400,5 +411,167 @@ class TestBudgetUsageObservation(IntegrationTestCase):
 		)
 		with self.assertRaises(IoneApplicationError):
 			self.verify_source(proposed)
+		with self.assertRaises(IoneApplicationError):
+			assert_budget_guards([self.key])
+
+	def test_source_root_in_another_budget_scope_is_not_silently_ignored(self):
+		source = self.prepare_source_verification()
+		other = replace(self.key, budget_subject="another-subject")
+		self.add_evidence(
+			*self.evidence(
+				"b",
+				key=other,
+				amount="2.00",
+				digest=source.digest(),
+				source_name=source.request,
+				allocation="allocation-b",
+			)
+		)
+		with self.assertRaises(IoneApplicationError):
+			self.verify_source(source)
+		with self.assertRaises(IoneApplicationError):
+			assert_budget_guards([self.key])
+
+	def test_combined_allocations_cannot_exceed_source_amount(self):
+		source = self.prepare_source_verification()
+		self.add_evidence(
+			*self.evidence(
+				"b",
+				amount="2.00",
+				digest=source.digest(),
+				source_name=source.request,
+				allocation="allocation-b",
+			)
+		)
+		with self.assertRaises(IoneApplicationError):
+			self.verify_source(source)
+		with self.assertRaises(IoneApplicationError):
+			assert_budget_guards([self.key])
+
+	def test_combined_allocations_equal_to_source_amount_are_accepted(self):
+		frappe.db.rollback()
+		source = self.source_snapshot()
+		self.add_evidence(*self.evidence("a", amount="4.00", digest=source.digest()))
+		self.add_evidence(
+			*self.evidence(
+				"b",
+				amount="2.00",
+				digest=source.digest(),
+				source_name=source.request,
+				allocation="allocation-b",
+			)
+		)
+		with patch.object(observation, "check_usage_access"):
+			self.discovered = material_usage_sources.discover_material_usage_sources([self.key])
+		acquire_multi_source_bound_budget_guards(
+			[self.key],
+			source_bindings=((source.request, source.line, source.organization_unit, source.digest()),),
+		)
+		self.assertEqual(len(self.verify_source(source)), 2)
+		assert_budget_guards([self.key])
+
+	def test_late_source_root_outside_scope_requires_whole_transaction_retry(self):
+		source = self.prepare_source_verification()
+		with patch.object(
+			material_usage_sources,
+			"_source_root_names",
+			side_effect=[frozenset({"reservation-a"}), frozenset({"reservation-a", "outside"})],
+		):
+			with self.assertRaises(IoneApplicationError):
+				self.verify_source(source)
+		with self.assertRaises(IoneApplicationError):
+			assert_budget_guards([self.key])
+
+	def test_source_root_bound_rejects_truncated_results(self):
+		frappe.db.rollback()
+		source = self.source_snapshot()
+		self.add_evidence(*self.evidence("a", amount="4.00", digest=source.digest()))
+		self.add_evidence(
+			*self.evidence(
+				"b",
+				amount="2.00",
+				digest=source.digest(),
+				source_name=source.request,
+				allocation="allocation-b",
+			)
+		)
+		with patch.object(observation, "check_usage_access"):
+			self.discovered = material_usage_sources.discover_material_usage_sources([self.key])
+		acquire_multi_source_bound_budget_guards(
+			[self.key],
+			source_bindings=((source.request, source.line, source.organization_unit, source.digest()),),
+		)
+		with patch.object(material_usage_sources, "MAX_ROOTS_PER_SOURCE", 1):
+			with self.assertRaises(IoneApplicationError):
+				self.verify_source(source)
+		with self.assertRaises(IoneApplicationError):
+			assert_budget_guards([self.key])
+
+	def test_same_purchase_line_in_two_units_is_rejected(self):
+		frappe.db.rollback()
+		first = self.source_snapshot()
+		second = replace(first, organization_unit="another-unit")
+		keys = [self.key, replace(self.key, organization_unit=second.organization_unit)]
+		sources = [first, second]
+		bindings = tuple(sorted((s.request, s.line, s.organization_unit, s.digest()) for s in sources))
+		acquire_multi_source_bound_budget_guards(keys, source_bindings=bindings)
+		with (
+			patch.object(observation, "check_usage_access"),
+			patch.object(
+				material_usage_sources,
+				"locked_material_request_source",
+				side_effect=lambda request, line, unit: {s.organization_unit: s for s in sources}[unit],
+			),
+		):
+			with self.assertRaises(IoneApplicationError):
+				material_usage_sources.guarded_verify_material_usage_sources(keys, sources, discovered=())
+		with self.assertRaises(IoneApplicationError):
+			assert_budget_guards(keys)
+
+	def test_source_orphan_event_outside_scope_is_not_silently_ignored(self):
+		frappe.db.rollback()
+		source = self.source_snapshot()
+		other = replace(self.key, budget_subject="another-subject")
+		_, events = self.evidence("a", key=other, digest=source.digest())
+		self.insert("tabHRP Budget Reservation Event", events[0])
+		with patch.object(observation, "check_usage_access"):
+			self.discovered = material_usage_sources.discover_material_usage_sources([self.key])
+		acquire_multi_source_bound_budget_guards(
+			[self.key],
+			source_bindings=((source.request, source.line, source.organization_unit, source.digest()),),
+		)
+		with self.assertRaises(IoneApplicationError):
+			self.verify_source(source)
+		with self.assertRaises(IoneApplicationError):
+			assert_budget_guards([self.key])
+
+	def test_source_event_bound_rejects_truncated_results(self):
+		frappe.db.rollback()
+		source = self.source_snapshot()
+		self.add_evidence(*self.evidence("a", digest=source.digest(), commit="4.00"))
+		with patch.object(observation, "check_usage_access"):
+			self.discovered = material_usage_sources.discover_material_usage_sources([self.key])
+		acquire_multi_source_bound_budget_guards(
+			[self.key],
+			source_bindings=((source.request, source.line, source.organization_unit, source.digest()),),
+		)
+		with patch.object(material_usage_sources, "MAX_EVENTS_PER_SOURCE", 1):
+			with self.assertRaises(IoneApplicationError):
+				self.verify_source(source)
+		with self.assertRaises(IoneApplicationError):
+			assert_budget_guards([self.key])
+
+	def test_missing_source_lookup_index_fails_closed(self):
+		source = self.prepare_source_verification()
+		sql = frappe.db.sql
+
+		def no_source_index(query, *args, **kwargs):
+			if "information_schema.STATISTICS" in query:
+				return []
+			return sql(query, *args, **kwargs)
+
+		with patch.object(frappe.db, "sql", side_effect=no_source_index):
+			with self.assertRaises(IoneApplicationError):
+				self.verify_source(source)
 		with self.assertRaises(IoneApplicationError):
 			assert_budget_guards([self.key])

@@ -37,11 +37,15 @@
 		"medops/hrp_budget/services/material_usage_sources.py",
 		"tests/test_change_governance.py",
 		"medops/hrp_budget/services/material_usage_preview.py",
-		"medops/tests/test_budget_usage_preview.py"
+		"medops/tests/test_budget_usage_preview.py",
+		"design/field_catalog.csv",
+		"doctype_blueprints/hrp_budget/hrp_budget_reservation_event.json",
+		"medops/hrp_budget/doctype/hrp_budget_reservation_event/hrp_budget_reservation_event.json",
+		"medops/tests/test_budget_reservation_storage.py"
 	],
 	"permissions_impact": "无新API或角色；内部核查先验证当前预算台账读取权限、字段和组织范围，再读取预占结构。预占事件与聚合写入仍关闭。",
-	"migration_impact": "无新增数据库模型、字段或用户权限；依赖既有预占和事件表已迁移为 InnoDB。",
-	"rollback_plan": "当前仅内部只读结构核查；若未来启用预占，回退前须先停止全部写入口和新旧worker并保留完整事件证据，不能使用旧冲销逻辑。",
+	"migration_impact": "事件表来源名称新增 Frappe search_index；标准站点迁移会创建数据库索引。大表耗时与锁影响须先在隔离副本测量并备份；不改其他站点且本次未执行服务器迁移。",
+	"rollback_plan": "本次预占写入仍关闭。上线或回退前停止全部受影响写入口和新旧 worker；保留事件证据并核对一致性。索引不能在运行反向查询的版本中移除，否则会拒绝查询；按站点制定备份与迁移回退。",
 	"security_impact": "聚合和事件链只能证明结构一致，不能证明历史源事实、人工审批、事件授权或余额；禁止把返回结果作为业务写入许可。",
 	"test_plan": [
 		"隔离CI 40578844791通过同预算范围多个采购来源、状态转移及101范围分组等31项专项",
@@ -57,7 +61,11 @@
 		"采购来源发现、来源和预算围栏、占用重核、下达候选查询的完整顺序及失败失效；八项模拟来源流程测试待执行。",
 		"真实 ERPNext 采购草稿与私有空占用表联合检查；预算键和下达记录使用测试替身；待隔离执行。",
 		"隔离CI 40583094422通过57项专项包括空历史和待处理来源；联合下达流程另行验证。",
-		"会话用户在下达读取时切换，联合检查失败并使预算围栏失效；待隔离执行。"
+		"会话用户在下达读取时切换，联合检查失败并使预算围栏失效；待隔离执行。",
+		"隔离CI 40583704971通过64项专项；新范围外关联预占拒绝、分摊合计、截断和来源复查测试待运行。",
+		"按采购行反向核对预占根与事件父关系和数量；范围外孤立事件与事件数超限失败关闭。",
+		"隔离CI 40584383442通过65项专项包含真实采购草稿联合检查；预算键和下达清点模拟。",
+		"隔离CI 40584637598通过66项专项；来源事件索引迁移断言及索引缺失失败关闭待测试。"
 	],
 	"owner": "MedOps Maintainers",
 	"created_on": "2026-10-27",

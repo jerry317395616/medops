@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from decimal import Decimal, localcontext
+
 import frappe
 
 from medops.common.budget_control import ordered_budget_keys
@@ -18,6 +20,9 @@ from medops.hrp_budget.services.material_request_source import (
 	locked_material_request_source,
 )
 from medops.services.errors import raise_ione_error
+
+MAX_ROOTS_PER_SOURCE = 100
+MAX_EVENTS_PER_SOURCE = 10000
 
 
 def _roots(keys, actor):
@@ -50,6 +55,73 @@ def _references(rows):
 	return tuple(refs[key] for key in sorted(refs))
 
 
+def _source_root_names(source: MaterialRequestSource) -> frozenset[str]:
+	"""Find every physical root for a source, without disclosing its contents."""
+	rows = frappe.db.sql(
+		"""SELECT `name` FROM `tabHRP Budget Reservation`
+		WHERE `source_doctype`=%s AND `source_name`=%s AND `source_line`=%s
+		ORDER BY `name` LIMIT %s""",
+		("Material Request", source.request, source.line, MAX_ROOTS_PER_SOURCE + 1),
+	)
+	if len(rows) > MAX_ROOTS_PER_SOURCE:
+		raise ValueError("source reservation count exceeds bound")
+	names = [row[0] for row in rows]
+	if any(not isinstance(name, str) or not name for name in names) or len(names) != len(set(names)):
+		raise ValueError("invalid source reservation identity")
+	return frozenset(names)
+
+
+def _require_source_indexes():
+	rows = frappe.db.sql(
+		"""SELECT DISTINCT TABLE_NAME FROM information_schema.STATISTICS
+		WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME IN (%s, %s)
+		AND COLUMN_NAME=%s AND SEQ_IN_INDEX=1""",
+		("tabHRP Budget Reservation", "tabHRP Budget Reservation Event", "source_name"),
+	)
+	if {row[0] for row in rows} != {"tabHRP Budget Reservation", "tabHRP Budget Reservation Event"}:
+		raise_ione_error("CONFIGURATION_INVALID")
+
+
+def _check_all_source_roots(rows, sources):
+	_require_source_indexes()
+	if len({(source.request, source.line) for source in sources}) != len(sources):
+		raise ValueError("a purchase line cannot span multiple locked organization units")
+	for source in sources:
+		guarded = frozenset(
+			name
+			for name, row in rows.items()
+			if (row["source_doctype"], row["source_name"], row["source_line"])
+			== ("Material Request", source.request, source.line)
+		)
+		if _source_root_names(source) != guarded:
+			raise ValueError("source has reservation roots outside guarded scopes")
+		events = frappe.db.sql(
+			"""SELECT `name`, `reservation` FROM `tabHRP Budget Reservation Event`
+			WHERE `source_doctype`=%s AND `source_name`=%s AND `source_line`=%s
+			ORDER BY `name` LIMIT %s""",
+			("Material Request", source.request, source.line, MAX_EVENTS_PER_SOURCE + 1),
+		)
+		if len(events) > MAX_EVENTS_PER_SOURCE:
+			raise ValueError("source event count exceeds bound")
+		counts = {name: 0 for name in guarded}
+		seen = set()
+		for event_name, parent in events:
+			if (
+				not isinstance(event_name, str)
+				or not event_name
+				or event_name in seen
+				or parent not in counts
+			):
+				raise ValueError("orphan or duplicate source reservation event")
+			seen.add(event_name)
+			counts[parent] += 1
+		if any(
+			type(rows[name]["event_count"]) is not int or rows[name]["event_count"] != count
+			for name, count in counts.items()
+		):
+			raise ValueError("source event count differs from guarded roots")
+
+
 def discover_material_usage_sources(value: object) -> tuple[MaterialSourceReference, ...]:
 	"""Return untrusted references for prelocking, never for financial decisions.
 
@@ -75,13 +147,14 @@ def guarded_verify_material_usage_sources(value: object, sources: object, *, dis
 
 	Only proves current source facts match captured digests; normal later changes
 	can prevent verification. It does not prove historical approvals, completeness
-	of other writers, allocation policy, authenticity against database tampering,
-	or funds. The caller must pass the exact pre-lock discovery result and include
-	all historical and proposed sources in the locked set. A discovered empty set
+	of other writers or missing physical evidence, allocation policy, authenticity
+	against database tampering, or funds. The caller must pass the exact pre-lock
+	discovery result and include all historical and proposed sources. An empty set
 	does not imply no orphan events: the guarded chain inspection still runs.
 	Caller must roll back the whole transaction on any failure.
 	"""
 	try:
+		actor = frappe.session.user
 		keys = ordered_budget_keys(value)
 		if not isinstance(sources, (tuple, list)) or not 1 <= len(sources) <= MAX_BOUND_MATERIAL_SOURCES:
 			raise ValueError("bounded locked source snapshots required")
@@ -107,7 +180,7 @@ def guarded_verify_material_usage_sources(value: object, sources: object, *, dis
 			raise ValueError("locked material source outside guarded scope")
 		bindings = tuple(sorted((*identity, source.digest()) for identity, source in by_id.items()))
 		assert_material_guard_bindings(keys, bindings)
-		rows = _roots(keys, frappe.session.user)
+		rows = _roots(keys, actor)
 		refs = _references(rows)
 		if refs != discovered:
 			raise ValueError("reservation source set changed")
@@ -126,9 +199,28 @@ def guarded_verify_material_usage_sources(value: object, sources: object, *, dis
 				!= (source.company, source.hospital, source.organization_unit, source.project)
 			):
 				raise ValueError("reservation differs from native source")
+		_check_all_source_roots(rows, sources)
+		if frappe.session.user != actor:
+			raise_ione_error("CONFLICT")
 		positions = observation.guarded_budget_usage_observation(keys)
-		if _roots(keys, frappe.session.user) != rows:
+		with localcontext() as context:
+			context.prec = 48
+			exposure = {identity: Decimal(0) for identity in by_id}
+			for position in positions:
+				row = rows[position.reservation]
+				identity = (row["source_name"], row["source_line"], row["organization_unit"])
+				exposure[identity] += (
+					Decimal(position.open_reservation)
+					+ Decimal(position.open_commitment)
+					+ Decimal(position.actual)
+				)
+			if any(exposure[identity] > Decimal(source.amount) for identity, source in by_id.items()):
+				raise ValueError("combined source reservations exceed purchase amount")
+		if _roots(keys, actor) != rows:
 			raise ValueError("reservation roots changed during verification")
+		_check_all_source_roots(rows, sources)
+		if frappe.session.user != actor:
+			raise_ione_error("CONFLICT")
 		assert_material_guard_bindings(keys, bindings)
 		return positions
 	except (ValueError, TypeError, KeyError) as error:

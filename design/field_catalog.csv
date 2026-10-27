@@ -13655,7 +13655,7 @@ Release Commitment
 Actual",1,0,0,1,0,,,,事件类型,Finance
 medops,HRP Budget,HRP Budget Reservation Event,18,amount,精确金额,Data,,1,0,0,1,0,,,,精确金额,Finance
 medops,HRP Budget,HRP Budget Reservation Event,19,source_doctype,来源单据类型,Link,DocType,1,0,0,1,0,,,,来源单据类型,Finance
-medops,HRP Budget,HRP Budget Reservation Event,20,source_name,来源单据,Dynamic Link,source_doctype,1,0,0,1,0,,,,来源单据,Finance
+medops,HRP Budget,HRP Budget Reservation Event,20,source_name,来源单据,Dynamic Link,source_doctype,1,0,1,1,0,,,,来源单据,Finance
 medops,HRP Budget,HRP Budget Reservation Event,21,source_revision,来源修订,Data,,1,0,0,1,0,,,,来源修订,Finance
 medops,HRP Budget,HRP Budget Reservation Event,22,actor,操作者,Link,User,1,0,0,1,0,,,,操作者,Finance
 medops,HRP Budget,HRP Budget Reservation Event,23,occurred_at,业务时间,Datetime,,1,0,0,1,0,,,,业务时间,Finance

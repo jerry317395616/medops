@@ -203,6 +203,7 @@
 			"fieldname": "source_name",
 			"label": "来源单据",
 			"fieldtype": "Dynamic Link",
+			"search_index": 1,
 			"read_only": 1,
 			"reqd": 1,
 			"options": "source_doctype"

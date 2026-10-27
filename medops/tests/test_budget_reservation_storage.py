@@ -52,6 +52,8 @@ class TestBudgetReservationStorage(FrappeTestCase):
 			columns[0][1] for columns in indexes.values() if len(columns) == 1 and columns[0][0] == 1
 		}
 		self.assertTrue(set(fields).issubset(unique_columns))
+		self.assertTrue(meta.get_field("source_name").search_index)
+		self.assertTrue(any(row.COLUMN_NAME == "source_name" and int(row.SEQ_IN_INDEX) == 1 for row in rows))
 
 	def test_reservation_aggregate_is_closed_and_has_anchor_columns(self):
 		before = frappe.db.count(AGGREGATE)
