@@ -1,0 +1,50 @@
+{
+	"schema_version": 1,
+	"task_id": "COD-035",
+	"title": "实现预占释放承诺实际转换",
+	"status": "In Progress",
+	"risk_level": "critical",
+	"change_types": [
+		"application",
+		"architecture",
+		"documentation",
+		"security"
+	],
+	"affected_modules": [
+		"HRP Budget"
+	],
+	"breaking_change": false,
+	"adr_ids": [
+		"ADR-0030",
+		"ADR-0031",
+		"ADR-0035",
+		"ADR-0036"
+	],
+	"path_globs": [
+		"DELIVERY_MANIFEST.json",
+		"VALIDATION_REPORT.json",
+		"SHA256SUMS.txt",
+		"architecture/budget_control.md",
+		"backlog/**",
+		"changes/COD-035.json",
+		"medops/hrp_budget/services/release_usage_guard.py",
+		"medops/hrp_budget/services/budget_usage_observation.py",
+		"medops/tests/test_budget_usage_observation.py",
+		"tests/test_change_governance.py"
+	],
+	"permissions_impact": "无新API或角色；内部核查先验证当前预算台账读取权限、字段和组织范围，再读取预占结构。预占事件与聚合写入仍关闭。",
+	"migration_impact": "无新增数据库模型、字段或用户权限；依赖既有预占和事件表已迁移为 InnoDB。",
+	"rollback_plan": "当前仅内部只读结构核查；若未来启用预占，回退前须先停止全部写入口和新旧worker并保留完整事件证据，不能使用旧冲销逻辑。",
+	"security_impact": "聚合和事件链只能证明结构一致，不能证明历史源事实、人工审批、事件授权或余额；禁止把返回结果作为业务写入许可。",
+	"test_plan": [
+		"隔离连接私有临时表核验同预算范围多个采购来源与状态转移",
+		"拒绝孤立事件、缺失事件、跨范围父子不一致、未知来源、重复动作与超限并失效预算围栏",
+		"同范围跨期间不静默遗漏；不同组织不返回",
+		"访客在读取使用表前拒绝；读取后权限撤销时拒绝并失效围栏",
+		"既有冲销占用检测回归；未知表和非InnoDB失败关闭",
+		"未来须验证可信来源、人工确认、全部写入口围栏、重复动作、余额、同键并发和真实业务验收"
+	],
+	"owner": "MedOps Maintainers",
+	"created_on": "2026-10-28",
+	"updated_on": "2026-10-28"
+}

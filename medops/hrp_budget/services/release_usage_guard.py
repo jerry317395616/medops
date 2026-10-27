@@ -112,16 +112,8 @@ def _has_overlapping_usage(table: str, keys: tuple[BudgetControlKey, ...]) -> bo
 	return False
 
 
-def assert_no_unreconciled_reversal_usage(value: object) -> None:
-	"""Deny reversal when the guarded scope has unreconciled usage evidence.
-
-	This checks only the current physical tables and returns no row data. It is a
-	temporary fail-closed policy, not a balance calculation. Future adjustment,
-	commitment or actualization writers must extend this protocol before their
-	tables are enabled. All release, reversal and usage writers must use the same
-	guard, with old workers stopped before deployment; otherwise phantoms remain.
-	The caller must fully roll back the transaction after any failure.
-	"""
+def require_valid_usage_storage(value: object) -> tuple[BudgetControlKey, ...]:
+	"""Check guarded storage and malformed unit rows, without authorizing use."""
 	try:
 		keys = ordered_budget_keys(value)
 		assert_budget_guards(keys)
@@ -133,6 +125,26 @@ def assert_no_unreconciled_reversal_usage(value: object) -> None:
 		for table in TABLES:
 			if _has_unscoped_rows(table) or _has_malformed_unit_rows(table, units):
 				raise_ione_error("CONFIGURATION_INVALID")
+		assert_budget_guards(keys)
+		return keys
+	except BaseException:
+		invalidate_budget_guards()
+		raise
+
+
+def assert_no_unreconciled_reversal_usage(value: object) -> None:
+	"""Deny reversal when the guarded scope has unreconciled usage evidence.
+
+	This checks only the current physical tables and returns no row data. It is a
+	temporary fail-closed policy, not a balance calculation. Future adjustment,
+	commitment or actualization writers must extend this protocol before their
+	tables are enabled. All release, reversal and usage writers must use the same
+	guard, with old workers stopped before deployment; otherwise phantoms remain.
+	The caller must fully roll back the transaction after any failure.
+	"""
+	try:
+		keys = require_valid_usage_storage(value)
+		for table in TABLES:
 			if _has_overlapping_usage(table, keys):
 				raise_ione_error("INVALID_STATE_TRANSITION")
 		assert_budget_guards(keys)
