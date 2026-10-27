@@ -9,10 +9,10 @@
 		"ADR-0031",
 		"ADR-0032"
 	],
-	"current_scope": "COD-033 In Progress. The eligible-source bounded query fix adds one native regression test; exact-head native verification is pending. GitHub workflow 40497550894 passed all jobs including Required and both integrations: 448 tests and zero Error Logs across each set of three isolated sites. It was a manual run on 05e8646, not a protected PR check. A separate 630307d plain integration was cancelled around its 45-minute limit after 454 tests; the cause is not directly confirmed. The timeout increase is a new unverified candidate. Server testing, protected PR, actual hospital capacity, interfaces and acceptance remain pending.",
+	"current_scope": "COD-033 In Progress. The eligible-source bounded query fix adds one native regression test; exact-head native verification is pending. GitHub workflow 40497550894 passed all jobs including Required and both integrations: 448 tests and zero Error Logs across each set of three isolated sites. It was a manual run on 05e8646, not a protected PR check. A separate 630307d plain integration was cancelled around its 45-minute limit after 454 tests; the cause is not directly confirmed. The timeout increase is a new unverified candidate. Statement provenance enumeration now uses bounded keyset pages instead of a 1000-batch ceiling; real and simulated pagination checks and final-phase concurrent change denial are pending isolated validation. Server testing, protected PR, actual hospital capacity, interfaces and acceptance remain pending.",
 	"checks": {
 		"pure_tests_expected": 464,
-		"complete_frappe_tests_expected": 449,
+		"complete_frappe_tests_expected": 452,
 		"exact_foundation_pure_tests_passed": 21,
 		"native_foundation": {
 			"status": "passed",

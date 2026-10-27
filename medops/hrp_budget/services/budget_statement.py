@@ -34,7 +34,7 @@ from medops.services.data_access import require_scope
 from medops.services.domain_service import DomainService
 from medops.services.errors import raise_ione_error
 
-MAX_STATEMENT_BATCHES = 1000
+STATEMENT_PARENT_PAGE_SIZE = 128
 MAX_PRIVATE_PROOF_ENTRIES = 1000000
 
 
@@ -147,20 +147,34 @@ def statement_batches(context, *, export=False):
 	# aggregate header's unit or by visible ledger rows. Either would silently
 	# lose a deleted/misdimensioned original-leaf row. No header enters output.
 	require_statement_scope(context, export=export)
-	names = frappe.get_all(
-		RELEASE,
-		filters=dict(
-			context_filters(context),
-			status="Posted",
-			docstatus=1,
-			posting_date=["between", [context["fiscal_year_start"], context["to_date"]]],
-		),
-		pluck="name",
-		order_by="name asc",
-		limit_page_length=MAX_STATEMENT_BATCHES + 1,
+	filters = dict(
+		context_filters(context),
+		status="Posted",
+		docstatus=1,
+		posting_date=["between", [context["fiscal_year_start"], context["to_date"]]],
 	)
-	if len(names) > MAX_STATEMENT_BATCHES:
-		raise_ione_error("INVALID_REQUEST")
+	names = []
+	seen = set()
+	while True:
+		page = frappe.get_all(
+			RELEASE,
+			filters=filters,
+			pluck="name",
+			order_by="name asc",
+			limit_page_length=STATEMENT_PARENT_PAGE_SIZE,
+		)
+		if len(page) > STATEMENT_PARENT_PAGE_SIZE:
+			raise_ione_error("CONFIGURATION_INVALID")
+		for name in page:
+			if not isinstance(name, str) or not name or name in seen:
+				raise_ione_error("CONFIGURATION_INVALID")
+			seen.add(name)
+			if len(seen) > MAX_PRIVATE_PROOF_ENTRIES:
+				raise_ione_error("INVALID_REQUEST")
+			names.append(name)
+		if len(page) < STATEMENT_PARENT_PAGE_SIZE:
+			break
+		filters["name"] = [">", page[-1]]
 	return tuple(names)
 
 
