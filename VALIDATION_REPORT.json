@@ -1,1710 +1,1724 @@
 {
-	"schema_version": 1,
-	"status": "IN_PROGRESS_COD_033",
-	"task_id": "COD-033",
-	"recorded_on": "2026-10-27",
-	"runtime_namespace": "medops",
-	"architecture_decisions": [
-		"ADR-0030",
-		"ADR-0031",
-		"ADR-0032"
-	],
-	"current_scope": "COD-033 remains In Progress and prior CI failure has a pending queue-isolation rerun. COD-034 prework adds an unconnected MariaDB v3 scope-and-period guard with fail-closed one-shot connection markers. Expected 473 pure/451 native; actual lock, savepoint, commit and rollback tests have not run. Canonical source identity, overlap business validation, reservations, shared release fence, permissions, API and UI remain incomplete. Protected PR and hospital acceptance remain pending.",
-	"checks": {
-		"pure_tests_expected": 473,
-		"complete_frappe_tests_expected": 451,
-		"exact_foundation_pure_tests_passed": 21,
-		"native_foundation": {
-			"status": "passed",
-			"source_commit": "77da19bf54a0521a207db38664ae83e669d3dfb1",
-			"tests": 20,
-			"counts": [
-				6,
-				10,
-				4
-			],
-			"coverage": [
-				"all captured precisions real database round-trip",
-				"native immutability, original grain and atomic rollback",
-				"legacy generic ledger and real stale-snapshot outer transaction retry",
-				"domain service transaction regressions"
-			],
-			"site": "cod030-828dab0.localhost",
-			"public_sites_untouched": true,
-			"migrations": 0
-		},
-		"protected_ci": "not run for COD-033",
-		"local_quality": "Full458/11 quality steps and1449 committed Git blobs passed at f500cf4; proof cod033-f500cf4-quality.json",
-		"pure_tests_passed": 458,
-		"complete_frappe_tests": "Prior f500 full446 passed at its own source; current 448 candidate has not yet run.",
-		"current_protocol": {
-			"status": "full local quality passed",
-			"tests": 11,
-			"combined_ledger_pure": 32,
-			"source_commit": "5ef0fa3e2ead0fb50f938077b565dc4031ab2d2f"
-		},
-		"current_runtime_models": {
-			"status": "two private migrations passed at daaed16; old budget and user-role hashes unchanged; no financial seeds",
-			"runtime_models": 42,
-			"design_fields": 10028,
-			"models": [
-				"HRP Budget Release",
-				"HRP Budget Release Entry",
-				"HRP Budget Ledger",
-				"HRP Integration Outbox"
-			],
-			"native_new_tests": 6,
-			"source_regressions": [
-				"15-integer-digit human approval",
-				"Outbox stale-snapshot full transaction retry"
-			]
-		},
-		"current_local_quality": "Full456 atc0ee;current backend Python/models/tests identical. bcc7 scoped checks/1449committed blobs passed,actualbrowser/file/native preserved-state checks passed. This final documentation checkpoint is checked separately.",
-		"runtime_native_partial": {
-			"source_commit": "daaed16f7765c0fb2e796fa100ca817970585499",
-			"passed_counts": [
-				5,
-				12,
-				9
-			],
-			"repeated_migrations": 2,
-			"preparation_commit": "10c2a4a3d048307c6673430bdd6cc6f125acafe7",
-			"preparation_passed": 1,
-			"full_suite": false,
-			"public_sites_untouched": true
-		},
-		"current_human_authorization": {
-			"status": "seven private native HTTP tests passed",
-			"source_commit": "a7e1b3a2785eecb0fb819b08c8e8942fe8b1c0c1",
-			"native_tests_passed": 7,
-			"public_deployment": false,
-			"asynchronous_posting": false,
-			"coverage": [
-				"same-cookie durable confirmation and exact amount",
-				"idempotent replay and consumed-proof rejection",
-				"proof, acknowledgement, SID and revision checks",
-				"prepared intent revision invalidates preview",
-				"source share and financial field revocation between requests",
-				"valid API credentials denied",
-				"mandatory release rules; no budget, GL or stock postings"
-			]
-		},
-		"owned_execution": {
-			"status": "passed60 joint native, strengthened8 recheck, automatic real RQ and2 process races",
-			"source_commit": "9a671b3d145816db66e12561283ad8aedf3b295f",
-			"native_counts": [
-				13,
-				7,
-				9,
-				7
-			],
-			"automatic_enqueue_enabled": true,
-			"cron_wired": true,
-			"real_rq_verified": true,
-			"real_rq_batches": 1,
-			"real_rq_ledger_rows": 2,
-			"public_deployment": false,
-			"coverage": [
-				"complete exact release and reversal",
-				"same authorization idempotent replay and stale epoch rejection",
-				"second append failure atomic rollback and retry",
-				"mid-transaction separate connection share/role/field revocation",
-				"post-commit poisoned Redis role cache; both rows written then final validation rollback",
-				"foreign claim receipt, missing capability and repeatable-read rejection",
-				"real RQ enqueue-after-commit and reference-only job args",
-				"current scope and native User Permission separate-connection mid-batch revocation",
-				"poisoned Redis User Permission after commit; both writes rolled back by final authorization",
-				"legacy mixed-case scope can be disabled without identity mutation",
-				"nested parent/child write and reservation rollback preserves earlier caller write",
-				"real SIGKILL after first uncommitted row; virtual lease/backoff recovery; stale receipt cannot change attempt2",
-				"Redis is contacted only after independent DB connection sees durable authority",
-				"savepoint rollback leaves no queue job even when after_commit hint survives",
-				"queue outage preserves durable authorization; bounded scheduler can retry",
-				"real Redis rollback and duplicate commit callback deduplication",
-				"failed confirmation result and superseded hint do not enqueue",
-				"native HTTP confirmation to real standard long RQ worker; exact batch and replay",
-				"two independent process standard execute_job claim and execution contention with barrier"
-			],
-			"rq_isolation": {
-				"old_budget_unchanged": true,
-				"user_roles_unchanged": true,
-				"gl_stock_unchanged": true,
-				"error_logs_unchanged": true,
-				"default_queue_before": 384,
-				"default_queue_after": 384,
-				"long_queue_before": 0,
-				"long_queue_after": 0,
-				"worker_exited": true
-			},
-			"pending": [
-				"further concurrent reconfirmation/reversal and repeated scheduler contention",
-				"department statements/export/API/UI",
-				"full410+ native, protected CI, backup and protected promotion"
-			],
-			"combined_transaction_scope_counts": [
-				5,
-				11
-			],
-			"total_focused_native": 60,
-			"previous_real_rq": {
-				"source_commit": "836a8c74a5c3cdf057f977298d2442986aa5f494",
-				"jobs": 2,
-				"batches": 1,
-				"ledger_rows": 2
-			},
-			"real_sigkill_recovery": {
-				"status": "passed",
-				"source_commit": "a7e1b3a2785eecb0fb819b08c8e8942fe8b1c0c1",
-				"site": "cod030-828dab0.localhost",
-				"db_port": 13360,
-				"real_sigkill": true,
-				"first_uncommitted_row_observed": true,
-				"independent_connection_rows_before_and_after_kill": 0,
-				"database_rollback_verified": true,
-				"virtual_clock_only_for_lease_expiry": true,
-				"lease_attempts": 2,
-				"old_receipt_cannot_post": true,
-				"posted_batches": 1,
-				"ledger_rows": 2,
-				"exact_precision": 9,
-				"outbox": "Delivered",
-				"old_budget_unchanged": true,
-				"user_roles_unchanged": true,
-				"gl_stock_unchanged": true,
-				"error_log_unchanged": true,
-				"queues_before": {
-					"short": 0,
-					"default": 384,
-					"long": 0
-				},
-				"queues_after": {
-					"short": 0,
-					"default": 384,
-					"long": 0
-				},
-				"source_clean": true,
-				"public_sites_untouched": true,
-				"backoff_recovery_verified": true,
-				"first_phase_driver_log": "cod033-a7e1b3a-rq-kill-retry2-driver.log",
-				"real_clock_lease_wait": false
-			},
-			"dispatch_native_counts": [
-				8
-			],
-			"joint_native_source": "3caa9570844d127da09eb31778e65ed756e70eef",
-			"business_source_identical_to_joint": true,
-			"permanent_real_rq_test": "medops.tests.test_budget_release_dispatch.TestBudgetReleaseDispatch.test_real_http_confirmation_and_standard_rq_worker_post_exactly_one_complete_batch",
-			"real_rq_scope": "Two standard CLI long-queue jobs from actual native HTTP authorization; source9a671b3. The separate process races intercept queue calls and are not concurrent RQ worker evidence."
-		},
-		"message_recovery": {
-			"status": "passed",
-			"source_commit": "a7e1b3a2785eecb0fb819b08c8e8942fe8b1c0c1",
-			"new_native_added": 13,
-			"new_pure_added": 2,
-			"focused_counts": [
-				5,
-				11,
-				13,
-				7,
-				9,
-				7
-			],
-			"total": 52,
-			"terminal_cases": [
-				"superseded Pending",
-				"superseded Processing",
-				"expired Processing at attempt10"
-			],
-			"current_capability_required": true,
-			"receipts_not_unsealed_or_renewed_for_retirement": true,
-			"scan_quotas": {
-				"pending_failed": 60,
-				"expired_processing": 20,
-				"active_processing": 20
-			},
-			"commit_audit_verified_on_independent_connection": true,
-			"automatic_enqueue_enabled": false,
-			"cron_wired": false,
-			"public_deployment": false
-		},
-		"proofs": {
-			"quality": "cod033-9a671b3-quality.json",
-			"focused_native": "cod033-a7e1b3a-runtime-recovery-regression.json",
-			"real_sigkill": "cod033-a7e1b3a-rq-kill-completed.json",
-			"nested_database": "cod033-a7e1b3a-nested-savepoint.json",
-			"joint_native": "cod033-3caa957-runtime-dispatch-regression.json",
-			"dispatch_recheck": "cod033-9a671b3-runtime-dispatch-only.json",
-			"process_contention": "cod033-9a671b3-job-races.json"
-		},
-		"automatic_dispatch": {
-			"status": "passed",
-			"source_commit": "9a671b3d145816db66e12561283ad8aedf3b295f",
-			"new_native_tests": 8,
-			"commit_only_redis": true,
-			"persisted_hint_recheck": true,
-			"queue_outage_preserves_authority": true,
-			"full_joint_source": "3caa9570844d127da09eb31778e65ed756e70eef",
-			"full_joint_counts": [
-				8,
-				5,
-				11,
-				13,
-				7,
-				9,
-				7
-			],
-			"strengthened_recheck_counts": [
-				8
-			],
-			"business_code_identical_between_sources": true,
-			"cron": "* * * * *",
-			"public_deployment": false,
-			"proof": "cod033-9a671b3-runtime-dispatch-only.json"
-		},
-		"process_contention": {
-			"status": "passed",
-			"source_commit": "9a671b3d145816db66e12561283ad8aedf3b295f",
-			"site": "cod030-828dab0.localhost",
-			"db_port": 13360,
-			"modes": [
-				{
-					"kind": "claim",
-					"statuses": [
-						"Dispatched",
-						"Deferred"
-					],
-					"both_entered_before_release": true,
-					"attempts": 1
-				},
-				{
-					"kind": "execute",
-					"statuses": [
-						"Posted",
-						"Posted"
-					],
-					"both_entered_before_release": true,
-					"attempts": 1
-				}
-			],
-			"separate_os_processes": true,
-			"standard_execute_job": true,
-			"exact_rows_per_source": 2,
-			"exact_precision": 9,
-			"replay_after_execution_race_posts_no_additional_rows": true,
-			"old_budget_unchanged": true,
-			"user_roles_unchanged": true,
-			"gl_stock_unchanged": true,
-			"error_log_unchanged": true,
-			"queues_before": {
-				"short": 0,
-				"default": 384,
-				"long": 0
-			},
-			"queues_after": {
-				"short": 0,
-				"default": 384,
-				"long": 0
-			},
-			"workers_after": 0,
-			"public_sites_untouched": true,
-			"real_rq_worker_for_races": false,
-			"financial_queue_calls_intercepted_in_synthetic_race": true
-		},
-		"repeat_dispatch_migrations": {
-			"source_commit": "3caa9570844d127da09eb31778e65ed756e70eef",
-			"count": 2,
-			"status": "passed",
-			"old_budget_hashes_unchanged": true,
-			"user_role_hashes_unchanged": true,
-			"existing_financial_model_counts_unchanged": true,
-			"scheduler_metadata_synchronized": true,
-			"no_zero_row_assumption": true,
-			"public_sites_untouched": true
-		},
-		"budget_statement": {
-			"status": "whole backend12 passed in joint49; Page interaction incomplete",
-			"source_commit": "1c987df7293a7361a27332a73d8c5bd97793dd5c",
-			"pure_tests": 10,
-			"full_quality_pure_tests": 439,
-			"native_summary": {
-				"status": "passed",
-				"source_commit": "1c987df7293a7361a27332a73d8c5bd97793dd5c",
-				"statement_distinct_cases": 12,
-				"whole_module_latest_run": true,
-				"joint_counts": [
-					13,
-					7,
-					9,
-					8,
-					12
-				],
-				"full_native_suite": false
-			},
-			"browser": {
-				"status": "partial_not_accepted",
-				"source_commit": "3f2aa21226468a2d9cf9dafadac34745dac2fa76",
-				"route": "/desk/hrp-budget-statements",
-				"observed": [
-					"Correct Page title and controls rendered",
-					"Workspace link uses distinct Page route"
-				],
-				"incomplete": [
-					"organization autocomplete/advanced search interaction",
-					"whole-book query via Page",
-					"pagination",
-					"entry dialog",
-					"browser XLSX download"
-				],
-				"issue": "IAB input suggestions did not refresh reliably; root cause unconfirmed. Native Edge fallback stopped before page interaction because Computer Use could not determine browser URL confidently.",
-				"screenshot_artifact": null,
-				"private_loopback_service_stopped": true,
-				"ssh_tunnel_stopped": true,
-				"public_sites_untouched": true,
-				"recorded_utc": "2026-10-26T14:59:05.117097+00:00"
-			},
-			"repeat_migrations": {
-				"source": "3f2aa21226468a2d9cf9dafadac34745dac2fa76",
-				"count": 2,
-				"old_budget_rows_unchanged": true,
-				"user_profile_roles_unchanged": true,
-				"existing_financial_model_counts_unchanged": true
-			},
-			"original_primary_transaction_and_session_preserved": true,
-			"database_enforced_read_only": true,
-			"source_field_and_native_user_permission_revocation": true,
-			"poisoned_redis_rejected": true,
-			"final_graph_cache_revocation_detected": true,
-			"private_batch_and_other_leaf_not_projected": true,
-			"exact_opening_and_complete_reversal": true,
-			"missing_or_tampered_rows_rejected": true,
-			"pagination_digest_binds_complete_book": true,
-			"scope_export_guard_positive_then_revoked": true,
-			"xlsx_complete_rows_beyond_page": true,
-			"xlsx_all_values_literal_text": true,
-			"positive_xlsx_principal": "Existing Administrator; no new role grants. Does not certify ordinary department export configuration.",
-			"deployment_export_requirement": "Explicit current native master/source and scope export grants; Budget User ledger export flag alone is insufficient.",
-			"public_sites_untouched": true,
-			"raw_native_ledger_title_still_closed": true,
-			"previous_staged_native_summary": {
-				"status": "passed_in_stages",
-				"source_commit": "3f2aa21226468a2d9cf9dafadac34745dac2fa76",
-				"statement_distinct_cases": 12,
-				"whole_module_latest_run": false,
-				"full_module": {
-					"source": "44cd57d34ea6304785705486a4a9763cc716139e",
-					"run": 12,
-					"passed": 11,
-					"failed": 1,
-					"failing_case": "test_export_requires_current_scope_export_grant",
-					"reason": "Direct test used Administrator restored by login helper; no production bypass"
-				},
-				"failed_case_recheck": {
-					"source": "2619b224a997d8eb986adc8128564872497825d4",
-					"passed": 1,
-					"explicit_department_actor": true
-				},
-				"final_page_route_smoke": {
-					"source": "3f2aa21226468a2d9cf9dafadac34745dac2fa76",
-					"passed": 1,
-					"repeat_migrations": 2
-				},
-				"regression": {
-					"source": "046d47a98b58c82970dd25e4a11ea8c574c0fea3",
-					"counts": [
-						8,
-						9,
-						5,
-						11
-					],
-					"passed": 33
-				},
-				"distinct_focused_cases": 45,
-				"backend_services_identical_between_case_sources": true,
-				"latest_change_scope": "Distinct Page route, workspace link, explicit test identity only",
-				"public_sites_untouched": true,
-				"whole_native_inventory": 422,
-				"whole_native_suite_run": false
-			}
-		},
-		"release_operator": {
-			"status": "backend13 passed in joint49; actual Page acceptance pending",
-			"pure_tests": 7,
-			"native_tests": 13,
-			"page": "hrp-budget-operations",
-			"api_codes": [
-				"FIN-044",
-				"FIN-045"
-			],
-			"model_and_user_grants_added": false,
-			"source_commit": "1c987df7293a7361a27332a73d8c5bd97793dd5c",
-			"native_tests_passed": 13,
-			"full_local_quality_pure": 439,
-			"repeat_migrations": {
-				"source_commit": "307a9e8e0d142ae0c6d74c6b14d3ab2a0a487cd2",
-				"count": 2,
-				"old_budget_hashes_unchanged": true,
-				"user_profile_roles_unchanged": true,
-				"existing_financial_row_counts_unchanged": true
-			},
-			"fixture_regression": {
-				"first_source": "ceeb412af72207ef154dad575212c300f40a14e1",
-				"first_status": "failed",
-				"cause": "Old primary repeatable-read snapshot could not see committed secondary fixture setter for cleanup; subsequent creates denied",
-				"repair": "Exact synthetic setter removed by native controller; fresh secondary fixture cleanup and deletion assertions added",
-				"production_permissions_widened": false,
-				"financial_rows_unchanged_during_repair": true,
-				"latest_joint_passed": true
-			},
-			"page_observation": {
-				"status": "partial",
-				"detail_exact_amount": true,
-				"directory_first50_rendered": true,
-				"next_page_button_visible": true,
-				"directory_latency": "multi-minute observed, profiling pending",
-				"writes_reconfirmation_reversal_statement_page_download_accepted": false
-			}
-		},
-		"current_joint_native": {
-			"status": "passed",
-			"source_commit": "1c987df7293a7361a27332a73d8c5bd97793dd5c",
-			"counts": [
-				13,
-				7,
-				9,
-				8,
-				12
-			],
-			"total": 49,
-			"modules": [
-				"medops.tests.test_budget_release_directory",
-				"medops.tests.test_budget_release_confirmation",
-				"medops.tests.test_budget_release_execution",
-				"medops.tests.test_budget_release_dispatch",
-				"medops.tests.test_budget_statement"
-			],
-			"proof": "cod033-1c987df-runtime-operator-regression.json",
-			"full_native_suite": false,
-			"public_sites_untouched": true
-		},
-		"concurrent_scheduler": {
-			"status": "fixed; focused9 and repeated real process/RQ passed",
-			"source_commit": "1c987df7293a7361a27332a73d8c5bd97793dd5c",
-			"duplicate_queue_entries": 2,
-			"standard_worker_ledger_rows": 2,
-			"duplicate_financial_posting": false,
-			"default_queue_preserved": 386,
-			"long_queue_after_owned_drain": 0,
-			"workers_after": 0,
-			"old_budget_roles_gl_stock_error_unchanged": true,
-			"native_test_added": 1,
-			"fix_source_commit": "4f16f780cde896f4d2c36104aaef151cbfedf279",
-			"fixed_native_queue_entries": 1,
-			"fixed_exact_ledger_rows": 2,
-			"fixed_real_processes": 2,
-			"proof": "cod033-4f16f78-scheduler-process-race.json"
-		},
-		"directory_performance": {
-			"status": "first optimization measured; further owned proof reuse and native validation pending",
-			"baseline_source": "4f16f780cde896f4d2c36104aaef151cbfedf279",
-			"candidate_records": 252,
-			"profiled_seconds": 254.195,
-			"page_items": 50,
-			"phase_candidate_checks": 504,
-			"optimization": "Owned connection/actor and one graph phase only; key complete supplied case fields; final source and authority checks start fresh; locked writes uncached",
-			"native_binding_test_added": 1,
-			"pure_graph_tests_added": 2,
-			"full_hospital_capacity_certified": false,
-			"first_optimized_source": "0898b5de5ebe37488e5351d65bfe76e5bb6c202b",
-			"first_optimized_profiled_seconds": 53.786,
-			"first_optimized_candidates": 252,
-			"document_keys": "SHA256 of all supplied document fields; explicit actor/type; no serialized private snapshot copy retained as key"
-		},
-		"confirmation_privacy": {
-			"source": "e8744e9a257aced034a3b38eb86080115dc42d63",
-			"status": "native_failed_fixture_contamination",
-			"native_tests": 8,
-			"existing_tests_passed": 7,
-			"failed_subtests": 3,
-			"repeat_migrations": 2,
-			"reason": "Native traceback expanded test closure preview containing deliberately invalid canary. Remove that closure and verify native v1 suffix/v2 aliases. No live secret values in test output."
-		},
-		"confirmation_privacy_followup": {
-			"source": "65f43efd7f9030d117a69025b903f9d40c2a0344",
-			"local_quality": "full444 passed",
-			"native_status": "8 run;7 existing passed;new canary first4 transport/route variants passed, v2 failed test schema assumption",
-			"reason": "Pinned v2 uses errors[0].type instead of v1 exc_type; assertion updated, production source unchanged. Requires native recheck."
-		},
-		"confirmation_privacy_latest": {
-			"source_commit": "7095a4092e5e03d96a6cdab28dae4f2d9ce69cc5",
-			"status": "passed",
-			"native_tests": 8,
-			"transport_and_route_variants": 5,
-			"complete_pre_hook_privacy_acceptance": false
-		},
-		"financial_transition_races": {
-			"source_commit": "7095a4092e5e03d96a6cdab28dae4f2d9ce69cc5",
-			"status": "passed",
-			"separate_os_processes": true,
-			"normal_cookie_csrf_http": true,
-			"frappe_test_mode": false,
-			"confirmation_wins": "old execution Failed;new authorization Posted2 rows;old message Dead Letter",
-			"execution_wins": "Posted2 rows;confirm native508 QueryDeadlockError;fresh whole HTTP same-key retry409;no new decision/message",
-			"duplicate_reversal_and_replay": "2 exact reverse rows;original rows unchanged",
-			"new_log_bytes": 419,
-			"proof_sid_csrf_absent_from_new_logs": true,
-			"queue_calls_intercepted": true,
-			"real_rq_for_this_race": false,
-			"default_queue_preserved": 386
-		},
-		"ui_synthetic_latest": {
-			"source_commit": "7095a4092e5e03d96a6cdab28dae4f2d9ce69cc5",
-			"status": "financial_and_statement_flows_passed_remaining_ui_pending",
-			"financial_flow": [
-				"revise reason",
-				"preview exact9 decimals and2 rows",
-				"unchecked denied",
-				"explicit confirm",
-				"independent reconfirmation defaultunchecked",
-				"standard RQ2 prompts =>one Posted2 row batch",
-				"UI Posted refresh",
-				"distinct complete reversal with negative exact net",
-				"standard RQ1 prompt =>2 reversal rows;original rows and dimensions unchanged",
-				"UI reverse Posted refresh"
-			],
-			"statement": [
-				"139 rows;page1 1-50",
-				"page2 51-100;precise totals retained",
-				"row detail200 shows original unitA,cost centerA,precision9,exact99999.999999999",
-				"manager export403;visible permission failure;no grants added"
-			],
-			"entry_and_export": "entry200 and manager403 at709;actual Administrator browser download200 at e311;139 full rows while page displays50;no new grants",
-			"source_role_integrity_scope": "after revision/first preview to financial completion",
-			"financial_count_deltas": {
-				"HRP Budget Release": 1,
-				"HRP Budget Release Entry": 5,
-				"HRP Budget Ledger": 4,
-				"HRP Integration Outbox": 3
-			},
-			"old_budget_rows_and_roles_unchanged": true,
-			"default_queue_preserved": 386,
-			"long_after": 0,
-			"workers_after": 0,
-			"public_sites_untouched": true,
-			"known_ui_issue": "late unchanged Link onchange fixed and fresh-browser first-query validated;true changes still invalidate and discard old200 response",
-			"statement_ui_source": "e31117474985d0c0b04f59c4b70ba8a59e66e344"
-		},
-		"browser_export_file": {
-			"source_commit": "e31117474985d0c0b04f59c4b70ba8a59e66e344",
-			"status": "passed",
-			"data_rows": 139,
-			"current_page_rows": 50,
-			"bytes": 58310,
-			"all_cells_text": true,
-			"all_precision": 9,
-			"debit_credit_closing_and_final_running_balance_match": true,
-			"formula_cells": 0,
-			"hyperlinks": 0,
-			"external_links": false,
-			"actor": "existing full-permission Administrator;not ordinary department grant acceptance"
-		},
-		"final_runtime_integrity": {
-			"source_commit": "e31117474985d0c0b04f59c4b70ba8a59e66e344",
-			"status": "passed",
-			"all5_apps_public_private_clean": true,
-			"public_medops": "8291fba67d5b6a9452422a2986f7d2b831a970e0",
-			"financial_counts": {
-				"HRP Budget Release": 334,
-				"HRP Budget Release Entry": 589,
-				"HRP Budget Ledger": 278,
-				"HRP Integration Outbox": 262
-			},
-			"old_budget_roles_unchanged": true,
-			"short_queue": 0,
-			"default_queue": 386,
-			"long_queue": 0,
-			"workers": 0,
-			"temporary_helpers_tunnels_tabs_stopped": true,
-			"active_synthetic_administrator_logged_out": true
-		},
-		"privacy_remaining_review": {
-			"status": "not_complete",
-			"verified_gap": "before_request follows HTTPRequest;other early session failures not covered by this hook",
-			"code_review_hypothesis_not_runtime_verified": "Preview proof generation and plaintext serialization/encrypted idempotency persistence exception paths require an invalid canary matrix;confirm-input tests alone do not establish those paths safe"
-		},
-		"privacy_generation_probe": {
-			"source_commit": "e31117474985d0c0b04f59c4b70ba8a59e66e344",
-			"status": "observed_gaps",
-			"native_retry_status": 508,
-			"phases": [
-				"preview_evidence",
-				"preview_idempotency_save",
-				"early_http_request"
-			],
-			"canary_entered_native_context_in_all_phases": true,
-			"actual_sid_csrf_in_captured_error_context": false,
-			"normal_cookie_csrf": true,
-			"frappe_test_mode": false,
-			"fault_injection_not_real_contention": true,
-			"all_financial_idempotency_gl_stock_error_counts_old_budget_roles_and_queues_unchanged": true,
-			"public_non_authorizing_canary": true,
-			"raw_diagnostic_contents_returned": false
-		},
-		"privacy_values_patch": {
-			"status": "implemented_not_runtime_accepted",
-			"pure_added": 4,
-			"native_added": 2,
-			"native_targets": "budget release and approval preview evidence/idempotency faults;native error context,telemetry message and actual SDK serialization without outbound transport",
-			"wire_schema_fingerprint_and_encryption_content_change": false,
-			"new_tables_or_user_grants": false,
-			"early_http_request_boundary": "still not fixed"
-		},
-		"complete_frappe_tests_passed": 446,
-		"ione_core_ci_compatibility": {
-			"status": "implemented_not_run",
-			"commit": "8c697bafd30aebd418aee18f618b287bbab557f3",
-			"source": "https://github.com/jerry317395616/ione_core.git",
-			"separate_job": true,
-			"required_check": false,
-			"fresh_ci_sites_only": true,
-			"existing_ci_without_core_retained": true,
-			"real_hospital_acceptance": false
-		},
-		"budget_control_prework": {
-			"status": "pure_contracts_and_unconnected_lock_prototype",
-			"pure_tests_added": 12,
-			"native_tests_added": 3,
-			"database_lock_implemented": true,
-			"database_lock_native_tested": false,
-			"business_writers_use_guard": false,
-			"persisted_reservation_implemented": false,
-			"api_or_ui_implemented": false,
-			"concurrent_acceptance": false,
-			"release_reversal_shared_fence": false,
-			"hospital_acceptance": false,
-			"canonical_database_reference_resolution": false,
-			"alias_race_test_pending": true,
-			"lock_version": 3,
-			"period_identity": "actual_start_and_end",
-			"overlapping_period_fence_implemented": false,
-			"native_tests_for_v2_run": false,
-			"scope_guard_prototype_implemented": true,
-			"scope_guard_native_tested": false,
-			"transaction_wide_one_shot_enforced": false,
-			"overlapping_period_business_check_implemented": false,
-			"native_tests_for_v3_run": false,
-			"transaction_callback_native_tested": false,
-			"repeated_guard_call_rejected_within_connection_transaction": true,
-			"stale_result_after_savepoint_invalidation_detected": false,
-			"outer_full_rollback_after_savepoint_required": true
-		},
-		"ci_bootstrap_search_isolation": {
-			"status": "implemented_not_retested",
-			"failed_run": 40480393108,
-			"tests_run": 448,
-			"failures": 1,
-			"observed_queue_count": 1,
-			"bootstrap_search_index_enqueue_observed": true,
-			"identity_of_queued_job_confirmed": false,
-			"default_bootstrap_search_index_preserved": true,
-			"unknown_jobs_deleted_or_consumed": false
-		}
-	},
-	"previous_verified_release": {
-		"schema_version": 1,
-		"status": "VERIFIED_DEVELOPMENT_RELEASE_COD_032",
-		"task_id": "COD-032",
-		"recorded_on": "2026-10-26",
-		"runtime_namespace": "medops",
-		"architecture_decisions": [
-			"ADR-0029"
-		],
-		"current_scope": "Verified department submission, complete-source consolidation and persisted human approval; isolated development/test deployment. Full HRP production remains incomplete.",
-		"checks": {
-			"local_quality": "all passed",
-			"pure_tests_passed": 380,
-			"complete_frappe_tests_passed": 360,
-			"protected_ci": {
-				"status": "passed",
-				"run": 40263234479,
-				"head": "818f9e4ed9b54ffc61e64da29d00346d4184c7b3",
-				"pure": 380,
-				"frappe": 360,
-				"fresh_sites": [
-					{
-						"error_log_count": 0,
-						"error_log_summaries": [],
-						"site": "hrp-test.localhost"
-					},
-					{
-						"error_log_count": 0,
-						"error_log_summaries": [],
-						"site": "hrp-dev.localhost"
-					},
-					{
-						"error_log_count": 0,
-						"error_log_summaries": [],
-						"site": "hrp-demo.localhost"
-					}
-				],
-				"all_test_counts": [
-					380,
-					360
-				]
-			},
-			"focused_native": [
-				8,
-				18,
-				13,
-				20,
-				9,
-				9,
-				7,
-				8,
-				9,
-				20
-			],
-			"focused_native_total": 121,
-			"actual_browser": {
-				"runtime_commit": "818f9e4ed9b54ffc61e64da29d00346d4184c7b3",
-				"scope": "synthetic development acceptance",
-				"workflow": [
-					"approved two-department source selection",
-					"full-grain consolidation seal",
-					"request independent approval",
-					"persisted preview, explicit checkbox and decision",
-					"requestor refresh and post-approval source trace"
-				],
-				"exact_total": "100000.000000001",
-				"original_units": 2,
-				"original_cost_centers": 2,
-				"confirmations": 1,
-				"decisions": 1,
-				"case_shares": 0,
-				"global_workflow_actions": 0,
-				"normal_csrf": true
-			},
-			"real_dual_process_races": 7,
-			"legacy_upgrade_contract": "request, policy, decision and durable receipt unchanged; running test site matrix payload unchanged",
-			"deployment": {
-				"scope": [
-					"medical-dev.localhost",
-					"test-medops.localhost"
-				],
-				"database_config_and_files_backup": true,
-				"backup_manifest_verified": true,
-				"migrations_per_site": 2,
-				"new_models": 4,
-				"new_financial_seeds": 0,
-				"original_business_and_auth_tables_per_site": {
-					"medical-dev.localhost": 67,
-					"test-medops.localhost": 67
-				},
-				"original_business_columns_values_and_times_preserved": true,
-				"legacy_matrix_counts": {
-					"medical-dev.localhost": 0,
-					"test-medops.localhost": 1
-				},
-				"legacy_matrix_public_payload_preserved": true,
-				"guest_budget_api_count": 21,
-				"guest_budget_api_status": 401,
-				"authenticated_pages_lists_versions_core_and_workbench": 200,
-				"public_https_and_socketio": 200,
-				"other_service_pids_and_states_unchanged": 41,
-				"other_site_http_unchanged": true,
-				"error_logs_not_increased": true,
-				"application_and_dependencies_clean": true
-			},
-			"permissions": {
-				"user_and_role_profile_assignment_full_rows_unchanged": true,
-				"user_profile_assignment_rows": {
-					"medical-dev.localhost": 67,
-					"test-medops.localhost": 76
-				},
-				"new_user_grants": 0,
-				"new_scopes": 0,
-				"new_shares": 0,
-				"owned_page_workspace_role_sets_match_source": true,
-				"metadata_reimport": {
-					"backup_reconstruction_verified": true,
-					"has_role_recreated_metadata_rows_per_site": 45,
-					"allowed_parents": "eight existing MedOps reports and I-ONE AI/Mobile workspaces only",
-					"has_role_normalized_fields": [
-						"name",
-						"creation",
-						"modified"
-					],
-					"ione_role_timestamp_rows_per_site": 4,
-					"ione_role_normalized_fields": [
-						"creation",
-						"modified"
-					],
-					"all_permission_values_and_other_fields_preserved": true
-				}
-			}
-		},
-		"evidence": "architecture/releases/COD-032.json",
-		"prior_verified_release": "architecture/releases/COD-031.json",
-		"remaining": [
-			"exact immutable budget ledger and execution COD033-035",
-			"remaining36-module functionality and complete business loops",
-			"hospital scale, actual interfaces, UAT and disaster recovery"
-		],
-		"overall_hrp_goal": "active and incomplete"
-	},
-	"production_readiness": "not established",
-	"deployment": "COD-032 runtime remains on public sites; COD-033 validation is isolated",
-	"privacy_boundary_validation": {
-		"source_commit": "1627858250777ed0b34149459a61717ad7fcee57",
-		"focused_native_passed": 58,
-		"normal_cookie_csrf_phases_passed": 7,
-		"deferred_error_records": 14,
-		"actual_sdk_memory_events": 14,
-		"new_native_file_log_bytes": 12748,
-		"no_canary_sid_csrf_in_tested_sinks": true,
-		"outbound_telemetry_requests": 0,
-		"actual_settings_changed": false,
-		"proof": "cod033-1627858-final-diagnostic-probe-v3.json",
-		"coverage_limit": "Injected after native HTTPRequest construction and before before_request; earlier connection/session-constructor branches and proxy/server sinks not certified."
-	},
-	"full_native_suite": {
-		"status": "pending_candidate",
-		"expected_tests": 448,
-		"prior_passed_commit": "f500cf4e8b7e5f2f3c0b662027fbd68e3f82af57",
-		"public_sites_untouched": true
-	},
-	"pending_read_optimization": {
-		"status": "Same459 measured61.792s/63225SQL at9d; corrected native authority/cache tests passed at86 and full446 passed atc0ee. Hospital performance/capacity acceptance pending.",
-		"rejected_prototype": {
-			"source": "33709af",
-			"candidates": 459,
-			"seconds": 80.258,
-			"sql_calls": 84125,
-			"document_cache_removed": true
-		},
-		"baseline": {
-			"source": "1627858",
-			"candidates": 459,
-			"seconds": 77.527,
-			"sql_calls": 88042
-		},
-		"candidate_list_and_page_digests_equal": true,
-		"sql_attribution": {
-			"scope_grants": 14124,
-			"workflow_and_children": 10539
-		},
-		"scope": "same-owned-read-only-connection, same actor, one access graph phase",
-		"cached_values": [
-			"frozen ScopeGrant tuples keyed by user/type/action/site date",
-			"successful workflow validation boolean"
-		],
-		"full_source_documents_cached": false,
-		"explicit_authority_refresh_clears_graph": true,
-		"pure_cases_added": 3,
-		"native_cases_added": 2,
-		"native_tests_expected_for_candidate": 446,
-		"database_permission_api_or_model_changes": false,
-		"performance_improvement_not_yet_proven": false,
-		"measured_candidate": {
-			"source_commit": "9d4727a84b340683e9a7eb3cf20f5d000ba78ffc",
-			"candidates": 459,
-			"seconds": 61.792,
-			"sql_calls": 63225,
-			"proof": "cod033-9d4727a-directory-profile-comparison.json",
-			"protected_data_and_queues_unchanged": true,
-			"candidate_list_and_page_digests_equal_to_baseline": true
-		},
-		"hospital_capacity_established": false,
-		"authority_refresh_failure": {
-			"source": "9d4727a",
-			"targeted_native_status": "failed on first of6; subsequent cases not run",
-			"cause": "shared authority reader refuses an active graph, even when cleared",
-			"all9_preserved_state_checks_passed": true,
-			"correction": "owned RO statement adapter suspends graph during fresh authority read and restores empty context, including exception paths; financial guard unchanged",
-			"verification_pending": false,
-			"corrected_native_tests_passed": 2
-		}
-	},
-	"full_native_failure_fixes": {
-		"status": "All3 formerly failed tests passed individually at86 and full446 passed atc0ee.",
-		"change_governance": "Compare HTTP counts with actual change/ADR catalogs instead of obsolete34/29 constants.",
-		"planning_fixtures": "Per-test HTTP idempotency namespace and unique fund code preserve within-test replay while avoiding prior committed fixtures/expired receipts.",
-		"history_fixtures": "Unique quality rule/initial-evaluation identity; verify recorded zero separately from a day before real capture epoch and from future unknown coverage.",
-		"production_permission_or_history_semantics_relaxed": false
-	},
-	"operational_audit_file_fix": {
-		"baseline_source": "1627858250777ed0b34149459a61717ad7fcee57",
-		"runtime_gap_proven": true,
-		"baseline_effective_logger_level": 40,
-		"baseline_event_method_returned": true,
-		"baseline_real_file_bytes_written": 0,
-		"fix": "Set only validated named MedOps audit logger to INFO; native/global levels untouched; sensitive fields rejected before logger creation.",
-		"native_real_file_case_added": 1,
-		"native_tests_expected_for_candidate": 446,
-		"runtime_fix_verification_pending": false,
-		"historical_records_backfilled": false,
-		"verified_source_commit": "86ba9b00f0db3a6b978135c4ee263b78d8778ab7",
-		"real_file_native_case_passed": true
-	},
-	"previous_full_native_suite": {
-		"status": "failed",
-		"expected_tests": 443,
-		"commit": "1627858250777ed0b34149459a61717ad7fcee57",
-		"driver_pid": 2330748,
-		"proof_when_complete": "cod033-1627858-full-native-suite-memory4g.json",
-		"first_attempt": "failed after7 tests/73 cascading errors due confirmed isolated-database cgroup OOM; nine recovery integrity checks passed",
-		"resource_change": "private database memory limit1.5GiB to4GiB,live update,compose persisted;no restart or public service change",
-		"completed_tests": 443,
-		"passed_tests": 440,
-		"failures": 3,
-		"all_preserved_state_checks_passed": true,
-		"proof": "cod033-1627858-full-native-suite-memory4g.json"
-	},
-	"targeted_read_audit_and_fixture_validation": {
-		"status": "passed",
-		"source_commit": "86ba9b00f0db3a6b978135c4ee263b78d8778ab7",
-		"tests": 6,
-		"native_counts": [
-			1,
-			1,
-			1,
-			1,
-			1,
-			1
-		],
-		"all9_preserved_state_checks_passed": true,
-		"proof": "cod033-86ba9b0-read-optimization-focused.json",
-		"complete_native_suite_not_replaced": true
-	},
-	"committed_http_fixture_isolation": {
-		"status": "Two complete modules repeated twice passed; full446 passed atc0ee.",
-		"production_source_unchanged_since": "86ba9b00f0db3a6b978135c4ee263b78d8778ab7",
-		"failures": [
-			"test_http_command_reads_idempotency_header_and_replays_response",
-			"test_http_get_and_update_replay_use_public_contract"
-		],
-		"observed_first_response_statuses": [
-			409,
-			409
-		],
-		"correction": "Fresh key per test execution; same key retained across first/second requests; first-not-replayed and second-replayed assertions retained; no receipt deletion/expiry extension or command relaxation.",
-		"planned_regression": "Completed13/11/13/11 then full446; persistent historical receipts preserved.",
-		"verified_source_commit": "c0eea4c3e1fc40f05c7a7a10bc6a6eb2dc1c7572",
-		"repeat_counts": [
-			13,
-			11,
-			13,
-			11
-		],
-		"distinct_cases": 24,
-		"native_executions": 48,
-		"all9_preserved_state_checks_passed": true,
-		"proof": "cod033-c0eea4c-foundation-repeat.json"
-	},
-	"backup_restore_rehearsal": {
-		"status": "passed",
-		"source_commit": "c0eea4c3e1fc40f05c7a7a10bc6a6eb2dc1c7572",
-		"checks": {
-			"source_all_tables_files_receipts_unchanged_since_before_backup": true,
-			"restored_all_tables_files_receipts_unchanged_since_postcheck": true,
-			"only_changed_physical_table_is_tabSingles": true,
-			"only_native_System_Settings_modified_value_differs": true,
-			"every_table_row_count_matches": true,
-			"public_private_files_match": true,
-			"encrypted_receipts_match_and_all_valid": true,
-			"installed_apps_match": true,
-			"real_authorized_budget_statement_matches": true,
-			"positive_native_public_private_file_recovery_passed": true,
-			"corrected_native_file_archive_layout_passed": true,
-			"source_roles_queues_settings_unchanged_since_full446": true,
-			"existing_configs_unchanged": true,
-			"target_config_unchanged": true,
-			"all_existing_frappe_service_states_and_pids_unchanged": true,
-			"no_database_restart_added": true,
-			"source_commit_unchanged": true,
-			"target_quarantined": true
-		},
-		"physical_tables": 984,
-		"physical_rows": 113143,
-		"raw_physical_equality": false,
-		"permitted_native_difference": {
-			"table": "tabSingles",
-			"doctype": "System Settings",
-			"field": "modified"
-		},
-		"actual_source_attachment_files": 0,
-		"encrypted_receipts": {
-			"invalid_existing": 0,
-			"valid": 14802
-		},
-		"positive_file_lab": {
-			"public_files": 1,
-			"private_files": 1,
-			"content_and_permissions_match": true
-		},
-		"queue_counts": {
-			"short": 0,
-			"default": 386,
-			"long": 0
-		},
-		"workers": 0,
-		"database_recreated_after_initial_import": false,
-		"native_timestamp_rewritten": false,
-		"original_failed_proofs_and_archives_preserved": true,
-		"public_sites_untouched": true,
-		"native_backend_source": "c0eea4c3e1fc40f05c7a7a10bc6a6eb2dc1c7572",
-		"frontend_not_deployed": true,
-		"hospital_rpo_rto_or_capacity_certified": false,
-		"private_values_returned": false,
-		"proof": "cod033-c0eea4c-backup-restore/final-result.json",
-		"postcheck_proof": "cod033-c0eea4c-backup-restore/native-postcheck-v2.json",
-		"positive_file_proof": "cod033-c0eea4c-backup-restore/native-file-lab-v2.json",
-		"operator_failure_history": [
-			"Initial config API error after DB import; corrected with explicit frappe.installer.update_site_config path, no DB recreation.",
-			"Strict physical equality failed only on native restore System Settings.modified; preserve timestamp and permit exactly that one field.",
-			"Initial empty-file archives used absolute paths; corrected archives use native relative site context; original archives retained."
-		]
-	},
-	"completed_full_native_attempts": [
-		{
-			"status": "failed",
-			"expected_tests": 443,
-			"commit": "1627858250777ed0b34149459a61717ad7fcee57",
-			"driver_pid": 2330748,
-			"proof_when_complete": "cod033-1627858-full-native-suite-memory4g.json",
-			"first_attempt": "failed after7 tests/73 cascading errors due confirmed isolated-database cgroup OOM; nine recovery integrity checks passed",
-			"resource_change": "private database memory limit1.5GiB to4GiB,live update,compose persisted;no restart or public service change",
-			"completed_tests": 443,
-			"passed_tests": 440,
-			"failures": 3,
-			"all_preserved_state_checks_passed": true,
-			"proof": "cod033-1627858-full-native-suite-memory4g.json"
-		},
-		{
-			"status": "failed",
-			"expected_tests": 446,
-			"commit": "86ba9b00f0db3a6b978135c4ee263b78d8778ab7",
-			"driver_pid": 3683057,
-			"proof_when_complete": "cod033-86ba9b0-full-native-suite-authority-read.json",
-			"source_frozen_during_run": true,
-			"public_sites_untouched": true,
-			"prior_privacy_evidence_source": "1627858250777ed0b34149459a61717ad7fcee57",
-			"diagnostic_source_identical_to_prior_cookie_csrf_probe": true,
-			"scope_limit": "Native full suite is still pending. Performance capacity, actual UI, backup, protected CI, hospital interfaces/UAT and promotion remain separate.",
-			"completed_tests": 446,
-			"failures": 2,
-			"exit_code": 1,
-			"all9_preserved_state_checks_passed": true,
-			"proof": "cod033-86ba9b0-full-native-suite-authority-read.json",
-			"driver_completed": true
-		},
-		{
-			"status": "passed",
-			"expected_tests": 446,
-			"commit": "c0eea4c3e1fc40f05c7a7a10bc6a6eb2dc1c7572",
-			"driver_pid": 4036727,
-			"source_frozen_during_run": true,
-			"production_source_identical_to": "86ba9b00f0db3a6b978135c4ee263b78d8778ab7",
-			"only_application_tree_changes": [
-				"medops/hrp_foundation/tests/test_modules.py",
-				"medops/hrp_foundation/tests/test_system_settings.py"
-			],
-			"public_sites_untouched": true,
-			"completed_tests": 446,
-			"passed_tests": 446,
-			"failures": 0,
-			"all9_preserved_state_checks_passed": true,
-			"driver_completed": true,
-			"proof": "cod033-c0eea4c-full-native-suite-authority-read.json"
-		}
-	],
-	"operations_link_filter_followup": {
-		"status": "observable same-value and input-phase behavior passed at bcc952c",
-		"file": "medops/hrp_budget/page/hrp_budget_operations/hrp_budget_operations.js",
-		"trigger": "Native Link validation can invoke onchange again with an identical value; operations page previously invalidated every callback.",
-		"result": "Bind current normalized filter signature during queries and programmatic record loads; invalidate only on an actual filter change.",
-		"server_api_permission_or_financial_changes": false,
-		"native_full_source_left_frozen": "c0eea4c3e1fc40f05c7a7a10bc6a6eb2dc1c7572",
-		"not_yet_deployed_to_validation_site": false,
-		"files": [
-			"medops/hrp_budget/page/hrp_budget_operations/hrp_budget_operations.js",
-			"medops/hrp_budget/page/hrp_budget_statements/hrp_budget_statements.js"
-		],
-		"missing_required_filters_clear_previous_results_and_export": true,
-		"browser_validation_pending": false,
-		"verified_source_commit": "bcc952c9b084a2530248f5eeed4f72bfb2cc0265",
-		"browser_proof": "cod033-bcc952c-input-browser-observations.json",
-		"same_value_reentry_preserved_current_results": true,
-		"missing_required_query_cleared_results_and_export": true,
-		"scope_limit": "Native suggestion popup covers toolbar after raw fills;normal keyboard query accepted,explicit mouse suggestion-selection flow remains. Current positive220row browser file accepted atbcc."
-	},
-	"operator_ui_acceptance": {
-		"status": "passed",
-		"source_commit": "e87d9011e768043a6019e989803a75f32b384889",
-		"native_backend_base": "c0eea4c3e1fc40f05c7a7a10bc6a6eb2dc1c7572",
-		"fresh_loopback_browser_origin": true,
-		"existing_synthetic_actors_only": true,
-		"eligible_source_first_query_returned_first50": true,
-		"operations_same_year_value_preserved_50_source_buttons": true,
-		"approved_source_to_prepared_release_ui_completed": true,
-		"new_record_displayed_source_lines": 2,
-		"new_record_displayed_status": "Prepared",
-		"authorization_and_posting_fields_displayed_empty": true,
-		"operations_missing_year_prompt_and_old_results_clear": true,
-		"manager_statement_first_page": {
-			"total_rows": 220,
-			"returned_rows": 50
-		},
-		"statement_same_year_kept_table_and_export_state": true,
-		"statement_missing_currency_prompt_cleared_table_and_disabled_export": true,
-		"existing_maker_statement_first_page": {
-			"total_rows": 220,
-			"returned_rows": 50
-		},
-		"existing_maker_export_failed_with_explicit_ui_hint": true,
-		"scope_validation": {
-			"baseline_synthetic_actor_could_read_A_and_B": true,
-			"baseline_B_success_not_counted_as_access_control_failure": true,
-			"native_User_Permission_temporarily_narrowed_only_this_actor_to_A": true,
-			"B_then_denied_and_old_table_export_cleared": true,
-			"A_still_readable_with_same_restriction": true,
-			"all_original_User_Permission_rows_restored_verified_by_private_native_helper": true,
-			"new_user_grants": false
-		},
-		"synthetic_manager_logged_out_via_native_ui": true,
-		"synthetic_maker_logged_out_via_native_ui": true,
-		"temporary_created_tab_closed": true,
-		"screenshots": [
-			"cod033-e87d901-ui-created-prepared.png",
-			"cod033-e87d901-ui-missing-filter.png",
-			"cod033-e87d901-ui-scope-denied.png"
-		],
-		"native_data_and_http_counter_proof": "cod033-e87d901-recovery-ui-integrity-v3.json",
-		"temporary_loopback_service_and_local_tunnel_stopped": true,
-		"only_new_native_permission_delete_cleanup_job_processed": true,
-		"original_default386_jobs_exactly_retained": true,
-		"limits": [
-			"Native Link validation sometimes required waiting for the value to settle before a new query; no universal first-click or latency guarantee.",
-			"No positive export file repeated at this source; prior e311174 browser XLSX proof retains its own source.",
-			"Directory performance and hospital-scale capacity not accepted; no protected CI or public promotion."
-		]
-	},
-	"operator_ui_integrity": {
-		"status": "passed",
-		"commit": "e87d9011e768043a6019e989803a75f32b384889",
-		"native_backend_base": "c0eea4c3e1fc40f05c7a7a10bc6a6eb2dc1c7572",
-		"checks": {
-			"old_budget_rows_unchanged": true,
-			"existing_user_profile_roles_unchanged": true,
-			"financial_model_delta_exact": true,
-			"prepared_record_read_only_verification": true,
-			"original_queues_gl_stock_roles_and_settings_unchanged": true,
-			"actual_create_200_exactly_once": true,
-			"actual_read_and_cross_scope_denial_statuses_present": true,
-			"actual_export_denied_without_new_grants": true,
-			"original_user_permission_rows_restored": true,
-			"temporary_loopback_helper_stopped": true,
-			"all_preexisting_frappe_service_states_and_pids_unchanged": true,
-			"only_owned_native_permission_delete_cleanup_completed": true,
-			"preexisting_configs_and_both_bench_source_versions_unchanged": true
-		},
-		"financial_model_delta": {
-			"HRP Budget Release": 1,
-			"HRP Budget Release Entry": 0,
-			"HRP Budget Ledger": 0,
-			"HRP Integration Outbox": 0
-		},
-		"persisted_record": {
-			"status": "passed",
-			"created_prepared_release": 1,
-			"source_snapshot_lines": 2,
-			"authorization_revision_event_rows": 0,
-			"created_release_ledger_rows": 0,
-			"authorization_fields_empty": true,
-			"posted_timestamp_empty": true,
-			"reason_and_actor_match": true,
-			"read_only_connection": true,
-			"financial_amounts_or_private_values_returned": false
-		},
-		"prior_operator_assertion_failure_preserved": true,
-		"route_counters": {
-			"release.eligible_sources": {
-				"count": 1,
-				"statuses": [
-					"200"
-				]
-			},
-			"release.create": {
-				"count": 1,
-				"statuses": [
-					"200"
-				]
-			},
-			"release.get_record": {
-				"count": 1,
-				"statuses": [
-					"200"
-				]
-			},
-			"release.list_records": {
-				"count": 1,
-				"statuses": [
-					"200"
-				]
-			},
-			"ledger.statement": {
-				"count": 5,
-				"statuses": [
-					"200",
-					"200",
-					"200",
-					"403",
-					"200"
-				]
-			},
-			"ledger.export_statement": {
-				"count": 1,
-				"statuses": [
-					"403"
-				]
-			}
-		},
-		"queue_counts": {
-			"short": 0,
-			"default": 386,
-			"long": 0
-		},
-		"workers": 0,
-		"public_sites_untouched": true,
-		"new_user_grants": false,
-		"financial_amounts_or_private_values_returned": false,
-		"scope": "Native cleanup job from deleting only the new temporary test restriction was moved atomically to the empty long queue and processed by a standard burst worker. All original386 default IDs exactly retained. Source/browser evidence remains e87d901;public unchanged.",
-		"native_delete_cleanup": {
-			"status": "passed",
-			"checks": {
-				"original_default_queue_exactly_retained": true,
-				"owned_long_queue_empty": true,
-				"short_queue_unchanged": true,
-				"workers_stopped": true,
-				"native_job_finished": true,
-				"permissions_financial_gl_stock_error_counts_unchanged": true
-			},
-			"processed_jobs": 1,
-			"native_method": "frappe.model.delete_doc.delete_dynamic_links",
-			"reference_is_only_newly_removed_synthetic_User_Permission": true,
-			"standard_rq_worker": true,
-			"original_default_jobs": 386,
-			"queue_counts": {
-				"default": 386,
-				"long": 0,
-				"short": 0
-			},
-			"payload_values_returned": false
-		},
-		"prior_strict_queue_check_failure_preserved": true,
-		"proof": "cod033-e87d901-recovery-ui-integrity-v3.json"
-	},
-	"next_unblocked_tasks": [
-		"Run full current-source quality, real native permission revocation and complete native suite, then verify current-page names in a real browser",
-		"Evaluate bounded cross-document directory performance with independent final authorization",
-		"Complete protected CI and release/promotion gates; no partial release PR",
-		"COD034/035, remaining HRP and hospital capacity/interfaces/UAT"
-	],
-	"input_invalidation_followup": {
-		"status": "actual browser verification passed at bcc952c",
-		"baseline_ui_source": "e87d9011e768043a6019e989803a75f32b384889",
-		"baseline_verified": "Filled organization_unit B while input retained focus; old A table51 rows and enabled export remained until native onchange.",
-		"baseline_screenshot": "cod033-e87d901-input-stale-export.png",
-		"fix": "Bind native input events to the existing normalized signature handler on operations Links and statement Links/dates; preserve native validation and server authority.",
-		"models_api_migration_or_user_grants_changed": false,
-		"server_python_tests_unchanged_since": "c0eea4c3e1fc40f05c7a7a10bc6a6eb2dc1c7572",
-		"candidate_browser_verification_pending": false,
-		"verified_source_commit": "bcc952c9b084a2530248f5eeed4f72bfb2cc0265",
-		"browser_proof": "cod033-bcc952c-input-browser-observations.json",
-		"native_integrity_proof": "cod033-bcc952c-input-browser-followup-integrity.json",
-		"same_value_and_inflight_and_partial_date_cases_verified": true
-	},
-	"frozen_directory_baseline": {
-		"status": "passed",
-		"source_commit": "e87d9011e768043a6019e989803a75f32b384889",
-		"site_is_immutable_restored_dataset": true,
-		"candidate_count": 598,
-		"candidate_digest": "e01a0feb07fecd17c87c10068ae899c7fa18d089faebd255c92948cd3be11b4b",
-		"list_digest": "59de6bf85a6167874e8c5a057411e6e755fba91632271ff7515a0af07c4baafd",
-		"page_digest": "410f5c6f8f9ba7ebc2aa8c4f6ef263460b4cda8a17eda5b6e2f5ab8fb7a07e32",
-		"page_items": 50,
-		"has_next": true,
-		"sql_calls": 82245,
-		"elapsed_seconds": 83.251,
-		"controller_body_calls": {
-			"_case_permission": {
-				"read": 3444
-			},
-			"_submission_permission": {
-				"read": 3444
-			},
-			"_plan_permission": {
-				"read": 2296
-			},
-			"_version_permission": {
-				"read": 1148
-			}
-		},
-		"controller_document_key_variant_histograms": {
-			"_case_permission": {
-				"1": 1722
-			},
-			"_submission_permission": {
-				"1": 1722
-			},
-			"_plan_permission": {
-				"1": 1148
-			},
-			"_version_permission": {
-				"1": 574
-			}
-		},
-		"original_queues_unchanged": true,
-		"workers": 0,
-		"private_values_returned": false,
-		"diagnostic_second_read_same_result": true,
-		"timing_does_not_include_patched_diagnostic_read": true,
-		"scope": "Clean native cProfile plus a separate counted diagnostic read on the same frozen restored dataset;not comparable to prior459 profiles or hospital capacity.",
-		"all984_table_hashes_files_and_receipts_unchanged": true,
-		"dataset_tables": 984,
-		"dataset_rows": 113143,
-		"proof": "cod033-e87d901-frozen-directory-baseline.json",
-		"optimization_not_implemented": "All counted controller bodies use read; one document key variant per source. Normalizing equivalent permission type labels would not reduce this measured workload. No source/authorization checks removed."
-	},
-	"current_positive_browser_export": {
-		"status": "passed",
-		"source_commit": "bcc952c9b084a2530248f5eeed4f72bfb2cc0265",
-		"file": "cod033-bcc952c-browser-budget-statement.xlsx",
-		"bytes": 88163,
-		"sha256": "f85e8f5a073015e8cef35ee1d6f2eee3e40e5889ecd5fd3ce4642a8e850ee04e",
-		"browser_page_rows": 50,
-		"exported_data_rows": 220,
-		"all_complete_rows_headers_context_totals_match_native_authorized_source": true,
-		"all_rows_original_unit_A": true,
-		"all_precision9": true,
-		"all_nonempty_cells_text": true,
-		"text_cells": 6924,
-		"formula_cells": 0,
-		"hyperlinks": 0,
-		"external_relationships": 0,
-		"statement_digest": "2bf1ff94b3b16196d685a7c0af28bec1c4f634d09c366f625df78e6740e35c08",
-		"real_browser_download": true,
-		"no_user_grants": true,
-		"financial_values_returned": false,
-		"proof": "cod033-bcc952c-browser-export-file-proof.json"
-	},
-	"input_browser_observations": {
-		"status": "passed",
-		"source_commit": "bcc952c9b084a2530248f5eeed4f72bfb2cc0265",
-		"native_backend_evidence_source": "c0eea4c3e1fc40f05c7a7a10bc6a6eb2dc1c7572",
-		"baseline_source": "e87d9011e768043a6019e989803a75f32b384889",
-		"baseline_focus_change_B_kept_old_A_table51_and_export_enabled": true,
-		"fresh_followup_browser_origin": true,
-		"existing_Administrator_only_no_new_grants": true,
-		"finance_POST_endpoints_denied_by_temporary_test_helper": true,
-		"statement_A_total_rows": 220,
-		"statement_A_page_data_rows": 50,
-		"same_Link_input_value_kept_table51_and_export": true,
-		"changed_Link_input_B_retained_focus_but_immediately_cleared_table_and_disabled_export": true,
-		"request_confirmed_inflight_before_input_change": true,
-		"old_200_statement_response_did_not_restore_table_or_export": true,
-		"partial_from_date_input_2_retained_focus_but_immediately_cleared_table_and_disabled_export": true,
-		"TypeError_or_SyntaxError_after_partial_date": 0,
-		"real_browser_XLSX_download": true,
-		"download_file_proof": "cod033-bcc952c-browser-export-file-proof.json",
-		"operations_record_directory_buttons": 50,
-		"operations_same_year_input_kept_50_records": true,
-		"operations_changed_currency_USD_retained_focus_but_immediately_cleared_directory": true,
-		"synthetic_Administrator_normal_native_UI_logout_confirmed": true,
-		"main_followup_validation_tab_closed": true,
-		"temporary_helper_and_local_tunnel_stopped": true,
-		"screenshots": [
-			"cod033-e87d901-input-stale-export.png",
-			"cod033-bcc952c-focused-input-clears-export.png",
-			"cod033-bcc952c-operations-input-clears-directory.png"
-		],
-		"native_integrity_proof": "cod033-bcc952c-input-browser-followup-integrity.json",
-		"limits": [
-			"No universal first mouse-click guarantee; the native suggestion popup visibly covers the query toolbar after raw Link fills. Successful in-flight read used normal keyboard Enter; explicit mouse selection of a suggestion remains a separate UX check.",
-			"Existing full-permission Administrator validates positive export; this does not configure ordinary hospital department export permissions.",
-			"No hospital capacity claim; frozen598 clean cProfile baseline83.251s/82245SQL is separate from prior459 measurements."
-		]
-	},
-	"input_browser_native_integrity": {
-		"status": "passed",
-		"commit": "bcc952c9b084a2530248f5eeed4f72bfb2cc0265",
-		"phase": "followup",
-		"all_original_User_Permission_rows_unchanged": true,
-		"preexisting_services_configs_and_both_bench_app_pins_unchanged": true,
-		"protected_old_budget_roles_and_four_financial_models_unchanged": true,
-		"queues_gl_stock_settings_and_source_unchanged": true,
-		"queue_counts": {
-			"short": 0,
-			"default": 386,
-			"long": 0
-		},
-		"workers": 0,
-		"temporary_helper_stopped": true,
-		"finance_post_endpoints_denied": true,
-		"route_counters": {
-			"ledger.statement": {
-				"count": 4,
-				"statuses": [
-					"200",
-					"200",
-					"200",
-					"200"
-				]
-			},
-			"ledger.export_statement": {
-				"count": 1,
-				"statuses": [
-					"200"
-				]
-			},
-			"release.list_records": {
-				"count": 1,
-				"statuses": [
-					"200"
-				]
-			}
-		},
-		"public_sites_untouched": true,
-		"new_user_grants": false,
-		"source_data_returned": false
-	},
-	"text_scan_optimization": {
-		"status": "full_native_passed",
-		"baseline_commit": "2600589c0da56a6d8b6a400f0881d9dda8daad2f",
-		"candidate_source_git_blobs": {
-			"medops/common/domain_service.py": "996fd49906951fd090bd7be743360c754abf31db",
-			"medops/common/organization.py": "d03e4b5681e0dac1f680edb6d70a179f10b7b58c"
-		},
-		"differential_comparisons": 8337,
-		"proof": "cod033-text-scan-compatibility.json",
-		"pure_cases_added": 2,
-		"pure_tests_expected": 458,
-		"native_tests_expected": 446,
-		"current_full_quality_pending": false,
-		"current_full_native_pending": false,
-		"frozen598_performance_pending": false,
-		"models_api_hooks_permissions_and_transactions_unchanged": true,
-		"subclass_legacy_iteration_preserved": true,
-		"hospital_capacity_established": false,
-		"rollback": "Revert only the two shared scanner implementations; retain all data, ledgers and authorization facts. No migration or data rewriting.",
-		"commit": "f500cf4e8b7e5f2f3c0b662027fbd68e3f82af57",
-		"full_quality_proof": "cod033-f500cf4-quality.json",
-		"focused_native_proof": "cod033-f500cf4-text-scan-focused-native.json",
-		"focused_native_counts": [
-			5,
-			6,
-			14,
-			16,
-			2
-		],
-		"focused_all10_guards_passed": true,
-		"profile_proof": "cod033-f500cf4-frozen-directory-profile.json",
-		"profile_elapsed_seconds": 71.544,
-		"baseline_elapsed_seconds": 83.251,
-		"elapsed_reduction_percent": 14.06,
-		"all984_tables_files_receipts_unchanged": true,
-		"sql_controller_counts_and_result_digests_equal": true,
-		"performance_limit": "One cProfile run per source on the exact frozen598 dataset; still slow, no throughput/concurrency/hospital SLA claim.",
-		"private_runtime_source": "f500cf4e8b7e5f2f3c0b662027fbd68e3f82af57",
-		"public_runtime_unchanged": "8291fba67d5b6a9452422a2986f7d2b831a970e0",
-		"full_native_proof": "cod033-f500cf4-text-scan-full-native.json",
-		"full_native_counts": [
-			446
-		],
-		"full_all10_guards_passed": true
-	},
-	"prior_verified_full_native_suite_before_text_scan": {
-		"status": "passed",
-		"expected_tests": 446,
-		"commit": "c0eea4c3e1fc40f05c7a7a10bc6a6eb2dc1c7572",
-		"driver_pid": 4036727,
-		"source_frozen_during_run": true,
-		"production_source_identical_to": "86ba9b00f0db3a6b978135c4ee263b78d8778ab7",
-		"only_application_tree_changes": [
-			"medops/hrp_foundation/tests/test_modules.py",
-			"medops/hrp_foundation/tests/test_system_settings.py"
-		],
-		"public_sites_untouched": true,
-		"completed_tests": 446,
-		"passed_tests": 446,
-		"failures": 0,
-		"all9_preserved_state_checks_passed": true,
-		"driver_completed": true,
-		"proof": "cod033-c0eea4c-full-native-suite-authority-read.json"
-	},
-	"native_link_mouse_acceptance": {
-		"status": "observed",
-		"commit": "f500cf4e8b7e5f2f3c0b662027fbd68e3f82af57",
-		"existingSyntheticAdministrator": true,
-		"statement": {
-			"unitAndYearChosenByMouse": true,
-			"suggestionsCollapsedBeforeQuery": true,
-			"firstQueryClickBecameBusy": true,
-			"firstQueryClickCompleted": true,
-			"visibleDataRows": 50,
-			"visibleTotalRows": 243,
-			"exportEnabled": true
-		},
-		"operations": {
-			"allFiveLinksChosenByMouse": true,
-			"suggestionsCollapsedBeforeQuery": true,
-			"firstDirectoryClickBecameBusy": true,
-			"firstDirectoryClickCompleted": true,
-			"expectedEmptyUnitScopeRendered": true
-		},
-		"newFinancialCommands": 0,
-		"limits": "Native suggestion-selection flow only; does not establish every raw-typing or first-pointer-click timing, hospital capacity, or current full XLSX file verification.",
-		"transientObservations": [
-			"Initial Page.navigate observation timed out; verified and resumed the same local tab without navigation restart.",
-			"Two stale suggestion node clicks failed after asynchronous list replacement; refreshed the AX state before selecting the visible target."
-		],
-		"screenshots": [
-			"cod033-f500cf4-native-link-first-query.png",
-			"cod033-f500cf4-native-link-operations-query.png"
-		],
-		"nativeUiLogoutConfirmed": true
-	},
-	"native_link_integrity": {
-		"status": "passed_with_observed_service_activity",
-		"commit": "f500cf4e8b7e5f2f3c0b662027fbd68e3f82af57",
-		"checks": {
-			"state": true,
-			"runtime": true,
-			"configs": true,
-			"database_restarts": true,
-			"every_preexisting_running_unit_all_pids_states_and_timestamps_unchanged": true,
-			"all_other_preexisting_inactive_units_unchanged": true,
-			"only_two_inactive_backup_timestamps_changed": true,
-			"backup_is_preexisting_successful_timer_triggered_oneshot": true,
-			"only_concurrent_new_unit_is_unrelated_equipment_qa": true,
-			"concurrent_qa_is_separate_transient_or_no_longer_loaded": true,
-			"owned_server_port_closed": true,
-			"exact_one_successful_read_per_ui_flow": true
-		},
-		"strict_all_service_snapshot_equal": false,
-		"original_strict_failure_retained": true,
-		"existing_running_unit_count": 44,
-		"backup_delta_fields": [
-			"InactiveEnterTimestampMonotonic",
-			"InactiveExitTimestampMonotonic"
-		],
-		"concurrent_new_unit_was_not_preexisting": true,
-		"other_service_started_stopped_or_reverted_by_this_cleanup": false,
-		"all_original386_queue_ids_and_order_unchanged": true,
-		"workers": 0,
-		"all_financial_models_roles_source_configs_gl_stock_unchanged": true,
-		"route_counters": {
-			"ledger.statement": {
-				"count": 1,
-				"statuses": [
-					"200"
-				]
-			},
-			"release.list_records": {
-				"count": 1,
-				"statuses": [
-					"200"
-				]
-			}
-		},
-		"helper_and_port_stopped": true,
-		"public_app_source_unchanged": true,
-		"private_values_returned": false,
-		"scope": "Fresh application/runtime/config/source/queue equality and strict preservation of every preexisting running service. Preserve the original failed all-unit snapshot; explicitly record two inactive backup timestamps and a separate newly observed transient rehab QA service, without reverting either service.",
-		"observed_service_activity": [
-			"Two inactive timestamps changed after an existing successful timer-triggered backup.",
-			"A separate transient QA service was first observed during the window; it was not in the preexisting service set."
-		],
-		"proof": "cod033-f500cf4-native-link-browser-integrity-v3.json"
-	},
-	"native_test_completion_attestation": {
-		"status": "passed",
-		"commit": "f500cf4e8b7e5f2f3c0b662027fbd68e3f82af57",
-		"native": {
-			"focused": {
-				"test_counts": [
-					5,
-					6,
-					14,
-					16,
-					2
-				],
-				"standard_OK_summaries": 5,
-				"skipped": 0,
-				"pinned_native_success_rows": 43,
-				"pinned_native_failure_and_skip_rows": 0,
-				"failed_summary": false,
-				"all10_state_guards_passed": true
-			},
-			"full": {
-				"test_counts": [
-					446
-				],
-				"standard_OK_summaries": 1,
-				"skipped": 0,
-				"pinned_native_success_rows": 446,
-				"pinned_native_failure_and_skip_rows": 0,
-				"failed_summary": false,
-				"all10_state_guards_passed": true
-			}
-		},
-		"raw_logs_returned": false,
-		"scope": "Attestation of complete standard unittest summaries and original root-private state proofs; no new test execution."
-	},
-	"review_history_batch_evaluation": {
-		"status": "observed",
-		"source_commit": "f500cf4e8b7e5f2f3c0b662027fbd68e3f82af57",
-		"frozen_site": true,
-		"decision_history_length_histogram": {
-			"1": 1989,
-			"2": 24
-		},
-		"decision_case_count": 2013,
-		"decision_record_count": 2037,
-		"read_only": true,
-		"private_values_returned": false,
-		"per_case_get_docs_adopted": false,
-		"per_case_experiment_dispatched": false,
-		"decision": "Per-case batching offers negligible query reduction for mostly single-record histories; evaluate cross-case batching with bounded private data and independent final reads before adoption."
-	},
-	"prior_verified_full_native_suite_before_labels": {
-		"status": "passed",
-		"commit": "f500cf4e8b7e5f2f3c0b662027fbd68e3f82af57",
-		"expected_tests": 446,
-		"completed_tests": 446,
-		"passed_tests": 446,
-		"failures": 0,
-		"all10_preserved_state_checks_passed": true,
-		"source_frozen_during_run": true,
-		"proof": "cod033-f500cf4-text-scan-full-native.json",
-		"public_sites_untouched": true
-	},
-	"statement_display_names": {
-		"status": "candidate_pending_validation",
-		"pure_tests_added": 2,
-		"native_tests_added": 2,
-		"pure_tests_expected": 460,
-		"native_tests_expected": 448,
-		"source_field": "display_name",
-		"page_limit": 50,
-		"labels_are_optional": true,
-		"current_document_scope_and_field_checks": true,
-		"final_authority_and_value_recheck": true,
-		"financial_rows_and_digest_unchanged": true,
-		"xlsx_columns_unchanged": true,
-		"oversize_labels_omitted": true,
-		"source_migrations_hooks_and_user_grants": false,
-		"real_browser_pending": true,
-		"full_native_pending": true,
-		"scope": "Names describe current master data and are not historical financial facts; no generic unguarded title RPC."
-	}
+  "schema_version": 1,
+  "status": "IN_PROGRESS_COD_033",
+  "task_id": "COD-033",
+  "recorded_on": "2026-10-27",
+  "runtime_namespace": "medops",
+  "architecture_decisions": [
+    "ADR-0030",
+    "ADR-0031",
+    "ADR-0032"
+  ],
+  "current_scope": "COD-033 remains In Progress: run 40486315663 passed 448 native tests in both plain and IONE Core environments but failed the zero Error Log gate; test-local diagnostic cleanup is not yet native verified. COD-034 prework adds an unconnected MariaDB v3 scope-and-period guard with fail-closed one-shot connection markers. Expected 473 pure/451 native; actual lock, savepoint, commit and rollback tests have not run. Canonical source identity, overlap business validation, reservations, shared release fence, permissions, API and UI remain incomplete. Protected PR and hospital acceptance remain pending.",
+  "checks": {
+    "pure_tests_expected": 473,
+    "complete_frappe_tests_expected": 451,
+    "exact_foundation_pure_tests_passed": 21,
+    "native_foundation": {
+      "status": "passed",
+      "source_commit": "77da19bf54a0521a207db38664ae83e669d3dfb1",
+      "tests": 20,
+      "counts": [
+        6,
+        10,
+        4
+      ],
+      "coverage": [
+        "all captured precisions real database round-trip",
+        "native immutability, original grain and atomic rollback",
+        "legacy generic ledger and real stale-snapshot outer transaction retry",
+        "domain service transaction regressions"
+      ],
+      "site": "cod030-828dab0.localhost",
+      "public_sites_untouched": true,
+      "migrations": 0
+    },
+    "protected_ci": "not run for COD-033",
+    "local_quality": "Full458/11 quality steps and1449 committed Git blobs passed at f500cf4; proof cod033-f500cf4-quality.json",
+    "pure_tests_passed": 458,
+    "complete_frappe_tests": "Prior f500 full446 passed at its own source; current 448 candidate has not yet run.",
+    "current_protocol": {
+      "status": "full local quality passed",
+      "tests": 11,
+      "combined_ledger_pure": 32,
+      "source_commit": "5ef0fa3e2ead0fb50f938077b565dc4031ab2d2f"
+    },
+    "current_runtime_models": {
+      "status": "two private migrations passed at daaed16; old budget and user-role hashes unchanged; no financial seeds",
+      "runtime_models": 42,
+      "design_fields": 10028,
+      "models": [
+        "HRP Budget Release",
+        "HRP Budget Release Entry",
+        "HRP Budget Ledger",
+        "HRP Integration Outbox"
+      ],
+      "native_new_tests": 6,
+      "source_regressions": [
+        "15-integer-digit human approval",
+        "Outbox stale-snapshot full transaction retry"
+      ]
+    },
+    "current_local_quality": "Full456 atc0ee;current backend Python/models/tests identical. bcc7 scoped checks/1449committed blobs passed,actualbrowser/file/native preserved-state checks passed. This final documentation checkpoint is checked separately.",
+    "runtime_native_partial": {
+      "source_commit": "daaed16f7765c0fb2e796fa100ca817970585499",
+      "passed_counts": [
+        5,
+        12,
+        9
+      ],
+      "repeated_migrations": 2,
+      "preparation_commit": "10c2a4a3d048307c6673430bdd6cc6f125acafe7",
+      "preparation_passed": 1,
+      "full_suite": false,
+      "public_sites_untouched": true
+    },
+    "current_human_authorization": {
+      "status": "seven private native HTTP tests passed",
+      "source_commit": "a7e1b3a2785eecb0fb819b08c8e8942fe8b1c0c1",
+      "native_tests_passed": 7,
+      "public_deployment": false,
+      "asynchronous_posting": false,
+      "coverage": [
+        "same-cookie durable confirmation and exact amount",
+        "idempotent replay and consumed-proof rejection",
+        "proof, acknowledgement, SID and revision checks",
+        "prepared intent revision invalidates preview",
+        "source share and financial field revocation between requests",
+        "valid API credentials denied",
+        "mandatory release rules; no budget, GL or stock postings"
+      ]
+    },
+    "owned_execution": {
+      "status": "passed60 joint native, strengthened8 recheck, automatic real RQ and2 process races",
+      "source_commit": "9a671b3d145816db66e12561283ad8aedf3b295f",
+      "native_counts": [
+        13,
+        7,
+        9,
+        7
+      ],
+      "automatic_enqueue_enabled": true,
+      "cron_wired": true,
+      "real_rq_verified": true,
+      "real_rq_batches": 1,
+      "real_rq_ledger_rows": 2,
+      "public_deployment": false,
+      "coverage": [
+        "complete exact release and reversal",
+        "same authorization idempotent replay and stale epoch rejection",
+        "second append failure atomic rollback and retry",
+        "mid-transaction separate connection share/role/field revocation",
+        "post-commit poisoned Redis role cache; both rows written then final validation rollback",
+        "foreign claim receipt, missing capability and repeatable-read rejection",
+        "real RQ enqueue-after-commit and reference-only job args",
+        "current scope and native User Permission separate-connection mid-batch revocation",
+        "poisoned Redis User Permission after commit; both writes rolled back by final authorization",
+        "legacy mixed-case scope can be disabled without identity mutation",
+        "nested parent/child write and reservation rollback preserves earlier caller write",
+        "real SIGKILL after first uncommitted row; virtual lease/backoff recovery; stale receipt cannot change attempt2",
+        "Redis is contacted only after independent DB connection sees durable authority",
+        "savepoint rollback leaves no queue job even when after_commit hint survives",
+        "queue outage preserves durable authorization; bounded scheduler can retry",
+        "real Redis rollback and duplicate commit callback deduplication",
+        "failed confirmation result and superseded hint do not enqueue",
+        "native HTTP confirmation to real standard long RQ worker; exact batch and replay",
+        "two independent process standard execute_job claim and execution contention with barrier"
+      ],
+      "rq_isolation": {
+        "old_budget_unchanged": true,
+        "user_roles_unchanged": true,
+        "gl_stock_unchanged": true,
+        "error_logs_unchanged": true,
+        "default_queue_before": 384,
+        "default_queue_after": 384,
+        "long_queue_before": 0,
+        "long_queue_after": 0,
+        "worker_exited": true
+      },
+      "pending": [
+        "further concurrent reconfirmation/reversal and repeated scheduler contention",
+        "department statements/export/API/UI",
+        "full410+ native, protected CI, backup and protected promotion"
+      ],
+      "combined_transaction_scope_counts": [
+        5,
+        11
+      ],
+      "total_focused_native": 60,
+      "previous_real_rq": {
+        "source_commit": "836a8c74a5c3cdf057f977298d2442986aa5f494",
+        "jobs": 2,
+        "batches": 1,
+        "ledger_rows": 2
+      },
+      "real_sigkill_recovery": {
+        "status": "passed",
+        "source_commit": "a7e1b3a2785eecb0fb819b08c8e8942fe8b1c0c1",
+        "site": "cod030-828dab0.localhost",
+        "db_port": 13360,
+        "real_sigkill": true,
+        "first_uncommitted_row_observed": true,
+        "independent_connection_rows_before_and_after_kill": 0,
+        "database_rollback_verified": true,
+        "virtual_clock_only_for_lease_expiry": true,
+        "lease_attempts": 2,
+        "old_receipt_cannot_post": true,
+        "posted_batches": 1,
+        "ledger_rows": 2,
+        "exact_precision": 9,
+        "outbox": "Delivered",
+        "old_budget_unchanged": true,
+        "user_roles_unchanged": true,
+        "gl_stock_unchanged": true,
+        "error_log_unchanged": true,
+        "queues_before": {
+          "short": 0,
+          "default": 384,
+          "long": 0
+        },
+        "queues_after": {
+          "short": 0,
+          "default": 384,
+          "long": 0
+        },
+        "source_clean": true,
+        "public_sites_untouched": true,
+        "backoff_recovery_verified": true,
+        "first_phase_driver_log": "cod033-a7e1b3a-rq-kill-retry2-driver.log",
+        "real_clock_lease_wait": false
+      },
+      "dispatch_native_counts": [
+        8
+      ],
+      "joint_native_source": "3caa9570844d127da09eb31778e65ed756e70eef",
+      "business_source_identical_to_joint": true,
+      "permanent_real_rq_test": "medops.tests.test_budget_release_dispatch.TestBudgetReleaseDispatch.test_real_http_confirmation_and_standard_rq_worker_post_exactly_one_complete_batch",
+      "real_rq_scope": "Two standard CLI long-queue jobs from actual native HTTP authorization; source9a671b3. The separate process races intercept queue calls and are not concurrent RQ worker evidence."
+    },
+    "message_recovery": {
+      "status": "passed",
+      "source_commit": "a7e1b3a2785eecb0fb819b08c8e8942fe8b1c0c1",
+      "new_native_added": 13,
+      "new_pure_added": 2,
+      "focused_counts": [
+        5,
+        11,
+        13,
+        7,
+        9,
+        7
+      ],
+      "total": 52,
+      "terminal_cases": [
+        "superseded Pending",
+        "superseded Processing",
+        "expired Processing at attempt10"
+      ],
+      "current_capability_required": true,
+      "receipts_not_unsealed_or_renewed_for_retirement": true,
+      "scan_quotas": {
+        "pending_failed": 60,
+        "expired_processing": 20,
+        "active_processing": 20
+      },
+      "commit_audit_verified_on_independent_connection": true,
+      "automatic_enqueue_enabled": false,
+      "cron_wired": false,
+      "public_deployment": false
+    },
+    "proofs": {
+      "quality": "cod033-9a671b3-quality.json",
+      "focused_native": "cod033-a7e1b3a-runtime-recovery-regression.json",
+      "real_sigkill": "cod033-a7e1b3a-rq-kill-completed.json",
+      "nested_database": "cod033-a7e1b3a-nested-savepoint.json",
+      "joint_native": "cod033-3caa957-runtime-dispatch-regression.json",
+      "dispatch_recheck": "cod033-9a671b3-runtime-dispatch-only.json",
+      "process_contention": "cod033-9a671b3-job-races.json"
+    },
+    "automatic_dispatch": {
+      "status": "passed",
+      "source_commit": "9a671b3d145816db66e12561283ad8aedf3b295f",
+      "new_native_tests": 8,
+      "commit_only_redis": true,
+      "persisted_hint_recheck": true,
+      "queue_outage_preserves_authority": true,
+      "full_joint_source": "3caa9570844d127da09eb31778e65ed756e70eef",
+      "full_joint_counts": [
+        8,
+        5,
+        11,
+        13,
+        7,
+        9,
+        7
+      ],
+      "strengthened_recheck_counts": [
+        8
+      ],
+      "business_code_identical_between_sources": true,
+      "cron": "* * * * *",
+      "public_deployment": false,
+      "proof": "cod033-9a671b3-runtime-dispatch-only.json"
+    },
+    "process_contention": {
+      "status": "passed",
+      "source_commit": "9a671b3d145816db66e12561283ad8aedf3b295f",
+      "site": "cod030-828dab0.localhost",
+      "db_port": 13360,
+      "modes": [
+        {
+          "kind": "claim",
+          "statuses": [
+            "Dispatched",
+            "Deferred"
+          ],
+          "both_entered_before_release": true,
+          "attempts": 1
+        },
+        {
+          "kind": "execute",
+          "statuses": [
+            "Posted",
+            "Posted"
+          ],
+          "both_entered_before_release": true,
+          "attempts": 1
+        }
+      ],
+      "separate_os_processes": true,
+      "standard_execute_job": true,
+      "exact_rows_per_source": 2,
+      "exact_precision": 9,
+      "replay_after_execution_race_posts_no_additional_rows": true,
+      "old_budget_unchanged": true,
+      "user_roles_unchanged": true,
+      "gl_stock_unchanged": true,
+      "error_log_unchanged": true,
+      "queues_before": {
+        "short": 0,
+        "default": 384,
+        "long": 0
+      },
+      "queues_after": {
+        "short": 0,
+        "default": 384,
+        "long": 0
+      },
+      "workers_after": 0,
+      "public_sites_untouched": true,
+      "real_rq_worker_for_races": false,
+      "financial_queue_calls_intercepted_in_synthetic_race": true
+    },
+    "repeat_dispatch_migrations": {
+      "source_commit": "3caa9570844d127da09eb31778e65ed756e70eef",
+      "count": 2,
+      "status": "passed",
+      "old_budget_hashes_unchanged": true,
+      "user_role_hashes_unchanged": true,
+      "existing_financial_model_counts_unchanged": true,
+      "scheduler_metadata_synchronized": true,
+      "no_zero_row_assumption": true,
+      "public_sites_untouched": true
+    },
+    "budget_statement": {
+      "status": "whole backend12 passed in joint49; Page interaction incomplete",
+      "source_commit": "1c987df7293a7361a27332a73d8c5bd97793dd5c",
+      "pure_tests": 10,
+      "full_quality_pure_tests": 439,
+      "native_summary": {
+        "status": "passed",
+        "source_commit": "1c987df7293a7361a27332a73d8c5bd97793dd5c",
+        "statement_distinct_cases": 12,
+        "whole_module_latest_run": true,
+        "joint_counts": [
+          13,
+          7,
+          9,
+          8,
+          12
+        ],
+        "full_native_suite": false
+      },
+      "browser": {
+        "status": "partial_not_accepted",
+        "source_commit": "3f2aa21226468a2d9cf9dafadac34745dac2fa76",
+        "route": "/desk/hrp-budget-statements",
+        "observed": [
+          "Correct Page title and controls rendered",
+          "Workspace link uses distinct Page route"
+        ],
+        "incomplete": [
+          "organization autocomplete/advanced search interaction",
+          "whole-book query via Page",
+          "pagination",
+          "entry dialog",
+          "browser XLSX download"
+        ],
+        "issue": "IAB input suggestions did not refresh reliably; root cause unconfirmed. Native Edge fallback stopped before page interaction because Computer Use could not determine browser URL confidently.",
+        "screenshot_artifact": null,
+        "private_loopback_service_stopped": true,
+        "ssh_tunnel_stopped": true,
+        "public_sites_untouched": true,
+        "recorded_utc": "2026-10-26T14:59:05.117097+00:00"
+      },
+      "repeat_migrations": {
+        "source": "3f2aa21226468a2d9cf9dafadac34745dac2fa76",
+        "count": 2,
+        "old_budget_rows_unchanged": true,
+        "user_profile_roles_unchanged": true,
+        "existing_financial_model_counts_unchanged": true
+      },
+      "original_primary_transaction_and_session_preserved": true,
+      "database_enforced_read_only": true,
+      "source_field_and_native_user_permission_revocation": true,
+      "poisoned_redis_rejected": true,
+      "final_graph_cache_revocation_detected": true,
+      "private_batch_and_other_leaf_not_projected": true,
+      "exact_opening_and_complete_reversal": true,
+      "missing_or_tampered_rows_rejected": true,
+      "pagination_digest_binds_complete_book": true,
+      "scope_export_guard_positive_then_revoked": true,
+      "xlsx_complete_rows_beyond_page": true,
+      "xlsx_all_values_literal_text": true,
+      "positive_xlsx_principal": "Existing Administrator; no new role grants. Does not certify ordinary department export configuration.",
+      "deployment_export_requirement": "Explicit current native master/source and scope export grants; Budget User ledger export flag alone is insufficient.",
+      "public_sites_untouched": true,
+      "raw_native_ledger_title_still_closed": true,
+      "previous_staged_native_summary": {
+        "status": "passed_in_stages",
+        "source_commit": "3f2aa21226468a2d9cf9dafadac34745dac2fa76",
+        "statement_distinct_cases": 12,
+        "whole_module_latest_run": false,
+        "full_module": {
+          "source": "44cd57d34ea6304785705486a4a9763cc716139e",
+          "run": 12,
+          "passed": 11,
+          "failed": 1,
+          "failing_case": "test_export_requires_current_scope_export_grant",
+          "reason": "Direct test used Administrator restored by login helper; no production bypass"
+        },
+        "failed_case_recheck": {
+          "source": "2619b224a997d8eb986adc8128564872497825d4",
+          "passed": 1,
+          "explicit_department_actor": true
+        },
+        "final_page_route_smoke": {
+          "source": "3f2aa21226468a2d9cf9dafadac34745dac2fa76",
+          "passed": 1,
+          "repeat_migrations": 2
+        },
+        "regression": {
+          "source": "046d47a98b58c82970dd25e4a11ea8c574c0fea3",
+          "counts": [
+            8,
+            9,
+            5,
+            11
+          ],
+          "passed": 33
+        },
+        "distinct_focused_cases": 45,
+        "backend_services_identical_between_case_sources": true,
+        "latest_change_scope": "Distinct Page route, workspace link, explicit test identity only",
+        "public_sites_untouched": true,
+        "whole_native_inventory": 422,
+        "whole_native_suite_run": false
+      }
+    },
+    "release_operator": {
+      "status": "backend13 passed in joint49; actual Page acceptance pending",
+      "pure_tests": 7,
+      "native_tests": 13,
+      "page": "hrp-budget-operations",
+      "api_codes": [
+        "FIN-044",
+        "FIN-045"
+      ],
+      "model_and_user_grants_added": false,
+      "source_commit": "1c987df7293a7361a27332a73d8c5bd97793dd5c",
+      "native_tests_passed": 13,
+      "full_local_quality_pure": 439,
+      "repeat_migrations": {
+        "source_commit": "307a9e8e0d142ae0c6d74c6b14d3ab2a0a487cd2",
+        "count": 2,
+        "old_budget_hashes_unchanged": true,
+        "user_profile_roles_unchanged": true,
+        "existing_financial_row_counts_unchanged": true
+      },
+      "fixture_regression": {
+        "first_source": "ceeb412af72207ef154dad575212c300f40a14e1",
+        "first_status": "failed",
+        "cause": "Old primary repeatable-read snapshot could not see committed secondary fixture setter for cleanup; subsequent creates denied",
+        "repair": "Exact synthetic setter removed by native controller; fresh secondary fixture cleanup and deletion assertions added",
+        "production_permissions_widened": false,
+        "financial_rows_unchanged_during_repair": true,
+        "latest_joint_passed": true
+      },
+      "page_observation": {
+        "status": "partial",
+        "detail_exact_amount": true,
+        "directory_first50_rendered": true,
+        "next_page_button_visible": true,
+        "directory_latency": "multi-minute observed, profiling pending",
+        "writes_reconfirmation_reversal_statement_page_download_accepted": false
+      }
+    },
+    "current_joint_native": {
+      "status": "passed",
+      "source_commit": "1c987df7293a7361a27332a73d8c5bd97793dd5c",
+      "counts": [
+        13,
+        7,
+        9,
+        8,
+        12
+      ],
+      "total": 49,
+      "modules": [
+        "medops.tests.test_budget_release_directory",
+        "medops.tests.test_budget_release_confirmation",
+        "medops.tests.test_budget_release_execution",
+        "medops.tests.test_budget_release_dispatch",
+        "medops.tests.test_budget_statement"
+      ],
+      "proof": "cod033-1c987df-runtime-operator-regression.json",
+      "full_native_suite": false,
+      "public_sites_untouched": true
+    },
+    "concurrent_scheduler": {
+      "status": "fixed; focused9 and repeated real process/RQ passed",
+      "source_commit": "1c987df7293a7361a27332a73d8c5bd97793dd5c",
+      "duplicate_queue_entries": 2,
+      "standard_worker_ledger_rows": 2,
+      "duplicate_financial_posting": false,
+      "default_queue_preserved": 386,
+      "long_queue_after_owned_drain": 0,
+      "workers_after": 0,
+      "old_budget_roles_gl_stock_error_unchanged": true,
+      "native_test_added": 1,
+      "fix_source_commit": "4f16f780cde896f4d2c36104aaef151cbfedf279",
+      "fixed_native_queue_entries": 1,
+      "fixed_exact_ledger_rows": 2,
+      "fixed_real_processes": 2,
+      "proof": "cod033-4f16f78-scheduler-process-race.json"
+    },
+    "directory_performance": {
+      "status": "first optimization measured; further owned proof reuse and native validation pending",
+      "baseline_source": "4f16f780cde896f4d2c36104aaef151cbfedf279",
+      "candidate_records": 252,
+      "profiled_seconds": 254.195,
+      "page_items": 50,
+      "phase_candidate_checks": 504,
+      "optimization": "Owned connection/actor and one graph phase only; key complete supplied case fields; final source and authority checks start fresh; locked writes uncached",
+      "native_binding_test_added": 1,
+      "pure_graph_tests_added": 2,
+      "full_hospital_capacity_certified": false,
+      "first_optimized_source": "0898b5de5ebe37488e5351d65bfe76e5bb6c202b",
+      "first_optimized_profiled_seconds": 53.786,
+      "first_optimized_candidates": 252,
+      "document_keys": "SHA256 of all supplied document fields; explicit actor/type; no serialized private snapshot copy retained as key"
+    },
+    "confirmation_privacy": {
+      "source": "e8744e9a257aced034a3b38eb86080115dc42d63",
+      "status": "native_failed_fixture_contamination",
+      "native_tests": 8,
+      "existing_tests_passed": 7,
+      "failed_subtests": 3,
+      "repeat_migrations": 2,
+      "reason": "Native traceback expanded test closure preview containing deliberately invalid canary. Remove that closure and verify native v1 suffix/v2 aliases. No live secret values in test output."
+    },
+    "confirmation_privacy_followup": {
+      "source": "65f43efd7f9030d117a69025b903f9d40c2a0344",
+      "local_quality": "full444 passed",
+      "native_status": "8 run;7 existing passed;new canary first4 transport/route variants passed, v2 failed test schema assumption",
+      "reason": "Pinned v2 uses errors[0].type instead of v1 exc_type; assertion updated, production source unchanged. Requires native recheck."
+    },
+    "confirmation_privacy_latest": {
+      "source_commit": "7095a4092e5e03d96a6cdab28dae4f2d9ce69cc5",
+      "status": "passed",
+      "native_tests": 8,
+      "transport_and_route_variants": 5,
+      "complete_pre_hook_privacy_acceptance": false
+    },
+    "financial_transition_races": {
+      "source_commit": "7095a4092e5e03d96a6cdab28dae4f2d9ce69cc5",
+      "status": "passed",
+      "separate_os_processes": true,
+      "normal_cookie_csrf_http": true,
+      "frappe_test_mode": false,
+      "confirmation_wins": "old execution Failed;new authorization Posted2 rows;old message Dead Letter",
+      "execution_wins": "Posted2 rows;confirm native508 QueryDeadlockError;fresh whole HTTP same-key retry409;no new decision/message",
+      "duplicate_reversal_and_replay": "2 exact reverse rows;original rows unchanged",
+      "new_log_bytes": 419,
+      "proof_sid_csrf_absent_from_new_logs": true,
+      "queue_calls_intercepted": true,
+      "real_rq_for_this_race": false,
+      "default_queue_preserved": 386
+    },
+    "ui_synthetic_latest": {
+      "source_commit": "7095a4092e5e03d96a6cdab28dae4f2d9ce69cc5",
+      "status": "financial_and_statement_flows_passed_remaining_ui_pending",
+      "financial_flow": [
+        "revise reason",
+        "preview exact9 decimals and2 rows",
+        "unchecked denied",
+        "explicit confirm",
+        "independent reconfirmation defaultunchecked",
+        "standard RQ2 prompts =>one Posted2 row batch",
+        "UI Posted refresh",
+        "distinct complete reversal with negative exact net",
+        "standard RQ1 prompt =>2 reversal rows;original rows and dimensions unchanged",
+        "UI reverse Posted refresh"
+      ],
+      "statement": [
+        "139 rows;page1 1-50",
+        "page2 51-100;precise totals retained",
+        "row detail200 shows original unitA,cost centerA,precision9,exact99999.999999999",
+        "manager export403;visible permission failure;no grants added"
+      ],
+      "entry_and_export": "entry200 and manager403 at709;actual Administrator browser download200 at e311;139 full rows while page displays50;no new grants",
+      "source_role_integrity_scope": "after revision/first preview to financial completion",
+      "financial_count_deltas": {
+        "HRP Budget Release": 1,
+        "HRP Budget Release Entry": 5,
+        "HRP Budget Ledger": 4,
+        "HRP Integration Outbox": 3
+      },
+      "old_budget_rows_and_roles_unchanged": true,
+      "default_queue_preserved": 386,
+      "long_after": 0,
+      "workers_after": 0,
+      "public_sites_untouched": true,
+      "known_ui_issue": "late unchanged Link onchange fixed and fresh-browser first-query validated;true changes still invalidate and discard old200 response",
+      "statement_ui_source": "e31117474985d0c0b04f59c4b70ba8a59e66e344"
+    },
+    "browser_export_file": {
+      "source_commit": "e31117474985d0c0b04f59c4b70ba8a59e66e344",
+      "status": "passed",
+      "data_rows": 139,
+      "current_page_rows": 50,
+      "bytes": 58310,
+      "all_cells_text": true,
+      "all_precision": 9,
+      "debit_credit_closing_and_final_running_balance_match": true,
+      "formula_cells": 0,
+      "hyperlinks": 0,
+      "external_links": false,
+      "actor": "existing full-permission Administrator;not ordinary department grant acceptance"
+    },
+    "final_runtime_integrity": {
+      "source_commit": "e31117474985d0c0b04f59c4b70ba8a59e66e344",
+      "status": "passed",
+      "all5_apps_public_private_clean": true,
+      "public_medops": "8291fba67d5b6a9452422a2986f7d2b831a970e0",
+      "financial_counts": {
+        "HRP Budget Release": 334,
+        "HRP Budget Release Entry": 589,
+        "HRP Budget Ledger": 278,
+        "HRP Integration Outbox": 262
+      },
+      "old_budget_roles_unchanged": true,
+      "short_queue": 0,
+      "default_queue": 386,
+      "long_queue": 0,
+      "workers": 0,
+      "temporary_helpers_tunnels_tabs_stopped": true,
+      "active_synthetic_administrator_logged_out": true
+    },
+    "privacy_remaining_review": {
+      "status": "not_complete",
+      "verified_gap": "before_request follows HTTPRequest;other early session failures not covered by this hook",
+      "code_review_hypothesis_not_runtime_verified": "Preview proof generation and plaintext serialization/encrypted idempotency persistence exception paths require an invalid canary matrix;confirm-input tests alone do not establish those paths safe"
+    },
+    "privacy_generation_probe": {
+      "source_commit": "e31117474985d0c0b04f59c4b70ba8a59e66e344",
+      "status": "observed_gaps",
+      "native_retry_status": 508,
+      "phases": [
+        "preview_evidence",
+        "preview_idempotency_save",
+        "early_http_request"
+      ],
+      "canary_entered_native_context_in_all_phases": true,
+      "actual_sid_csrf_in_captured_error_context": false,
+      "normal_cookie_csrf": true,
+      "frappe_test_mode": false,
+      "fault_injection_not_real_contention": true,
+      "all_financial_idempotency_gl_stock_error_counts_old_budget_roles_and_queues_unchanged": true,
+      "public_non_authorizing_canary": true,
+      "raw_diagnostic_contents_returned": false
+    },
+    "privacy_values_patch": {
+      "status": "implemented_not_runtime_accepted",
+      "pure_added": 4,
+      "native_added": 2,
+      "native_targets": "budget release and approval preview evidence/idempotency faults;native error context,telemetry message and actual SDK serialization without outbound transport",
+      "wire_schema_fingerprint_and_encryption_content_change": false,
+      "new_tables_or_user_grants": false,
+      "early_http_request_boundary": "still not fixed"
+    },
+    "complete_frappe_tests_passed": 446,
+    "ione_core_ci_compatibility": {
+      "status": "implemented_not_run",
+      "commit": "8c697bafd30aebd418aee18f618b287bbab557f3",
+      "source": "https://github.com/jerry317395616/ione_core.git",
+      "separate_job": true,
+      "required_check": false,
+      "fresh_ci_sites_only": true,
+      "existing_ci_without_core_retained": true,
+      "real_hospital_acceptance": false
+    },
+    "budget_control_prework": {
+      "status": "pure_contracts_and_unconnected_lock_prototype",
+      "pure_tests_added": 12,
+      "native_tests_added": 3,
+      "database_lock_implemented": true,
+      "database_lock_native_tested": false,
+      "business_writers_use_guard": false,
+      "persisted_reservation_implemented": false,
+      "api_or_ui_implemented": false,
+      "concurrent_acceptance": false,
+      "release_reversal_shared_fence": false,
+      "hospital_acceptance": false,
+      "canonical_database_reference_resolution": false,
+      "alias_race_test_pending": true,
+      "lock_version": 3,
+      "period_identity": "actual_start_and_end",
+      "overlapping_period_fence_implemented": false,
+      "native_tests_for_v2_run": false,
+      "scope_guard_prototype_implemented": true,
+      "scope_guard_native_tested": false,
+      "transaction_wide_one_shot_enforced": false,
+      "overlapping_period_business_check_implemented": false,
+      "native_tests_for_v3_run": false,
+      "transaction_callback_native_tested": false,
+      "repeated_guard_call_rejected_within_connection_transaction": true,
+      "stale_result_after_savepoint_invalidation_detected": false,
+      "outer_full_rollback_after_savepoint_required": true
+    },
+    "ci_bootstrap_search_isolation": {
+      "status": "implemented_not_retested",
+      "failed_run": 40480393108,
+      "tests_run": 448,
+      "failures": 1,
+      "observed_queue_count": 1,
+      "bootstrap_search_index_enqueue_observed": true,
+      "identity_of_queued_job_confirmed": false,
+      "default_bootstrap_search_index_preserved": true,
+      "unknown_jobs_deleted_or_consumed": false
+    },
+    "ci_diagnostic_fixture_cleanup": {
+      "status": "implemented_not_retested",
+      "failed_run": 40486315663,
+      "plain_native_tests": 448,
+      "core_native_tests": 448,
+      "native_failures": 0,
+      "error_log_count_per_test_site": 1,
+      "error_method": "QueryDeadlockError",
+      "timestamp_matches_synthetic_diagnostic_test": true,
+      "row_identity_directly_verified": false,
+      "cleanup": "test-local savepoint rollback and exact created-name absence check",
+      "zero_error_log_gate_unchanged": true,
+      "original_errors_deleted_by_ci": false
+    }
+  },
+  "previous_verified_release": {
+    "schema_version": 1,
+    "status": "VERIFIED_DEVELOPMENT_RELEASE_COD_032",
+    "task_id": "COD-032",
+    "recorded_on": "2026-10-26",
+    "runtime_namespace": "medops",
+    "architecture_decisions": [
+      "ADR-0029"
+    ],
+    "current_scope": "Verified department submission, complete-source consolidation and persisted human approval; isolated development/test deployment. Full HRP production remains incomplete.",
+    "checks": {
+      "local_quality": "all passed",
+      "pure_tests_passed": 380,
+      "complete_frappe_tests_passed": 360,
+      "protected_ci": {
+        "status": "passed",
+        "run": 40263234479,
+        "head": "818f9e4ed9b54ffc61e64da29d00346d4184c7b3",
+        "pure": 380,
+        "frappe": 360,
+        "fresh_sites": [
+          {
+            "error_log_count": 0,
+            "error_log_summaries": [],
+            "site": "hrp-test.localhost"
+          },
+          {
+            "error_log_count": 0,
+            "error_log_summaries": [],
+            "site": "hrp-dev.localhost"
+          },
+          {
+            "error_log_count": 0,
+            "error_log_summaries": [],
+            "site": "hrp-demo.localhost"
+          }
+        ],
+        "all_test_counts": [
+          380,
+          360
+        ]
+      },
+      "focused_native": [
+        8,
+        18,
+        13,
+        20,
+        9,
+        9,
+        7,
+        8,
+        9,
+        20
+      ],
+      "focused_native_total": 121,
+      "actual_browser": {
+        "runtime_commit": "818f9e4ed9b54ffc61e64da29d00346d4184c7b3",
+        "scope": "synthetic development acceptance",
+        "workflow": [
+          "approved two-department source selection",
+          "full-grain consolidation seal",
+          "request independent approval",
+          "persisted preview, explicit checkbox and decision",
+          "requestor refresh and post-approval source trace"
+        ],
+        "exact_total": "100000.000000001",
+        "original_units": 2,
+        "original_cost_centers": 2,
+        "confirmations": 1,
+        "decisions": 1,
+        "case_shares": 0,
+        "global_workflow_actions": 0,
+        "normal_csrf": true
+      },
+      "real_dual_process_races": 7,
+      "legacy_upgrade_contract": "request, policy, decision and durable receipt unchanged; running test site matrix payload unchanged",
+      "deployment": {
+        "scope": [
+          "medical-dev.localhost",
+          "test-medops.localhost"
+        ],
+        "database_config_and_files_backup": true,
+        "backup_manifest_verified": true,
+        "migrations_per_site": 2,
+        "new_models": 4,
+        "new_financial_seeds": 0,
+        "original_business_and_auth_tables_per_site": {
+          "medical-dev.localhost": 67,
+          "test-medops.localhost": 67
+        },
+        "original_business_columns_values_and_times_preserved": true,
+        "legacy_matrix_counts": {
+          "medical-dev.localhost": 0,
+          "test-medops.localhost": 1
+        },
+        "legacy_matrix_public_payload_preserved": true,
+        "guest_budget_api_count": 21,
+        "guest_budget_api_status": 401,
+        "authenticated_pages_lists_versions_core_and_workbench": 200,
+        "public_https_and_socketio": 200,
+        "other_service_pids_and_states_unchanged": 41,
+        "other_site_http_unchanged": true,
+        "error_logs_not_increased": true,
+        "application_and_dependencies_clean": true
+      },
+      "permissions": {
+        "user_and_role_profile_assignment_full_rows_unchanged": true,
+        "user_profile_assignment_rows": {
+          "medical-dev.localhost": 67,
+          "test-medops.localhost": 76
+        },
+        "new_user_grants": 0,
+        "new_scopes": 0,
+        "new_shares": 0,
+        "owned_page_workspace_role_sets_match_source": true,
+        "metadata_reimport": {
+          "backup_reconstruction_verified": true,
+          "has_role_recreated_metadata_rows_per_site": 45,
+          "allowed_parents": "eight existing MedOps reports and I-ONE AI/Mobile workspaces only",
+          "has_role_normalized_fields": [
+            "name",
+            "creation",
+            "modified"
+          ],
+          "ione_role_timestamp_rows_per_site": 4,
+          "ione_role_normalized_fields": [
+            "creation",
+            "modified"
+          ],
+          "all_permission_values_and_other_fields_preserved": true
+        }
+      }
+    },
+    "evidence": "architecture/releases/COD-032.json",
+    "prior_verified_release": "architecture/releases/COD-031.json",
+    "remaining": [
+      "exact immutable budget ledger and execution COD033-035",
+      "remaining36-module functionality and complete business loops",
+      "hospital scale, actual interfaces, UAT and disaster recovery"
+    ],
+    "overall_hrp_goal": "active and incomplete"
+  },
+  "production_readiness": "not established",
+  "deployment": "COD-032 runtime remains on public sites; COD-033 validation is isolated",
+  "privacy_boundary_validation": {
+    "source_commit": "1627858250777ed0b34149459a61717ad7fcee57",
+    "focused_native_passed": 58,
+    "normal_cookie_csrf_phases_passed": 7,
+    "deferred_error_records": 14,
+    "actual_sdk_memory_events": 14,
+    "new_native_file_log_bytes": 12748,
+    "no_canary_sid_csrf_in_tested_sinks": true,
+    "outbound_telemetry_requests": 0,
+    "actual_settings_changed": false,
+    "proof": "cod033-1627858-final-diagnostic-probe-v3.json",
+    "coverage_limit": "Injected after native HTTPRequest construction and before before_request; earlier connection/session-constructor branches and proxy/server sinks not certified."
+  },
+  "full_native_suite": {
+    "status": "pending_candidate",
+    "expected_tests": 448,
+    "prior_passed_commit": "f500cf4e8b7e5f2f3c0b662027fbd68e3f82af57",
+    "public_sites_untouched": true
+  },
+  "pending_read_optimization": {
+    "status": "Same459 measured61.792s/63225SQL at9d; corrected native authority/cache tests passed at86 and full446 passed atc0ee. Hospital performance/capacity acceptance pending.",
+    "rejected_prototype": {
+      "source": "33709af",
+      "candidates": 459,
+      "seconds": 80.258,
+      "sql_calls": 84125,
+      "document_cache_removed": true
+    },
+    "baseline": {
+      "source": "1627858",
+      "candidates": 459,
+      "seconds": 77.527,
+      "sql_calls": 88042
+    },
+    "candidate_list_and_page_digests_equal": true,
+    "sql_attribution": {
+      "scope_grants": 14124,
+      "workflow_and_children": 10539
+    },
+    "scope": "same-owned-read-only-connection, same actor, one access graph phase",
+    "cached_values": [
+      "frozen ScopeGrant tuples keyed by user/type/action/site date",
+      "successful workflow validation boolean"
+    ],
+    "full_source_documents_cached": false,
+    "explicit_authority_refresh_clears_graph": true,
+    "pure_cases_added": 3,
+    "native_cases_added": 2,
+    "native_tests_expected_for_candidate": 446,
+    "database_permission_api_or_model_changes": false,
+    "performance_improvement_not_yet_proven": false,
+    "measured_candidate": {
+      "source_commit": "9d4727a84b340683e9a7eb3cf20f5d000ba78ffc",
+      "candidates": 459,
+      "seconds": 61.792,
+      "sql_calls": 63225,
+      "proof": "cod033-9d4727a-directory-profile-comparison.json",
+      "protected_data_and_queues_unchanged": true,
+      "candidate_list_and_page_digests_equal_to_baseline": true
+    },
+    "hospital_capacity_established": false,
+    "authority_refresh_failure": {
+      "source": "9d4727a",
+      "targeted_native_status": "failed on first of6; subsequent cases not run",
+      "cause": "shared authority reader refuses an active graph, even when cleared",
+      "all9_preserved_state_checks_passed": true,
+      "correction": "owned RO statement adapter suspends graph during fresh authority read and restores empty context, including exception paths; financial guard unchanged",
+      "verification_pending": false,
+      "corrected_native_tests_passed": 2
+    }
+  },
+  "full_native_failure_fixes": {
+    "status": "All3 formerly failed tests passed individually at86 and full446 passed atc0ee.",
+    "change_governance": "Compare HTTP counts with actual change/ADR catalogs instead of obsolete34/29 constants.",
+    "planning_fixtures": "Per-test HTTP idempotency namespace and unique fund code preserve within-test replay while avoiding prior committed fixtures/expired receipts.",
+    "history_fixtures": "Unique quality rule/initial-evaluation identity; verify recorded zero separately from a day before real capture epoch and from future unknown coverage.",
+    "production_permission_or_history_semantics_relaxed": false
+  },
+  "operational_audit_file_fix": {
+    "baseline_source": "1627858250777ed0b34149459a61717ad7fcee57",
+    "runtime_gap_proven": true,
+    "baseline_effective_logger_level": 40,
+    "baseline_event_method_returned": true,
+    "baseline_real_file_bytes_written": 0,
+    "fix": "Set only validated named MedOps audit logger to INFO; native/global levels untouched; sensitive fields rejected before logger creation.",
+    "native_real_file_case_added": 1,
+    "native_tests_expected_for_candidate": 446,
+    "runtime_fix_verification_pending": false,
+    "historical_records_backfilled": false,
+    "verified_source_commit": "86ba9b00f0db3a6b978135c4ee263b78d8778ab7",
+    "real_file_native_case_passed": true
+  },
+  "previous_full_native_suite": {
+    "status": "failed",
+    "expected_tests": 443,
+    "commit": "1627858250777ed0b34149459a61717ad7fcee57",
+    "driver_pid": 2330748,
+    "proof_when_complete": "cod033-1627858-full-native-suite-memory4g.json",
+    "first_attempt": "failed after7 tests/73 cascading errors due confirmed isolated-database cgroup OOM; nine recovery integrity checks passed",
+    "resource_change": "private database memory limit1.5GiB to4GiB,live update,compose persisted;no restart or public service change",
+    "completed_tests": 443,
+    "passed_tests": 440,
+    "failures": 3,
+    "all_preserved_state_checks_passed": true,
+    "proof": "cod033-1627858-full-native-suite-memory4g.json"
+  },
+  "targeted_read_audit_and_fixture_validation": {
+    "status": "passed",
+    "source_commit": "86ba9b00f0db3a6b978135c4ee263b78d8778ab7",
+    "tests": 6,
+    "native_counts": [
+      1,
+      1,
+      1,
+      1,
+      1,
+      1
+    ],
+    "all9_preserved_state_checks_passed": true,
+    "proof": "cod033-86ba9b0-read-optimization-focused.json",
+    "complete_native_suite_not_replaced": true
+  },
+  "committed_http_fixture_isolation": {
+    "status": "Two complete modules repeated twice passed; full446 passed atc0ee.",
+    "production_source_unchanged_since": "86ba9b00f0db3a6b978135c4ee263b78d8778ab7",
+    "failures": [
+      "test_http_command_reads_idempotency_header_and_replays_response",
+      "test_http_get_and_update_replay_use_public_contract"
+    ],
+    "observed_first_response_statuses": [
+      409,
+      409
+    ],
+    "correction": "Fresh key per test execution; same key retained across first/second requests; first-not-replayed and second-replayed assertions retained; no receipt deletion/expiry extension or command relaxation.",
+    "planned_regression": "Completed13/11/13/11 then full446; persistent historical receipts preserved.",
+    "verified_source_commit": "c0eea4c3e1fc40f05c7a7a10bc6a6eb2dc1c7572",
+    "repeat_counts": [
+      13,
+      11,
+      13,
+      11
+    ],
+    "distinct_cases": 24,
+    "native_executions": 48,
+    "all9_preserved_state_checks_passed": true,
+    "proof": "cod033-c0eea4c-foundation-repeat.json"
+  },
+  "backup_restore_rehearsal": {
+    "status": "passed",
+    "source_commit": "c0eea4c3e1fc40f05c7a7a10bc6a6eb2dc1c7572",
+    "checks": {
+      "source_all_tables_files_receipts_unchanged_since_before_backup": true,
+      "restored_all_tables_files_receipts_unchanged_since_postcheck": true,
+      "only_changed_physical_table_is_tabSingles": true,
+      "only_native_System_Settings_modified_value_differs": true,
+      "every_table_row_count_matches": true,
+      "public_private_files_match": true,
+      "encrypted_receipts_match_and_all_valid": true,
+      "installed_apps_match": true,
+      "real_authorized_budget_statement_matches": true,
+      "positive_native_public_private_file_recovery_passed": true,
+      "corrected_native_file_archive_layout_passed": true,
+      "source_roles_queues_settings_unchanged_since_full446": true,
+      "existing_configs_unchanged": true,
+      "target_config_unchanged": true,
+      "all_existing_frappe_service_states_and_pids_unchanged": true,
+      "no_database_restart_added": true,
+      "source_commit_unchanged": true,
+      "target_quarantined": true
+    },
+    "physical_tables": 984,
+    "physical_rows": 113143,
+    "raw_physical_equality": false,
+    "permitted_native_difference": {
+      "table": "tabSingles",
+      "doctype": "System Settings",
+      "field": "modified"
+    },
+    "actual_source_attachment_files": 0,
+    "encrypted_receipts": {
+      "invalid_existing": 0,
+      "valid": 14802
+    },
+    "positive_file_lab": {
+      "public_files": 1,
+      "private_files": 1,
+      "content_and_permissions_match": true
+    },
+    "queue_counts": {
+      "short": 0,
+      "default": 386,
+      "long": 0
+    },
+    "workers": 0,
+    "database_recreated_after_initial_import": false,
+    "native_timestamp_rewritten": false,
+    "original_failed_proofs_and_archives_preserved": true,
+    "public_sites_untouched": true,
+    "native_backend_source": "c0eea4c3e1fc40f05c7a7a10bc6a6eb2dc1c7572",
+    "frontend_not_deployed": true,
+    "hospital_rpo_rto_or_capacity_certified": false,
+    "private_values_returned": false,
+    "proof": "cod033-c0eea4c-backup-restore/final-result.json",
+    "postcheck_proof": "cod033-c0eea4c-backup-restore/native-postcheck-v2.json",
+    "positive_file_proof": "cod033-c0eea4c-backup-restore/native-file-lab-v2.json",
+    "operator_failure_history": [
+      "Initial config API error after DB import; corrected with explicit frappe.installer.update_site_config path, no DB recreation.",
+      "Strict physical equality failed only on native restore System Settings.modified; preserve timestamp and permit exactly that one field.",
+      "Initial empty-file archives used absolute paths; corrected archives use native relative site context; original archives retained."
+    ]
+  },
+  "completed_full_native_attempts": [
+    {
+      "status": "failed",
+      "expected_tests": 443,
+      "commit": "1627858250777ed0b34149459a61717ad7fcee57",
+      "driver_pid": 2330748,
+      "proof_when_complete": "cod033-1627858-full-native-suite-memory4g.json",
+      "first_attempt": "failed after7 tests/73 cascading errors due confirmed isolated-database cgroup OOM; nine recovery integrity checks passed",
+      "resource_change": "private database memory limit1.5GiB to4GiB,live update,compose persisted;no restart or public service change",
+      "completed_tests": 443,
+      "passed_tests": 440,
+      "failures": 3,
+      "all_preserved_state_checks_passed": true,
+      "proof": "cod033-1627858-full-native-suite-memory4g.json"
+    },
+    {
+      "status": "failed",
+      "expected_tests": 446,
+      "commit": "86ba9b00f0db3a6b978135c4ee263b78d8778ab7",
+      "driver_pid": 3683057,
+      "proof_when_complete": "cod033-86ba9b0-full-native-suite-authority-read.json",
+      "source_frozen_during_run": true,
+      "public_sites_untouched": true,
+      "prior_privacy_evidence_source": "1627858250777ed0b34149459a61717ad7fcee57",
+      "diagnostic_source_identical_to_prior_cookie_csrf_probe": true,
+      "scope_limit": "Native full suite is still pending. Performance capacity, actual UI, backup, protected CI, hospital interfaces/UAT and promotion remain separate.",
+      "completed_tests": 446,
+      "failures": 2,
+      "exit_code": 1,
+      "all9_preserved_state_checks_passed": true,
+      "proof": "cod033-86ba9b0-full-native-suite-authority-read.json",
+      "driver_completed": true
+    },
+    {
+      "status": "passed",
+      "expected_tests": 446,
+      "commit": "c0eea4c3e1fc40f05c7a7a10bc6a6eb2dc1c7572",
+      "driver_pid": 4036727,
+      "source_frozen_during_run": true,
+      "production_source_identical_to": "86ba9b00f0db3a6b978135c4ee263b78d8778ab7",
+      "only_application_tree_changes": [
+        "medops/hrp_foundation/tests/test_modules.py",
+        "medops/hrp_foundation/tests/test_system_settings.py"
+      ],
+      "public_sites_untouched": true,
+      "completed_tests": 446,
+      "passed_tests": 446,
+      "failures": 0,
+      "all9_preserved_state_checks_passed": true,
+      "driver_completed": true,
+      "proof": "cod033-c0eea4c-full-native-suite-authority-read.json"
+    }
+  ],
+  "operations_link_filter_followup": {
+    "status": "observable same-value and input-phase behavior passed at bcc952c",
+    "file": "medops/hrp_budget/page/hrp_budget_operations/hrp_budget_operations.js",
+    "trigger": "Native Link validation can invoke onchange again with an identical value; operations page previously invalidated every callback.",
+    "result": "Bind current normalized filter signature during queries and programmatic record loads; invalidate only on an actual filter change.",
+    "server_api_permission_or_financial_changes": false,
+    "native_full_source_left_frozen": "c0eea4c3e1fc40f05c7a7a10bc6a6eb2dc1c7572",
+    "not_yet_deployed_to_validation_site": false,
+    "files": [
+      "medops/hrp_budget/page/hrp_budget_operations/hrp_budget_operations.js",
+      "medops/hrp_budget/page/hrp_budget_statements/hrp_budget_statements.js"
+    ],
+    "missing_required_filters_clear_previous_results_and_export": true,
+    "browser_validation_pending": false,
+    "verified_source_commit": "bcc952c9b084a2530248f5eeed4f72bfb2cc0265",
+    "browser_proof": "cod033-bcc952c-input-browser-observations.json",
+    "same_value_reentry_preserved_current_results": true,
+    "missing_required_query_cleared_results_and_export": true,
+    "scope_limit": "Native suggestion popup covers toolbar after raw fills;normal keyboard query accepted,explicit mouse suggestion-selection flow remains. Current positive220row browser file accepted atbcc."
+  },
+  "operator_ui_acceptance": {
+    "status": "passed",
+    "source_commit": "e87d9011e768043a6019e989803a75f32b384889",
+    "native_backend_base": "c0eea4c3e1fc40f05c7a7a10bc6a6eb2dc1c7572",
+    "fresh_loopback_browser_origin": true,
+    "existing_synthetic_actors_only": true,
+    "eligible_source_first_query_returned_first50": true,
+    "operations_same_year_value_preserved_50_source_buttons": true,
+    "approved_source_to_prepared_release_ui_completed": true,
+    "new_record_displayed_source_lines": 2,
+    "new_record_displayed_status": "Prepared",
+    "authorization_and_posting_fields_displayed_empty": true,
+    "operations_missing_year_prompt_and_old_results_clear": true,
+    "manager_statement_first_page": {
+      "total_rows": 220,
+      "returned_rows": 50
+    },
+    "statement_same_year_kept_table_and_export_state": true,
+    "statement_missing_currency_prompt_cleared_table_and_disabled_export": true,
+    "existing_maker_statement_first_page": {
+      "total_rows": 220,
+      "returned_rows": 50
+    },
+    "existing_maker_export_failed_with_explicit_ui_hint": true,
+    "scope_validation": {
+      "baseline_synthetic_actor_could_read_A_and_B": true,
+      "baseline_B_success_not_counted_as_access_control_failure": true,
+      "native_User_Permission_temporarily_narrowed_only_this_actor_to_A": true,
+      "B_then_denied_and_old_table_export_cleared": true,
+      "A_still_readable_with_same_restriction": true,
+      "all_original_User_Permission_rows_restored_verified_by_private_native_helper": true,
+      "new_user_grants": false
+    },
+    "synthetic_manager_logged_out_via_native_ui": true,
+    "synthetic_maker_logged_out_via_native_ui": true,
+    "temporary_created_tab_closed": true,
+    "screenshots": [
+      "cod033-e87d901-ui-created-prepared.png",
+      "cod033-e87d901-ui-missing-filter.png",
+      "cod033-e87d901-ui-scope-denied.png"
+    ],
+    "native_data_and_http_counter_proof": "cod033-e87d901-recovery-ui-integrity-v3.json",
+    "temporary_loopback_service_and_local_tunnel_stopped": true,
+    "only_new_native_permission_delete_cleanup_job_processed": true,
+    "original_default386_jobs_exactly_retained": true,
+    "limits": [
+      "Native Link validation sometimes required waiting for the value to settle before a new query; no universal first-click or latency guarantee.",
+      "No positive export file repeated at this source; prior e311174 browser XLSX proof retains its own source.",
+      "Directory performance and hospital-scale capacity not accepted; no protected CI or public promotion."
+    ]
+  },
+  "operator_ui_integrity": {
+    "status": "passed",
+    "commit": "e87d9011e768043a6019e989803a75f32b384889",
+    "native_backend_base": "c0eea4c3e1fc40f05c7a7a10bc6a6eb2dc1c7572",
+    "checks": {
+      "old_budget_rows_unchanged": true,
+      "existing_user_profile_roles_unchanged": true,
+      "financial_model_delta_exact": true,
+      "prepared_record_read_only_verification": true,
+      "original_queues_gl_stock_roles_and_settings_unchanged": true,
+      "actual_create_200_exactly_once": true,
+      "actual_read_and_cross_scope_denial_statuses_present": true,
+      "actual_export_denied_without_new_grants": true,
+      "original_user_permission_rows_restored": true,
+      "temporary_loopback_helper_stopped": true,
+      "all_preexisting_frappe_service_states_and_pids_unchanged": true,
+      "only_owned_native_permission_delete_cleanup_completed": true,
+      "preexisting_configs_and_both_bench_source_versions_unchanged": true
+    },
+    "financial_model_delta": {
+      "HRP Budget Release": 1,
+      "HRP Budget Release Entry": 0,
+      "HRP Budget Ledger": 0,
+      "HRP Integration Outbox": 0
+    },
+    "persisted_record": {
+      "status": "passed",
+      "created_prepared_release": 1,
+      "source_snapshot_lines": 2,
+      "authorization_revision_event_rows": 0,
+      "created_release_ledger_rows": 0,
+      "authorization_fields_empty": true,
+      "posted_timestamp_empty": true,
+      "reason_and_actor_match": true,
+      "read_only_connection": true,
+      "financial_amounts_or_private_values_returned": false
+    },
+    "prior_operator_assertion_failure_preserved": true,
+    "route_counters": {
+      "release.eligible_sources": {
+        "count": 1,
+        "statuses": [
+          "200"
+        ]
+      },
+      "release.create": {
+        "count": 1,
+        "statuses": [
+          "200"
+        ]
+      },
+      "release.get_record": {
+        "count": 1,
+        "statuses": [
+          "200"
+        ]
+      },
+      "release.list_records": {
+        "count": 1,
+        "statuses": [
+          "200"
+        ]
+      },
+      "ledger.statement": {
+        "count": 5,
+        "statuses": [
+          "200",
+          "200",
+          "200",
+          "403",
+          "200"
+        ]
+      },
+      "ledger.export_statement": {
+        "count": 1,
+        "statuses": [
+          "403"
+        ]
+      }
+    },
+    "queue_counts": {
+      "short": 0,
+      "default": 386,
+      "long": 0
+    },
+    "workers": 0,
+    "public_sites_untouched": true,
+    "new_user_grants": false,
+    "financial_amounts_or_private_values_returned": false,
+    "scope": "Native cleanup job from deleting only the new temporary test restriction was moved atomically to the empty long queue and processed by a standard burst worker. All original386 default IDs exactly retained. Source/browser evidence remains e87d901;public unchanged.",
+    "native_delete_cleanup": {
+      "status": "passed",
+      "checks": {
+        "original_default_queue_exactly_retained": true,
+        "owned_long_queue_empty": true,
+        "short_queue_unchanged": true,
+        "workers_stopped": true,
+        "native_job_finished": true,
+        "permissions_financial_gl_stock_error_counts_unchanged": true
+      },
+      "processed_jobs": 1,
+      "native_method": "frappe.model.delete_doc.delete_dynamic_links",
+      "reference_is_only_newly_removed_synthetic_User_Permission": true,
+      "standard_rq_worker": true,
+      "original_default_jobs": 386,
+      "queue_counts": {
+        "default": 386,
+        "long": 0,
+        "short": 0
+      },
+      "payload_values_returned": false
+    },
+    "prior_strict_queue_check_failure_preserved": true,
+    "proof": "cod033-e87d901-recovery-ui-integrity-v3.json"
+  },
+  "next_unblocked_tasks": [
+    "Run full current-source quality, real native permission revocation and complete native suite, then verify current-page names in a real browser",
+    "Evaluate bounded cross-document directory performance with independent final authorization",
+    "Complete protected CI and release/promotion gates; no partial release PR",
+    "COD034/035, remaining HRP and hospital capacity/interfaces/UAT"
+  ],
+  "input_invalidation_followup": {
+    "status": "actual browser verification passed at bcc952c",
+    "baseline_ui_source": "e87d9011e768043a6019e989803a75f32b384889",
+    "baseline_verified": "Filled organization_unit B while input retained focus; old A table51 rows and enabled export remained until native onchange.",
+    "baseline_screenshot": "cod033-e87d901-input-stale-export.png",
+    "fix": "Bind native input events to the existing normalized signature handler on operations Links and statement Links/dates; preserve native validation and server authority.",
+    "models_api_migration_or_user_grants_changed": false,
+    "server_python_tests_unchanged_since": "c0eea4c3e1fc40f05c7a7a10bc6a6eb2dc1c7572",
+    "candidate_browser_verification_pending": false,
+    "verified_source_commit": "bcc952c9b084a2530248f5eeed4f72bfb2cc0265",
+    "browser_proof": "cod033-bcc952c-input-browser-observations.json",
+    "native_integrity_proof": "cod033-bcc952c-input-browser-followup-integrity.json",
+    "same_value_and_inflight_and_partial_date_cases_verified": true
+  },
+  "frozen_directory_baseline": {
+    "status": "passed",
+    "source_commit": "e87d9011e768043a6019e989803a75f32b384889",
+    "site_is_immutable_restored_dataset": true,
+    "candidate_count": 598,
+    "candidate_digest": "e01a0feb07fecd17c87c10068ae899c7fa18d089faebd255c92948cd3be11b4b",
+    "list_digest": "59de6bf85a6167874e8c5a057411e6e755fba91632271ff7515a0af07c4baafd",
+    "page_digest": "410f5c6f8f9ba7ebc2aa8c4f6ef263460b4cda8a17eda5b6e2f5ab8fb7a07e32",
+    "page_items": 50,
+    "has_next": true,
+    "sql_calls": 82245,
+    "elapsed_seconds": 83.251,
+    "controller_body_calls": {
+      "_case_permission": {
+        "read": 3444
+      },
+      "_submission_permission": {
+        "read": 3444
+      },
+      "_plan_permission": {
+        "read": 2296
+      },
+      "_version_permission": {
+        "read": 1148
+      }
+    },
+    "controller_document_key_variant_histograms": {
+      "_case_permission": {
+        "1": 1722
+      },
+      "_submission_permission": {
+        "1": 1722
+      },
+      "_plan_permission": {
+        "1": 1148
+      },
+      "_version_permission": {
+        "1": 574
+      }
+    },
+    "original_queues_unchanged": true,
+    "workers": 0,
+    "private_values_returned": false,
+    "diagnostic_second_read_same_result": true,
+    "timing_does_not_include_patched_diagnostic_read": true,
+    "scope": "Clean native cProfile plus a separate counted diagnostic read on the same frozen restored dataset;not comparable to prior459 profiles or hospital capacity.",
+    "all984_table_hashes_files_and_receipts_unchanged": true,
+    "dataset_tables": 984,
+    "dataset_rows": 113143,
+    "proof": "cod033-e87d901-frozen-directory-baseline.json",
+    "optimization_not_implemented": "All counted controller bodies use read; one document key variant per source. Normalizing equivalent permission type labels would not reduce this measured workload. No source/authorization checks removed."
+  },
+  "current_positive_browser_export": {
+    "status": "passed",
+    "source_commit": "bcc952c9b084a2530248f5eeed4f72bfb2cc0265",
+    "file": "cod033-bcc952c-browser-budget-statement.xlsx",
+    "bytes": 88163,
+    "sha256": "f85e8f5a073015e8cef35ee1d6f2eee3e40e5889ecd5fd3ce4642a8e850ee04e",
+    "browser_page_rows": 50,
+    "exported_data_rows": 220,
+    "all_complete_rows_headers_context_totals_match_native_authorized_source": true,
+    "all_rows_original_unit_A": true,
+    "all_precision9": true,
+    "all_nonempty_cells_text": true,
+    "text_cells": 6924,
+    "formula_cells": 0,
+    "hyperlinks": 0,
+    "external_relationships": 0,
+    "statement_digest": "2bf1ff94b3b16196d685a7c0af28bec1c4f634d09c366f625df78e6740e35c08",
+    "real_browser_download": true,
+    "no_user_grants": true,
+    "financial_values_returned": false,
+    "proof": "cod033-bcc952c-browser-export-file-proof.json"
+  },
+  "input_browser_observations": {
+    "status": "passed",
+    "source_commit": "bcc952c9b084a2530248f5eeed4f72bfb2cc0265",
+    "native_backend_evidence_source": "c0eea4c3e1fc40f05c7a7a10bc6a6eb2dc1c7572",
+    "baseline_source": "e87d9011e768043a6019e989803a75f32b384889",
+    "baseline_focus_change_B_kept_old_A_table51_and_export_enabled": true,
+    "fresh_followup_browser_origin": true,
+    "existing_Administrator_only_no_new_grants": true,
+    "finance_POST_endpoints_denied_by_temporary_test_helper": true,
+    "statement_A_total_rows": 220,
+    "statement_A_page_data_rows": 50,
+    "same_Link_input_value_kept_table51_and_export": true,
+    "changed_Link_input_B_retained_focus_but_immediately_cleared_table_and_disabled_export": true,
+    "request_confirmed_inflight_before_input_change": true,
+    "old_200_statement_response_did_not_restore_table_or_export": true,
+    "partial_from_date_input_2_retained_focus_but_immediately_cleared_table_and_disabled_export": true,
+    "TypeError_or_SyntaxError_after_partial_date": 0,
+    "real_browser_XLSX_download": true,
+    "download_file_proof": "cod033-bcc952c-browser-export-file-proof.json",
+    "operations_record_directory_buttons": 50,
+    "operations_same_year_input_kept_50_records": true,
+    "operations_changed_currency_USD_retained_focus_but_immediately_cleared_directory": true,
+    "synthetic_Administrator_normal_native_UI_logout_confirmed": true,
+    "main_followup_validation_tab_closed": true,
+    "temporary_helper_and_local_tunnel_stopped": true,
+    "screenshots": [
+      "cod033-e87d901-input-stale-export.png",
+      "cod033-bcc952c-focused-input-clears-export.png",
+      "cod033-bcc952c-operations-input-clears-directory.png"
+    ],
+    "native_integrity_proof": "cod033-bcc952c-input-browser-followup-integrity.json",
+    "limits": [
+      "No universal first mouse-click guarantee; the native suggestion popup visibly covers the query toolbar after raw Link fills. Successful in-flight read used normal keyboard Enter; explicit mouse selection of a suggestion remains a separate UX check.",
+      "Existing full-permission Administrator validates positive export; this does not configure ordinary hospital department export permissions.",
+      "No hospital capacity claim; frozen598 clean cProfile baseline83.251s/82245SQL is separate from prior459 measurements."
+    ]
+  },
+  "input_browser_native_integrity": {
+    "status": "passed",
+    "commit": "bcc952c9b084a2530248f5eeed4f72bfb2cc0265",
+    "phase": "followup",
+    "all_original_User_Permission_rows_unchanged": true,
+    "preexisting_services_configs_and_both_bench_app_pins_unchanged": true,
+    "protected_old_budget_roles_and_four_financial_models_unchanged": true,
+    "queues_gl_stock_settings_and_source_unchanged": true,
+    "queue_counts": {
+      "short": 0,
+      "default": 386,
+      "long": 0
+    },
+    "workers": 0,
+    "temporary_helper_stopped": true,
+    "finance_post_endpoints_denied": true,
+    "route_counters": {
+      "ledger.statement": {
+        "count": 4,
+        "statuses": [
+          "200",
+          "200",
+          "200",
+          "200"
+        ]
+      },
+      "ledger.export_statement": {
+        "count": 1,
+        "statuses": [
+          "200"
+        ]
+      },
+      "release.list_records": {
+        "count": 1,
+        "statuses": [
+          "200"
+        ]
+      }
+    },
+    "public_sites_untouched": true,
+    "new_user_grants": false,
+    "source_data_returned": false
+  },
+  "text_scan_optimization": {
+    "status": "full_native_passed",
+    "baseline_commit": "2600589c0da56a6d8b6a400f0881d9dda8daad2f",
+    "candidate_source_git_blobs": {
+      "medops/common/domain_service.py": "996fd49906951fd090bd7be743360c754abf31db",
+      "medops/common/organization.py": "d03e4b5681e0dac1f680edb6d70a179f10b7b58c"
+    },
+    "differential_comparisons": 8337,
+    "proof": "cod033-text-scan-compatibility.json",
+    "pure_cases_added": 2,
+    "pure_tests_expected": 458,
+    "native_tests_expected": 446,
+    "current_full_quality_pending": false,
+    "current_full_native_pending": false,
+    "frozen598_performance_pending": false,
+    "models_api_hooks_permissions_and_transactions_unchanged": true,
+    "subclass_legacy_iteration_preserved": true,
+    "hospital_capacity_established": false,
+    "rollback": "Revert only the two shared scanner implementations; retain all data, ledgers and authorization facts. No migration or data rewriting.",
+    "commit": "f500cf4e8b7e5f2f3c0b662027fbd68e3f82af57",
+    "full_quality_proof": "cod033-f500cf4-quality.json",
+    "focused_native_proof": "cod033-f500cf4-text-scan-focused-native.json",
+    "focused_native_counts": [
+      5,
+      6,
+      14,
+      16,
+      2
+    ],
+    "focused_all10_guards_passed": true,
+    "profile_proof": "cod033-f500cf4-frozen-directory-profile.json",
+    "profile_elapsed_seconds": 71.544,
+    "baseline_elapsed_seconds": 83.251,
+    "elapsed_reduction_percent": 14.06,
+    "all984_tables_files_receipts_unchanged": true,
+    "sql_controller_counts_and_result_digests_equal": true,
+    "performance_limit": "One cProfile run per source on the exact frozen598 dataset; still slow, no throughput/concurrency/hospital SLA claim.",
+    "private_runtime_source": "f500cf4e8b7e5f2f3c0b662027fbd68e3f82af57",
+    "public_runtime_unchanged": "8291fba67d5b6a9452422a2986f7d2b831a970e0",
+    "full_native_proof": "cod033-f500cf4-text-scan-full-native.json",
+    "full_native_counts": [
+      446
+    ],
+    "full_all10_guards_passed": true
+  },
+  "prior_verified_full_native_suite_before_text_scan": {
+    "status": "passed",
+    "expected_tests": 446,
+    "commit": "c0eea4c3e1fc40f05c7a7a10bc6a6eb2dc1c7572",
+    "driver_pid": 4036727,
+    "source_frozen_during_run": true,
+    "production_source_identical_to": "86ba9b00f0db3a6b978135c4ee263b78d8778ab7",
+    "only_application_tree_changes": [
+      "medops/hrp_foundation/tests/test_modules.py",
+      "medops/hrp_foundation/tests/test_system_settings.py"
+    ],
+    "public_sites_untouched": true,
+    "completed_tests": 446,
+    "passed_tests": 446,
+    "failures": 0,
+    "all9_preserved_state_checks_passed": true,
+    "driver_completed": true,
+    "proof": "cod033-c0eea4c-full-native-suite-authority-read.json"
+  },
+  "native_link_mouse_acceptance": {
+    "status": "observed",
+    "commit": "f500cf4e8b7e5f2f3c0b662027fbd68e3f82af57",
+    "existingSyntheticAdministrator": true,
+    "statement": {
+      "unitAndYearChosenByMouse": true,
+      "suggestionsCollapsedBeforeQuery": true,
+      "firstQueryClickBecameBusy": true,
+      "firstQueryClickCompleted": true,
+      "visibleDataRows": 50,
+      "visibleTotalRows": 243,
+      "exportEnabled": true
+    },
+    "operations": {
+      "allFiveLinksChosenByMouse": true,
+      "suggestionsCollapsedBeforeQuery": true,
+      "firstDirectoryClickBecameBusy": true,
+      "firstDirectoryClickCompleted": true,
+      "expectedEmptyUnitScopeRendered": true
+    },
+    "newFinancialCommands": 0,
+    "limits": "Native suggestion-selection flow only; does not establish every raw-typing or first-pointer-click timing, hospital capacity, or current full XLSX file verification.",
+    "transientObservations": [
+      "Initial Page.navigate observation timed out; verified and resumed the same local tab without navigation restart.",
+      "Two stale suggestion node clicks failed after asynchronous list replacement; refreshed the AX state before selecting the visible target."
+    ],
+    "screenshots": [
+      "cod033-f500cf4-native-link-first-query.png",
+      "cod033-f500cf4-native-link-operations-query.png"
+    ],
+    "nativeUiLogoutConfirmed": true
+  },
+  "native_link_integrity": {
+    "status": "passed_with_observed_service_activity",
+    "commit": "f500cf4e8b7e5f2f3c0b662027fbd68e3f82af57",
+    "checks": {
+      "state": true,
+      "runtime": true,
+      "configs": true,
+      "database_restarts": true,
+      "every_preexisting_running_unit_all_pids_states_and_timestamps_unchanged": true,
+      "all_other_preexisting_inactive_units_unchanged": true,
+      "only_two_inactive_backup_timestamps_changed": true,
+      "backup_is_preexisting_successful_timer_triggered_oneshot": true,
+      "only_concurrent_new_unit_is_unrelated_equipment_qa": true,
+      "concurrent_qa_is_separate_transient_or_no_longer_loaded": true,
+      "owned_server_port_closed": true,
+      "exact_one_successful_read_per_ui_flow": true
+    },
+    "strict_all_service_snapshot_equal": false,
+    "original_strict_failure_retained": true,
+    "existing_running_unit_count": 44,
+    "backup_delta_fields": [
+      "InactiveEnterTimestampMonotonic",
+      "InactiveExitTimestampMonotonic"
+    ],
+    "concurrent_new_unit_was_not_preexisting": true,
+    "other_service_started_stopped_or_reverted_by_this_cleanup": false,
+    "all_original386_queue_ids_and_order_unchanged": true,
+    "workers": 0,
+    "all_financial_models_roles_source_configs_gl_stock_unchanged": true,
+    "route_counters": {
+      "ledger.statement": {
+        "count": 1,
+        "statuses": [
+          "200"
+        ]
+      },
+      "release.list_records": {
+        "count": 1,
+        "statuses": [
+          "200"
+        ]
+      }
+    },
+    "helper_and_port_stopped": true,
+    "public_app_source_unchanged": true,
+    "private_values_returned": false,
+    "scope": "Fresh application/runtime/config/source/queue equality and strict preservation of every preexisting running service. Preserve the original failed all-unit snapshot; explicitly record two inactive backup timestamps and a separate newly observed transient rehab QA service, without reverting either service.",
+    "observed_service_activity": [
+      "Two inactive timestamps changed after an existing successful timer-triggered backup.",
+      "A separate transient QA service was first observed during the window; it was not in the preexisting service set."
+    ],
+    "proof": "cod033-f500cf4-native-link-browser-integrity-v3.json"
+  },
+  "native_test_completion_attestation": {
+    "status": "passed",
+    "commit": "f500cf4e8b7e5f2f3c0b662027fbd68e3f82af57",
+    "native": {
+      "focused": {
+        "test_counts": [
+          5,
+          6,
+          14,
+          16,
+          2
+        ],
+        "standard_OK_summaries": 5,
+        "skipped": 0,
+        "pinned_native_success_rows": 43,
+        "pinned_native_failure_and_skip_rows": 0,
+        "failed_summary": false,
+        "all10_state_guards_passed": true
+      },
+      "full": {
+        "test_counts": [
+          446
+        ],
+        "standard_OK_summaries": 1,
+        "skipped": 0,
+        "pinned_native_success_rows": 446,
+        "pinned_native_failure_and_skip_rows": 0,
+        "failed_summary": false,
+        "all10_state_guards_passed": true
+      }
+    },
+    "raw_logs_returned": false,
+    "scope": "Attestation of complete standard unittest summaries and original root-private state proofs; no new test execution."
+  },
+  "review_history_batch_evaluation": {
+    "status": "observed",
+    "source_commit": "f500cf4e8b7e5f2f3c0b662027fbd68e3f82af57",
+    "frozen_site": true,
+    "decision_history_length_histogram": {
+      "1": 1989,
+      "2": 24
+    },
+    "decision_case_count": 2013,
+    "decision_record_count": 2037,
+    "read_only": true,
+    "private_values_returned": false,
+    "per_case_get_docs_adopted": false,
+    "per_case_experiment_dispatched": false,
+    "decision": "Per-case batching offers negligible query reduction for mostly single-record histories; evaluate cross-case batching with bounded private data and independent final reads before adoption."
+  },
+  "prior_verified_full_native_suite_before_labels": {
+    "status": "passed",
+    "commit": "f500cf4e8b7e5f2f3c0b662027fbd68e3f82af57",
+    "expected_tests": 446,
+    "completed_tests": 446,
+    "passed_tests": 446,
+    "failures": 0,
+    "all10_preserved_state_checks_passed": true,
+    "source_frozen_during_run": true,
+    "proof": "cod033-f500cf4-text-scan-full-native.json",
+    "public_sites_untouched": true
+  },
+  "statement_display_names": {
+    "status": "candidate_pending_validation",
+    "pure_tests_added": 2,
+    "native_tests_added": 2,
+    "pure_tests_expected": 460,
+    "native_tests_expected": 448,
+    "source_field": "display_name",
+    "page_limit": 50,
+    "labels_are_optional": true,
+    "current_document_scope_and_field_checks": true,
+    "final_authority_and_value_recheck": true,
+    "financial_rows_and_digest_unchanged": true,
+    "xlsx_columns_unchanged": true,
+    "oversize_labels_omitted": true,
+    "source_migrations_hooks_and_user_grants": false,
+    "real_browser_pending": true,
+    "full_native_pending": true,
+    "scope": "Names describe current master data and are not historical financial facts; no generic unguarded title RPC."
+  }
 }
