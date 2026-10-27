@@ -33,6 +33,21 @@ def graph_value(key: tuple, reader: Callable[[], R]) -> R:
 
 
 @contextmanager
+def uncached_authority_read():
+	"""Discard outer results and suspend the graph for an owned authority refresh."""
+	current = _graph.get()
+	if current is not None:
+		current.clear()
+	token = _graph.set(None)
+	try:
+		yield
+	finally:
+		_graph.reset(token)
+		if current is not None:
+			current.clear()
+
+
+@contextmanager
 def access_graph():
 	current = _graph.get()
 	if current is not None:

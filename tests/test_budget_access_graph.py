@@ -3,10 +3,38 @@ from __future__ import annotations
 import unittest
 from concurrent.futures import ThreadPoolExecutor
 
-from medops.hrp_budget.services.access_graph import access_graph, access_graph_cache, graph_value, read_graph
+from medops.hrp_budget.services.access_graph import (
+	access_graph,
+	access_graph_cache,
+	graph_value,
+	read_graph,
+	uncached_authority_read,
+)
 
 
 class TestBudgetAccessGraph(unittest.TestCase):
+	def test_authority_refresh_suspends_outer_graph_and_discards_results_even_after_failure(self):
+		for fail in (False, True):
+			with access_graph() as outer:
+				assert outer is not None
+				outer[("previously_allowed",)] = True
+				try:
+					with uncached_authority_read():
+						self.assertIsNone(access_graph_cache())
+						self.assertEqual(outer, {})
+						with access_graph() as nested:
+							self.assertIsNot(nested, outer)
+							graph_value(("during_refresh",), lambda: True)
+						if fail:
+							raise ValueError("controlled authority failure")
+					self.assertFalse(fail)
+				except ValueError:
+					self.assertTrue(fail)
+				self.assertIs(access_graph_cache(), outer)
+				self.assertEqual(outer, {})
+				self.assertFalse(graph_value(("previously_allowed",), lambda: False))
+			self.assertIsNone(access_graph_cache())
+
 	def test_cached_denial_and_success_are_discarded_before_the_next_authority_phase(self):
 		grants = {"manager": True, "auditor": False}
 		calls = []

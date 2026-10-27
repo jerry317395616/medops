@@ -9,9 +9,9 @@
 		"ADR-0031",
 		"ADR-0032"
 	],
-	"current_scope": "COD-033 remains In Progress. Source162 full443 completed:440 passed/3 fixture or catalog failures; all9 preserved-state guards passed. Corrections for those3 tests and real INFO audit file gap are implemented. Failed full-document-cache prototype removed after same459 candidates measured77.527s/88042 SQL baseline versus80.258s/84125 SQL candidate with identical digests. New candidate only memoizes immutable scope grants and successful workflow integrity inside an owned read-only actor/connection/graph phase. Explicit authority refresh clears active graph. Local455/native446 inventory; new quality/runtime/performance validation pending. Public8291 remains unchanged. Actual hospital capacity/interfaces/UAT, UI eligible-source creation, full new native run, backup/CI/promotion incomplete.",
+	"current_scope": "COD-033 In Progress. Local9d4727a passed455 quality and1449 committed blob checks. Same459 candidates:77.527s/88042 SQL at162 baseline,61.792s/63225 SQL at9d with identical candidate/list/page digests and all protected state unchanged; failed complete-document cache removed. First targeted native at9d safely rejected explicit refresh within active outer graph; shared authority guard requires no active graph. New candidate clears and suspends outer graph during owned RO authority refresh, restores empty context even on failure; financial command guard unchanged. Current inventory456 pure/446 native, verification pending. Prior full443 had440passed/3 fixture or catalog failures;all9guards true. Three fixes and real INFO audit sink fix await current native validation. Public8291 unchanged. Hospital capacity/interfaces/UAT, UI eligible-source creation, full new native run, backup/CI/promotion incomplete.",
 	"checks": {
-		"pure_tests_expected": 455,
+		"pure_tests_expected": 456,
 		"complete_frappe_tests_expected": 446,
 		"exact_foundation_pure_tests_passed": 21,
 		"native_foundation": {
@@ -34,8 +34,8 @@
 			"migrations": 0
 		},
 		"protected_ci": "not run for COD-033",
-		"local_quality": "Full444 passed at65f43ef;production backend unchanged at709/e311;709 test-only ande311 frontend scoped checks passed;no new full suite at UI-only source",
-		"pure_tests_passed": 444,
+		"local_quality": "9d4727a full455 passed; current authority-refresh correction adds one pure case, full456 pending",
+		"pure_tests_passed": 455,
 		"complete_frappe_tests": "446 expected for current candidate; prior443 had3 test fixture/catalog failures, fixed and awaiting revalidation",
 		"current_protocol": {
 			"status": "full local quality passed",
@@ -831,7 +831,7 @@
 		"proof": "cod033-1627858-full-native-suite-memory4g.json"
 	},
 	"pending_read_optimization": {
-		"status": "new immutable-authority candidate; native and same-input profiling pending",
+		"status": "same459 profile passed at9d; explicit authority-refresh native correction pending",
 		"rejected_prototype": {
 			"source": "33709af",
 			"candidates": 459,
@@ -857,11 +857,29 @@
 		],
 		"full_source_documents_cached": false,
 		"explicit_authority_refresh_clears_graph": true,
-		"pure_cases_added": 2,
+		"pure_cases_added": 3,
 		"native_cases_added": 2,
 		"native_tests_expected_for_candidate": 446,
 		"database_permission_api_or_model_changes": false,
-		"performance_improvement_not_yet_proven": true
+		"performance_improvement_not_yet_proven": false,
+		"measured_candidate": {
+			"source_commit": "9d4727a84b340683e9a7eb3cf20f5d000ba78ffc",
+			"candidates": 459,
+			"seconds": 61.792,
+			"sql_calls": 63225,
+			"proof": "cod033-9d4727a-directory-profile-comparison.json",
+			"protected_data_and_queues_unchanged": true,
+			"candidate_list_and_page_digests_equal_to_baseline": true
+		},
+		"hospital_capacity_established": false,
+		"authority_refresh_failure": {
+			"source": "9d4727a",
+			"targeted_native_status": "failed on first of6; subsequent cases not run",
+			"cause": "shared authority reader refuses an active graph, even when cleared",
+			"all9_preserved_state_checks_passed": true,
+			"correction": "owned RO statement adapter suspends graph during fresh authority read and restores empty context, including exception paths; financial guard unchanged",
+			"verification_pending": true
+		}
 	},
 	"full_native_failure_fixes": {
 		"status": "implemented; runtime revalidation pending",
