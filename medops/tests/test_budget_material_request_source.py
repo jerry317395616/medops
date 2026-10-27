@@ -11,6 +11,7 @@ from contextlib import contextmanager
 from dataclasses import asdict
 from datetime import datetime, timedelta
 from pathlib import Path
+from types import SimpleNamespace
 from unittest.mock import patch
 from uuid import uuid4
 
@@ -745,6 +746,8 @@ class TestBudgetMaterialRequestSource(FrappeTestCase):
 		with self.committed_source_fixture():
 			primary = frappe.local.db
 			created_tables = []
+			previous_request = getattr(frappe.local, "request", None)
+			previous_sid = frappe.session.sid
 			try:
 				material = material_request_source.locked_material_request_source(
 					self.request.name, self.line, self.units["A"]
@@ -804,15 +807,20 @@ class TestBudgetMaterialRequestSource(FrappeTestCase):
 						f"CREATE TEMPORARY TABLE `{table}` ({', '.join(columns)}) ENGINE=InnoDB"  # nosec B608 - fixed test tables
 					)
 					created_tables.append(table)
-				for table, row in (
+				rows = (
 					("tabHRP Budget Reservation", root),
 					("tabHRP Budget Reservation Event", events[0]),
 					("tabHRP Budget Reservation Authorization", confirmation),
 					("tabHRP Budget Reservation Authorization", decision),
-				):
-					authorization_fixture.TestBudgetMaterialAuthorizationObservation.insert_row(
-						self, table, row
-					)
+				)
+
+				def populate_evidence():
+					for table, row in rows:
+						authorization_fixture.TestBudgetMaterialAuthorizationObservation.insert_row(
+							self, table, row
+						)
+
+				populate_evidence()
 				if not initial_material.expense_account:
 					raise AssertionError("synthetic source requires an expense account")
 				entry = ReleaseInventoryEntry(
@@ -844,9 +852,54 @@ class TestBudgetMaterialRequestSource(FrappeTestCase):
 				self.assertEqual(inspection.usage[0].open_reservation, "1.00")
 				self.assertEqual(inspection.candidates[0].key, intent.key)
 				assert_budget_guards([intent.key])
+				primary.rollback()
+
+				current_snapshot, current_digest = material_source_snapshot(asdict(material))
+				set_request(method="POST", path="/")
+				frappe.session.sid = "synthetic-test-web-session"
+				for amount, should_succeed in (("10.00", False), ("9.00", True)):
+					populate_evidence()
+					proposed = reservation_intent(
+						source_snapshot=current_snapshot,
+						source_snapshot_digest=current_digest,
+						allocation="next-synthetic-allocation",
+						key=intent.key,
+						currency=intent.currency,
+						precision=intent.precision,
+						amount=amount,
+						budget_date=initial_material.transaction_date,
+						reason="Synthetic test",
+					)
+					with (
+						patch.object(
+							material_usage_preview, "resolve_budget_control_key", return_value=intent.key
+						),
+						patch.object(
+							material_usage_preview, "guarded_release_inventory", return_value=(entry,)
+						),
+						patch.object(
+							reservation_confirmation,
+							"_append",
+							return_value=SimpleNamespace(name="synthetic-preview"),
+						) as append,
+					):
+						if should_succeed:
+							result = reservation_confirmation.prepare_reservation_confirmation(proposed)
+							self.assertEqual(result["confirmation"], "synthetic-preview")
+							append.assert_called_once()
+							assert_budget_guards([intent.key])
+						else:
+							with self.assertRaises(IoneApplicationError):
+								reservation_confirmation.prepare_reservation_confirmation(proposed)
+							append.assert_not_called()
+							with self.assertRaises(IoneApplicationError):
+								assert_budget_guards([intent.key])
+					primary.rollback()
 			finally:
 				frappe.local.db = primary
 				primary.rollback()
+				frappe.local.request = previous_request
+				frappe.session.sid = previous_sid
 				for table in reversed(created_tables):
 					primary.sql(f"DROP TEMPORARY TABLE `{table}`")  # nosec B608 - fixed test tables
 				primary.rollback()
