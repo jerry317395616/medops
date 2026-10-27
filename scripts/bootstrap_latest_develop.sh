@@ -117,6 +117,11 @@ case "$INCLUDE_IONE_CORE" in
   0|1) ;;
   *) echo "INCLUDE_IONE_CORE must be 0 or 1" >&2; exit 1 ;;
 esac
+MEDOPS_BOOTSTRAP_SKIP_SEARCH_INDEX="${MEDOPS_BOOTSTRAP_SKIP_SEARCH_INDEX:-0}"
+case "$MEDOPS_BOOTSTRAP_SKIP_SEARCH_INDEX" in
+  0|1) ;;
+  *) echo "MEDOPS_BOOTSTRAP_SKIP_SEARCH_INDEX must be 0 or 1" >&2; exit 1 ;;
+esac
 
 if ! command -v uv >/dev/null 2>&1; then
   echo "uv is required. Install it first, then rerun." >&2
@@ -194,7 +199,11 @@ if [[ "$INCLUDE_IONE_CORE" == "1" ]]; then
 fi
 bench --site "$SITE_NAME" install-app medops
 bench set-config -g developer_mode "$DEVELOPER_MODE"
-bench --site "$SITE_NAME" migrate
+if [[ "$MEDOPS_BOOTSTRAP_SKIP_SEARCH_INDEX" == "1" ]]; then
+  bench --site "$SITE_NAME" migrate --skip-search-index
+else
+  bench --site "$SITE_NAME" migrate
+fi
 bench build --app medops
 
 echo "Ready. Run: cd '$BENCH_DIR' && bench start"
