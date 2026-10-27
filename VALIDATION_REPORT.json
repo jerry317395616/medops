@@ -9,7 +9,7 @@
     "ADR-0031",
     "ADR-0032"
   ],
-  "current_scope": "COD-033 remains In Progress: run 40486315663 passed 448 native tests in both plain and IONE Core environments but failed the zero Error Log gate; test-local diagnostic cleanup is not yet native verified. COD-034 prework adds an unconnected MariaDB v3 scope-and-period guard with fail-closed one-shot connection markers. Expected 479 pure/454 native; actual lock, savepoint, commit and rollback tests have not run. A pure overlap check is implemented but does not prove complete data or locking. An unconnected resolver reads persisted reference names with standard read permissions; it has not been native tested and does not validate relationships or grant write authority. Canonical source identity, overlap business validation, reservations, shared release fence, permissions, API and UI remain incomplete. Protected PR and hospital acceptance remain pending. The candidate Required aggregate includes IONE Core but has not been verified on GitHub or the protected branch.",
+  "current_scope": "COD-033 remains In Progress: run 40486315663 passed 448 native tests in both plain and IONE Core environments but failed the zero Error Log gate; savepoint-only cleanup failed on native MyISAM Error Log; exact identity-checked synthetic cleanup has not been native verified. COD-034 prework adds an unconnected MariaDB v3 scope-and-period guard with fail-closed one-shot connection markers. Expected 479 pure/454 native; actual lock, savepoint, commit and rollback tests have not run. A pure overlap check is implemented but does not prove complete data or locking. An unconnected resolver reads persisted reference names with standard read permissions; it has not been native tested and does not validate relationships or grant write authority. Canonical source identity, overlap business validation, reservations, shared release fence, permissions, API and UI remain incomplete. Protected PR and hospital acceptance remain pending. The candidate Required aggregate includes IONE Core but has not been verified on GitHub or the protected branch.",
   "checks": {
     "pure_tests_expected": 479,
     "complete_frappe_tests_expected": 454,
@@ -727,6 +727,13 @@
       "timestamp_matches_synthetic_diagnostic_test": true,
       "row_identity_directly_verified": false,
       "cleanup": "test-local savepoint rollback and exact created-name absence check",
+      "followup_run": 40493519583,
+      "followup_core_native_tests": 448,
+      "followup_core_failures": 1,
+      "followup_failure": "synthetic Error Log survived savepoint rollback",
+      "pinned_frappe_error_log_engine": "MyISAM",
+      "candidate_cleanup": "rollback transactional writes; delete only the recorded synthetic Error Log after verifying name, owner, fingerprint and sanitized method",
+      "candidate_native_retested": false,
       "zero_error_log_gate_unchanged": true,
       "original_errors_deleted_by_ci": false
     }
