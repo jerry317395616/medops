@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from unittest.mock import patch
+from uuid import uuid4
 
 import frappe
 from frappe.tests import IntegrationTestCase
@@ -321,7 +322,9 @@ class TestModuleAPI(FrappeAPITestCase):
 			"enabled": int(not original_enabled),
 		}
 		headers = {
-			"Idempotency-Key": "COD-011-http-key-0001",
+			# HTTP writes commit independently. A previous suite's receipt must
+			# not turn this run's first command into a replay or a conflict.
+			"Idempotency-Key": "COD-011-http-" + uuid4().hex,
 			"X-Correlation-ID": "COD-011-http",
 		}
 

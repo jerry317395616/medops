@@ -3,6 +3,7 @@ from __future__ import annotations
 import json
 from typing import cast
 from unittest.mock import patch
+from uuid import uuid4
 
 import frappe
 from frappe.tests import IntegrationTestCase
@@ -276,7 +277,9 @@ class TestSystemSettingsAPI(FrappeAPITestCase):
 			"expected_version": state["configuration_version"],
 		}
 		headers = {
-			"Idempotency-Key": "COD-017-http-key-0001",
+			# Preserve the same key for this pair, while isolating committed
+			# receipts from earlier suites and their older expected_version.
+			"Idempotency-Key": "COD-017-http-" + uuid4().hex,
 			"X-Correlation-ID": "COD-017-http",
 		}
 		first = self.post(self.method(UPDATE_SETTINGS_METHOD), data, headers=headers)
