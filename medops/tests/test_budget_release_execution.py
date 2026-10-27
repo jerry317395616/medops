@@ -12,6 +12,7 @@ from frappe.utils import get_datetime, now_datetime
 from frappe.utils.background_jobs import execute_job
 
 from medops.common.budget_ledger import LEDGER, RELEASE
+from medops.common.budget_material_match import match_purchase_release_keys
 from medops.common.budget_release_control import ReleaseExecutionLease, release_execution
 from medops.common.error_catalog import IoneApplicationError
 from medops.common.integration_outbox import OUTBOX
@@ -567,6 +568,37 @@ class TestBudgetReleaseExecution(FrappeAPITestCase):
 		self.assertEqual(
 			{entry.key.organization_unit for entry in entries}, {self.units["A"], self.units["B"]}
 		)
+		for entry in entries:
+			account, center = frappe.db.get_value(LEDGER, entry.name, ["account", "cost_center"])
+			self.assertEqual((entry.account, entry.cost_center), (account, center))
+		original_entry = next(entry for entry in entries if entry.name in original_names)
+		chosen = original_entry.key
+
+		def scope(key):
+			return (
+				key.company,
+				key.hospital,
+				key.organization_unit,
+				key.budget_subject,
+				key.funding_source,
+				key.project,
+			)
+
+		related = [entry for entry in entries if scope(entry.key) == scope(chosen)]
+		matches = match_purchase_release_keys(
+			[chosen],
+			related,
+			company=chosen.company,
+			hospital=chosen.hospital,
+			organization_unit=chosen.organization_unit,
+			project=chosen.project,
+			account=original_entry.account,
+			cost_center=original_entry.cost_center,
+			currency=original_entry.currency,
+			budget_date=chosen.period_start,
+			amount="0.000000001",
+		)
+		self.assertEqual([candidate.key for candidate in matches], [chosen])
 		original_get_all = frappe.get_all
 
 		def hide_physical_entry(doctype, *args, **kwargs):

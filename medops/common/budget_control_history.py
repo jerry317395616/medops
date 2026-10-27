@@ -22,6 +22,8 @@ class ReleaseInventoryEntry:
 	currency: str
 	precision: int
 	amount: str
+	account: str
+	cost_center: str
 
 	def __post_init__(self):
 		if normalize_reference(self.name, label="entry") != self.name:
@@ -30,6 +32,10 @@ class ReleaseInventoryEntry:
 			raise ValueError("canonical budget key required")
 		if normalize_reference(self.currency, label="currency") != self.currency:
 			raise ValueError("canonical currency required")
+		for field in ("account", "cost_center"):
+			value = getattr(self, field)
+			if normalize_reference(value, label=field) != value:
+				raise ValueError("canonical release accounting identity required")
 		if signed_decimal_amount(self.amount, self.precision) != self.amount:
 			raise ValueError("canonical amount required")
 

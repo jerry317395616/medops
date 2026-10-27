@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import unittest
+from typing import cast
 
 from medops.common.budget_control import budget_control_key
 from medops.common.budget_control_history import ReleaseInventoryEntry, require_compatible_release_history
@@ -10,11 +11,11 @@ from tests.test_budget_control import key
 class ReleaseHistoryCompatibilityTest(unittest.TestCase):
 	def setUp(self):
 		self.current = budget_control_key(key())
-		self.entry = ReleaseInventoryEntry("entry-1", self.current, "CNY", 2, "100.00")
+		self.entry = ReleaseInventoryEntry("entry-1", self.current, "CNY", 2, "100.00", "Account", "Center")
 
 	def test_matching_and_nonoverlapping_periods_are_compatible(self):
 		later = budget_control_key(key(period_start="2026-02-01", period_end="2026-02-28"))
-		other = ReleaseInventoryEntry("entry-2", later, "USD", 3, "-10.000")
+		other = ReleaseInventoryEntry("entry-2", later, "USD", 3, "-10.000", "Account", "Center")
 		require_compatible_release_history([self.current], [self.entry, other], currency="CNY", precision=2)
 
 	def test_different_currencies_or_precisions_at_same_key_are_rejected(self):
@@ -29,13 +30,21 @@ class ReleaseHistoryCompatibilityTest(unittest.TestCase):
 			{"period_start": "2026-01-15", "period_end": "2026-02-15"},
 			{"fiscal_year": "Other Year"},
 		):
-			other = ReleaseInventoryEntry("entry-2", budget_control_key(key(**changes)), "CNY", 2, "1.00")
+			other = ReleaseInventoryEntry(
+				"entry-2", budget_control_key(key(**changes)), "CNY", 2, "1.00", "Account", "Center"
+			)
 			with self.subTest(changes=changes), self.assertRaises(ValueError):
 				require_compatible_release_history([self.current], [other], currency="CNY", precision=2)
 
 	def test_duplicate_or_outside_scope_history_is_rejected(self):
 		outside = ReleaseInventoryEntry(
-			"entry-2", budget_control_key(key(organization_unit="Another Unit")), "CNY", 2, "1.00"
+			"entry-2",
+			budget_control_key(key(organization_unit="Another Unit")),
+			"CNY",
+			2,
+			"1.00",
+			"Account",
+			"Center",
 		)
 		for history in ([self.entry, self.entry], [outside], [self.entry] * 50001):
 			with self.subTest(count=len(history)), self.assertRaises(ValueError):
@@ -44,7 +53,10 @@ class ReleaseHistoryCompatibilityTest(unittest.TestCase):
 	def test_invalid_amount_currency_and_precision_are_rejected(self):
 		for currency, precision, amount in (("CNY", 2, "1"), (" CNY ", 2, "1.00"), ("CNY", True, "1")):
 			with self.subTest(currency=currency, precision=precision), self.assertRaises(ValueError):
-				ReleaseInventoryEntry("entry", self.current, currency, precision, amount)
+				ReleaseInventoryEntry("entry", self.current, currency, precision, amount, "Account", "Center")
+		for account, center in ((None, "Center"), (" Account ", "Center"), ("Account", "")):
+			with self.subTest(account=account, center=center), self.assertRaises(ValueError):
+				ReleaseInventoryEntry("entry", self.current, "CNY", 2, "1.00", cast(str, account), center)
 		with self.assertRaises(ValueError):
 			require_compatible_release_history([self.current], [], currency=" CNY ", precision=2)
 

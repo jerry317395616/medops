@@ -151,6 +151,8 @@ def guarded_release_inventory(value: object) -> tuple[ReleaseInventoryEntry, ...
 			raise_ione_error("CONFIGURATION_INVALID")
 		entries = []
 		currencies = {}
+		accounts = {}
+		centers = {}
 		for row in rows.values():
 			key = resolve_budget_control_key(
 				{
@@ -172,6 +174,10 @@ def guarded_release_inventory(value: object) -> tuple[ReleaseInventoryEntry, ...
 				precision = int(row.currency_precision)
 				if row.currency not in currencies:
 					currencies[row.currency] = native_document("Currency", row.currency, {"name"}).name
+				if row.account not in accounts:
+					accounts[row.account] = native_document("Account", row.account, {"name"}).name
+				if row.cost_center not in centers:
+					centers[row.cost_center] = native_document("Cost Center", row.cost_center, {"name"}).name
 				entries.append(
 					ReleaseInventoryEntry(
 						row.name,
@@ -179,6 +185,8 @@ def guarded_release_inventory(value: object) -> tuple[ReleaseInventoryEntry, ...
 						currencies[row.currency],
 						precision,
 						signed_decimal_amount(row.amount, precision),
+						accounts[row.account],
+						centers[row.cost_center],
 					)
 				)
 		if frappe.session.user != actor:
@@ -190,6 +198,10 @@ def guarded_release_inventory(value: object) -> tuple[ReleaseInventoryEntry, ...
 		for name, resolved in currencies.items():
 			if native_document("Currency", name, {"name"}).name != resolved:
 				raise_ione_error("CONFLICT")
+		for doctype, names in (("Account", accounts), ("Cost Center", centers)):
+			for name, resolved in names.items():
+				if native_document(doctype, name, {"name"}).name != resolved:
+					raise_ione_error("CONFLICT")
 		assert_budget_guards(keys)
 		return tuple(sorted(entries, key=lambda entry: entry.name))
 	except BaseException:
