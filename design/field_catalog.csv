@@ -13647,3 +13647,7 @@ medops,HRP Budget,HRP Budget Reservation Event,22,actor,操作者,Link,User,1,0,
 medops,HRP Budget,HRP Budget Reservation Event,23,occurred_at,业务时间,Datetime,,1,0,0,1,0,,,,业务时间,Finance
 medops,HRP Budget,HRP Budget Reservation Event,24,previous_digest,前序事件摘要,Data,,0,0,0,1,0,,,,前序事件摘要,Finance
 medops,HRP Budget,HRP Budget Reservation Event,25,event_digest,事件摘要,Data,,1,1,0,1,0,,,,事件摘要,Finance
+medops,HRP Budget,HRP Budget Reservation Event,26,source_line,来源明细,Data,,1,0,0,1,0,,,,来源明细,Finance
+medops,HRP Budget,HRP Budget Reservation Event,27,source_allocation,来源分摊标识,Data,,1,0,0,1,0,,,,来源分摊标识,Finance
+medops,HRP Budget,HRP Budget Reservation Event,28,source_action,来源动作标识,Data,,1,0,0,1,0,,,,来源动作标识,Finance
+medops,HRP Budget,HRP Budget Reservation Event,29,proof_version,事件证明版本,Int,,1,0,0,1,0,,,,事件证明版本,Finance

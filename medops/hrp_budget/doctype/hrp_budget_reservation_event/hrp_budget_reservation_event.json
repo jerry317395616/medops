@@ -37,7 +37,11 @@
 		"actor",
 		"occurred_at",
 		"previous_digest",
-		"event_digest"
+		"event_digest",
+		"source_line",
+		"source_allocation",
+		"source_action",
+		"proof_version"
 	],
 	"fields": [
 		{
@@ -241,6 +245,34 @@
 			"reqd": 1,
 			"unique": 1,
 			"hidden": 1
+		},
+		{
+			"fieldname": "source_line",
+			"label": "来源明细",
+			"fieldtype": "Data",
+			"read_only": 1,
+			"reqd": 1
+		},
+		{
+			"fieldname": "source_allocation",
+			"label": "来源分摊标识",
+			"fieldtype": "Data",
+			"read_only": 1,
+			"reqd": 1
+		},
+		{
+			"fieldname": "source_action",
+			"label": "来源动作标识",
+			"fieldtype": "Data",
+			"read_only": 1,
+			"reqd": 1
+		},
+		{
+			"fieldname": "proof_version",
+			"label": "事件证明版本",
+			"fieldtype": "Int",
+			"read_only": 1,
+			"reqd": 1
 		}
 	],
 	"permissions": [],

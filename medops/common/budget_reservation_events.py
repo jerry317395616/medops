@@ -32,8 +32,9 @@ class ReservationEvent:
 		if (
 			type(self.sequence) is not int
 			or normalize_positive_integer(self.sequence, label="sequence") != self.sequence
+			or self.sequence > MAX_RESERVATION_EVENTS
 		):
-			raise ValueError("positive integer sequence required")
+			raise ValueError("bounded positive integer sequence required")
 		if type(self.key) is not BudgetControlKey:
 			raise ValueError("canonical budget key required")
 		if normalize_reference(self.currency, label="currency") != self.currency:
