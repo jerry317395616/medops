@@ -466,6 +466,14 @@ class TestBudgetMaterialRequestSource(FrappeTestCase):
 					(purchase.currency, purchase.quantity, purchase.amount),
 					("CNY", "1.000000000", "10.000000000"),
 				)
+				primary.rollback()
+				linked_source, linked_orders = purchase_order_source.locked_linked_purchase_orders(
+					material.request,
+					material.line,
+					material.organization_unit,
+					expected_request_digest=material.digest(),
+				)
+				self.assertEqual((linked_source, linked_orders), (material, (purchase,)))
 			finally:
 				frappe.local.db = primary
 				primary.rollback()

@@ -242,3 +242,199 @@ class TestBudgetPurchaseOrderSource(IntegrationTestCase):
 			self.read()
 		with self.assertRaises(IoneApplicationError):
 			assert_budget_guards([self.key])
+
+	def linked(self, rows, orders, *, discovery_effect=None, native_effect=None, scope_effect=None):
+		calls = []
+
+		def native(doctype, name, fields, *, lock=False):
+			calls.append((doctype, name, lock))
+			if native_effect:
+				return native_effect(doctype, name, lock)
+			return SimpleNamespace(name=name, company=self.source.company, hospital=self.source.hospital)
+
+		def discover(request, line):
+			return discovery_effect() if discovery_effect else rows
+
+		def read_order(order, line, source, actor):
+			return {(item.order, item.line): item for item in orders}[(order, line)]
+
+		with (
+			patch.object(adapter, "native_document", side_effect=native),
+			patch.object(adapter, "_discover_order_rows", side_effect=discover),
+			patch.object(adapter, "locked_material_request_source", return_value=self.source),
+			patch.object(adapter, "_read_order", side_effect=read_order),
+			patch.object(adapter, "require_roles"),
+			patch.object(adapter, "require_scope", side_effect=scope_effect),
+			patch("medops.hrp_budget.services.release_execution.refresh_financial_authority"),
+			patch.object(frappe.db, "sql", return_value=[("READ-COMMITTED", 0)]),
+		):
+			result = adapter.locked_linked_purchase_orders(
+				self.source.request,
+				self.source.line,
+				self.source.organization_unit,
+				expected_request_digest=self.source.digest(),
+			)
+		return result, calls
+
+	def test_linked_orders_lock_all_parents_then_recheck_and_sum_submitted_lines(self):
+		(_, original), _ = self.read()
+		first = replace(original, order="order-a", line="line-a", quantity="2.000000000")
+		second = replace(original, order="order-b", line="line-b", quantity="3.000000000")
+		rows = (("order-a", "line-a", 1), ("order-b", "line-b", 1), ("order-c", "line-c", 0))
+		(result_source, orders), calls = self.linked(rows, [first, second])
+		self.assertEqual((result_source, orders), (self.source, (first, second)))
+		self.assertEqual(
+			calls[:2],
+			[
+				("Material Request", "request-a", False),
+				("HRP Organization Unit", self.source.organization_unit, False),
+			],
+		)
+		self.assertEqual(
+			calls[2:],
+			[
+				("Material Request", "request-a", False),
+				("Purchase Order", "order-a", False),
+				("Purchase Order", "order-b", False),
+				("Purchase Order", "order-c", False),
+				("Material Request", "request-a", True),
+				("Purchase Order", "order-a", True),
+				("Purchase Order", "order-b", True),
+				("Purchase Order", "order-c", True),
+			],
+		)
+
+	def test_split_order_quantity_cannot_exceed_material_request(self):
+		(_, original), _ = self.read()
+		first = replace(original, order="order-a", line="line-a", quantity="2.000000000")
+		second = replace(original, order="order-b", line="line-b", quantity="4.000000000")
+		with self.assertRaises(IoneApplicationError):
+			self.linked((("order-a", "line-a", 1), ("order-b", "line-b", 1)), [first, second])
+
+	def test_new_link_after_parent_locks_forces_full_retry(self):
+		first = (("order-a", "line-a", 1),)
+		changed = (*first, ("order-b", "line-b", 1))
+		values = iter([first, changed])
+		with self.assertRaises(IoneApplicationError):
+			self.linked(first, [], discovery_effect=lambda: next(values))
+
+	def test_linked_order_read_permission_is_required_before_any_parent_lock(self):
+		seen = []
+
+		def deny(doctype, name, lock):
+			seen.append((doctype, name, lock))
+			if doctype == "Purchase Order":
+				raise PermissionError("synthetic denial")
+			return SimpleNamespace(name=name, company=self.source.company, hospital=self.source.hospital)
+
+		with self.assertRaises(PermissionError):
+			self.linked((("order-a", "line-a", 1),), [], native_effect=deny)
+		self.assertTrue(all(not lock for _, _, lock in seen))
+
+	def test_unit_scope_denial_happens_before_order_discovery(self):
+		def deny(*args, **kwargs):
+			raise PermissionError("synthetic scope denial")
+
+		def discovery():
+			self.fail("source discovery ran before scope check")
+
+		with self.assertRaises(PermissionError):
+			self.linked((), [], discovery_effect=discovery, scope_effect=deny)
+
+	def test_no_linked_orders_produces_empty_observation(self):
+		(source, orders), _ = self.linked((), [])
+		self.assertEqual((source, orders), (self.source, ()))
+
+	def test_linked_order_locks_after_budget_guard_are_denied(self):
+		acquire_budget_guards([self.key])
+		with self.assertRaises(IoneApplicationError):
+			self.linked((), [])
+		with self.assertRaises(IoneApplicationError):
+			assert_budget_guards([self.key])
+
+
+class TestBudgetPurchaseOrderDiscovery(IntegrationTestCase):
+	def setUp(self):
+		super().setUp()
+		frappe.db.rollback()
+		frappe.db.sql(
+			"CREATE TEMPORARY TABLE `tabPurchase Order` "
+			"(`name` VARCHAR(140) PRIMARY KEY, `docstatus` INT) ENGINE=InnoDB "
+			"DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci"
+		)
+		frappe.db.sql(
+			"CREATE TEMPORARY TABLE `tabPurchase Order Item` "
+			"(`name` VARCHAR(140), `parent` VARCHAR(140), `parenttype` VARCHAR(140), "
+			"`parentfield` VARCHAR(140), `material_request` VARCHAR(140), "
+			"`material_request_item` VARCHAR(140), `docstatus` INT) ENGINE=InnoDB "
+			"DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci"
+		)
+
+	def tearDown(self):
+		frappe.db.rollback()
+		frappe.db.sql("DROP TEMPORARY TABLE IF EXISTS `tabPurchase Order Item`")
+		frappe.db.sql("DROP TEMPORARY TABLE IF EXISTS `tabPurchase Order`")
+		frappe.db.rollback()
+		frappe.db.begin()
+		super().tearDown()
+
+	def add(self, order, line, status, *, request="request-a", request_line="request-line"):
+		if status is not None:
+			frappe.db.sql(
+				"INSERT INTO `tabPurchase Order` (`name`, `docstatus`) VALUES (%s, %s)", (order, status)
+			)
+		frappe.db.sql(
+			"""INSERT INTO `tabPurchase Order Item`
+			(`name`, `parent`, `parenttype`, `parentfield`, `material_request`, `material_request_item`, `docstatus`)
+			VALUES (%s, %s, 'Purchase Order', 'items', %s, %s, %s)""",
+			(line, order, request, request_line, status if status is not None else 0),
+		)
+
+	def test_finds_all_submitted_draft_and_cancelled_links(self):
+		self.add("order-c", "line-c", 2)
+		self.add("order-a", "line-a", 1)
+		self.add("order-b", "line-b", 0)
+		self.add("other", "other-line", 1, request_line="another-line")
+		self.assertEqual(
+			vars(adapter)["_discover_order_rows"]("request-a", "request-line"),
+			(("order-a", "line-a", 1), ("order-b", "line-b", 0), ("order-c", "line-c", 2)),
+		)
+
+	def test_missing_parent_and_mismatched_request_are_rejected(self):
+		self.add("missing", "line-a", None)
+		with self.assertRaises(ValueError):
+			vars(adapter)["_discover_order_rows"]("request-a", "request-line")
+		frappe.db.sql("DELETE FROM `tabPurchase Order Item`")
+		self.add("order-b", "line-b", 1, request="different")
+		with self.assertRaises(ValueError):
+			vars(adapter)["_discover_order_rows"]("request-a", "request-line")
+
+	def test_overflow_does_not_return_partial_links(self):
+		self.add("order-a", "line-a", 1)
+		self.add("order-b", "line-b", 1)
+		with patch.object(adapter, "MAX_LINKED_ORDER_LINES", 1):
+			with self.assertRaises(ValueError):
+				vars(adapter)["_discover_order_rows"]("request-a", "request-line")
+
+	def test_collation_alias_is_rejected(self):
+		self.add("order-a", "line-a", 1, request_line="REQUEST-LINE")
+		with self.assertRaises(ValueError):
+			vars(adapter)["_discover_order_rows"]("request-a", "request-line")
+
+	def test_child_and_parent_document_status_must_match(self):
+		self.add("order-a", "line-a", 1)
+		frappe.db.sql("UPDATE `tabPurchase Order Item` SET `docstatus`=0 WHERE `name`=%s", ("line-a",))
+		with self.assertRaises(ValueError):
+			vars(adapter)["_discover_order_rows"]("request-a", "request-line")
+
+	def test_missing_lookup_index_fails_before_source_rows(self):
+		sql = frappe.db.sql
+
+		def without_index(query, *args, **kwargs):
+			if "information_schema.STATISTICS" in query:
+				return []
+			return sql(query, *args, **kwargs)
+
+		with patch.object(frappe.db, "sql", side_effect=without_index):
+			with self.assertRaises(IoneApplicationError):
+				vars(adapter)["_discover_order_rows"]("request-a", "request-line")
