@@ -9,7 +9,7 @@
 		"ADR-0031",
 		"ADR-0032"
 	],
-	"current_scope": "COD-033 In Progress. Current candidate adds authorized statement display labels and a separate GitHub CI IONE Core compatibility profile pinned to the owner repository. Expected 461 pure/448 native; the new CI profile and full current validation remain pending. Original strict server-service guard failed during user-confirmed maintenance, despite 14/14 native functional tests passing. Public8291 unchanged; all HRP and hospital acceptance remain incomplete.",
+	"current_scope": "COD-033 In Progress. Current candidate adds authorized statement labels, separate IONE Core compatibility CI, and CI-only bootstrap search-index queue isolation. Earlier GitHub run 40480393108 executed 448 native tests with one failure because the real-worker test found a pre-existing long-queue item; its bootstrap logged a native search-index enqueue. The fix is not yet verified by a new CI run. Expected461 pure/448 native; protected CI, native browser, full release and hospital acceptance remain pending.",
 	"checks": {
 		"pure_tests_expected": 461,
 		"complete_frappe_tests_expected": 448,
@@ -668,6 +668,17 @@
 			"fresh_ci_sites_only": true,
 			"existing_ci_without_core_retained": true,
 			"real_hospital_acceptance": false
+		},
+		"ci_bootstrap_search_isolation": {
+			"status": "implemented_not_retested",
+			"failed_run": 40480393108,
+			"tests_run": 448,
+			"failures": 1,
+			"observed_queue_count": 1,
+			"bootstrap_search_index_enqueue_observed": true,
+			"identity_of_queued_job_confirmed": false,
+			"default_bootstrap_search_index_preserved": true,
+			"unknown_jobs_deleted_or_consumed": false
 		}
 	},
 	"previous_verified_release": {

@@ -556,6 +556,7 @@ def validate_ci_pipeline(root: Path) -> list[str]:
 	for required_token in (
 		"bootstrap_latest_develop.sh",
 		"KEEP_TEMPORARY_REDIS=1",
+		"MEDOPS_BOOTSTRAP_SKIP_SEARCH_INDEX=1",
 		"version_lock.py",
 		"migrate --skip-search-index",
 		"run-tests --app medops",
@@ -571,6 +572,8 @@ def validate_ci_pipeline(root: Path) -> list[str]:
 		bootstrap = bootstrap_path.read_text(encoding="utf-8")
 		for required_token in (
 			'if [[ -e "$BENCH_DIR" ]]',
+			'bench --site "$SITE_NAME" migrate --skip-search-index',
+			'bench --site "$SITE_NAME" migrate',
 			'git -C "$app_dir" reset --hard HEAD',
 			'git -C "$app_dir" clean -fd',
 			'git -C "$app_dir" checkout --detach "$commit"',

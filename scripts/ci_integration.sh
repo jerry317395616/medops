@@ -37,6 +37,10 @@ stop_redis() {
 trap stop_redis EXIT
 
 export KEEP_TEMPORARY_REDIS=1
+# The fresh CI test suite includes a real burst worker that refuses to consume
+# pre-existing long-queue jobs. Avoid creating an unrelated search-index job
+# during its bootstrap migration; ordinary bootstrap retains native behavior.
+export MEDOPS_BOOTSTRAP_SKIP_SEARCH_INDEX=1
 bash "$ROOT_DIR/scripts/bootstrap_latest_develop.sh"
 
 for port in "$REDIS_CACHE_PORT" "$REDIS_QUEUE_PORT"; do
