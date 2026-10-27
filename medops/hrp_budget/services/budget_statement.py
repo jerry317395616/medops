@@ -7,14 +7,17 @@ from dataclasses import asdict
 import frappe
 
 from medops.common.budget_ledger import LEDGER, LEDGER_PUBLIC_FIELDS, RELEASE
+from medops.common.budget_planning import FUND, VALUE
 from medops.common.budget_statement import (
 	MAX_STATEMENT_ENTRIES,
 	STATEMENT_SCHEMA_VERSION,
 	StatementRequest,
 	complete_statement,
 	statement_dates,
+	with_display_labels,
 )
 from medops.common.domain_service import DomainServiceDefinition
+from medops.common.organization import normalize_required_text
 from medops.hrp_budget.services.access_graph import access_graph
 from medops.hrp_budget.services.ledger_access import authorize_entry, public_entry, statement_actor
 from medops.hrp_budget.services.ledger_integrity import complete_batch
@@ -33,6 +36,25 @@ from medops.services.errors import raise_ione_error
 
 MAX_STATEMENT_BATCHES = 1000
 MAX_PRIVATE_PROOF_ENTRIES = 1000000
+
+
+def statement_display_labels(rows, context):
+	"""Return names only for the current page and currently readable fields."""
+	actor = statement_actor()
+	result = []
+	for row in rows:
+		labels = {}
+		for key, doctype in (("budget_subject", VALUE), ("funding_source", FUND)):
+			doc = native_source(doctype, row[key], {"company", "hospital", "display_name"}, user=actor)
+			label = None
+			if doc is not None and doc.company == context["company"] and doc.hospital == context["hospital"]:
+				try:
+					label = normalize_required_text(doc.display_name, label="display_name", maximum=140)
+				except ValueError:
+					pass
+			labels[key] = label
+		result.append(labels)
+	return result
 
 
 def statement_context(query, *, export=False):
@@ -213,7 +235,7 @@ class ReadBudgetStatement(DomainService[StatementRequest]):
 		self.book = complete_statement(self.context, [public_entry(row) for row in self.visible])
 		if command.expected_digest and command.expected_digest != self.book.digest:
 			raise_ione_error("CONFLICT")
-		return dict(
+		result: dict[str, object] = dict(
 			schema_version=STATEMENT_SCHEMA_VERSION,
 			context=dict(self.book.context),
 			statement_digest=self.book.digest,
@@ -229,6 +251,16 @@ class ReadBudgetStatement(DomainService[StatementRequest]):
 			if command.export
 			else [dict(row) for row in self.book.rows[command.offset : command.offset + command.limit]],
 		)
+		self.label_rows = (
+			() if command.export else self.book.rows[command.offset : command.offset + command.limit]
+		)
+		labels = []
+		if self.label_rows:
+			with access_graph():
+				labels = statement_display_labels(self.label_rows, self.context)
+		result = with_display_labels(result, labels)
+		self.display_labels = result.get("display_labels")
+		return result
 
 	def authorize_result(self, result):
 		refresh_statement_actor()
@@ -237,6 +269,11 @@ class ReadBudgetStatement(DomainService[StatementRequest]):
 		with access_graph():
 			for row in self.visible:
 				authorize_entry(row, {row.origin_plan: self.references[row.name]}, export=self.command.export)
+			if (
+				self.display_labels is not None
+				and statement_display_labels(self.label_rows, self.context) != self.display_labels
+			):
+				raise_ione_error("CONFLICT")
 		if (
 			statement_batches(self.context, export=self.command.export) != self.batches
 			or physical_statement_entries(self.context, export=self.command.export) != self.physical

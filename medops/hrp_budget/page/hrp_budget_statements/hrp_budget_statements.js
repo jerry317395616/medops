@@ -152,7 +152,7 @@ frappe.pages["hrp-budget-statements"].on_page_load = function (wrapper) {
 		];
 		for (const [, label] of columns) $("<th></th>").text(__(label)).appendTo(head);
 		const rows = $("<tbody></tbody>").appendTo(grid);
-		for (const item of book.rows) {
+		for (const [index, item] of book.rows.entries()) {
 			const line = $("<tr></tr>").appendTo(rows);
 			for (const [key] of columns) {
 				const cell = $("<td></td>").appendTo(line);
@@ -161,7 +161,16 @@ frappe.pages["hrp-budget-statements"].on_page_load = function (wrapper) {
 						.text(item.name.slice(0, 12))
 						.on("click", () => entry(item.name))
 						.appendTo(cell);
-				} else cell.text(item[key] ?? "");
+				} else {
+					const value = item[key] ?? "";
+					const label = book.display_labels?.[index]?.[key];
+					if (key === "budget_subject" || key === "funding_source" || key === "account") {
+						cell.css("overflow-wrap", "anywhere");
+					}
+					if (["debit", "credit", "running_balance"].includes(key)) cell.css("white-space", "nowrap");
+					if (label && label !== value) cell.attr("title", value);
+					cell.text(label || value);
+				}
 			}
 		}
 		if (!book.rows.length) $("<p class='text-muted'></p>").text(__("当前范围没有分录。")).appendTo(table);

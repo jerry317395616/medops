@@ -12992,6 +12992,21 @@ components:
           maxItems: 50
           items:
             $ref: '#/components/schemas/BudgetStatementRow'
+        display_labels:
+          description: Optional current-page names, aligned with rows; null means the name is unavailable or not readable. Omitted if the existing response size or node limit would be exceeded. Names are reauthorized before return and do not alter the financial digest or XLSX columns.
+          type: array
+          maxItems: 50
+          items:
+            type: object
+            additionalProperties: false
+            required: [budget_subject, funding_source]
+            properties:
+              budget_subject:
+                type: [string, 'null']
+                maxLength: 140
+              funding_source:
+                type: [string, 'null']
+                maxLength: 140
     BudgetStatementXlsx:
       type: string
       format: binary

@@ -16,6 +16,7 @@ from frappe.tests.test_api import FrappeAPITestCase
 
 from medops.api.v1.finance import ledger as ledger_api
 from medops.common.budget_ledger import LEDGER, LEDGER_PUBLIC_FIELDS
+from medops.common.budget_planning import VALUE
 from medops.common.error_catalog import IoneApplicationError
 from medops.hrp_budget.api.statement_reads import statement_connection
 from medops.hrp_budget.services import budget_statement as statements
@@ -134,6 +135,65 @@ class TestBudgetStatement(FrappeAPITestCase):
 		self.assertEqual(item["amount"], "99999.999999999")
 		self.denied(self.entry(self.rows[self.units["B"]]))
 		self.denied(self.statement(self.query(organization_unit=self.units["B"])))
+
+	def test_current_page_labels_are_authorized_and_leave_the_financial_digest_unchanged(self):
+		book = self.success(self.statement(limit=1))
+		self.assertEqual(len(book["rows"]), 1)
+		self.assertEqual(len(book["display_labels"]), 1)
+		row = book["rows"][0]
+		self.assertEqual(row["budget_subject"], self.value)
+		self.assertEqual(row["funding_source"], self.fund)
+		self.assertEqual(
+			book["display_labels"][0], {"budget_subject": "设备预算", "funding_source": "自有资金"}
+		)
+		empty = self.success(self.statement(self.query(to_date="2026-01-01")))
+		self.assertEqual(empty["rows"], [])
+		self.assertNotIn("display_labels", empty)
+		page = self.success(self.statement(offset=1, limit=1, expected_digest=book["statement_digest"]))
+		self.assertEqual(page["statement_digest"], book["statement_digest"])
+		self.assertEqual(len(page["display_labels"]), len(page["rows"]))
+
+	def test_display_name_revocation_after_label_collection_never_returns_the_book(self):
+		original = statements.statement_display_labels
+		setters = []
+		fired = False
+
+		def revoke_after_labels(*args, **kwargs):
+			nonlocal fired
+			labels = original(*args, **kwargs)
+			if not fired and labels:
+				fired = True
+				primary = frappe.local.db
+				with self.secondary_connection():
+					frappe.set_user("Administrator")
+					self.assertFalse(
+						frappe.db.exists(
+							"Property Setter",
+							{"doc_type": VALUE, "field_name": "display_name", "property": "permlevel"},
+						)
+					)
+					setters.append(
+						make_property_setter(
+							VALUE, "display_name", "permlevel", 2, "Int", validate_fields_for_doctype=False
+						).name
+					)
+					self._secondary_connection.commit()
+				self.assertIs(frappe.local.db, primary)
+				frappe.set_user(ACTOR)
+			return labels
+
+		try:
+			with patch.object(statements, "statement_display_labels", side_effect=revoke_after_labels):
+				response = self.statement(limit=1)
+				self.denied(response)
+				self.assertNotIn("display_labels", json.dumps(response.get_json()))
+			self.assertTrue(fired)
+		finally:
+			with source_fixture.committed_test_changes(self):
+				for name in setters:
+					frappe.delete_doc("Property Setter", name, ignore_permissions=True)
+					self.assertFalse(frappe.db.exists("Property Setter", name))
+				frappe.clear_cache(doctype=VALUE)
 
 	def test_empty_date_scope_is_an_explicit_complete_zero_book(self):
 		book = self.success(self.statement(self.query(to_date="2026-01-01")))

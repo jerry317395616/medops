@@ -6,7 +6,13 @@ from typing import Any
 from unittest.mock import patch
 
 from medops.common.budget_ledger import LEDGER_PUBLIC_FIELDS
-from medops.common.budget_statement import build_statement_request, complete_statement, statement_dates
+from medops.common.budget_statement import (
+	build_statement_request,
+	complete_statement,
+	statement_dates,
+	with_display_labels,
+)
+from medops.common.domain_service import MAX_JSON_SNAPSHOT_BYTES, canonical_json
 
 
 def context(**values: Any) -> dict[str, Any]:
@@ -65,6 +71,33 @@ def entry(
 
 
 class TestBudgetStatement(unittest.TestCase):
+	def test_optional_display_labels_are_page_aligned_and_do_not_modify_financial_rows(self):
+		result = {"rows": [entry()], "statement_digest": "a" * 64}
+		labels = [{"budget_subject": "设备预算", "funding_source": None}]
+		output = with_display_labels(result, labels)
+		self.assertEqual(output["display_labels"], labels)
+		self.assertEqual(output["rows"], result["rows"])
+		self.assertEqual(output["statement_digest"], result["statement_digest"])
+		self.assertNotIn("display_labels", result)
+		self.assertNotIn(
+			"display_labels", with_display_labels(result, [{"budget_subject": None, "funding_source": None}])
+		)
+		with self.assertRaises(ValueError):
+			with_display_labels(result, [])
+		with self.assertRaises(ValueError):
+			with_display_labels(result, [{"budget_subject": "设备预算", "private": "x"}])
+
+	def test_optional_display_labels_do_not_break_existing_json_byte_or_node_bounds(self):
+		labels = [{"budget_subject": "设备预算", "funding_source": "自有资金"}]
+		base: dict[str, Any] = {"rows": [{}], "padding": ["x" * 32768] * 7 + [""]}
+		overhead = len(canonical_json(base).encode("utf-8"))
+		base["padding"][-1] = "x" * (MAX_JSON_SNAPSHOT_BYTES - overhead - 1)
+		self.assertLessEqual(len(canonical_json(base).encode("utf-8")), MAX_JSON_SNAPSHOT_BYTES)
+		self.assertNotIn("display_labels", with_display_labels(base, labels))
+		many_nodes = {"rows": [{}], "padding": [None] * 4092}
+		canonical_json(many_nodes)
+		self.assertNotIn("display_labels", with_display_labels(many_nodes, labels))
+
 	def test_mixed_captured_precisions_are_exact_under_a_small_ambient_context(self):
 		with localcontext() as decimal_context:
 			decimal_context.prec = 5

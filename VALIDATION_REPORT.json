@@ -9,10 +9,10 @@
 		"ADR-0031",
 		"ADR-0032"
 	],
-	"current_scope": "COD-033 In Progress. f500cf4 full458 local/1449 committed blobs/8337 differential/full446 native with446 success rows,0skips,10guards passed;focused43 overlaps full. Current native Link mouse selection and first query completed on both Pages, exactly one200 each;statement243 total/50 visible,operations expected empty scoped list. Original data/roles/models/GLStock/386queue IDs/configs/source and all preexisting active units preserved. Strict all-service snapshot unequal: retain successful periodic rehab backup timestamps and concurrent new rehab QA activity; original failure retained, v3 explicit12checks passed. Native UI logout and helper/tunnel/tab cleanup complete. Public8291 untouched;label/layout usability,performance,CI/promotion,remainingHRP and hospital acceptance incomplete.",
+	"current_scope": "COD-033 In Progress. Current candidate adds optional page-aligned budget subject/funding names under current native document, scope and display_name field authorization, followed by final recheck. Exact financial rows/digest and existing34 XLSX columns unchanged; labels omitted when unavailable or response JSON limits would be exceeded. Expected460 pure/448 native; candidate full quality, native and real browser pending. Prior f500 full446 is historical, public8291 unchanged; all HRP and hospital acceptance remain incomplete.",
 	"checks": {
-		"pure_tests_expected": 458,
-		"complete_frappe_tests_expected": 446,
+		"pure_tests_expected": 460,
+		"complete_frappe_tests_expected": 448,
 		"exact_foundation_pure_tests_passed": 21,
 		"native_foundation": {
 			"status": "passed",
@@ -36,7 +36,7 @@
 		"protected_ci": "not run for COD-033",
 		"local_quality": "Full458/11 quality steps and1449 committed Git blobs passed at f500cf4; proof cod033-f500cf4-quality.json",
 		"pure_tests_passed": 458,
-		"complete_frappe_tests": "Full446 PASSED atf500cf4 with all10 state protection checks; prior c0ee source proof remains historical.",
+		"complete_frappe_tests": "Prior f500 full446 passed at its own source; current 448 candidate has not yet run.",
 		"current_protocol": {
 			"status": "full local quality passed",
 			"tests": 11,
@@ -818,15 +818,9 @@
 		"coverage_limit": "Injected after native HTTPRequest construction and before before_request; earlier connection/session-constructor branches and proxy/server sinks not certified."
 	},
 	"full_native_suite": {
-		"status": "passed",
-		"commit": "f500cf4e8b7e5f2f3c0b662027fbd68e3f82af57",
-		"expected_tests": 446,
-		"completed_tests": 446,
-		"passed_tests": 446,
-		"failures": 0,
-		"all10_preserved_state_checks_passed": true,
-		"source_frozen_during_run": true,
-		"proof": "cod033-f500cf4-text-scan-full-native.json",
+		"status": "pending_candidate",
+		"expected_tests": 448,
+		"prior_passed_commit": "f500cf4e8b7e5f2f3c0b662027fbd68e3f82af57",
 		"public_sites_untouched": true
 	},
 	"pending_read_optimization": {
@@ -1261,10 +1255,10 @@
 		"proof": "cod033-e87d901-recovery-ui-integrity-v3.json"
 	},
 	"next_unblocked_tasks": [
-		"Provide authorized display names and improve long-identifier table layout, using current field checks rather than an unguarded title lookup",
-		"Evaluate bounded cross-document native source reads on the exact immutable598 dataset, preserving full source identity and independent final authorization",
-		"ProtectedCI and complete release/promotion gates; no partial releasePR",
-		"COD034/035 and remaining HRP; actual hospital capacity/interfaces/UAT"
+		"Run full current-source quality, real native permission revocation and complete native suite, then verify current-page names in a real browser",
+		"Evaluate bounded cross-document directory performance with independent final authorization",
+		"Complete protected CI and release/promotion gates; no partial release PR",
+		"COD034/035, remaining HRP and hospital capacity/interfaces/UAT"
 	],
 	"input_invalidation_followup": {
 		"status": "actual browser verification passed at bcc952c",
@@ -1632,5 +1626,36 @@
 		"per_case_get_docs_adopted": false,
 		"per_case_experiment_dispatched": false,
 		"decision": "Per-case batching offers negligible query reduction for mostly single-record histories; evaluate cross-case batching with bounded private data and independent final reads before adoption."
+	},
+	"prior_verified_full_native_suite_before_labels": {
+		"status": "passed",
+		"commit": "f500cf4e8b7e5f2f3c0b662027fbd68e3f82af57",
+		"expected_tests": 446,
+		"completed_tests": 446,
+		"passed_tests": 446,
+		"failures": 0,
+		"all10_preserved_state_checks_passed": true,
+		"source_frozen_during_run": true,
+		"proof": "cod033-f500cf4-text-scan-full-native.json",
+		"public_sites_untouched": true
+	},
+	"statement_display_names": {
+		"status": "candidate_pending_validation",
+		"pure_tests_added": 2,
+		"native_tests_added": 2,
+		"pure_tests_expected": 460,
+		"native_tests_expected": 448,
+		"source_field": "display_name",
+		"page_limit": 50,
+		"labels_are_optional": true,
+		"current_document_scope_and_field_checks": true,
+		"final_authority_and_value_recheck": true,
+		"financial_rows_and_digest_unchanged": true,
+		"xlsx_columns_unchanged": true,
+		"oversize_labels_omitted": true,
+		"source_migrations_hooks_and_user_grants": false,
+		"real_browser_pending": true,
+		"full_native_pending": true,
+		"scope": "Names describe current master data and are not historical financial facts; no generic unguarded title RPC."
 	}
 }

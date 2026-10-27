@@ -10,18 +10,48 @@ from types import MappingProxyType
 
 from medops.common.budget_ledger import LEDGER_PUBLIC_FIELDS
 from medops.common.budget_planning import object_payload
-from medops.common.domain_service import canonical_json, normalize_sha256
+from medops.common.domain_service import DomainServiceContractError, canonical_json, normalize_sha256
 from medops.common.exact_money import signed_decimal_amount
 from medops.common.organization import (
 	normalize_nonnegative_integer,
 	normalize_optional_date,
 	normalize_reference,
 	normalize_required_date,
+	normalize_required_text,
 )
 
 MAX_STATEMENT_ENTRIES = 50000
 MAX_STATEMENT_PAGE = 50
 STATEMENT_SCHEMA_VERSION = 1
+DISPLAY_LABEL_FIELDS = ("budget_subject", "funding_source")
+
+
+def with_display_labels(
+	result: dict[str, object], labels: Sequence[Mapping[str, object]]
+) -> dict[str, object]:
+	"""Attach optional page-only names without reducing the existing JSON budget."""
+	rows = result.get("rows")
+	if not isinstance(rows, list) or len(labels) != len(rows):
+		raise ValueError("display labels must match the current page")
+	clean = []
+	for row in labels:
+		if set(row) != set(DISPLAY_LABEL_FIELDS):
+			raise ValueError("invalid display label fields")
+		clean.append(
+			{
+				key: None if row[key] is None else normalize_required_text(row[key], label=key, maximum=140)
+				for key in DISPLAY_LABEL_FIELDS
+			}
+		)
+	if not any(value is not None for row in clean for value in row.values()):
+		return result
+	candidate = dict(result, display_labels=clean)
+	try:
+		canonical_json(candidate)
+	except DomainServiceContractError:
+		# A previously valid full page must not fail solely due to optional labels.
+		return result
+	return candidate
 
 
 @dataclass(frozen=True, slots=True)
