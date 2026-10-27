@@ -9,10 +9,10 @@
     "ADR-0031",
     "ADR-0032"
   ],
-  "current_scope": "COD-033 remains In Progress: run 40486315663 passed 448 native tests in both plain and IONE Core environments but failed the zero Error Log gate; savepoint-only cleanup failed on native MyISAM Error Log; exact identity-checked synthetic cleanup has not been native verified. COD-034 prework adds an unconnected MariaDB v3 scope-and-period guard with fail-closed one-shot connection markers. Expected 483 pure/457 native; actual lock, savepoint, commit and rollback tests have not run. A pure overlap check is implemented but does not prove complete data or locking. An unconnected resolver reads persisted reference names with standard read permissions; it has not been native tested and does not validate relationships or grant write authority. Canonical source identity, overlap business validation, reservations, shared release fence, permissions, API and UI remain incomplete. Protected PR and hospital acceptance remain pending. The candidate Required aggregate includes IONE Core but has not been verified on GitHub or the protected branch. Pure release/reversal key derivation is present, but is not integrated with the lock or write service. An unconnected release-batch source resolution composes sealed keys with a per-call name cache; it has not been native tested. Guarded DomainService failures now request a full rollback; the path is not native tested and direct savepoint rollback remains outside this safeguard. In the 04b0eaa core run, one waiting guard process received QueryDeadlockError; the test worker now retries only after full rollback, pending native validation.",
+  "current_scope": "COD-033 remains In Progress: run 40486315663 passed 448 native tests in both plain and IONE Core environments but failed the zero Error Log gate; savepoint-only cleanup failed on native MyISAM Error Log; exact identity-checked synthetic cleanup has not been native verified. COD-034 prework adds an unconnected MariaDB v3 scope-and-period guard with fail-closed one-shot connection markers. Expected 483 pure/459 native; actual lock, savepoint, commit and rollback tests have not run. A pure overlap check is implemented but does not prove complete data or locking. An unconnected resolver reads persisted reference names with standard read permissions; it has not been native tested and does not validate relationships or grant write authority. Canonical source identity, overlap business validation, reservations, shared release fence, permissions, API and UI remain incomplete. Protected PR and hospital acceptance remain pending. The candidate Required aggregate includes IONE Core but has not been verified on GitHub or the protected branch. Pure release/reversal key derivation is present, but is not integrated with the lock or write service. An unconnected release-batch source resolution composes sealed keys with a per-call name cache; it has not been native tested. Guarded DomainService failures now request a full rollback; the path is not native tested and direct savepoint rollback remains outside this safeguard. In the 04b0eaa core run, one waiting guard process received QueryDeadlockError; the test worker now retries only after full rollback, pending native validation. A transaction-local witness candidate can detect an earlier savepoint rollback at explicit check or normal commit; it is not native tested and cannot protect direct SQL commits or all callback failure paths.",
   "checks": {
     "pure_tests_expected": 483,
-    "complete_frappe_tests_expected": 457,
+    "complete_frappe_tests_expected": 459,
     "exact_foundation_pure_tests_passed": 21,
     "native_foundation": {
       "status": "passed",
@@ -674,7 +674,7 @@
     "budget_control_prework": {
       "status": "pure_contracts_and_unconnected_lock_prototype",
       "pure_tests_added": 20,
-      "native_tests_added": 9,
+      "native_tests_added": 11,
       "database_lock_implemented": true,
       "database_lock_native_tested": false,
       "business_writers_use_guard": false,
@@ -722,7 +722,12 @@
       },
       "test_worker_bounded_full_transaction_retry_implemented": true,
       "test_worker_retry_native_tested": false,
-      "business_retry_implemented": false
+      "business_retry_implemented": false,
+      "transaction_witness_implemented": true,
+      "transaction_witness_native_tested": false,
+      "witness_detects_older_savepoint_at_explicit_check_and_normal_commit": true,
+      "raw_sql_commit_or_callback_bypass_detected": false,
+      "commit_error_requires_outer_full_rollback": true
     },
     "ci_bootstrap_search_isolation": {
       "status": "implemented_not_retested",

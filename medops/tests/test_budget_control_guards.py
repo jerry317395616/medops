@@ -17,7 +17,7 @@ from frappe.utils import get_bench_path
 from medops.common.budget_control import budget_control_key, budget_guard_names
 from medops.common.domain_service import DomainServiceDefinition
 from medops.common.error_catalog import IoneApplicationError
-from medops.hrp_budget.services.control_guards import acquire_budget_guards
+from medops.hrp_budget.services.control_guards import acquire_budget_guards, assert_budget_guards
 from medops.services.domain_service import DomainService
 
 CHILD = r"""
@@ -322,3 +322,97 @@ class TestBudgetControlGuards(IntegrationTestCase):
 			else:
 				frappe.local.db = primary
 			frappe.set_user(previous_user)
+
+	def test_pre_guard_savepoint_rollback_invalidates_witness_and_denies_commit(self):
+		guard = budget_control_key(synthetic_key(uuid4().hex))
+		primary = frappe.local.db
+		db = None
+		try:
+			with self.secondary_connection():
+				db = frappe.local.db
+				db.rollback()
+				db.sql("SET SESSION TRANSACTION ISOLATION LEVEL READ COMMITTED")
+				db.begin()
+				db.savepoint("cod034_before_witness")
+				keys = acquire_budget_guards([guard])
+				assert_budget_guards(keys)
+				marker = getattr(db, "_medops_budget_guard_marker", None)
+				assert marker is not None
+				witness = marker.witness
+				db.rollback(save_point="cod034_before_witness")
+				with self.assertRaises(IoneApplicationError):
+					assert_budget_guards(keys)
+				for _ in range(2):
+					with self.assertRaises(IoneApplicationError):
+						db.commit()
+				db.rollback()
+				self.assertIsNone(getattr(db, "_medops_budget_guard_marker", None))
+				self.assertEqual(
+					db.sql("SELECT COUNT(*) FROM `tabSeries` WHERE `name` = %s", (witness,))[0][0], 0
+				)
+				with self.assertRaises(IoneApplicationError):
+					assert_budget_guards(keys)
+				acquire_budget_guards([guard])
+				db.rollback()
+		finally:
+			if db is not None:
+				frappe.local.db = db
+				try:
+					db.rollback()
+					db.sql("SET SESSION TRANSACTION ISOLATION LEVEL REPEATABLE READ")
+					db.begin()
+				finally:
+					frappe.local.db = primary
+			else:
+				frappe.local.db = primary
+
+	def test_post_guard_savepoint_preserves_witness_and_commit_cleans_it(self):
+		guard = budget_control_key(synthetic_key(uuid4().hex))
+		other = budget_control_key(synthetic_key(uuid4().hex))
+		names = budget_guard_names([guard])
+		primary = frappe.local.db
+		db = None
+		cleanup_allowed = False
+		try:
+			with self.secondary_connection():
+				db = frappe.local.db
+				db.rollback()
+				db.sql("SET SESSION TRANSACTION ISOLATION LEVEL READ COMMITTED")
+				db.begin()
+				for name in names:
+					self.assertEqual(
+						db.sql("SELECT COUNT(*) FROM `tabSeries` WHERE `name` = %s", (name,))[0][0], 0
+					)
+				cleanup_allowed = True
+				keys = acquire_budget_guards([guard])
+				marker = getattr(db, "_medops_budget_guard_marker", None)
+				assert marker is not None
+				witness = marker.witness
+				db.savepoint("cod034_after_witness")
+				db.rollback(save_point="cod034_after_witness")
+				assert_budget_guards(keys)
+				with self.assertRaises(IoneApplicationError):
+					assert_budget_guards([other])
+				db.commit()
+				self.assertIsNone(getattr(db, "_medops_budget_guard_marker", None))
+				self.assertEqual(
+					db.sql("SELECT COUNT(*) FROM `tabSeries` WHERE `name` = %s", (witness,))[0][0], 0
+				)
+				with self.assertRaises(IoneApplicationError):
+					assert_budget_guards(keys)
+		finally:
+			if db is not None:
+				frappe.local.db = db
+				try:
+					db.rollback()
+					if cleanup_allowed:
+						for name in names:
+							db.sql("DELETE FROM `tabSeries` WHERE `name` = %s", (name,))
+						db.commit()
+					db.rollback()
+					db.sql("SET SESSION TRANSACTION ISOLATION LEVEL REPEATABLE READ")
+					db.begin()
+				finally:
+					frappe.local.db = primary
+			else:
+				frappe.local.db = primary

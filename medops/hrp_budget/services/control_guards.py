@@ -2,13 +2,56 @@
 
 from __future__ import annotations
 
+from dataclasses import dataclass
+from secrets import token_hex
+
 import frappe
 
-from medops.common.budget_control import budget_guard_names, ordered_budget_keys
+from medops.common.budget_control import BudgetControlKey, budget_guard_names, ordered_budget_keys
 from medops.services.errors import raise_ione_error
 
 # Frappe's standard MariaDB tabSeries has a 100-character primary key and an
 # InnoDB row per name. Guard names contain hashes, not source identifiers.
+
+
+@dataclass(frozen=True, slots=True)
+class _GuardMarker:
+	keys: tuple[BudgetControlKey, ...]
+	witness: str
+
+
+def _witness_present(db, marker):
+	rows = db.sql("SELECT `current` FROM `tabSeries` WHERE `name` = %s", (marker.witness,))
+	return len(rows) == 1 and rows[0][0] == 0
+
+
+def assert_budget_guards(keys):
+	"""Check the same key set and a transaction-local witness before a write.
+
+	This detects rollback to a savepoint older than guard acquisition and a full
+	Frappe-managed transaction boundary. It cannot detect direct SQL commits or
+	prove sources, permissions or balances. Writers must re-read under the lock.
+	"""
+	ordered = ordered_budget_keys(keys)
+	db = frappe.local.db
+	marker = getattr(db, "_medops_budget_guard_marker", None)
+	if not isinstance(marker, _GuardMarker) or marker.keys != ordered or not _witness_present(db, marker):
+		raise_ione_error("OPERATION_NOT_ALLOWED")
+
+
+def _before_guard_commit(db, marker):
+	# Frappe clears rollback callbacks before running before_commit. Restore the
+	# marker cleanup in case this callback or a later callback fails.
+	db.after_rollback.add(lambda: _finish_guard_transaction(db, marker))
+	try:
+		if getattr(db, "_medops_budget_guard_marker", None) is not marker or not _witness_present(db, marker):
+			raise_ione_error("OPERATION_NOT_ALLOWED")
+		db.sql("DELETE FROM `tabSeries` WHERE `name` = %s", (marker.witness,))
+	except BaseException:
+		# CallbackManager removes a callback before invoking it. If commit is
+		# retried after a failure, it must not silently bypass this check.
+		db.before_commit.add(lambda: _before_guard_commit(db, marker))
+		raise
 
 
 def _finish_guard_transaction(db, marker):
@@ -26,10 +69,10 @@ def acquire_budget_guards(keys):
 	must first resolve every reference to its actual persisted document name;
 	lexical normalization alone cannot model the database's collation aliases.
 	The transaction must gather its full key set and acquire it once. A second
-	call is rejected even after rollback to a savepoint, because Frappe does not
-	run transaction callbacks for savepoint rollback. This marker cannot detect
-	lost locks or invalidate a previously returned result after such a rollback;
-	the future outer service must abort the entire transaction on that path.
+	call is rejected even after rollback to a savepoint. A transaction-local
+	witness can detect rollback before acquisition when explicitly checked or
+	at normal Frappe commit. It cannot detect direct SQL transaction control or
+	replace complete source, permission and balance validation.
 	"""
 	ordered = ordered_budget_keys(keys)
 	names = budget_guard_names(ordered)
@@ -51,8 +94,9 @@ def acquire_budget_guards(keys):
 		or str(engine[0][0]).upper() != "INNODB"
 	):
 		raise_ione_error("CONFIGURATION_INVALID")
-	marker = object()
+	marker = _GuardMarker(ordered, "medops:budget:witness:" + token_hex(16))
 	db._medops_budget_guard_marker = marker
+	db.before_commit.add(lambda: _before_guard_commit(db, marker))
 	db.after_commit.add(lambda: _finish_guard_transaction(db, marker))
 	db.after_rollback.add(lambda: _finish_guard_transaction(db, marker))
 	for name in names:
@@ -64,4 +108,7 @@ def acquire_budget_guards(keys):
 		locked = db.sql("SELECT `current` FROM `tabSeries` WHERE `name` = %s FOR UPDATE", (name,))
 		if len(locked) != 1:
 			raise_ione_error("CONFIGURATION_INVALID")
+	# A unique transactional insert is undone if an older savepoint is rolled
+	# back. It contains no budget data and is deleted before a normal commit.
+	db.sql("INSERT INTO `tabSeries` (`name`, `current`) VALUES (%s, 0)", (marker.witness,))
 	return ordered
