@@ -1,6 +1,6 @@
 {
 	"name": "医衡 MedOps 医院运营与资源管理",
-	"generated_at": "2026-10-27",
+	"generated_at": "2026-10-28",
 	"architecture": "one custom app (medops), 36 Frappe modules",
 	"source_baseline": "jerry317395616/erpnext/hrms develop, v17.0.0-dev markers",
 	"counts": {
@@ -19,7 +19,8 @@
 		"change_records": 37,
 		"change_risk_rules": 5,
 		"error_definitions": 12,
-		"error_translations": 28
+		"error_translations": 28,
+		"committed_reservation_concurrency_probes": 1
 	},
 	"entrypoints": [
 		"README.md",

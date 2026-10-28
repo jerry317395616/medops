@@ -81,6 +81,10 @@ tail -n 1 "$SECOND_ENVIRONMENT_LOG" | grep -F '"changed": false'
 bench --site "$SITE_NAME" migrate --skip-search-index
 bench --site "$SITE_NAME" run-tests --app medops
 
+if [[ "${GITHUB_ACTIONS:-}" == "true" ]]; then
+  bash "$ROOT_DIR/scripts/ci_reservation_concurrency.sh"
+fi
+
 if grep -Eiq 'password|token|secret' "$BENCH_DIR/logs/environment-audit.jsonl"; then
   echo "Environment audit log contains a forbidden secret marker" >&2
   exit 1
