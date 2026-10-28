@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import hashlib
 from contextlib import contextmanager
 from copy import deepcopy
 from dataclasses import asdict, replace
@@ -38,12 +37,9 @@ from medops.common.initial_reservation_posting import initial_reservation_docume
 from medops.common.integration_outbox import OUTBOX
 from medops.common.material_source_snapshot import material_source_snapshot
 from medops.common.reservation_authorization import AUTHORIZATION_ROW_FIELDS, reservation_intent
-from medops.common.reservation_release import (
-	reservation_release_confirmation,
-	reservation_release_decision,
-	reservation_release_intent,
-	reservation_release_record,
-	reservation_release_row,
+from medops.common.reservation_release_request import (
+	build_release_reservation_post,
+	build_release_reservation_prepare,
 )
 from medops.common.reservation_request import build_reservation_post
 from medops.hrp_budget.jobs import release as jobs
@@ -55,6 +51,9 @@ from medops.hrp_budget.services import (
 	release_usage_guard,
 	renewed_initial_reservation_write,
 	reservation_confirmation,
+	reservation_release_control,
+	reservation_release_state,
+	reservation_release_write,
 	reservation_renewal_control,
 	reservation_renewal_write,
 )
@@ -1183,6 +1182,146 @@ class TestBudgetReleaseExecution(FrappeAPITestCase):
 				primary, item, key, service, command, key_id, posted.result
 			)
 
+	def exercise_controlled_reservation_release(self, primary, records, amount, key_id):
+		"""Native source and standard controllers on connection-private financial tables."""
+		from medops.hrp_budget.doctype.hrp_budget_reservation_event.hrp_budget_reservation_event import (
+			HRPBudgetReservationEvent,
+		)
+
+		reservation = records[0].event.reservation
+		command = build_release_reservation_prepare(
+			{"reservation": reservation, "amount": amount, "reason": "Synthetic unused portion"}
+		)
+		preview_service = reservation_release_write.PrepareReservationRelease()
+		post_service = reservation_release_write.PostReservationRelease()
+		with patch.dict(frappe.conf, {"medops_internal_reservation_release_write_enabled": False}):
+			with self.assertRaises(IoneApplicationError) as disabled:
+				preview_service.execute(command, idempotency_key=key_id + "-preview")
+		self.assertEqual(disabled.exception.definition.key, "OPERATION_NOT_ALLOWED")
+		primary.rollback()
+		start = get_datetime(records[-1].occurred_at) + timedelta(minutes=6)
+		with (
+			patch.dict(frappe.conf, {"medops_internal_reservation_release_write_enabled": True}),
+			patch.object(reservation_release_write, "now_datetime", return_value=start),
+			patch.object(
+				reservation_release_control, "now_datetime", return_value=start + timedelta(seconds=1)
+			),
+		):
+			preview = preview_service.execute(command, idempotency_key=key_id + "-preview")
+			preview.result["proof"] = ConfirmationProof(preview.result["proof"])
+			self.assertFalse(preview.idempotency_replayed)
+			primary.commit()
+			replayed_preview = preview_service.execute(command, idempotency_key=key_id + "-preview")
+			self.assertTrue(replayed_preview.idempotency_replayed)
+			self.assertEqual(replayed_preview.result, preview.result)
+			primary.rollback()
+			item, confirmed = reservation_release_control.read_release_confirmation(
+				preview.result["confirmation"]
+			)
+			primary.rollback()
+			post = build_release_reservation_post(
+				{"confirmation": confirmed.name, "proof": preview.result["proof"], "acknowledge": True}
+			)
+			before = frappe.db.count("HRP Budget Reservation Release", {"event_kind": "Decision"})
+			if before == 0:
+				history = reservation_release_state.inspect_reservation_release(reservation)
+				bad = frappe.get_doc(dict(doctype="HRP Budget Reservation Release"))
+				with self.assertRaises(IoneApplicationError) as bypass:
+					bad.insert(ignore_permissions=True, ignore_links=True, ignore_mandatory=True)
+				self.assertEqual(bypass.exception.definition.key, "OPERATION_NOT_ALLOWED")
+				with self.assertRaises(IoneApplicationError):
+					assert_budget_guards([history.original.key])
+				primary.rollback()
+			with patch.object(
+				HRPBudgetReservationEvent,
+				"db_insert",
+				side_effect=RuntimeError("synthetic release event failure"),
+			):
+				with self.assertRaises(IoneApplicationError) as failed:
+					post_service.execute(post, idempotency_key=key_id)
+			self.assertEqual(failed.exception.definition.key, "INTERNAL_ERROR")
+			primary.rollback()
+			self.assertEqual(
+				frappe.db.count("HRP Budget Reservation Release", {"event_kind": "Decision"}), before
+			)
+			self.assertEqual(frappe.db.count("HRP Budget Reservation Event"), len(records))
+
+			def expire_after_decision():
+				return start + (
+					timedelta(minutes=6)
+					if frappe.db.count("HRP Budget Reservation Release", {"event_kind": "Decision"}) > before
+					else timedelta(seconds=1)
+				)
+
+			with patch.object(reservation_release_control, "now_datetime", side_effect=expire_after_decision):
+				with self.assertRaises(IoneApplicationError) as expired_during_write:
+					post_service.execute(post, idempotency_key=key_id)
+			self.assertEqual(expired_during_write.exception.definition.key, "PERMISSION_DENIED")
+			primary.rollback()
+			self.assertEqual(
+				frappe.db.count("HRP Budget Reservation Release", {"event_kind": "Decision"}), before
+			)
+			self.assertEqual(frappe.db.count("HRP Budget Reservation Event"), len(records))
+			if before == 0:
+				original_check = reservation_release_control.check_release_state_access
+
+				def revoke_after_decision(state):
+					if frappe.db.count("HRP Budget Reservation Release", {"event_kind": "Decision"}) > before:
+						raise_ione_error("PERMISSION_DENIED")
+					return original_check(state)
+
+				with patch.object(
+					reservation_release_control,
+					"check_release_state_access",
+					side_effect=revoke_after_decision,
+				):
+					with self.assertRaises(IoneApplicationError) as revoked:
+						post_service.execute(post, idempotency_key=key_id)
+				self.assertEqual(revoked.exception.definition.key, "PERMISSION_DENIED")
+				primary.rollback()
+				self.assertEqual(
+					frappe.db.count("HRP Budget Reservation Release", {"event_kind": "Decision"}), before
+				)
+			created = post_service.execute(post, idempotency_key=key_id)
+			self.assertFalse(created.idempotency_replayed)
+			self.assertEqual(frappe.db.count("HRP Budget Reservation Event"), len(records) + 1)
+			primary.commit()
+			with patch.object(
+				reservation_release_control, "now_datetime", return_value=start + timedelta(minutes=10)
+			):
+				replayed = post_service.execute(post, idempotency_key=key_id)
+				self.assertTrue(replayed.idempotency_replayed)
+				self.assertEqual(replayed.result, created.result)
+				primary.rollback()
+				with self.assertRaises(IoneApplicationError) as expired:
+					post_service.execute(post, idempotency_key=key_id + "-expired-new")
+				self.assertEqual(expired.exception.definition.key, "PERMISSION_DENIED")
+				primary.rollback()
+			frappe.session.sid = "synthetic-different-session"
+			with self.assertRaises(IoneApplicationError) as changed_session:
+				post_service.execute(post, idempotency_key=key_id)
+			self.assertEqual(changed_session.exception.definition.key, "PERMISSION_DENIED")
+			primary.rollback()
+			frappe.session.sid = "synthetic-test-web-session"
+			with self.assertRaises(IoneApplicationError) as changed_request:
+				post_service.execute(
+					replace(post, proof="synthetic_other_release_proof_1234567890"), idempotency_key=key_id
+				)
+			self.assertEqual(changed_request.exception.definition.key, "IDEMPOTENCY_CONFLICT")
+			primary.rollback()
+			with self.assertRaises(IoneApplicationError) as stale:
+				post_service.execute(post, idempotency_key=key_id + "-stale-new")
+			self.assertEqual(stale.exception.definition.key, "CONFLICT")
+			primary.rollback()
+			doc = frappe.get_doc("HRP Budget Reservation Release", created.result["release_decision"])
+			_, decision = reservation_release_write.verify_reservation_release_row(
+				{name: doc.get(name) for name in reservation_release_write.RELEASE_ROW_FIELDS}, confirmed
+			)
+			event = frappe.get_doc("HRP Budget Reservation Event", created.result["event"])
+			record = reservation_record_from_row({name: event.get(name) for name in ROW_FIELDS})
+			primary.rollback()
+		return item, confirmed, decision, record, (post_service, post, key_id, created.result)
+
 	def exercise_initial_receipt_after_releases(
 		self, primary, original, key, service, command, key_id, posted
 	):
@@ -1197,60 +1336,19 @@ class TestBudgetReleaseExecution(FrappeAPITestCase):
 		receipts = frappe.get_all(
 			"HRP Service Idempotency",
 			fields=["name", "response_snapshot", "response_fingerprint"],
+			filters={"service_name": service.definition.name},
 			order_by="name",
 		)
 		primary.rollback()
-		for part in ("0.4", "0.6"):
+		release_receipts = []
+		for index, part in enumerate(("0.4", "0.6"), 1):
 			with localcontext() as context:
 				context.prec = 48
 				amount = exact_decimal_amount(Decimal(original.amount) * Decimal(part), original.precision)
-			item = reservation_release_intent(
-				original,
-				verify_reservation_records(records),
-				records[-1],
-				amount=amount,
-				reason="Synthetic unused portion",
+			_item, confirmed, decision, record, receipt = self.exercise_controlled_reservation_release(
+				primary, records, amount, key_id + f"-release-{index}"
 			)
-			start = get_datetime(records[-1].occurred_at) + timedelta(minutes=6)
-			proof = ConfirmationProof("synthetic_release_confirmation_proof_1234567890")
-			confirmed = reservation_release_confirmation(
-				item,
-				actor="Administrator",
-				proof_hash=hashlib.sha256(proof.encode()).hexdigest(),
-				session_digest="c" * 64,
-				recorded_at=start.isoformat(sep=" ", timespec="microseconds"),
-				expires_at=(start + timedelta(minutes=5)).isoformat(sep=" ", timespec="microseconds"),
-			)
-			decision = reservation_release_decision(
-				item,
-				confirmed,
-				proof=proof,
-				actor="Administrator",
-				session_digest="c" * 64,
-				recorded_at=(start + timedelta(seconds=1)).isoformat(sep=" ", timespec="microseconds"),
-				acknowledge=True,
-			)
-			record = reservation_release_record(
-				item,
-				confirmed,
-				decision,
-				records[-1],
-				occurred_at=(start + timedelta(seconds=2)).isoformat(sep=" ", timespec="microseconds"),
-			)
-			for table, row in (
-				("tabHRP Budget Reservation Release", reservation_release_row(item, confirmed)),
-				("tabHRP Budget Reservation Release", reservation_release_row(item, decision, confirmed)),
-				("tabHRP Budget Reservation Event", reservation_record_row(record)),
-			):
-				# These tables are connection-private clones, never persisted ledgers.
-				fields = tuple(sorted(row))
-				columns = ", ".join(f"`{field}`" for field in fields)
-				placeholders = ", ".join(["%s"] * len(fields))
-				primary.sql(
-					f"INSERT INTO `{table}` ({columns}) VALUES ({placeholders})",  # nosec B608 - fixed synthetic tables/fields
-					tuple(row[field] for field in fields),
-				)
-			primary.commit()
+			release_receipts.append(receipt)
 			records.append(record)
 			replayed = service.execute(command, idempotency_key=key_id)
 			self.assertTrue(replayed.idempotency_replayed)
@@ -1268,6 +1366,7 @@ class TestBudgetReleaseExecution(FrappeAPITestCase):
 				frappe.get_all(
 					"HRP Service Idempotency",
 					fields=["name", "response_snapshot", "response_fingerprint"],
+					filters={"service_name": service.definition.name},
 					order_by="name",
 				),
 				receipts,
@@ -1277,6 +1376,12 @@ class TestBudgetReleaseExecution(FrappeAPITestCase):
 			verify_reservation_records(records).open_reservation,
 			exact_decimal_amount("0", original.precision),
 		)
+		with patch.dict(frappe.conf, {"medops_internal_reservation_release_write_enabled": True}):
+			for release_service, release_command, release_key, release_result in release_receipts:
+				replayed_release = release_service.execute(release_command, idempotency_key=release_key)
+				self.assertTrue(replayed_release.idempotency_replayed)
+				self.assertEqual(replayed_release.result, release_result)
+				primary.rollback()
 		for table, field, name in (
 			("tabHRP Budget Reservation Release", "name", decision.name),
 			("tabHRP Budget Reservation Release", "name", confirmed.name),

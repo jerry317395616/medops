@@ -46,6 +46,10 @@ EVENT = "HRP Budget Reservation Event"
 _active: ContextVar[InitialWrite | None] = ContextVar("medops_initial_reservation_write", default=None)
 
 
+def initial_write_active():
+	return _active.get() is not None
+
+
 @dataclass(slots=True)
 class InitialWrite:
 	documents: InitialReservationDocuments
@@ -116,8 +120,14 @@ def expected_initial_reservation(
 	guard; the caller must roll back the whole transaction.
 	"""
 	try:
+		from medops.hrp_budget.services.reservation_release_control import release_write_active
+
 		_enabled()
-		if _active.get() is not None or type(documents) is not InitialReservationDocuments:
+		if (
+			_active.get() is not None
+			or release_write_active()
+			or type(documents) is not InitialReservationDocuments
+		):
 			raise_ione_error("OPERATION_NOT_ALLOWED")
 		if (
 			type(source) is not MaterialRequestSource
