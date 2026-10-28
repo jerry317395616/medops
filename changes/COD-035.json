@@ -114,7 +114,7 @@
 		"The native roundtrip uses only a connection-private synthetic table and verifies the unique predecessor key with distinct other identities; it does not establish a real approved financial release.",
 		"Corrected blueprint metadata, test-plan limit, strict ADR count37 and packaged test helpers; final frozen local quality passed611 tests and all checks with zero type errors and one preexisting warning.",
 		"Focus40630796569 executed two native cases but failed on DROP TEMPORARY TABLE while test writes remained. Cleanup now performs full test rollback before guarded DROP; fixed native rerun pending. Corrected focus40631555969 for source626ed2b is running.",
-		"Release contract product c6cb01d is pushed; all20 changed committed files match. Full CI40631201193 is running in plain and IONE Core environments; this is pending, not a pass. Previous product7125b9b full CI40628275807 is separate.",
+		"Release contract cleanup fix3e7a5be is pushed; full CI40631717201 is queued/running in plain and IONE Core environments, superseding known-bad cleanup source run40631201193. This is pending, not a pass.",
 		"Before enabling release writes, implement and test guarded complete physical history, native source authority, atomic decision/event rollback, idempotency replay after later events, concurrency and the human HTTP/UI workflow."
 	],
 	"owner": "MedOps Maintainers",
