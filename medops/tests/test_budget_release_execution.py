@@ -2,17 +2,18 @@ from __future__ import annotations
 
 from contextlib import contextmanager
 from copy import deepcopy
-from dataclasses import replace
+from dataclasses import asdict, replace
 from datetime import timedelta
 from decimal import Decimal, localcontext
 from unittest.mock import patch
+from uuid import uuid4
 
 import frappe
 from frappe.tests.test_api import FrappeAPITestCase
-from frappe.utils import add_days, get_datetime, now_datetime
+from frappe.utils import add_days, get_datetime, now_datetime, set_request
 from frappe.utils.background_jobs import execute_job
 
-from medops.common.budget_control import KEY_FIELDS
+from medops.common.budget_control import KEY_FIELDS, budget_control_key
 from medops.common.budget_ledger import LEDGER, RELEASE
 from medops.common.budget_material_match import match_purchase_release_keys
 from medops.common.budget_release_control import ReleaseExecutionLease, release_execution
@@ -27,8 +28,15 @@ from medops.common.budget_reservation_storage import reservation_record_row
 from medops.common.error_catalog import IoneApplicationError
 from medops.common.exact_money import exact_decimal_amount
 from medops.common.integration_outbox import OUTBOX
+from medops.common.material_source_snapshot import material_source_snapshot
+from medops.common.reservation_authorization import reservation_intent
 from medops.hrp_budget.jobs import release as jobs
-from medops.hrp_budget.services import control_inventory, control_release, release_usage_guard
+from medops.hrp_budget.services import (
+	control_inventory,
+	control_release,
+	release_usage_guard,
+	reservation_confirmation,
+)
 from medops.hrp_budget.services import release_execution as execution
 from medops.hrp_budget.services.control_guards import acquire_budget_guards, assert_budget_guards
 from medops.hrp_budget.services.material_budget_candidates import prepare_purchase_release_match
@@ -895,3 +903,120 @@ class TestBudgetReleaseExecution(FrappeAPITestCase):
 			)
 		self.assertEqual(before, {doctype: frappe.db.count(doctype) for doctype in before})
 		frappe.db.rollback()
+
+	def test_real_posted_release_and_purchase_create_confirmation_evidence(self):
+		"""No budget, source or evidence substitutes; all documents are synthetic."""
+		self.assertEqual(self.execute(self.claim())["status"], "Posted")
+		frappe.db.rollback()
+		frappe.set_user("Administrator")
+		frappe.db.sql("SET SESSION TRANSACTION ISOLATION LEVEL READ COMMITTED")
+		frappe.db.begin()
+		row_name = frappe.db.get_value(
+			LEDGER, {"voucher_no": self.release, "organization_unit": self.units["A"]}, "name"
+		)
+		row = frappe.get_doc(LEDGER, row_name)
+		unique = uuid4().hex[:12]
+		item_name = "COD035-EVIDENCE-" + unique
+		unit_name = "COD035 Unit " + unique
+		group_name = "COD035 Group " + unique
+		created_root = not frappe.db.exists("Item Group", "All Item Groups")
+		request_name = None
+		previous_request = getattr(frappe.local, "request", None)
+		previous_sid = frappe.session.sid
+		try:
+			if created_root:
+				frappe.get_doc(
+					dict(doctype="Item Group", item_group_name="All Item Groups", is_group=1)
+				).insert(ignore_permissions=True)
+			frappe.get_doc(
+				dict(doctype="Item Group", item_group_name=group_name, parent_item_group="All Item Groups")
+			).insert(ignore_permissions=True)
+			frappe.get_doc(dict(doctype="UOM", uom_name=unit_name)).insert(ignore_permissions=True)
+			frappe.get_doc(
+				dict(
+					doctype="Item",
+					item_code=item_name,
+					item_name="Synthetic budget evidence item",
+					item_group=group_name,
+					stock_uom=unit_name,
+					is_stock_item=0,
+				)
+			).insert(ignore_permissions=True)
+			request_date = str(row.period_start)
+			schedule_date = add_days(request_date, 1)
+			warehouse = frappe.db.get_value("Warehouse", {"company": row.company, "is_group": 0}, "name")
+			request = frappe.get_doc(
+				dict(
+					doctype="Material Request",
+					company=row.company,
+					material_request_type="Purchase",
+					transaction_date=request_date,
+					schedule_date=schedule_date,
+					items=[
+						dict(
+							item_code=item_name,
+							qty=1,
+							uom=unit_name,
+							conversion_factor=1,
+							warehouse=warehouse,
+							cost_center=row.cost_center,
+							expense_account=row.account,
+							project=row.project,
+							schedule_date=schedule_date,
+							rate=1,
+							amount=1,
+						)
+					],
+				)
+			).insert(ignore_permissions=True)
+			request_name = request.name
+			request.submit()
+			frappe.db.commit()
+			source = locked_material_request_source(
+				request.name, request.items[0].name, row.organization_unit
+			)
+			frappe.db.rollback()
+			snapshot, digest = material_source_snapshot(asdict(source))
+			values = {
+				field: str(row.get(field)) if field in {"period_start", "period_end"} else row.get(field)
+				for field in KEY_FIELDS
+			}
+			key = budget_control_key(values)
+			item = reservation_intent(
+				source_snapshot=snapshot,
+				source_snapshot_digest=digest,
+				allocation="synthetic-actual-release-allocation",
+				key=key,
+				currency=source.currency,
+				precision=int(row.currency_precision),
+				amount=exact_decimal_amount("1", int(row.currency_precision)),
+				budget_date=request_date,
+				reason="Synthetic integration test",
+			)
+			before = {
+				doctype: frappe.db.count(doctype)
+				for doctype in (LEDGER, "HRP Budget Reservation", "HRP Budget Reservation Event")
+			}
+			set_request(method="POST", path="/")
+			frappe.session.sid = "synthetic-test-web-session"
+			result = reservation_confirmation.prepare_reservation_confirmation(item)
+			self.assertTrue(frappe.db.exists(reservation_confirmation.DOCTYPE, result["confirmation"]))
+			assert_budget_guards([key])
+			self.assertEqual(before, {doctype: frappe.db.count(doctype) for doctype in before})
+			frappe.db.rollback()
+			self.assertFalse(frappe.db.exists(reservation_confirmation.DOCTYPE, result["confirmation"]))
+		finally:
+			frappe.db.rollback()
+			frappe.local.request = previous_request
+			frappe.session.sid = previous_sid
+			if request_name and frappe.db.exists("Material Request", request_name):
+				current = frappe.get_doc("Material Request", request_name)
+				if current.docstatus == 1:
+					current.cancel()
+				frappe.delete_doc("Material Request", request_name, ignore_permissions=True)
+			for doctype, name in (("Item", item_name), ("UOM", unit_name), ("Item Group", group_name)):
+				if frappe.db.exists(doctype, name):
+					frappe.delete_doc(doctype, name, ignore_permissions=True)
+			if created_root and frappe.db.exists("Item Group", "All Item Groups"):
+				frappe.delete_doc("Item Group", "All Item Groups", ignore_permissions=True)
+			frappe.db.commit()
