@@ -3,10 +3,11 @@ from __future__ import annotations
 import copy
 import unittest
 from dataclasses import replace
-from datetime import datetime
+from datetime import date, datetime
 
 from medops.common.authorized_reservation_projection import verify_authorized_released_reservation
-from medops.common.budget_reservation_anchor import ANCHOR_ROW_FIELDS
+from medops.common.budget_reservation_anchor import ANCHOR_ROW_FIELDS, verify_frozen_reservation_anchor_row
+from medops.common.budget_reservation_proof import reservation_record
 from medops.common.budget_reservation_storage import reservation_record_from_row, reservation_record_row
 from medops.common.initial_reservation_posting import renewed_initial_reservation_documents
 from medops.common.reservation_authorization import (
@@ -34,6 +35,56 @@ class ReservationReleaseTest(unittest.TestCase):
 	def setUp(self):
 		self.original, self.root, event_rows, self.original_confirmation, self.original_decision = evidence()
 		self.records = [reservation_record_from_row(row) for row in event_rows]
+
+	def test_frozen_anchor_accepts_only_structural_release_tails_with_bound_source_actions(self):
+		_, _, _, record = release_evidence(self.original, self.records)
+		root = {field: self.root[field] for field in ANCHOR_ROW_FIELDS}
+		first = self.records[0]
+		values = dict(
+			expected_source=first.source,
+			source_snapshot_digest=self.original.source_snapshot_digest,
+			cost_center=root["cost_center"],
+		)
+		chain = [reservation_record_row(first), reservation_record_row(record)]
+		position = verify_frozen_reservation_anchor_row(root, chain, **values)
+		self.assertEqual(position.open_reservation, "6.00")
+		for source in (
+			replace(record.source, action="unbound-release"),
+			replace(record.source, line="different-line"),
+		):
+			changed = reservation_record(
+				record.event,
+				source,
+				actor=record.actor,
+				occurred_at=record.occurred_at,
+				previous_digest=record.previous_digest,
+			)
+			with self.assertRaises(ValueError):
+				verify_frozen_reservation_anchor_row(
+					root, [chain[0], reservation_record_row(changed)], **values
+				)
+		with self.assertRaises(ValueError):
+			verify_frozen_reservation_anchor_row(root | {"event_count": 2}, chain, **values)
+
+	def test_release_scope_columns_match_private_snapshot_and_native_date_representations(self):
+		item, first, second, _ = release_evidence(self.original, self.records)
+		_, decision_row = rows(item, first, second)
+		stored = decision_row | {
+			"period_start": date.fromisoformat(item.key.period_start),
+			"period_end": date.fromisoformat(item.key.period_end),
+			"project": "",
+		}
+		checked, decided = verify_reservation_release_row(stored, first)
+		self.assertEqual((checked, decided), (item, second))
+		for changed in (
+			{"fiscal_year": "different-year"},
+			{"budget_subject": "different-subject"},
+			{"funding_source": "different-fund"},
+			{"period_start": datetime(2026, 1, 1)},
+			{"budget_key_digest": "f" * 64},
+		):
+			with self.assertRaises(ValueError):
+				verify_reservation_release_row(stored | changed, first)
 
 	def test_authorized_history_uses_frozen_root_and_rejects_missing_release_decision(self):
 		item, first, second, record = release_evidence(self.original, self.records)

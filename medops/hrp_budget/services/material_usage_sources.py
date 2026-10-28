@@ -82,8 +82,15 @@ def _require_source_indexes():
 		raise_ione_error("CONFIGURATION_INVALID")
 
 
-def _check_all_source_roots(rows, sources):
+def _check_all_source_roots(rows, sources, *, positions=None):
 	_require_source_indexes()
+	current_counts = (
+		None
+		if positions is None
+		else {position.reservation: position.last_sequence for position in positions}
+	)
+	if current_counts is not None and set(current_counts) != set(rows):
+		raise ValueError("source roots differ from complete guarded positions")
 	if len({(source.request, source.line) for source in sources}) != len(sources):
 		raise ValueError("a purchase line cannot span multiple locked organization units")
 	for source in sources:
@@ -115,11 +122,18 @@ def _check_all_source_roots(rows, sources):
 				raise ValueError("orphan or duplicate source reservation event")
 			seen.add(event_name)
 			counts[parent] += 1
-		if any(
-			type(rows[name]["event_count"]) is not int or rows[name]["event_count"] != count
-			for name, count in counts.items()
-		):
-			raise ValueError("source event count differs from guarded roots")
+		for name, count in counts.items():
+			initial_count = rows[name]["event_count"]
+			if type(initial_count) is not int or initial_count < 1:
+				raise ValueError("canonical source root event count required")
+			# A frozen initial root keeps its count of one. Before full replay,
+			# only require a nonempty bounded physical chain; afterwards compare
+			# with the independently re-read complete position, never that old count.
+			expected_count = current_counts[name] if current_counts is not None else initial_count
+			if (current_counts is None and initial_count == 1 and count < 1) or (
+				(current_counts is not None or initial_count != 1) and count != expected_count
+			):
+				raise ValueError("source event count differs from complete guarded history")
 
 
 def discover_material_usage_sources(value: object) -> tuple[MaterialSourceReference, ...]:
@@ -242,7 +256,7 @@ def _guarded_verify_material_usage_sources(
 				raise ValueError("combined source reservations exceed purchase amount")
 		if _roots(keys, actor) != rows:
 			raise ValueError("reservation roots changed during verification")
-		_check_all_source_roots(rows, sources)
+		_check_all_source_roots(rows, sources, positions=positions)
 		if frappe.session.user != actor:
 			raise_ione_error("CONFLICT")
 		assert_material_guard_bindings(keys, bindings)

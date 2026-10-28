@@ -1,4 +1,4 @@
-"""Check guarded initial reservation history against its durable decisions."""
+"""Check guarded initial and released history against independent decisions."""
 
 from __future__ import annotations
 
@@ -7,12 +7,11 @@ from dataclasses import asdict
 import frappe
 
 from medops.common.authorized_reservation_projection import (
-	verify_authorized_initial_reservation,
-	verify_renewed_initial_reservation,
+	verify_authorized_released_reservation,
 )
 from medops.common.budget_control import ordered_budget_keys
 from medops.common.budget_reservation_anchor import ANCHOR_ROW_FIELDS
-from medops.common.budget_reservation_events import ReservationPosition
+from medops.common.budget_reservation_events import MAX_RESERVATION_EVENTS, ReservationPosition
 from medops.common.budget_reservation_storage import ROW_FIELDS
 from medops.common.reservation_authorization import (
 	AUTHORIZATION_ROW_FIELDS,
@@ -25,12 +24,13 @@ from medops.common.reservation_renewal import (
 	verify_reservation_renewal_rows,
 )
 from medops.hrp_budget.services import budget_usage_observation as access
-from medops.hrp_budget.services.budget_usage_observation import MAX_USAGE_ROOTS
+from medops.hrp_budget.services.budget_usage_observation import MAX_USAGE_EVENTS, MAX_USAGE_ROOTS
 from medops.hrp_budget.services.control_guards import assert_material_guard_bindings, invalidate_budget_guards
 from medops.hrp_budget.services.material_request_source import (
 	MaterialRequestSource,
 	locked_material_request_source,
 )
+from medops.hrp_budget.services.reservation_release_observation import locked_release_pairs
 from medops.services.errors import raise_ione_error
 
 QUERY_CHUNK = 100
@@ -91,12 +91,15 @@ def _read_renewals(identities):
 	return grouped, confirmations
 
 
-def _read_projections(positions):
+def _read_projections(positions, keys):
 	"""Read exact bounded row sets in deterministic chunks under the guard."""
 	names = tuple(position.reservation for position in positions)
+	by_position = {position.reservation: position for position in positions}
 	root_fields = ANCHOR_ROW_FIELDS | {"source_snapshot_json"}
 	for start in range(0, len(names), QUERY_CHUNK):
 		chunk = names[start : start + QUERY_CHUNK]
+		chunk_positions = tuple(by_position[name] for name in chunk)
+		expected_events = sum(position.last_sequence for position in chunk_positions)
 		placeholders = ", ".join(["%s"] * len(chunk))
 		roots = frappe.db.sql(
 			f"SELECT {_columns(root_fields)} FROM `tabHRP Budget Reservation` "  # nosec B608 - fixed fields and placeholders
@@ -113,12 +116,19 @@ def _read_projections(positions):
 		events = frappe.db.sql(
 			f"SELECT {_columns(ROW_FIELDS)} FROM `tabHRP Budget Reservation Event` "  # nosec B608 - fixed fields and placeholders
 			f"WHERE `reservation` IN ({placeholders}) ORDER BY `reservation`, `sequence` LIMIT %s FOR UPDATE",
-			(*chunk, len(chunk) + 1),
+			(*chunk, expected_events + 1),
 			as_dict=True,
 		)
-		by_reservation = {row.reservation: row for row in events}
-		if len(events) != len(chunk) or set(by_reservation) != set(chunk):
-			raise ValueError("one initial event per reservation required")
+		by_reservation = {name: [] for name in chunk}
+		for row in events:
+			if row.reservation not in by_reservation:
+				raise ValueError("event parent differs from requested roots")
+			by_reservation[row.reservation].append(row)
+		if len(events) != expected_events or any(
+			len(by_reservation[position.reservation]) != position.last_sequence
+			for position in chunk_positions
+		):
+			raise ValueError("complete physical event history differs from guarded positions")
 		decisions = frappe.db.sql(
 			f"SELECT {_columns(AUTHORIZATION_ROW_FIELDS)} FROM `tabHRP Budget Reservation Authorization` "  # nosec B608 - fixed fields and placeholders
 			f"WHERE `reservation_identity` IN ({placeholders}) AND `event_kind`=%s "
@@ -142,25 +152,27 @@ def _read_projections(positions):
 		if len(confirmations) != len(chunk) or set(by_confirmation) != set(confirmation_names):
 			raise ValueError("confirmation evidence set differs")
 		renewals, renewal_confirmations = _read_renewals(identities)
+		releases = locked_release_pairs(keys, chunk_positions)
 		for name in chunk:
 			root = by_name[name]
 			decision = by_identity[root.source_identity_key]
 			yield (
 				root,
-				[by_reservation[name]],
+				by_reservation[name],
 				by_confirmation[decision.confirmation],
 				decision,
 				renewals[root.source_identity_key],
 				renewal_confirmations,
+				releases[name],
 			)
 
 
 def verify_guarded_initial_authorizations(keys, sources, positions):
-	"""Fail closed on initial usage lacking a matching immutable decision.
+	"""Fail closed on usage lacking complete initial and release decisions.
 
 	The caller supplies the exact source set returned by the guarded purchase
-	inspection and complete usage positions. Later lifecycle events are not yet
-	supported. No available balance or financial write authority is returned.
+	inspection and complete usage positions. Only initial Reserve and independently
+	authorized Release Reservation tails are supported. This grants no write.
 	"""
 	actor = frappe.session.user
 	try:
@@ -173,6 +185,12 @@ def verify_guarded_initial_authorizations(keys, sources, positions):
 			not isinstance(positions, (tuple, list))
 			or len(positions) > MAX_USAGE_ROOTS
 			or any(type(position) is not ReservationPosition for position in positions)
+			or any(
+				type(position.last_sequence) is not int
+				or not 1 <= position.last_sequence <= MAX_RESERVATION_EVENTS
+				for position in positions
+			)
+			or sum(position.last_sequence for position in positions) > MAX_USAGE_EVENTS
 		):
 			raise ValueError("guarded reservation positions required")
 		by_id = {(source.request, source.line, source.organization_unit): source for source in sources}
@@ -190,9 +208,15 @@ def verify_guarded_initial_authorizations(keys, sources, positions):
 		used_decisions = set()
 		used_confirmations = set()
 		positions_by_source = {identity: [] for identity in by_id}
-		for position, (root, events, confirmation, decision, renewal_rows, renewal_confirmations) in zip(
-			ordered_positions, _read_projections(ordered_positions), strict=True
-		):
+		for position, (
+			root,
+			events,
+			confirmation,
+			decision,
+			renewal_rows,
+			renewal_confirmations,
+			releases,
+		) in zip(ordered_positions, _read_projections(ordered_positions, ordered), strict=True):
 			if (
 				root["source_identity_key"] in used_identities
 				or decision["name"] in used_decisions
@@ -209,12 +233,10 @@ def verify_guarded_initial_authorizations(keys, sources, positions):
 			if identity not in used_sources and locked_material_request_source(*identity) != source:
 				raise ValueError("authorized source is not locked or has changed")
 			used_sources.add(identity)
+			pairs = ()
 			if events[0]["proof_version"] == 1:
 				if renewal_rows:
 					raise ValueError("original event cannot have a renewal successor")
-				verified, _, _ = verify_authorized_initial_reservation(
-					root, events, confirmation, decision, current_facts=asdict(source)
-				)
 			else:
 				item, original = verify_reservation_authorization_rows(confirmation, decision)
 				checked, first = verify_reservation_confirmation_row(confirmation)
@@ -229,9 +251,9 @@ def verify_guarded_initial_authorizations(keys, sources, positions):
 						raise ValueError("renewal confirmation differs from original intent")
 					values.append((new_confirmation, row))
 				pairs = verify_reservation_renewal_rows(item, first, original, values)
-				verified, _, _ = verify_renewed_initial_reservation(
-					root, events, confirmation, decision, pairs, current_facts=asdict(source)
-				)
+			verified, _, _ = verify_authorized_released_reservation(
+				root, events, confirmation, decision, releases, current_facts=asdict(source), renewals=pairs
+			)
 			if verified != position or position.key not in ordered or frappe.session.user != actor:
 				raise ValueError("authorized position differs from guarded usage")
 			positions_by_source[identity].append(position)
