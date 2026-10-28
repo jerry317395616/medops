@@ -10,7 +10,7 @@
     "ADR-0032",
     "ADR-0038"
   ],
-  "current_scope": "COD-035 in progress. Controlled release product327228e passed617 local pure and71 focused native tests at matching code; full40663377621 Quality/Security passed but native remains live. Earlier guarded-read productcebf623 full40656055185 passed613 pure,612+25 native and1 committed probe per plain/Core environment with8 Error Log zero sites and Required. This candidate extends the disposable committed-data probe with real release contention, duplicate release receipt, late initial receipt replay and reuse of released funds; focus40666378159 atd7ca283 is running, not passed. Probe source uses real controllers/commits and synthetic sessions/clocks under strict CI-only containment. ADR0038 raises both full integration limits from90 to120 based on measured suite growth without reducing gates. No production behavior, schema, role, public endpoint or server access in this slice. Current-source full native, release contention result, performance and human HTTP/UI/hospital acceptance remain pending.",
+  "current_scope": "COD-035 in progress. Controlled release product327228e passed617 local pure and71 focused native at matching code; its full40663377621 remains live. Earlier source9030439 full40658409448 passed613 pure,614+25 native and1 initial committed probe per plain/Core environment,8 zero Error Log sites and Required. Current producte317c3c expands the CI-only committed-data probe: independent release contention, duplicate full release, late initial receipt replay and fresh confirmed reservation using freed funds. Focus40666378159 atd7ca283 passed the single explicitly selected native probe in617.405s with no skips and2 zero Error Log sites; all4 probe/helper/worker files match producte317c3c. It used real committed controllers/transactions/independent workers and synthetic sessions/clocks under strict CI containment. Frozen local617 and all11 quality steps passed. ADR0038 raises both integration budgets to120 and contract rejects45/119; full40668646173 at e317c3c has passed Quality/Security but native remains running. No production server/schema/grants/API changes. All-writer protocol, complete current-source native pass, performance, genuine human HTTP/UI and hospital acceptance remain required.",
   "checks": {
     "pure_tests_expected": 617,
     "complete_frappe_tests_expected": 639,
@@ -1133,10 +1133,10 @@
       "core_job_minutes": 61.5
     },
     "committed_reservation_release_contention": {
-      "status": "candidate_pending_validation",
+      "status": "focused_native_passed_full_current_source_pending",
       "focused_run_id": 40666378159,
       "focused_source_commit": "d7ca283824f5d769b048aba7ffd67d875b8e5261",
-      "focused_status": "in_progress",
+      "focused_status": "passed",
       "dedicated_test_count": 1,
       "regular_native_count_unchanged": 639,
       "pure_count_unchanged": 617,
@@ -1163,7 +1163,37 @@
       "local_quality_log": "quality-committed-release-contention-frozen-v2.log",
       "all4_probe_worker_helper_files_match": true,
       "source_proof": "committed-release-contention-source-proof.json",
-      "full_current_source_ci": "not_dispatched_yet"
+      "full_current_source_ci": {
+        "run_id": 40668646173,
+        "source_commit": "e317c3c4a3c3e5b9809183df39a19275bbf05761",
+        "status": "in_progress",
+        "Quality": "passed",
+        "Security": "passed",
+        "native": "plain and Core running",
+        "integration_budget_minutes": 120,
+        "url": "https://github.com/jerry317395616/medops/actions/runs/40668646173"
+      },
+      "focused_probe_seconds": 617.405,
+      "focused_skipped": 0,
+      "focused_zero_error_log_sites": 2,
+      "focused_log": "committed-release-contention-40666378159.log",
+      "product_commit": "e317c3c4a3c3e5b9809183df39a19275bbf05761"
+    },
+    "prior_initial_receipt_full_ci": {
+      "status": "passed",
+      "source_commit": "90304395b5acc4ba4e0a5d02bc66e75d580aba46",
+      "run_id": 40658409448,
+      "pure_count": 613,
+      "native_per_environment": [
+        614,
+        25
+      ],
+      "committed_probe_per_environment": 1,
+      "zero_error_log_sites": 8,
+      "skipped_summaries": 0,
+      "Required": "passed",
+      "log": "full-receipt-after-release-40658409448.log",
+      "scope": "Earlier initial receipt replay after release facts in private copies. Does not prove later controlled release writer or expanded committed release race."
     }
   },
   "previous_verified_release": {

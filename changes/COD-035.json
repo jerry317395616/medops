@@ -127,8 +127,8 @@
 		"Run the sole explicitly selected disposable committed probe: existing initial budget/duplicate races plus competing release decisions, duplicate full release, late initial receipt replay and fresh reservation using released funds.",
 		"Assert final3 roots,5 events (3 renewed initial+2 release),5 release evidence rows (3 confirmations+2 decisions), original frozen roots/initial encrypted receipts and unchanged GL/stock/budget ledger; no skipped probe, zero Error Log on both disposable sites.",
 		"Observe actual first fence and second different-key acquisition attempt; native QueryDeadlock/Timeout retries remain solely in the outer process with full transaction rollback. Clock/session are synthetic and two workers do not establish all-writer/hospital safety.",
-		"Focus40666378159 atd7ca283 is live, not passed. Prior controlled release focus40660621810 passed71 native+17 pure at39d9dda; its full40663377621 at327228e still live. Earlier guarded-read full40656055185 passed atcebf623 with613 pure,612+25 native+1 committed probe per environment and8 zero Error Log sites.",
-		"Dispatch complete current-source ordinary/Core CI with120-minute budgets after freezing source; keep every prior result source-specific. No maintained server connection; genuine human HTTP/UI and hospital acceptance remain required."
+		"Focus40666378159 atd7ca283 passed the1 expanded committed probe in617.405s, no skips,2 zero Error Log sites; all4 probe/helper/worker blobs match producte317c3c. Earlier source9030439 full40658409448 passed613 pure,614+25 native+1 older probe per environment;8 zero Error Log sites and Required.",
+		"Current sourcee317c3c full40668646173 uses120-minute budgets:Quality/Security passed; ordinary/Core native running. Keep prior writer full40663377621 source-specific. All-writer protocol, performance and genuine human HTTP/UI/hospital acceptance remain required; no server access."
 	],
 	"owner": "MedOps Maintainers",
 	"created_on": "2026-10-27",
