@@ -101,5 +101,7 @@ class TestBudgetReservationRelease(IntegrationTestCase):
 				)
 			self.assertTrue(frappe.db.is_unique_key_violation(duplicate.exception))
 		finally:
+			# End the synthetic test transaction before Frappe's guarded DDL path.
+			frappe.db.rollback()
 			frappe.db.sql("DROP TEMPORARY TABLE IF EXISTS `medops_release_evidence_probe`")
 		self.assertEqual(frappe.db.count(DOCTYPE), before)

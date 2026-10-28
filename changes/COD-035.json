@@ -113,8 +113,8 @@
 		"Two native release tests check isolated schema migration, empty standard permissions, private fields, denial of all document writes and physical database unique/index constraints.",
 		"The native roundtrip uses only a connection-private synthetic table and verifies the unique predecessor key with distinct other identities; it does not establish a real approved financial release.",
 		"Corrected blueprint metadata, test-plan limit, strict ADR count37 and packaged test helpers; final frozen local quality passed611 tests and all checks with zero type errors and one preexisting warning.",
-		"Focused CI40629988272 failed before test discovery due to root-tests imports. Shared pure fixtures now live in medops.tests. Corrected native release evidence CI40630796569 is running for12d4b37.",
-		"Prior committed-data concurrency CI40627381948 passed; full CI40628275807 for the preceding product7125b9b is still running and does not validate the newly added release model.",
+		"Focus40630796569 executed two native cases but failed on DROP TEMPORARY TABLE while test writes remained. Cleanup now performs full test rollback before guarded DROP; fixed native rerun pending.",
+		"Release contract product c6cb01d is pushed; all20 changed committed files match. Full CI40631201193 is running in plain and IONE Core environments; this is pending, not a pass. Previous product7125b9b full CI40628275807 is separate.",
 		"Before enabling release writes, implement and test guarded complete physical history, native source authority, atomic decision/event rollback, idempotency replay after later events, concurrency and the human HTTP/UI workflow."
 	],
 	"owner": "MedOps Maintainers",
