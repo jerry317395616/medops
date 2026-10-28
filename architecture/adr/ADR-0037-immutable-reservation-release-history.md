@@ -1,14 +1,14 @@
 ---
 id: ADR-0037
 title: 不可变预占根与独立释放证据
-status: Accepted
+status: Superseded
 date: 2026-10-28
 deciders:
   - MedOps Maintainers
 task_ids:
   - COD-035
 supersedes: []
-superseded_by:
+superseded_by: ADR-0039
 ---
 
 # ADR-0037 不可变预占根与独立释放证据

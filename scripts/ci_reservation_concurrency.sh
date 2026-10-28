@@ -52,6 +52,8 @@ config.update(
     medops_internal_reservation_renewal_enabled=True,
     medops_internal_renewed_reservation_write_enabled=True,
     medops_internal_reservation_release_write_enabled=True,
+    medops_reservation_confirmation_enabled=True,
+    medops_reservation_operations_enabled=True,
 )
 path.write_text(json.dumps(config, indent=2) + "\n", encoding="utf-8")
 PY
