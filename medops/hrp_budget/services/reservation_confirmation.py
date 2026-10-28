@@ -81,6 +81,14 @@ def _inspect_intent(item, actor, session):
 		for candidate in inspection.candidates
 	):
 		raise_ione_error("CONFLICT")
+	observations = [
+		observation
+		for observation in inspection.budget_observations
+		if (observation.key, observation.currency, observation.precision)
+		== (item.key, item.currency, item.precision)
+	]
+	if len(observations) != 1 or Decimal(observations[0].difference) < Decimal(item.amount):
+		raise_ione_error("CONFLICT")
 	# This is a source-line limit, not a budget availability calculation.
 	# Usage was independently bound to this locked source by the inspector.
 	with localcontext() as context:

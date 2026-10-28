@@ -15,6 +15,7 @@ from medops.common.budget_control import budget_control_key
 from medops.common.budget_control_history import ReleaseInventoryEntry
 from medops.common.budget_material_match import PurchaseBudgetCandidate
 from medops.common.budget_reservation_events import ReservationPosition
+from medops.common.budget_scope_observation import BudgetScopeObservation
 from medops.common.error_catalog import IoneApplicationError
 from medops.common.material_source_snapshot import material_source_snapshot
 from medops.common.reservation_authorization import reservation_intent
@@ -141,7 +142,12 @@ class TestBudgetUsagePreview(IntegrationTestCase):
 		binding = (self.first.request, self.first.line, self.first.organization_unit, self.first.digest())
 		acquire_multi_source_bound_budget_guards([self.key], source_bindings=(binding,))
 		return preview.PurchaseUsageInspection(
-			self.first, "2026-01-15", (PurchaseBudgetCandidate(self.key, "CNY", 2),), (), ()
+			self.first,
+			"2026-01-15",
+			(PurchaseBudgetCandidate(self.key, "CNY", 2),),
+			(),
+			(),
+			(BudgetScopeObservation(self.key, "CNY", 2, "10.00", "0.00", "10.00"),),
 		)
 
 	def test_confirmation_checks_existing_exposure_on_selected_source(self):
@@ -192,6 +198,26 @@ class TestBudgetUsagePreview(IntegrationTestCase):
 			)
 			self.assertEqual(result["confirmation"], "synthetic")
 			assert_budget_guards([self.key])
+
+	def test_confirmation_rejects_amount_above_observed_scope_difference(self):
+		def inspection(*args, **kwargs):
+			result = self.guarded_confirmation_inspection(*args, **kwargs)
+			observation = BudgetScopeObservation(self.key, "CNY", 2, "10.00", "5.00", "5.00")
+			return replace(result, budget_observations=(observation,))
+
+		with (
+			patch.object(reservation_confirmation, "require_web_session"),
+			patch.object(reservation_confirmation, "session_digest", return_value="a" * 64),
+			patch.object(reservation_confirmation, "require_roles"),
+			patch.object(reservation_confirmation, "require_scope"),
+			patch.object(reservation_confirmation, "inspect_purchase_usage", side_effect=inspection),
+			patch.object(reservation_confirmation, "_append") as append,
+		):
+			with self.assertRaises(IoneApplicationError):
+				reservation_confirmation.prepare_reservation_confirmation(self.confirmation_intent())
+			append.assert_not_called()
+			with self.assertRaises(IoneApplicationError):
+				assert_budget_guards([self.key])
 
 	def test_reservation_inspection_rechecks_guard_source_and_scope(self):
 		item = self.confirmation_intent()
@@ -287,6 +313,11 @@ class TestBudgetUsagePreview(IntegrationTestCase):
 			[(c.key, c.currency, c.precision) for c in result.candidates], [(self.key, "CNY", 2)]
 		)
 		self.assertEqual(result.usage, ())
+		observation = result.budget_observations[0]
+		self.assertEqual(
+			(observation.net_releases, observation.exposure, observation.difference),
+			("10.00", "0.00", "10.00"),
+		)
 
 	def test_currency_incompatible_release_invalidates_guard(self):
 		entry = ReleaseInventoryEntry("release-row", self.key, "USD", 2, "10.00", "account", "center")
