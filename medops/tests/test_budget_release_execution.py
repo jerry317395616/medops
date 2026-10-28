@@ -27,17 +27,21 @@ from medops.common.budget_reservation_proof import (
 from medops.common.budget_reservation_storage import reservation_record_row
 from medops.common.error_catalog import IoneApplicationError
 from medops.common.exact_money import exact_decimal_amount
+from medops.common.initial_reservation_posting import initial_reservation_documents
 from medops.common.integration_outbox import OUTBOX
 from medops.common.material_source_snapshot import material_source_snapshot
-from medops.common.reservation_authorization import reservation_intent
+from medops.common.reservation_authorization import AUTHORIZATION_ROW_FIELDS, reservation_intent
 from medops.hrp_budget.jobs import release as jobs
 from medops.hrp_budget.services import (
 	control_inventory,
 	control_release,
+	initial_reservation_control,
+	initial_reservation_write,
 	release_usage_guard,
 	reservation_confirmation,
 )
 from medops.hrp_budget.services import release_execution as execution
+from medops.hrp_budget.services.approval import session_digest
 from medops.hrp_budget.services.control_guards import acquire_budget_guards, assert_budget_guards
 from medops.hrp_budget.services.material_budget_candidates import prepare_purchase_release_match
 from medops.hrp_budget.services.material_request_source import locked_material_request_source
@@ -905,6 +909,12 @@ class TestBudgetReleaseExecution(FrappeAPITestCase):
 		frappe.db.rollback()
 
 	def test_real_posted_release_and_purchase_create_confirmation_evidence(self):
+		self.exercise_real_release_and_confirmation(initial_write=False)
+
+	def test_private_initial_reservation_writes_and_rolls_back_atomically(self):
+		self.exercise_real_release_and_confirmation(initial_write=True)
+
+	def exercise_real_release_and_confirmation(self, *, initial_write):
 		"""No budget, source or evidence substitutes; all documents are synthetic."""
 		self.assertEqual(self.execute(self.claim())["status"], "Posted")
 		frappe.db.rollback()
@@ -924,6 +934,7 @@ class TestBudgetReleaseExecution(FrappeAPITestCase):
 		primary = frappe.local.db
 		previous_request = getattr(frappe.local, "request", None)
 		previous_sid = frappe.session.sid
+		temporary_tables = []
 		try:
 			if created_root:
 				frappe.get_doc(
@@ -995,6 +1006,23 @@ class TestBudgetReleaseExecution(FrappeAPITestCase):
 				budget_date=request_date,
 				reason="Synthetic integration test",
 			)
+			if initial_write:
+				# Connection-private copies keep test evidence out of real ledgers.
+				for table, template in (
+					("tabHRP Budget Reservation Authorization", "cod035_authorization_template"),
+					("tabHRP Budget Reservation", "cod035_reservation_template"),
+					("tabHRP Budget Reservation Event", "cod035_event_template"),
+				):
+					primary.sql(
+						f"CREATE TEMPORARY TABLE `{template}` LIKE `{table}`"  # nosec B608 - fixed test tables
+					)
+					try:
+						primary.sql(
+							f"CREATE TEMPORARY TABLE `{table}` LIKE `{template}`"  # nosec B608 - fixed test tables
+						)
+						temporary_tables.append(table)
+					finally:
+						primary.sql(f"DROP TEMPORARY TABLE `{template}`")  # nosec B608 - fixed test tables
 			before = {
 				doctype: frappe.db.count(doctype)
 				for doctype in (LEDGER, "HRP Budget Reservation", "HRP Budget Reservation Event")
@@ -1005,12 +1033,125 @@ class TestBudgetReleaseExecution(FrappeAPITestCase):
 			self.assertTrue(frappe.db.exists(reservation_confirmation.DOCTYPE, result["confirmation"]))
 			assert_budget_guards([key])
 			self.assertEqual(before, {doctype: frappe.db.count(doctype) for doctype in before})
-			frappe.db.rollback()
-			self.assertFalse(frappe.db.exists(reservation_confirmation.DOCTYPE, result["confirmation"]))
+			if not initial_write:
+				frappe.db.rollback()
+				self.assertFalse(frappe.db.exists(reservation_confirmation.DOCTYPE, result["confirmation"]))
+			else:
+				primary.commit()
+				decision = reservation_confirmation.confirm_reservation_confirmation(
+					result["confirmation"], result["proof"], True
+				)
+				primary.commit()
+				with patch.dict(frappe.conf, {"medops_internal_reservation_write_enabled": False}):
+					with self.assertRaises(IoneApplicationError):
+						initial_reservation_write.append_initial_reservation(
+							result["confirmation"], decision["decision"], result["proof"]
+						)
+					self.assertEqual(frappe.db.count("HRP Budget Reservation"), 0)
+				with patch.dict(frappe.conf, {"medops_internal_reservation_write_enabled": True}):
+					from medops.hrp_budget.doctype.hrp_budget_reservation_event.hrp_budget_reservation_event import (
+						HRPBudgetReservationEvent,
+					)
+
+					session = session_digest("budget-reservation:" + item.reservation_identity)
+					reservation_confirmation.revalidate_reservation_intent(
+						item, actor="Administrator", session=session
+					)
+					current_source = locked_material_request_source(
+						request.name, request.items[0].name, row.organization_unit
+					)
+					evidence_rows = []
+					for name in (result["confirmation"], decision["decision"]):
+						evidence_doc = frappe.get_doc(reservation_confirmation.DOCTYPE, name)
+						evidence_rows.append(
+							{field: evidence_doc.get(field) for field in AUTHORIZATION_ROW_FIELDS}
+						)
+					documents = initial_reservation_documents(
+						*evidence_rows, occurred_at=now_datetime().isoformat(sep=" ", timespec="microseconds")
+					)
+					with self.assertRaises(IoneApplicationError):
+						with initial_reservation_control.expected_initial_reservation(
+							documents,
+							current_source,
+							(key,),
+							confirmation=result["confirmation"],
+							decision=decision["decision"],
+							proof=result["proof"],
+						):
+							bad = frappe.get_doc(dict(doctype="HRP Budget Reservation", **documents.root))
+							bad.total_amount = "0.00"
+							with self.assertRaises(IoneApplicationError):
+								bad.insert(ignore_permissions=True)
+							with self.assertRaises(IoneApplicationError):
+								assert_budget_guards([key])
+					primary.rollback()
+
+					original_comparison = initial_reservation_control.same_value
+
+					def diagnose_comparison(field, actual, expected):
+						if not original_comparison(field, actual, expected):
+							raise AssertionError(
+								f"Synthetic controller field mismatch: {field.fieldname}; "
+								f"actual type {type(actual).__name__}; expected type {type(expected).__name__}"
+							)
+						return True
+
+					with (
+						patch.object(
+							HRPBudgetReservationEvent,
+							"db_insert",
+							side_effect=RuntimeError("synthetic failure"),
+						),
+						patch.object(
+							initial_reservation_control, "same_value", side_effect=diagnose_comparison
+						),
+					):
+						with self.assertRaises(RuntimeError):
+							initial_reservation_write.append_initial_reservation(
+								result["confirmation"], decision["decision"], result["proof"]
+							)
+						with self.assertRaises(IoneApplicationError):
+							assert_budget_guards([key])
+					primary.rollback()
+					self.assertEqual(frappe.db.count("HRP Budget Reservation"), 0)
+					self.assertEqual(frappe.db.count("HRP Budget Reservation Event"), 0)
+					with patch.object(
+						initial_reservation_write,
+						"_check_persisted_document",
+						side_effect=RuntimeError("synthetic recheck failure"),
+					):
+						with self.assertRaises(RuntimeError):
+							initial_reservation_write.append_initial_reservation(
+								result["confirmation"], decision["decision"], result["proof"]
+							)
+						with self.assertRaises(IoneApplicationError):
+							assert_budget_guards([key])
+					primary.rollback()
+					self.assertEqual(frappe.db.count("HRP Budget Reservation"), 0)
+					self.assertEqual(frappe.db.count("HRP Budget Reservation Event"), 0)
+					posted = initial_reservation_write.append_initial_reservation(
+						result["confirmation"], decision["decision"], result["proof"]
+					)
+					self.assertEqual(
+						frappe.db.get_value("HRP Budget Reservation", posted["reservation"], "docstatus"), 1
+					)
+					self.assertEqual(frappe.db.count("HRP Budget Reservation Event"), 1)
+					self.assertEqual(frappe.db.count(LEDGER), before[LEDGER])
+					primary.commit()
+					with self.assertRaises(IoneApplicationError):
+						initial_reservation_write.append_initial_reservation(
+							result["confirmation"], decision["decision"], result["proof"]
+						)
+					primary.rollback()
+					self.assertEqual(frappe.db.count("HRP Budget Reservation"), 1)
+					self.assertEqual(frappe.db.count("HRP Budget Reservation Event"), 1)
 		finally:
 			frappe.db.rollback()
 			frappe.local.request = previous_request
 			frappe.session.sid = previous_sid
+			for table in reversed(temporary_tables):
+				primary.sql(f"DROP TEMPORARY TABLE `{table}`")  # nosec B608 - fixed test tables
+			primary.rollback()
 			if request_name and frappe.db.exists("Material Request", request_name):
 				current = frappe.get_doc("Material Request", request_name)
 				if current.docstatus == 1:

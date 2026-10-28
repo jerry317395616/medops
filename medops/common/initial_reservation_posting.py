@@ -38,7 +38,7 @@ def initial_reservation_documents(confirmation_row: object, decision_row: object
 	The caller must read controlled evidence, validate the active actor, verify the
 	current source and permissions, acquire all common guards and establish budget
 	availability. Constructed documents do not prove a human decision or grant
-	permission to write; no Frappe controller accepts them yet.
+	permission to write; only the default-disabled internal protocol accepts them.
 	"""
 	item, decision = verify_reservation_authorization_rows(confirmation_row, decision_row)
 	facts = parse_material_source_snapshot(item.source_snapshot, expected_digest=item.source_snapshot_digest)
