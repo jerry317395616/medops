@@ -108,9 +108,9 @@ def main():
                 stage = "login_password_control"
                 page.locator("#login_password").fill(os.environ["ADMIN_PASSWORD"])
                 stage = "login_submit_control"
-                page.locator(".btn-login").click()
+                page.locator(".form-login:visible button[type='submit']").click()
                 stage = "native_boot"
-                page.wait_for_function("window.frappe && frappe.boot && frappe.boot.user && frappe.boot.user.name === 'Administrator' && frappe.set_route", timeout=90000)
+                page.wait_for_function("window.frappe && frappe.boot && frappe.boot.user && frappe.boot.user.name === 'Administrator' && frappe.app && frappe.container && frappe.set_route", timeout=90000)
                 stage = "empty_reservation_page"
                 page.evaluate("() => frappe.set_route('hrp-budget-reservations')")
                 expect(page.get_by_text("采购预算预占", exact=True).first).to_be_visible(timeout=60000)
