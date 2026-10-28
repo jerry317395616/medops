@@ -24,6 +24,7 @@ from medops.hrp_budget.services import (
 	renewed_initial_reservation_write,
 	reservation_confirmation,
 	reservation_confirmation_service,
+	reservation_recovery,
 	reservation_release_control,
 	reservation_release_write,
 	reservation_renewal_control,
@@ -98,8 +99,34 @@ def exercise_reservation_http(test, row, amount, item_name, unit_name):
 		decided = request("reservation.confirm", command)
 		return data, {**command, "decision": decided["decision"]}
 
+	def recovered(data, decision):
+		before_receipts = frappe.db.count("HRP Service Idempotency")
+		value = request(
+			OPERATIONS + "recovery",
+			{
+				"source_snapshot": data["source_snapshot"],
+				"source_snapshot_digest": data["source_snapshot_digest"],
+				"budget_key": data["budget_key"],
+				"decision": decision,
+			},
+		)
+		test.assertEqual(value["effect"], "read_only")
+		test.assertEqual(value["total_rows"], 1)
+		test.assertEqual(frappe.db.count("HRP Service Idempotency"), before_receipts)
+		encoded = frappe.as_json(value)
+		for private in (
+			"proof_hash",
+			"session_digest",
+			"source_snapshot_json",
+			"intent_snapshot_json",
+			"one_time_key",
+		):
+			test.assertNotIn(private, encoded)
+		return value["rows"][0]
+
 	before = {doctype: frappe.db.count(doctype) for doctype in (ROOT, EVENT, RELEASE)}
-	_, command = original(items[0])
+	data_first, command = original(items[0])
+	test.assertEqual(recovered(data_first, command["decision"])["state"], "Decision Valid")
 	post_key = "ci-human-initial-" + uuid4().hex
 	initial = request(OPERATIONS + "post", command, key=post_key)
 	test.assertFalse(initial["idempotency_replayed"])
@@ -161,10 +188,15 @@ def exercise_reservation_http(test, row, amount, item_name, unit_name):
 	test.assertTrue(request(OPERATIONS + "post", command, key=post_key)["idempotency_replayed"])
 	test.assertEqual(frappe.get_doc(ROOT, root).as_dict(), frozen)
 	frappe.db.rollback()
+	read_back = recovered(data_first, command["decision"])
+	test.assertEqual(
+		(read_back["state"], read_back["reservation"], read_back["intent"]), ("Posted", root, None)
+	)
 
 	# A new persisted human review renews the same immutable original intent;
 	# the superseded original can no longer create its first event.
 	data, original_post = original(items[1])
+	test.assertEqual(recovered(data, original_post["decision"])["state"], "Decision Valid")
 	prepared = request("reservation.prepare", data)
 	renew_command = {
 		"original_confirmation": original_post["confirmation"],
@@ -181,6 +213,7 @@ def exercise_reservation_http(test, row, amount, item_name, unit_name):
 		for module in (
 			reservation_confirmation,
 			reservation_confirmation_service,
+			reservation_recovery,
 			reservation_renewal_control,
 			reservation_renewal_write,
 			renewed_initial_reservation_write,
@@ -190,10 +223,18 @@ def exercise_reservation_http(test, row, amount, item_name, unit_name):
 			reservation_release_write,
 		):
 			clocks.enter_context(patch.object(module, "now_datetime", return_value=future))
+		test.login_actor("Administrator")
+		read_back = recovered(data, original_post["decision"])
+		test.assertEqual(read_back["state"], "Expired")
+		test.assertEqual(read_back["intent"]["amount"], items[1].amount)
 		prepared = request("reservation.prepare", data)
 		renew_command.update(renewal_confirmation=prepared["confirmation"], proof=prepared["proof"])
 		renewed = request(OPERATIONS + "renew", renew_command)
 		test.assertEqual(renewed["effect"], "decision_renewed")
+		read_back = recovered(data, original_post["decision"])
+		test.assertEqual(
+			(read_back["state"], read_back["renewal_decision"]), ("Decision Valid", renewed["renewal"])
+		)
 		request(OPERATIONS + "post", original_post, status=403)
 		new_post = {**renew_command, "renewal_decision": renewed["renewal"]}
 		result = request(OPERATIONS + "post_renewed", new_post)
@@ -202,6 +243,7 @@ def exercise_reservation_http(test, row, amount, item_name, unit_name):
 		unused = prepare_release(items[1].amount)
 		test.login_actor("Administrator")
 		request(OPERATIONS + "post_release", unused, status=403)
+		test.assertEqual(recovered(data, original_post["decision"])["reservation"], root)
 	test.assertEqual(frappe.db.count(EVENT, {"reservation": root}), 1)
 	test.assertEqual(frappe.db.count(RELEASE, {"reservation": root, "event_kind": "Decision"}), 0)
 	test.assertEqual(frappe.db.count(ROOT), before[ROOT] + 2)

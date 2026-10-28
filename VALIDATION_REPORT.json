@@ -9,12 +9,13 @@
     "ADR-0031",
     "ADR-0032",
     "ADR-0038",
-    "ADR-0039"
+    "ADR-0039",
+    "ADR-0040"
   ],
-  "current_scope": "COD035 human Desk Page candidate and private retry journal passed618 pure/13 frontend/all12 quality. Asset/native focus40680330337 at3ea20bb passed7 native+13 frontend, zero Error Log, compiled hash/file/code verified; all15 Page/helper/test/tooling files match. Committed HTTP+contention focus40678619220 at996b70b passed7 native+13 frontend+1 committed probe616.625s, no skips and2 zero Error Log sites; all7 financial API/probe/helper blobs match. Preserve earlier fixture/premature-renewal failures. Productdf963f9 pushed; current full40682448628 has passed Quality/Security, plain/Core native running. Prior sourcee317 full40668646173 passed617 pure,614+25 regular+1 expanded probe each,8 zero Error Log sites and Required; it does not cover the new HTTP/Page. Production gates closed, no server access during maintenance. Real Desk/browser, cross-reload draft recovery, all-writer procurement lifecycle, hospital rules/interfaces/capacity/UAT incomplete.",
+  "current_scope": "COD035 scoped decision/result recovery candidate under ADR0040: source/budget complete guarded query, original/latest-renewal verification and fully revalidated root links; no old proof reissue. Fresh Page restores expired intent only into a new unchecked review. Explicit route priority and explicit independent-allocation path added. Parser4 and frontend18 passed, full622/all12 and native4+committed recovery pending; cd38380 focus running. Earlier df963f9 full40682448628 is source-specific, Quality/Security/plain native passed and Core running. Server maintenance active, no connection/deploy. Real Desk/browser, all writers, hospital rules/interfaces/capacity/UAT incomplete.",
   "checks": {
-    "pure_tests_expected": 618,
-    "complete_frappe_tests_expected": 646,
+    "pure_tests_expected": 622,
+    "complete_frappe_tests_expected": 650,
     "exact_foundation_pure_tests_passed": 21,
     "native_foundation": {
       "status": "passed",
@@ -1361,6 +1362,37 @@
       "Required": "passed",
       "log": "full-committed-release-40668646173.log",
       "scope": "prior private release/controller and expanded two-process probe; no new human HTTP/Desk Page"
+    },
+    "reservation_recovery": {
+      "status": "candidate_native_and_full_quality_pending",
+      "ADR": "ADR-0040",
+      "pure_new": 4,
+      "frontend_expected": 18,
+      "new_regular_native": 4,
+      "regular_expected": 650,
+      "scope": "current native fields + manager/root write/ledger read, same selected source/key only; no broader grants",
+      "bound_source_originals": 100,
+      "page_limit": 20,
+      "query_drift": "complete catalog digest; target selection still full verified scan",
+      "read_only": "no proof issuance/old receipt decryption/decision mutation/financial or idempotency insert",
+      "states": [
+        "Posted",
+        "Expired",
+        "Decision Valid",
+        "Source Changed"
+      ],
+      "latest_expiry": "complete independent renewal chain, not original stale expiry",
+      "root_reader": "same full guarded independent history; current position verified again",
+      "frontend": "history gate; targeted fresh recheck; original immutable allocation restored into new unchecked review; independent allocation explicit",
+      "cross_session": "current auth may read references; new financial action still needs fresh post-expiry proof and manual acknowledgement",
+      "native_doubles": "temporary evidence tests use source/guard/lineage doubles; dedicated committed probe actual counterpart pending",
+      "initial_local_typecheck": "2 test-only errors (object row type/private helper access), corrected with runtime list guard and getattr; final recheck pending",
+      "local_parser": "4 passed",
+      "local_frontend": "18 passed",
+      "local_quality": "pending",
+      "focused_source": "cd38380f40d93cba1cd547478cbfb5a2e898254f",
+      "focused_status": "in_progress",
+      "server_accessed": false
     }
   },
   "previous_verified_release": {

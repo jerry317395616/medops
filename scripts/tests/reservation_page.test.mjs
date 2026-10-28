@@ -204,6 +204,19 @@ async function setup(override = async () => undefined, route = ["hrp-budget-rese
 				};
 			if (method === "reservation.source")
 				return { message: { source_snapshot: JSON.stringify(facts), source_snapshot_digest: sha("f") } };
+			if (method === "reservation_operations.recovery")
+				return {
+					message: {
+						effect: "read_only",
+						source_snapshot_digest: payload.source_snapshot_digest,
+						budget_key: payload.budget_key,
+						rows: [],
+						total_rows: 0,
+						offset: 0,
+						limit: 20,
+						directory_digest: sha("c"),
+					},
+				};
 			if (method === "ledger.statement")
 				return {
 					message: {
@@ -243,10 +256,11 @@ async function setup(override = async () => undefined, route = ["hrp-budget-rese
 			if (method === "reservation_operations.inspect")
 				return {
 					message: {
+						effect: "read_only",
 						source: sourceReview,
 						budget_date: "2026-10-01",
 						position: {
-							reservation: root,
+							reservation: payload.reservation,
 							key,
 							currency: "CNY",
 							reserved: "10.00",
@@ -278,7 +292,8 @@ async function setup(override = async () => undefined, route = ["hrp-budget-rese
 	const context = { frappe, $: (html) => new Element(html), __: (text) => text };
 	runInNewContext(sessionSource, context);
 	runInNewContext(pageSource, context);
-	await frappe.pages["hrp-budget-reservations"].on_page_load({});
+	const wrapper = {};
+	await frappe.pages["hrp-budget-reservations"].on_page_load(wrapper);
 	await flush();
 	function visible(element) {
 		return element.visible && !element.detached && (!element.parent || visible(element.parent));
@@ -296,7 +311,7 @@ async function setup(override = async () => undefined, route = ["hrp-budget-rese
 		await button.handlers.click();
 		await flush();
 	}
-	async function ready() {
+	async function ready(open = true) {
 		await controls.request.user("MR-1");
 		await controls.organization_unit.user("Unit");
 		await controls.fiscal_year.user("Year");
@@ -305,7 +320,7 @@ async function setup(override = async () => undefined, route = ["hrp-budget-rese
 		await click("选择下达预算");
 		await click(/^预算分类 ·/);
 		await controls.reason.user("Synthetic human review");
-		await click("核对预占");
+		if (open) await click("核对预占");
 	}
 	return {
 		calls,
@@ -313,6 +328,11 @@ async function setup(override = async () => undefined, route = ["hrp-budget-rese
 		messages,
 		ready,
 		click,
+		navigate: async (next) => {
+			route = next;
+			await wrapper.reservationsRefresh();
+			await flush();
+		},
 		dialog: () => dialogs.findLast((dialog) => dialog.visible),
 		texts: () => elements.map((element) => element.value).join("\n"),
 	};
@@ -424,5 +444,157 @@ test("release displays exact current facts and requires an independent unchecked
 	assert.equal(
 		app.calls.filter((call) => call.method.endsWith("reservation_operations.post_release")).length,
 		1,
+	);
+});
+
+test("an explicit requested root takes priority over a remembered background result", async () => {
+	let resolve;
+	const app = await setup(async (call) => {
+		if (call.method.endsWith("reservation_operations.post"))
+			return new Promise((done) => {
+				resolve = done;
+			});
+	});
+	await app.ready();
+	const pending = app.dialog().submit();
+	await flush();
+	await app.navigate(["another-page"]);
+	resolve({ effect: "reservation_posted", reservation: root });
+	await pending;
+	await app.navigate(["hrp-budget-reservations", sha("e")]);
+	assert.equal(
+		app.calls.findLast((call) => call.method.endsWith("reservation_operations.inspect")).args.payload
+			.reservation,
+		sha("e"),
+	);
+	await app.click("查看上次完成结果");
+	assert.equal(
+		app.calls.findLast((call) => call.method.endsWith("reservation_operations.inspect")).args.payload
+			.reservation,
+		root,
+	);
+});
+
+function directory(call, state = "Expired") {
+	const row = {
+		confirmation: sha("6"),
+		decision: sha("a"),
+		intent_digest: sha("f"),
+		allocation: "saved-allocation",
+		amount: "4.00",
+		currency: "CNY",
+		precision: 2,
+		budget_date: "2026-10-01",
+		recorded_at: "2026-10-01 10:00:00",
+		expires_at: "2026-10-01 10:05:00",
+		state,
+		reservation: state === "Posted" ? root : null,
+		intent:
+			state === "Expired"
+				? {
+						allocation: "saved-allocation",
+						amount: "4.00",
+						currency: "CNY",
+						precision: 2,
+						budget_date: "2026-10-01",
+						reason: "Previously confirmed intent",
+					}
+				: null,
+	};
+	return {
+		effect: "read_only",
+		source_snapshot_digest: call.args.payload.source_snapshot_digest,
+		budget_key: call.args.payload.budget_key,
+		rows: [row],
+		total_rows: 1,
+		offset: 0,
+		limit: 20,
+		directory_digest: sha("c"),
+	};
+}
+
+test("a fresh page restores an expired decision using a new unchecked renewal review", async () => {
+	const app = await setup(async (call) =>
+		call.method.endsWith("reservation_operations.recovery") ? directory(call) : undefined,
+	);
+	await app.ready(false);
+	await app.click("核对预占");
+	assert.equal(app.dialog(), undefined);
+	assert.equal(
+		app.calls.some((call) => call.method.endsWith("reservation.prepare")),
+		false,
+	);
+	await app.click("恢复并重新核对续期");
+	assert.equal(app.controls.amount.get_value(), "4.00");
+	assert.equal(app.controls.reason.get_value(), "Previously confirmed intent");
+	await app.dialog().submit(0);
+	assert.equal(
+		app.calls.some((call) => call.method.endsWith("reservation_operations.renew")),
+		false,
+	);
+	await app.dialog().submit(1);
+	const renewed = app.calls.find((call) => call.method.endsWith("reservation_operations.renew"));
+	assert.equal(renewed.args.payload.original_confirmation, sha("6"));
+	assert.equal(renewed.args.payload.original_decision, sha("a"));
+	assert.equal(
+		app.calls.some((call) => call.method.endsWith("reservation.confirm")),
+		false,
+	);
+	assert.equal(
+		app.calls.filter((call) => call.method.endsWith("reservation_operations.post_renewed")).length,
+		1,
+	);
+});
+
+test("recovery rechecks a selected decision and opens a concurrently posted root without preparing", async () => {
+	const app = await setup(async (call) =>
+		call.method.endsWith("reservation_operations.recovery")
+			? directory(call, call.args.payload.decision ? "Posted" : "Expired")
+			: undefined,
+	);
+	await app.ready(false);
+	await app.click("恢复并重新核对续期");
+	assert.equal(
+		app.calls.some((call) => call.method.endsWith("reservation.prepare")),
+		false,
+	);
+	assert.equal(
+		app.calls.findLast((call) => call.method.endsWith("reservation_operations.inspect")).args.payload
+			.reservation,
+		root,
+	);
+});
+
+test("failed history verification blocks both implicit and explicit new allocation paths", async () => {
+	const app = await setup(async (call) => {
+		if (call.method.endsWith("reservation_operations.recovery")) throw { status: 403 };
+	});
+	await app.ready(false);
+	await app.click("新增独立分摊");
+	await app.click("核对预占");
+	assert.equal(
+		app.calls.some((call) => call.method.endsWith("reservation.prepare")),
+		false,
+	);
+});
+
+test("an existing changed-source record requires an explicit independent allocation before a new preview", async () => {
+	const app = await setup(async (call) =>
+		call.method.endsWith("reservation_operations.recovery") ? directory(call, "Source Changed") : undefined,
+	);
+	await app.ready(false);
+	await app.click("核对预占");
+	assert.equal(
+		app.calls.some((call) => call.method.endsWith("reservation.prepare")),
+		false,
+	);
+	await app.click("新增独立分摊");
+	await app.click("核对预占");
+	const prepared = app.calls.find((call) => call.method.endsWith("reservation.prepare"));
+	assert.notEqual(prepared.args.payload.allocation, "saved-allocation");
+	await app.dialog().submit(0);
+	assert.equal(
+		app.calls.some((call) => call.method.endsWith("reservation.confirm")),
+		false,
 	);
 });

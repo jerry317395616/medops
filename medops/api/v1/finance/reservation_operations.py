@@ -14,6 +14,7 @@ import frappe
 
 from medops.api.v1.finance.planning import request_guard
 from medops.common.budget_planning import object_payload
+from medops.common.reservation_recovery import build_reservation_recovery
 from medops.common.reservation_release_request import (
 	build_release_reservation_post,
 	build_release_reservation_prepare,
@@ -29,6 +30,7 @@ from medops.hrp_budget.services.initial_reservation_write import PostInitialRese
 from medops.hrp_budget.services.planning import execution_payload
 from medops.hrp_budget.services.planning_access import MANAGER_ROLES
 from medops.hrp_budget.services.renewed_initial_reservation_write import PostRenewedInitialReservation
+from medops.hrp_budget.services.reservation_recovery import ReadReservationRecovery
 from medops.hrp_budget.services.reservation_release_state import (
 	inspect_reservation_release,
 	recheck_reservation_release,
@@ -144,3 +146,13 @@ def inspect(payload: Any = None, correlation_id: Any = None, **extra):
 		)
 		recheck_reservation_release(state)
 		return result
+
+
+@frappe.whitelist(allow_guest=True, methods=["POST"])
+def recovery(payload: Any = None, correlation_id: Any = None, **extra):
+	"""Recover current decision/result references; never issue old or new proofs."""
+	with _request(extra, correlation_id):
+		command = build_reservation_recovery(payload)
+		prepare_reservation_http_transaction()
+		result = ReadReservationRecovery().execute(command, correlation_id=correlation_id)
+		return execution_payload(result)

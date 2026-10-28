@@ -50,26 +50,23 @@ cd "$BENCH_DIR"
   --correlation-id "FOCUSED-${GITHUB_RUN_ID:-local}-verify"
 bench --site "$SITE_NAME" migrate --skip-search-index
 
-test_log="$BENCH_DIR/logs/focused-budget-tests.log"
-bench --site "$SITE_NAME" run-tests --app medops --module medops.tests.test_budget_release_execution \
-  --test test_persisted_authorized_release_guard_checks_original_units_without_posting \
-  --test test_persisted_release_guard_poisoned_when_actor_check_is_revoked \
-  --test test_persisted_release_guard_detects_role_revocation_from_another_transaction \
-  --test test_persisted_reversal_guard_verifies_the_complete_original_batch \
-  --test test_guarded_release_inventory_reconciles_posted_batches_and_physical_entries \
-  2>&1 | tee "$test_log"
-if ! grep -Eq 'Ran 5 tests? in [0-9.]+s' "$test_log"; then
-  echo "Focused CI did not execute the expected five tests" >&2
-  exit 1
-fi
+cd "$BENCH_DIR/sites"
+for case_name in TestBudgetReservationRecovery TestBudgetReservationOperationsBoundary TestBudgetReservationOperationsHTTP; do
+  native_log="$BENCH_DIR/logs/human-${case_name}.log"
+  expected=3
+  module_name=medops.tests.test_budget_reservation_operations_api
+  if [[ "$case_name" == "TestBudgetReservationRecovery" ]]; then expected=4; module_name=medops.tests.test_budget_reservation_recovery; fi
+  if [[ "$case_name" == "TestBudgetReservationOperationsBoundary" ]]; then expected=4; fi
+  "$BENCH_DIR/env/bin/python" "$ROOT_DIR/scripts/ci_focus_without_locals.py" frappe --site "$SITE_NAME" run-tests --app medops --module "$module_name" --case "$case_name" 2>&1 | tee "$native_log"
+  if ! grep -Eq "Ran $expected tests? in [0-9.]+s" "$native_log" || grep -Eq 'OK \(skipped=|FAILED \(' "$native_log"; then
+    echo "Missing human reservation native boundary tests" >&2
+    exit 1
+  fi
+done
+cd "$ROOT_DIR"
+npm run test:frontend
 
-storage_log="$BENCH_DIR/logs/focused-budget-storage-tests.log"
-bench --site "$SITE_NAME" run-tests --app medops --module medops.tests.test_budget_reservation_storage \
-  --case TestBudgetReservationStorage 2>&1 | tee "$storage_log"
-if ! grep -Eq 'Ran 3 tests? in [0-9.]+s' "$storage_log"; then
-  echo "Focused CI did not execute the expected three storage tests" >&2
-  exit 1
-fi
+bash "$ROOT_DIR/scripts/ci_reservation_concurrency.sh"
 
 "$BENCH_DIR/env/bin/python" - "$BENCH_DIR" "$SITE_NAME" <<'PY'
 import json
