@@ -61,6 +61,7 @@ from medops.hrp_budget.services.control_guards import (
 	assert_budget_guards,
 )
 from medops.hrp_budget.services.material_request_source import MaterialRequestSource
+from medops.hrp_budget.services.reservation_receipt_history import read_locked_initial_receipt_history
 from medops.services.errors import raise_ione_error
 from medops.tests.reservation_release_fixtures import release_evidence
 from medops.tests.reservation_release_fixtures import rows as release_rows
@@ -315,6 +316,32 @@ class TestBudgetMaterialAuthorizationObservation(IntegrationTestCase):
 	def bind_release_source(self, source, item):
 		binding = (source.request, source.line, source.organization_unit, source.digest())
 		acquire_multi_source_bound_budget_guards([item.key], source_bindings=(binding,))
+
+	def test_receipt_history_accepts_release_tails_only_after_complete_inspection(self):
+		source, item, root, records, _, expected = self.released_fixture(full=True)
+		self.bind_release_source(source, item)
+		first_event = records[0].event.name
+		with self.assertRaises(ValueError):
+			read_locked_initial_receipt_history(item, source, root["name"], first_event)
+		rows, pairs = read_locked_initial_receipt_history(
+			item, source, root["name"], first_event, observed_position=expected
+		)
+		self.assertEqual((len(rows), len(pairs)), (3, 2))
+		self.assertEqual(rows[0]["name"], first_event)
+		assert_budget_guards([item.key])
+
+	def test_receipt_history_rejects_stale_position_and_substituted_first_event(self):
+		source, item, root, records, _, expected = self.released_fixture(full=True)
+		self.bind_release_source(source, item)
+		for position, event in (
+			(verify_reservation_records(records[:1]), records[0].event.name),
+			(replace(expected, open_reservation="9.00"), records[0].event.name),
+			(expected, records[-1].event.name),
+		):
+			with self.subTest(position=position.last_sequence, event=event), self.assertRaises(ValueError):
+				read_locked_initial_receipt_history(
+					item, source, root["name"], event, observed_position=position
+				)
 
 	def test_full_release_reads_current_position_without_mutating_frozen_root(self):
 		source, item, root, _, _, expected = self.released_fixture(full=True)
