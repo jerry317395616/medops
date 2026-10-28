@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import hashlib
 from dataclasses import asdict
 
 import frappe
@@ -9,7 +10,8 @@ from frappe.utils import now_datetime
 
 from medops.common.authorized_reservation_projection import verify_authorized_initial_reservation
 from medops.common.budget_reservation_anchor import ANCHOR_ROW_FIELDS
-from medops.common.budget_reservation_storage import ROW_FIELDS
+from medops.common.budget_reservation_storage import ROW_FIELDS, reservation_record_from_row
+from medops.common.domain_service import DomainServiceDefinition, normalize_sha256
 from medops.common.initial_reservation_posting import initial_reservation_documents
 from medops.common.material_source_snapshot import parse_material_source_snapshot
 from medops.common.reservation_authorization import (
@@ -18,13 +20,21 @@ from medops.common.reservation_authorization import (
 	verify_reservation_confirmation_proof,
 	verify_reservation_confirmation_row,
 )
+from medops.common.reservation_request import ReservationPostCommand, build_reservation_post
 from medops.hrp_budget.services.approval import require_web_session, session_digest
 from medops.hrp_budget.services.control_guards import invalidate_budget_guards
 from medops.hrp_budget.services.initial_reservation_control import EVENT, ROOT, expected_initial_reservation
 from medops.hrp_budget.services.material_budget_guards import assert_material_budget_guards
 from medops.hrp_budget.services.material_request_source import locked_material_request_source
+from medops.hrp_budget.services.material_usage_preview import inspect_existing_purchase_usage
+from medops.hrp_budget.services.planning_access import MANAGER_ROLES
 from medops.hrp_budget.services.release_documents import same_value
-from medops.hrp_budget.services.reservation_confirmation import DOCTYPE, revalidate_reservation_intent
+from medops.hrp_budget.services.reservation_confirmation import (
+	DOCTYPE,
+	require_reservation_actor_scope,
+	revalidate_reservation_intent,
+)
+from medops.services.domain_service import DomainService
 from medops.services.errors import raise_ione_error
 
 
@@ -33,7 +43,7 @@ def _evidence(name, *, lock=False):
 	return {field: doc.get(field) for field in AUTHORIZATION_ROW_FIELDS}
 
 
-def _authorized(first, second, proof):
+def _authorized(first, second, proof, *, replay=False):
 	item, confirmed = verify_reservation_confirmation_row(first)
 	checked, decision = verify_reservation_authorization_rows(first, second)
 	if checked != item or decision.actor != frappe.session.user:
@@ -46,11 +56,94 @@ def _authorized(first, second, proof):
 			proof=proof,
 			actor=frappe.session.user,
 			session_digest=session,
-			now=now_datetime().isoformat(sep=" ", timespec="microseconds"),
+			now=decision.recorded_at
+			if replay
+			else now_datetime().isoformat(sep=" ", timespec="microseconds"),
 		)
 	except ValueError as error:
 		raise_ione_error("PERMISSION_DENIED", cause=error)
 	return item, decision, session
+
+
+def verify_existing_initial_reservation(command: ReservationPostCommand, result: dict[str, object]) -> None:
+	"""Revalidate an actual posted result for the current actor and session.
+
+	Replay checks the recorded decision time rather than extending its validity to
+	a new write. The existing root, single event, source and current permissions
+	must be independently checked under the shared guard.
+	"""
+	try:
+		if frappe.conf.get("medops_internal_reservation_write_enabled") is not True:
+			raise_ione_error("OPERATION_NOT_ALLOWED")
+		require_web_session()
+		if set(result) != {"reservation", "event", "intent_digest"}:
+			raise ValueError("complete reservation result required")
+		for field in ("reservation", "event", "intent_digest"):
+			normalize_sha256(result[field], label=field)
+		first, second = _evidence(command.confirmation), _evidence(command.decision)
+		item, decision, session = _authorized(first, second, command.proof, replay=True)
+		actor = frappe.session.user
+		require_reservation_actor_scope(item, actor, session)
+		facts = parse_material_source_snapshot(
+			item.source_snapshot, expected_digest=item.source_snapshot_digest
+		)
+		if getattr(frappe.local.db, "_medops_budget_guard_marker", None) is None:
+			inspection = inspect_existing_purchase_usage(
+				facts["request"],
+				facts["line"],
+				item.key.organization_unit,
+				budget_date=item.budget_date,
+				proposed_keys=[asdict(item.key)],
+			)
+			source = inspection.source
+			if not any(position.reservation == result["reservation"] for position in inspection.source_usage):
+				raise ValueError("posted reservation is not in the checked source usage")
+		else:
+			source = locked_material_request_source(
+				facts["request"], facts["line"], item.key.organization_unit
+			)
+			assert_material_budget_guards(source, [item.key])
+		locked_first, locked_second = (
+			_evidence(command.confirmation, lock=True),
+			_evidence(command.decision, lock=True),
+		)
+		locked_item, locked_decision, locked_session = _authorized(
+			locked_first, locked_second, command.proof, replay=True
+		)
+		if (locked_item, locked_decision, locked_session) != (item, decision, session):
+			raise ValueError("reservation authorization changed")
+		root = frappe.get_doc(ROOT, result["reservation"], for_update=True)
+		names = frappe.get_all(
+			EVENT, filters={"reservation": root.name}, pluck="name", order_by="name asc", limit_page_length=2
+		)
+		if names != [result["event"]]:
+			raise ValueError("single initial reservation event required")
+		event = frappe.get_doc(EVENT, names[0], for_update=True)
+		event_row = {field: event.get(field) for field in ROW_FIELDS}
+		record = reservation_record_from_row(event_row)
+		documents = initial_reservation_documents(locked_first, locked_second, occurred_at=record.occurred_at)
+		_check_persisted_document(root, documents.root, 1)
+		_check_persisted_document(event, documents.event, 0)
+		root_row = {field: root.get(field) for field in ANCHOR_ROW_FIELDS | {"source_snapshot_json"}}
+		position, _, checked = verify_authorized_initial_reservation(
+			root_row, [event_row], locked_first, locked_second, current_facts=asdict(source)
+		)
+		if (
+			result["intent_digest"] != item.intent_digest
+			or checked != decision
+			or position.open_reservation != item.amount
+		):
+			raise ValueError("posted reservation differs from decision")
+		if locked_material_request_source(source.request, source.line, source.organization_unit) != source:
+			raise ValueError("purchase source changed")
+		require_reservation_actor_scope(item, actor, session)
+		assert_material_budget_guards(source, [item.key])
+	except (ValueError, TypeError, KeyError) as error:
+		invalidate_budget_guards()
+		raise_ione_error("CONFLICT", cause=error)
+	except BaseException:
+		invalidate_budget_guards()
+		raise
 
 
 def _check_persisted_document(doc, expected, docstatus):
@@ -154,3 +247,50 @@ def append_initial_reservation(confirmation: str, decision: str, proof: str) -> 
 	except BaseException:
 		invalidate_budget_guards()
 		raise
+
+
+class PostInitialReservation(DomainService[ReservationPostCommand]):
+	"""Audited private command with a replay-checked encrypted receipt."""
+
+	definition = DomainServiceDefinition(
+		name="hrp_budget.reservation.post", version=1, kind="command", required_roles=MANAGER_ROLES
+	)
+
+	def authorize(self, command):
+		super().authorize(command)
+		require_web_session()
+		if frappe.conf.get("medops_internal_reservation_write_enabled") is not True:
+			raise_ione_error("OPERATION_NOT_ALLOWED")
+
+	def validate(self, command):
+		try:
+			if (
+				type(command) is not ReservationPostCommand
+				or build_reservation_post(
+					{
+						"confirmation": command.confirmation,
+						"decision": command.decision,
+						"proof": command.proof,
+						"acknowledge": command.acknowledge,
+					}
+				)
+				!= command
+			):
+				raise ValueError("canonical reservation post command required")
+		except ValueError as error:
+			raise_ione_error("INVALID_REQUEST", cause=error)
+		self.command = command
+
+	def request_payload(self, command):
+		return {
+			"confirmation": command.confirmation,
+			"decision": command.decision,
+			"proof_hash": hashlib.sha256(command.proof.encode()).hexdigest(),
+			"acknowledge": True,
+		}
+
+	def perform(self, command):
+		return append_initial_reservation(command.confirmation, command.decision, command.proof)
+
+	def authorize_result(self, result):
+		verify_existing_initial_reservation(self.command, result)

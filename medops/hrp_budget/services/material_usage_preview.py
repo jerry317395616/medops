@@ -66,9 +66,51 @@ def inspect_purchase_usage(
 	write; historical authorization and complete cooperating writers remain
 	prerequisites. The pre-lock discovery tuple comes only from this function.
 	"""
+	return _inspect_purchase_usage(
+		request,
+		line,
+		organization_unit,
+		expected_source_digest=expected_source_digest,
+		budget_date=budget_date,
+		proposed_keys=proposed_keys,
+		existing_only=False,
+	)
+
+
+def inspect_existing_purchase_usage(
+	request: str,
+	line: str,
+	organization_unit: str,
+	*,
+	budget_date: str,
+	proposed_keys: object,
+) -> PurchaseUsageInspection:
+	"""Inspect an existing authorized source by identity, allowing normal progress.
+
+	The caller must independently bind a stored reservation to its immutable
+	decision. This is not an authorization for a new reservation.
+	"""
+	return _inspect_purchase_usage(
+		request,
+		line,
+		organization_unit,
+		expected_source_digest=None,
+		budget_date=budget_date,
+		proposed_keys=proposed_keys,
+		existing_only=True,
+	)
+
+
+def _inspect_purchase_usage(
+	request, line, organization_unit, *, expected_source_digest, budget_date, proposed_keys, existing_only
+) -> PurchaseUsageInspection:
 	try:
 		actor = frappe.session.user
-		proposed = MaterialSourceReference(request, line, organization_unit, expected_source_digest)
+		proposed = (
+			MaterialSourceIdentity(request, line, organization_unit)
+			if existing_only
+			else MaterialSourceReference(request, line, organization_unit, expected_source_digest)
+		)
 		date = normalize_required_date(budget_date, label="budget_date")
 		if not isinstance(proposed_keys, (tuple, list)) or not 1 <= len(proposed_keys) <= MAX_CONTROL_KEYS:
 			raise ValueError("bounded proposed budget keys required")
@@ -77,13 +119,17 @@ def inspect_purchase_usage(
 		_assert_actor(actor)
 		discovered = discover_material_usage_sources(keys)
 		_assert_actor(actor)
+		identity = (proposed.request, proposed.line, proposed.organization_unit)
+		if existing_only and not any(
+			(ref.request, ref.line, ref.organization_unit) == identity for ref in discovered
+		):
+			raise ValueError("existing reservation source was not discovered")
 		references: dict[tuple[str, str, str], MaterialSourceIdentity | MaterialSourceReference] = {
 			(ref.request, ref.line, ref.organization_unit): MaterialSourceIdentity(
 				ref.request, ref.line, ref.organization_unit
 			)
 			for ref in discovered
 		}
-		identity = (proposed.request, proposed.line, proposed.organization_unit)
 		references[identity] = proposed
 		sources = acquire_material_budget_guards_for_sources(tuple(references.values()), keys)
 		_assert_actor(actor)
@@ -92,7 +138,9 @@ def inspect_purchase_usage(
 			for source in sources
 			if (source.request, source.line, source.organization_unit) == identity
 		]
-		if len(selected) != 1 or selected[0].digest() != proposed.expected_digest:
+		if len(selected) != 1 or (
+			type(proposed) is MaterialSourceReference and selected[0].digest() != proposed.expected_digest
+		):
 			raise ValueError("proposed source was not locked")
 		source = selected[0]
 		if not source.expense_account:

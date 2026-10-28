@@ -31,6 +31,7 @@ from medops.common.initial_reservation_posting import initial_reservation_docume
 from medops.common.integration_outbox import OUTBOX
 from medops.common.material_source_snapshot import material_source_snapshot
 from medops.common.reservation_authorization import AUTHORIZATION_ROW_FIELDS, reservation_intent
+from medops.common.reservation_request import build_reservation_post
 from medops.hrp_budget.jobs import release as jobs
 from medops.hrp_budget.services import (
 	control_inventory,
@@ -1012,6 +1013,7 @@ class TestBudgetReleaseExecution(FrappeAPITestCase):
 					("tabHRP Budget Reservation Authorization", "cod035_authorization_template"),
 					("tabHRP Budget Reservation", "cod035_reservation_template"),
 					("tabHRP Budget Reservation Event", "cod035_event_template"),
+					("tabHRP Service Idempotency", "cod035_idempotency_template"),
 				):
 					primary.sql(
 						f"CREATE TEMPORARY TABLE `{template}` LIKE `{table}`"  # nosec B608 - fixed test tables
@@ -1129,15 +1131,44 @@ class TestBudgetReleaseExecution(FrappeAPITestCase):
 					primary.rollback()
 					self.assertEqual(frappe.db.count("HRP Budget Reservation"), 0)
 					self.assertEqual(frappe.db.count("HRP Budget Reservation Event"), 0)
-					posted = initial_reservation_write.append_initial_reservation(
-						result["confirmation"], decision["decision"], result["proof"]
+					command = build_reservation_post(
+						{
+							"confirmation": result["confirmation"],
+							"decision": decision["decision"],
+							"proof": result["proof"],
+							"acknowledge": True,
+						}
 					)
+					service = initial_reservation_write.PostInitialReservation()
+					key_id = "synthetic-reservation-post-" + unique
+					execution_result = service.execute(command, idempotency_key=key_id)
+					self.assertFalse(execution_result.idempotency_replayed)
+					posted = execution_result.result
 					self.assertEqual(
 						frappe.db.get_value("HRP Budget Reservation", posted["reservation"], "docstatus"), 1
 					)
 					self.assertEqual(frappe.db.count("HRP Budget Reservation Event"), 1)
 					self.assertEqual(frappe.db.count(LEDGER), before[LEDGER])
 					primary.commit()
+					with patch.object(
+						initial_reservation_write,
+						"now_datetime",
+						return_value=now_datetime() + timedelta(minutes=10),
+					):
+						replayed = service.execute(command, idempotency_key=key_id)
+					self.assertTrue(replayed.idempotency_replayed)
+					self.assertEqual(replayed.result, posted)
+					primary.rollback()
+					frappe.session.sid = "synthetic-different-session"
+					with self.assertRaises(IoneApplicationError):
+						service.execute(command, idempotency_key=key_id)
+					primary.rollback()
+					frappe.session.sid = "synthetic-test-web-session"
+					changed = replace(command, proof="synthetic_other_proof_123456789012345")
+					with self.assertRaises(IoneApplicationError) as conflict:
+						service.execute(changed, idempotency_key=key_id)
+					self.assertEqual(conflict.exception.code, "IDEMPOTENCY_CONFLICT")
+					primary.rollback()
 					with self.assertRaises(IoneApplicationError):
 						initial_reservation_write.append_initial_reservation(
 							result["confirmation"], decision["decision"], result["proof"]
