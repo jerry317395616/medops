@@ -180,3 +180,25 @@ def recheck_reservation_release(state, *, position=None):
 	except BaseException:
 		invalidate_budget_guards()
 		raise
+
+
+def read_guarded_reservation_release(reservation, item, source, position):
+	"""Read a root under an already-owned complete purchase inspection; no write grant."""
+	try:
+		name = normalize_sha256(reservation, label="reservation")
+		if (
+			type(item) is not ReservationIntent
+			or type(source) is not MaterialRequestSource
+			or type(position) is not ReservationPosition
+			or position.reservation != name
+			or (position.key, position.currency, position.precision)
+			!= (item.key, item.currency, item.precision)
+		):
+			raise ValueError("complete matching guarded reservation position required")
+		return _locked_state(name, item, source, position)
+	except (ValueError, TypeError, KeyError) as error:
+		invalidate_budget_guards()
+		raise_ione_error("CONFLICT", cause=error)
+	except BaseException:
+		invalidate_budget_guards()
+		raise

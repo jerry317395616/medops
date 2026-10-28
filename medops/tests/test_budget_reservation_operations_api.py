@@ -53,7 +53,7 @@ CASES = (
 		build_release_reservation_post,
 	),
 )
-ENDPOINTS = (*(case[0] for case in CASES), "prepare_release", "inspect")
+ENDPOINTS = (*(case[0] for case in CASES), "prepare_release", "inspect", "recovery")
 
 
 class TestBudgetReservationOperationsBoundary(FrappeTestCase):
