@@ -8,12 +8,13 @@
     "ADR-0030",
     "ADR-0031",
     "ADR-0032",
-    "ADR-0038"
+    "ADR-0038",
+    "ADR-0039"
   ],
-  "current_scope": "COD-035 in progress. Controlled release product327228e passed617 local pure and71 focused native at matching code; its full40663377621 remains live. Earlier source9030439 full40658409448 passed613 pure,614+25 native and1 initial committed probe per plain/Core environment,8 zero Error Log sites and Required. Current producte317c3c expands the CI-only committed-data probe: independent release contention, duplicate full release, late initial receipt replay and fresh confirmed reservation using freed funds. Focus40666378159 atd7ca283 passed the single explicitly selected native probe in617.405s with no skips and2 zero Error Log sites; all4 probe/helper/worker files match producte317c3c. It used real committed controllers/transactions/independent workers and synthetic sessions/clocks under strict CI containment. Frozen local617 and all11 quality steps passed. ADR0038 raises both integration budgets to120 and contract rejects45/119; full40668646173 at e317c3c has passed Quality/Security but native remains running. No production server/schema/grants/API changes. All-writer protocol, complete current-source native pass, performance, genuine human HTTP/UI and hospital acceptance remain required.",
+  "current_scope": "COD035: default-disabled human reservation HTTP adapters in progress under ADR0039, retaining independent immutable evidence and all service gates. New API tests and actual committed HTTP probe pending native execution; local quality pending. Existing earlier source-specific CI proof retained below. UI, all-writer protocol, hospital rules/capacity/UAT incomplete. User server maintenance active: no server access.",
   "checks": {
     "pure_tests_expected": 617,
-    "complete_frappe_tests_expected": 639,
+    "complete_frappe_tests_expected": 645,
     "exact_foundation_pure_tests_passed": 21,
     "native_foundation": {
       "status": "passed",
@@ -1194,6 +1195,28 @@
       "Required": "passed",
       "log": "full-receipt-after-release-40658409448.log",
       "scope": "Earlier initial receipt replay after release facts in private copies. Does not prove later controlled release writer or expanded committed release race."
+    },
+    "human_reservation_http": {
+      "status": "candidate_native_pending",
+      "regular_native_new": 6,
+      "regular_native_expected": 645,
+      "pure_expected": 617,
+      "ADR": "ADR0039 supersedes ADR0037 stage/API restriction, preserves body and all invariants",
+      "master_gate": "medops_reservation_operations_enabled; strict True only; default off",
+      "effects": [
+        "reservation_posted",
+        "decision_renewed",
+        "confirmation_only",
+        "reservation_released",
+        "read_only"
+      ],
+      "proof_privacy": "four new methods; cmd/v1/v2/compatibility paths before authentication",
+      "committed_probe": "one existing exact-site probe now adds actual cookie HTTP with real synthetic sources/budget/controllers, full outer rollback and replay",
+      "production_enabled": false,
+      "server_accessed": false,
+      "UI": "pending",
+      "local_quality": "pending",
+      "native": "pending"
     }
   },
   "previous_verified_release": {

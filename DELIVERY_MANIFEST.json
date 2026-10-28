@@ -11,11 +11,11 @@
 		"doctype_blueprints": 405,
 		"starter_doctypes": 47,
 		"repository_contract_tests": 617,
-		"frappe_integration_tests": 639,
+		"frappe_integration_tests": 645,
 		"environment_profiles": 3,
 		"fixture_rules": 3,
 		"fixture_files": 3,
-		"architecture_decisions": 38,
+		"architecture_decisions": 39,
 		"change_records": 37,
 		"change_risk_rules": 5,
 		"error_definitions": 12,
@@ -189,6 +189,8 @@
 		"backlog/COD-033.md",
 		"architecture/adr/ADR-0030-exact-budget-ledger-and-release-authority.md",
 		"architecture/budget_ledger.md",
-		"medops/common/budget_ledger.py"
+		"medops/common/budget_ledger.py",
+		"architecture/adr/ADR-0039-human-reservation-http-boundary.md",
+		"medops/api/v1/finance/reservation_operations.py"
 	]
 }

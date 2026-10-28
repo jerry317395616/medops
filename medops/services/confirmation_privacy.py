@@ -9,13 +9,17 @@ CONFIRM_METHODS = frozenset(
 		"medops.api.v1.finance.release.confirm",
 		"medops.api.v1.finance.approval.confirm",
 		"medops.api.v1.finance.reservation.confirm",
+		"medops.api.v1.finance.reservation_operations.post",
+		"medops.api.v1.finance.reservation_operations.renew",
+		"medops.api.v1.finance.reservation_operations.post_renewed",
+		"medops.api.v1.finance.reservation_operations.post_release",
 	}
 )
 RPC_PREFIXES = ("/api/method/", "/api/v1/method/", "/api/v2/method/")
 
 
 def protect_confirmation_request() -> None:
-	"""Shield both confirmation RPC bodies before audit, authentication and dispatch."""
+	"""Shield proof-bearing RPC bodies before audit, authentication and dispatch."""
 	form = frappe.local.form_dict
 	request = frappe.local.request
 	path = request.path.rstrip("/")
