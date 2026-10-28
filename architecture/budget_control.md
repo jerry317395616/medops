@@ -253,3 +253,5 @@ COD-035 新增内部跨来源范围结构核查候选：先验证当前用户预
 初次本地仓库检查因应用包内的探针进程直接提交事务而拒绝；现将持有最外层事务的进程移到 scripts/reservation_concurrency_worker.py，业务领域服务没有新增提交调用。调整后的隔离 CI 40627381948 正在运行，固定源码质量检查须重新执行。
 
 最终隔离 CI 40627381948 已通过1项已提交数据的双进程探针：同预算范围超额竞争经整笔事务重试后拒绝第二笔，同幂等键竞争仅产生一组根/事件并返回相同回执；两个隔离站点 Error Log 均为零。四个探针、辅助及外层进程脚本文件与受测提交 786b438 完全一致。固定源码本地质量检查通过600项纯测试、全部仓库检查，类型检查零错误及一项既有警告。新增专用站点调用后的普通及 IONE Core 完整集成尚待运行；会话与时钟为合成、仅两个受控私有写入进程，不证明全部写入口、医院负载或真实用户操作验收。没有业务模型迁移或新增业务权限；服务器维护期间未连接服务器。
+
+Full CI 40628275807 is running for product commit 7125b9b on a separate branch; both plain and IONE Core integration now create the disposable concurrency site. This is pending and does not establish a full pass. No server connection or migration was performed during user maintenance.
