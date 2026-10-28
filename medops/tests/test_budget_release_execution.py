@@ -25,6 +25,7 @@ from medops.common.budget_reservation_proof import (
 	reservation_record,
 )
 from medops.common.budget_reservation_storage import reservation_record_row
+from medops.common.confirmation_privacy import ConfirmationProof
 from medops.common.error_catalog import IoneApplicationError
 from medops.common.exact_money import exact_decimal_amount
 from medops.common.initial_reservation_posting import initial_reservation_documents
@@ -1032,6 +1033,7 @@ class TestBudgetReleaseExecution(FrappeAPITestCase):
 			set_request(method="POST", path="/")
 			frappe.session.sid = "synthetic-test-web-session"
 			result = reservation_confirmation.prepare_reservation_confirmation(item)
+			result["proof"] = ConfirmationProof(result["proof"])
 			self.assertTrue(frappe.db.exists(reservation_confirmation.DOCTYPE, result["confirmation"]))
 			assert_budget_guards([key])
 			self.assertEqual(before, {doctype: frappe.db.count(doctype) for doctype in before})
@@ -1159,6 +1161,15 @@ class TestBudgetReleaseExecution(FrappeAPITestCase):
 					self.assertTrue(replayed.idempotency_replayed)
 					self.assertEqual(replayed.result, posted)
 					primary.rollback()
+					with patch.object(
+						initial_reservation_write,
+						"now_datetime",
+						return_value=now_datetime() + timedelta(minutes=10),
+					):
+						with self.assertRaises(IoneApplicationError) as expired:
+							service.execute(command, idempotency_key=key_id + "-new")
+					self.assertEqual(expired.exception.definition.key, "PERMISSION_DENIED")
+					primary.rollback()
 					frappe.session.sid = "synthetic-different-session"
 					with self.assertRaises(IoneApplicationError):
 						service.execute(command, idempotency_key=key_id)
@@ -1167,7 +1178,7 @@ class TestBudgetReleaseExecution(FrappeAPITestCase):
 					changed = replace(command, proof="synthetic_other_proof_123456789012345")
 					with self.assertRaises(IoneApplicationError) as conflict:
 						service.execute(changed, idempotency_key=key_id)
-					self.assertEqual(conflict.exception.code, "IDEMPOTENCY_CONFLICT")
+					self.assertEqual(conflict.exception.definition.key, "IDEMPOTENCY_CONFLICT")
 					primary.rollback()
 					with self.assertRaises(IoneApplicationError):
 						initial_reservation_write.append_initial_reservation(
