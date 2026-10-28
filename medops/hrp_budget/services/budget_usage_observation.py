@@ -6,15 +6,21 @@ from collections.abc import Mapping
 
 import frappe
 
-from medops.common.budget_control import BudgetControlKey, ordered_budget_keys
+from medops.common.budget_control import KEY_FIELDS, BudgetControlKey, budget_control_key, ordered_budget_keys
 from medops.common.budget_ledger import LEDGER, LEDGER_PUBLIC_FIELDS
-from medops.common.budget_reservation_anchor import ANCHOR_ROW_FIELDS, verify_reservation_anchor_row
+from medops.common.budget_reservation_anchor import (
+	ANCHOR_ROW_FIELDS,
+	verify_frozen_reservation_anchor_row,
+	verify_reservation_anchor_row,
+)
 from medops.common.budget_reservation_events import ReservationPosition
 from medops.common.budget_reservation_proof import ReservationSource
 from medops.common.budget_reservation_storage import ROW_FIELDS
+from medops.common.reservation_release import RELEASE_ACTION_PREFIX
 from medops.hrp_budget.services.control_guards import assert_budget_guards, invalidate_budget_guards
 from medops.hrp_budget.services.planning_access import READ_ROLES
 from medops.hrp_budget.services.release_usage_guard import require_valid_usage_storage
+from medops.hrp_budget.services.reservation_release_observation import guarded_release_decision_inventory
 from medops.hrp_workflow_authorization.services.rule_contracts import can_read_named_fields
 from medops.services.data_access import require_scope
 from medops.services.errors import raise_ione_error
@@ -138,6 +144,17 @@ def guarded_budget_usage_observation(value: object) -> tuple[ReservationPosition
 		roots = query_usage_scope("tabHRP Budget Reservation", ANCHOR_ROW_FIELDS, scopes, MAX_USAGE_ROOTS)
 		events = query_usage_scope("tabHRP Budget Reservation Event", ROW_FIELDS, scopes, MAX_USAGE_EVENTS)
 		_parent_events(tuple(sorted(roots)), events)
+		release_decisions = guarded_release_decision_inventory(keys, tuple(sorted(roots)))
+		decisions_by_root = {name: {} for name in roots}
+		for name, decision in release_decisions.items():
+			parent = decision["reservation"]
+			if parent not in roots:
+				raise ValueError("orphan release decision in guarded budget scope")
+			key = budget_control_key({field: decision[field] for field in KEY_FIELDS})
+			root_key = budget_control_key({field: roots[parent][field] for field in KEY_FIELDS})
+			if key != root_key or decision["budget_key_digest"] != key.identity:
+				raise ValueError("release decision scope differs from its reservation")
+			decisions_by_root[parent][RELEASE_ACTION_PREFIX + name] = decision
 		groups: dict[str, list[Mapping]] = {name: [] for name in roots}
 		actions = set()
 		sequences = set()
@@ -188,13 +205,29 @@ def guarded_budget_usage_observation(value: object) -> tuple[ReservationPosition
 				for event in chain
 			):
 				raise ValueError("unsupported event source")
-			position = verify_reservation_anchor_row(
+			chain = sorted(chain, key=lambda event: event["sequence"])
+			frozen = row.get("event_count") == 1
+			verifier = verify_frozen_reservation_anchor_row if frozen else verify_reservation_anchor_row
+			position = verifier(
 				row,
-				sorted(chain, key=lambda event: event["sequence"]),
+				chain,
 				expected_source=source,
 				source_snapshot_digest=row["source_snapshot_digest"],
 				cost_center=row["cost_center"],
 			)
+			decisions = decisions_by_root[name]
+			if decisions and not frozen:
+				raise ValueError("release decisions require an immutable initial root")
+			if frozen:
+				if len(decisions) != len(chain) - 1:
+					raise ValueError("physical release decisions and tail events differ")
+				for event in chain[1:]:
+					decision = decisions.get(event["source_action"])
+					if decision is None or (
+						decision["previous_sequence"] != event["sequence"] - 1
+						or decision["previous_event_digest"] != event["previous_digest"]
+					):
+						raise ValueError("release event predecessor differs from its decision")
 			if position.reservation != name or usage_scope(position.key) not in scopes:
 				raise ValueError("usage scope differs from aggregate")
 			positions.append(position)

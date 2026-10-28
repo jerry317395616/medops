@@ -2,10 +2,14 @@
 
 from __future__ import annotations
 
+from collections.abc import Mapping
 from decimal import Decimal, localcontext
 
 from medops.common.budget_control import BudgetControlKey
-from medops.common.budget_reservation_anchor import verify_reservation_anchor_row
+from medops.common.budget_reservation_anchor import (
+	verify_frozen_reservation_anchor_row,
+	verify_reservation_anchor_row,
+)
 from medops.common.budget_reservation_events import ReservationPosition
 from medops.common.budget_reservation_proof import ReservationSource
 from medops.common.exact_money import MAX_APPROVAL_AMOUNT, exact_decimal_amount
@@ -42,7 +46,12 @@ def verify_material_reservation_evidence(
 	expected_source = ReservationSource(
 		"Material Request", source.request, digest, source.line, allocation_name, "Reserve"
 	)
-	position = verify_reservation_anchor_row(
+	verifier = (
+		verify_frozen_reservation_anchor_row
+		if isinstance(row, Mapping) and row.get("event_count") == 1
+		else verify_reservation_anchor_row
+	)
+	position = verifier(
 		row,
 		event_rows,
 		expected_source=expected_source,

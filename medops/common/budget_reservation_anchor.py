@@ -219,3 +219,51 @@ def verify_reservation_anchor_row(
 	if actual != reservation_anchor_row(anchor):
 		raise ValueError("reservation aggregate differs from event chain")
 	return anchor.position
+
+
+def verify_frozen_reservation_anchor_row(
+	row, record_rows, *, expected_source, source_snapshot_digest, cost_center
+) -> ReservationPosition:
+	"""Check a frozen first-event anchor and structurally replay release tails.
+
+	This is not release authorization. The caller must discover all physical
+	events and independently validate every posted release decision and its
+	confirmation under the shared guard before using the resulting position.
+	"""
+	from medops.common.budget_reservation_storage import reservation_record_from_row
+	from medops.common.reservation_release import RELEASE_ACTION_PREFIX
+
+	if not isinstance(record_rows, (tuple, list)) or not 1 <= len(record_rows) <= MAX_RESERVATION_EVENTS:
+		raise ValueError("complete bounded frozen reservation history required")
+	verify_reservation_anchor_row(
+		row,
+		record_rows[:1],
+		expected_source=expected_source,
+		source_snapshot_digest=source_snapshot_digest,
+		cost_center=cost_center,
+	)
+	records = [reservation_record_from_row(value) for value in record_rows]
+	for record in records[1:]:
+		if (
+			record.event.kind != "Release Reservation"
+			or not record.source.action.startswith(RELEASE_ACTION_PREFIX)
+			or record.source.action
+			!= RELEASE_ACTION_PREFIX
+			+ normalize_sha256(record.source.action[len(RELEASE_ACTION_PREFIX) :], label="release_decision")
+			or (
+				record.source.doctype,
+				record.source.name,
+				record.source.revision,
+				record.source.line,
+				record.source.allocation,
+			)
+			!= (
+				expected_source.doctype,
+				expected_source.name,
+				expected_source.revision,
+				expected_source.line,
+				expected_source.allocation,
+			)
+		):
+			raise ValueError("only bound release tails may extend the frozen initial root")
+	return verify_reservation_records(records)
