@@ -12,7 +12,7 @@
     "ADR-0039",
     "ADR-0040"
   ],
-  "current_scope": "COD035 scoped decision/result recovery under ADR0040; current source/budget/full independent history required, no old proof reissue. Page gates new work behind history, restores expired original intent into fresh unchecked review and clears stale empty history after uncertain confirmation recovery. Parser4/frontend19 passed; 622 pure/19 frontend and all12 quality components passed after format-only repair; final checksums/governance passed; native4+committed recovery pending. Earlier df963f9 full40682448628 passed Quality/Security/plain/Core/Required for its exact source (618 pure,646 regular each,1 committed each,8 zero Error Log sites); excludes this recovery slice. Server maintenance active: no connection/deploy. Real Desk, all writers, hospital interfaces/rules/capacity/UAT incomplete.",
+  "current_scope": "COD035 scoped read-only recovery product4b70f5a pushed under ADR0040. Recovery focus40694061543 on2af1a71 passed4+4+3 native,18 frontend,1 committed1162.151s,2 zero Error Log sites;6 financial service/API/history/helper blobs match product. Local final622 pure/19 frontend/12 quality components and governance passed; current4b70f5a full40696687032 Quality/Security passed, plain/Core running. Separate CI-only real Chromium Desk/read/reload/input dialog experiment51f3983 with safe HTTP timings dispatched. No server access/deploy, production enablement or hospital performance/UAT claim. Real browser recovery controls, all writers, commitments/actuals, interfaces/rules/capacity incomplete.",
   "checks": {
     "pure_tests_expected": 622,
     "complete_frappe_tests_expected": 650,
@@ -1379,7 +1379,7 @@
       "scope": "prior private release/controller and expanded two-process probe; no new human HTTP/Desk Page"
     },
     "reservation_recovery": {
-      "status": "candidate_focused_and_full_native_pending",
+      "status": "focused_native_passed_current_full_running",
       "ADR": "ADR-0040",
       "pure_new": 4,
       "frontend_expected": 19,
@@ -1400,20 +1400,20 @@
       "root_reader": "same full guarded independent history; current position verified again",
       "frontend": "history gate; targeted fresh recheck; original immutable allocation restored into new unchecked review; independent allocation explicit",
       "cross_session": "current auth may read references; new financial action still needs fresh post-expiry proof and manual acknowledgement",
-      "native_doubles": "temporary evidence tests use source/guard/lineage doubles; dedicated committed probe actual counterpart pending",
+      "native_doubles": "4 temporary evidence cases passed (source/guard/lineage doubles); dedicated committed probe passed actual native sources/budget/controls/cookie and full independent history",
       "initial_local_typecheck": "Two fixture typing errors fixed: explicit AssertionError guard and targeted reportPrivateUsage exception solely for real-check revocation injection. v3 zero errors, one preexisting warning.",
       "local_parser": "4 passed",
       "local_frontend": "19 passed",
       "local_quality": "all12_components_passed_v3_plus_format_only_repair; final_checksums_and_governance_passed",
       "focused_source": "2af1a71802663813d603f8019fce5c9829c22ac9",
-      "focused_status": "in_progress",
+      "focused_status": "passed",
       "server_accessed": false,
       "first_focused_run_id": 40692973051,
       "first_focused_status": "failed_setup_all4_unexecuted",
       "first_focused_failure": "MariaDB1066 same-name CREATE TEMPORARY TABLE LIKE source; template clone fixed; no service case ran",
       "retry_focused_run_id": 40694061543,
       "retry_focused_source": "2af1a71802663813d603f8019fce5c9829c22ac9",
-      "retry_focused_status": "in_progress",
+      "retry_focused_status": "passed",
       "first_local_quality": "622 pure passed; checksums failed because native fixture corrected while run active; retain failure",
       "first_local_quality_log": "quality-reservation-recovery-candidate.log",
       "second_local_quality": "622 pure and checksums passed; typecheck failed with the same2 fixture errors, corrected; retain failure",
@@ -1425,8 +1425,52 @@
       "current_frontend_count": 19,
       "source_proof": "reservation-recovery-source-proof.json",
       "all6_financial_api_reader_and_http_blobs_match_focus": true,
-      "current_source_native": "pending; focus native fixture differs only explicit assertion/private-seam typing, Page/cache regression later added",
-      "final_governance": "passed COD-035-recovery-final-local against6a47d74,20 files,required high/record critical; no production/http write enabled"
+      "current_source_native": "six financial service/API/history/helper blobs identical to passed2af1a71; final native fixture assertion/typing and Page extra regression tested by current4b70f5a full CI still running",
+      "final_governance": "passed COD-035-recovery-final-local against6a47d74,20 files,required high/record critical; no production/http write enabled",
+      "focused_native_counts": [
+        4,
+        4,
+        3
+      ],
+      "focused_frontend_count": 18,
+      "focused_committed_tests": 1,
+      "focused_committed_seconds": 1162.151,
+      "focused_skipped": 0,
+      "focused_zero_error_log_sites": 2,
+      "focused_log": "reservation-recovery-40694061543.log",
+      "full_current_source_ci": {
+        "run_id": 40696687032,
+        "source_commit": "4b70f5a1e3605b8d33c088ebb0cb76163548775e",
+        "status": "in_progress",
+        "Quality": "passed",
+        "Security": "passed",
+        "native": "plain and IONE Core running",
+        "url": "https://github.com/jerry317395616/medops/actions/runs/40696687032",
+        "quality_log": "recovery-product-quality-40696687032.log",
+        "Quality_details": {
+          "pure": 622,
+          "pure_seconds": 38.989,
+          "frontend": 19,
+          "steps": 12,
+          "pyright_errors": 0,
+          "preexisting_warnings": 1,
+          "status": "passed exact4b70f5a; single complete CI quality execution",
+          "log": "recovery-product-quality-40696687032.log"
+        }
+      },
+      "performance": "1162.151s is the expanded whole probe with setup/concurrency/injected failures/replays/recovery, not one operation. Safe per-request timings being measured in a separate CI-only probe; no hospital performance claim."
+    },
+    "reservation_native_desk_browser": {
+      "status": "in_progress",
+      "source_commit": "51f3983c5eb5979d8fb7409bb57c1a431982a43a",
+      "product_source": "4b70f5a1e3605b8d33c088ebb0cb76163548775e",
+      "branch": "cod/focused-budget-native-desk-20261028-134130",
+      "playwright_version": "1.64.1",
+      "source": "CI-only harness, no product dependency change; actual loopback native WSGI with static assets and actual Chromium/login",
+      "scope": "Plain Desk root query render/reload and release input dialog only; browser blocks financial calls, full financial evidence hashes before/after, final zero Error Log/logout/process cleanup required. Recovery controls/Core browser/hospital UAT not established. Existing committed helper adds timing-only output.",
+      "server_accessed": false,
+      "run_id": 40698778414,
+      "url": "https://github.com/jerry317395616/medops/actions/runs/40698778414"
     }
   },
   "previous_verified_release": {
