@@ -17,6 +17,39 @@ from medops.common.reservation_authorization import (
 from medops.common.reservation_renewal import verify_reservation_renewal_chain
 
 
+def verify_authorized_released_reservation(
+	root, event_rows, confirmation_row, decision_row, releases, *, current_facts, renewals=()
+):
+	"""Verify the frozen initial root and every independently authorized release.
+
+	This supplied-data contract does not discover or lock database rows. Callers
+	must read all physical events and posted release decisions, authenticate their
+	immutable storage, recheck source rights, and acquire all shared guards.
+	"""
+	from medops.common.budget_reservation_events import MAX_RESERVATION_EVENTS
+	from medops.common.reservation_release import verify_released_reservation_records
+
+	if not isinstance(event_rows, (tuple, list)) or not 1 <= len(event_rows) <= MAX_RESERVATION_EVENTS:
+		raise ValueError("complete bounded reservation history required")
+	if not isinstance(renewals, (tuple, list)):
+		raise ValueError("complete original renewal evidence required")
+	first = reservation_record_from_row(event_rows[0])
+	if first.renewal_decision is not None:
+		_, comparison, decision = verify_renewed_initial_reservation(
+			root, event_rows[:1], confirmation_row, decision_row, renewals, current_facts=current_facts
+		)
+	else:
+		if renewals:
+			raise ValueError("original event cannot have a renewal successor")
+		_, comparison, decision = verify_authorized_initial_reservation(
+			root, event_rows[:1], confirmation_row, decision_row, current_facts=current_facts
+		)
+	item, _ = verify_reservation_authorization_rows(confirmation_row, decision_row)
+	records = [reservation_record_from_row(row) for row in event_rows]
+	position = verify_released_reservation_records(item, records, releases)
+	return position, comparison, decision
+
+
 def verify_authorized_initial_reservation(
 	root: object, event_rows: object, confirmation_row: object, decision_row: object, *, current_facts: object
 ):
