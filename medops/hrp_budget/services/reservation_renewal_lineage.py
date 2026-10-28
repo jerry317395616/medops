@@ -10,7 +10,7 @@ from dataclasses import asdict, dataclass
 
 import frappe
 
-from medops.common.material_source_snapshot import material_source_snapshot
+from medops.common.material_source_snapshot import compare_material_source_history, material_source_snapshot
 from medops.common.reservation_authorization import (
 	AUTHORIZATION_ROW_FIELDS,
 	ReservationConfirmation,
@@ -60,29 +60,38 @@ def _evidence_rows(names):
 	return by_name
 
 
-def _check_source(item, source, actor, session):
+def _check_source(item, source, actor, session, *, allow_progress):
 	require_reservation_actor_scope(item, actor, session)
 	assert_material_budget_guards(source, [item.key])
 	current = locked_material_request_source(source.request, source.line, source.organization_unit)
-	snapshot, digest = material_source_snapshot(asdict(current))
-	if current != source or snapshot != item.source_snapshot or digest != item.source_snapshot_digest:
-		raise ValueError("material source differs from confirmation")
+	if current != source:
+		raise ValueError("locked material source changed")
+	if allow_progress:
+		compare_material_source_history(
+			item.source_snapshot, expected_digest=item.source_snapshot_digest, current_facts=asdict(current)
+		)
+	else:
+		snapshot, digest = material_source_snapshot(asdict(current))
+		if snapshot != item.source_snapshot or digest != item.source_snapshot_digest:
+			raise ValueError("material source differs from confirmation")
 	assert_material_budget_guards(source, [item.key])
 	require_reservation_actor_scope(item, actor, session)
 
 
-def locked_renewal_lineage(item, source, confirmation_name, decision_name):
+def locked_renewal_lineage(item, source, confirmation_name, decision_name, *, allow_progress=False):
 	"""Read all renewal rows for one identity under its already-held guard.
 
 	This is only a locked observation. Complete cooperating writers and protected
 	storage are prerequisites; it must not be used as a posting authorization.
 	"""
 	try:
+		if type(allow_progress) is not bool:
+			raise ValueError("explicit source comparison mode required")
 		if type(item) is not ReservationIntent or type(source) is not MaterialRequestSource:
 			raise ValueError("canonical intent and locked material source required")
 		actor = frappe.session.user
 		session = session_digest("budget-reservation:" + item.reservation_identity)
-		_check_source(item, source, actor, session)
+		_check_source(item, source, actor, session, allow_progress=allow_progress)
 		original_rows = _evidence_rows((confirmation_name, decision_name))
 		first = original_rows[confirmation_name]
 		second = original_rows[decision_name]
@@ -110,7 +119,7 @@ def locked_renewal_lineage(item, source, confirmation_name, decision_name):
 				raise ValueError("renewal confirmation differs from original intent")
 			values.append((new_confirmation, row))
 		pairs = verify_reservation_renewal_rows(item, confirmation, original, values)
-		_check_source(item, source, actor, session)
+		_check_source(item, source, actor, session, allow_progress=allow_progress)
 		return LockedRenewalLineage(confirmation, original, pairs)
 	except (ValueError, TypeError, KeyError) as error:
 		invalidate_budget_guards()
