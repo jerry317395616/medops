@@ -10,11 +10,11 @@ import hashlib
 import hmac
 import json
 from dataclasses import asdict, dataclass, field, replace
-from datetime import datetime
+from datetime import date, datetime
 from decimal import Decimal, localcontext
 from typing import Any
 
-from medops.common.budget_control import BudgetControlKey, budget_control_key
+from medops.common.budget_control import KEY_FIELDS, BudgetControlKey, budget_control_key
 from medops.common.budget_reservation_events import (
 	MAX_RESERVATION_EVENTS,
 	ReservationEvent,
@@ -403,9 +403,7 @@ RELEASE_ROW_FIELDS = frozenset(ReservationReleaseEvidence.__dataclass_fields__) 
 	"evidence_key",
 	"previous_sequence",
 	"previous_event_digest",
-	"company",
-	"hospital",
-	"organization_unit",
+	*KEY_FIELDS,
 	"budget_key_digest",
 	"intent_snapshot_json",
 	"proof_version",
@@ -419,9 +417,7 @@ def reservation_release_row(item, value, confirmed=None):
 		"evidence_key": checked.name,
 		"previous_sequence": item.previous_sequence,
 		"previous_event_digest": item.previous_event_digest,
-		"company": item.key.company,
-		"hospital": item.key.hospital,
-		"organization_unit": item.key.organization_unit,
+		**asdict(item.key),
 		"budget_key_digest": item.key.identity,
 		"intent_snapshot_json": reservation_release_snapshot(item),
 		"acknowledged": int(checked.acknowledged),
@@ -457,6 +453,13 @@ def verify_reservation_release_row(value, confirmed=None):
 	for name in ("confirmation", "one_time_key"):
 		if row[name] == "":
 			row[name] = None
+	for name in ("period_start", "period_end"):
+		if isinstance(row[name], datetime) or not isinstance(row[name], (str, date)):
+			raise ValueError("canonical persisted release period required")
+		if isinstance(row[name], date):
+			row[name] = row[name].isoformat()
+	if row["project"] == "":
+		row["project"] = None
 	item = parse_reservation_release_snapshot(row["intent_snapshot_json"])
 	values = {name: row[name] for name in ReservationReleaseEvidence.__dataclass_fields__}
 	values["acknowledged"] = bool(row["acknowledged"])
