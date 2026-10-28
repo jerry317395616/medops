@@ -9,12 +9,13 @@
     "ADR-0031",
     "ADR-0032",
     "ADR-0038",
-    "ADR-0039"
+    "ADR-0039",
+    "ADR-0040"
   ],
-  "current_scope": "COD035 human Desk Page candidate and private retry journal passed618 pure/13 frontend/all12 quality. Asset/native focus40680330337 at3ea20bb passed7 native+13 frontend, zero Error Log, compiled hash/file/code verified; all15 Page/helper/test/tooling files match. Committed HTTP+contention focus40678619220 at996b70b passed7 native+13 frontend+1 committed probe616.625s, no skips and2 zero Error Log sites; all7 financial API/probe/helper blobs match. Preserve earlier fixture/premature-renewal failures. Productdf963f9 pushed; current full40682448628 has passed Quality/Security, plain/Core native running. Prior sourcee317 full40668646173 passed617 pure,614+25 regular+1 expanded probe each,8 zero Error Log sites and Required; it does not cover the new HTTP/Page. Production gates closed, no server access during maintenance. Real Desk/browser, cross-reload draft recovery, all-writer procurement lifecycle, hospital rules/interfaces/capacity/UAT incomplete.",
+  "current_scope": "COD035 scoped decision/result recovery under ADR0040; current source/budget/full independent history required, no old proof reissue. Page gates new work behind history, restores expired original intent into fresh unchecked review and clears stale empty history after uncertain confirmation recovery. Parser4/frontend19 passed; 622 pure/19 frontend and all12 quality components passed after format-only repair; final checksums/governance passed; native4+committed recovery pending. Earlier df963f9 full40682448628 passed Quality/Security/plain/Core/Required for its exact source (618 pure,646 regular each,1 committed each,8 zero Error Log sites); excludes this recovery slice. Server maintenance active: no connection/deploy. Real Desk, all writers, hospital interfaces/rules/capacity/UAT incomplete.",
   "checks": {
-    "pure_tests_expected": 618,
-    "complete_frappe_tests_expected": 646,
+    "pure_tests_expected": 622,
+    "complete_frappe_tests_expected": 650,
     "exact_foundation_pure_tests_passed": 21,
     "native_foundation": {
       "status": "passed",
@@ -1309,12 +1310,27 @@
       "full_current_source_ci": {
         "run_id": 40682448628,
         "source_commit": "df963f904ab2d3ba65a7221fe8ca493537e11fd0",
-        "status": "in_progress",
+        "status": "passed",
         "Quality": "passed",
         "Security": "passed",
-        "native": "plain and IONE Core running",
+        "native": "plain and IONE Core passed",
         "url": "https://github.com/jerry317395616/medops/actions/runs/40682448628",
-        "integration_budget_minutes": 120
+        "integration_budget_minutes": 120,
+        "Required": "passed",
+        "pure": 618,
+        "native_regular_each": [
+          617,
+          29
+        ],
+        "committed_each": 1,
+        "probe_seconds": {
+          "plain": 649.466,
+          "core": 891.541
+        },
+        "zero_error_log_sites": 8,
+        "skipped_tests": 0,
+        "log": "full-reservation-desk-40682448628.log",
+        "scope": "Exact df963f9 only; does not cover ADR0040 recovery or subsequent navigation changes"
       },
       "product_commit": "df963f904ab2d3ba65a7221fe8ca493537e11fd0"
     },
@@ -1361,6 +1377,56 @@
       "Required": "passed",
       "log": "full-committed-release-40668646173.log",
       "scope": "prior private release/controller and expanded two-process probe; no new human HTTP/Desk Page"
+    },
+    "reservation_recovery": {
+      "status": "candidate_focused_and_full_native_pending",
+      "ADR": "ADR-0040",
+      "pure_new": 4,
+      "frontend_expected": 19,
+      "new_regular_native": 4,
+      "regular_expected": 650,
+      "scope": "current native fields + manager/root write/ledger read, same selected source/key only; no broader grants",
+      "bound_source_originals": 100,
+      "page_limit": 20,
+      "query_drift": "complete catalog digest; target selection still full verified scan",
+      "read_only": "no proof issuance/old receipt decryption/decision mutation/financial or idempotency insert",
+      "states": [
+        "Posted",
+        "Expired",
+        "Decision Valid",
+        "Source Changed"
+      ],
+      "latest_expiry": "complete independent renewal chain, not original stale expiry",
+      "root_reader": "same full guarded independent history; current position verified again",
+      "frontend": "history gate; targeted fresh recheck; original immutable allocation restored into new unchecked review; independent allocation explicit",
+      "cross_session": "current auth may read references; new financial action still needs fresh post-expiry proof and manual acknowledgement",
+      "native_doubles": "temporary evidence tests use source/guard/lineage doubles; dedicated committed probe actual counterpart pending",
+      "initial_local_typecheck": "Two fixture typing errors fixed: explicit AssertionError guard and targeted reportPrivateUsage exception solely for real-check revocation injection. v3 zero errors, one preexisting warning.",
+      "local_parser": "4 passed",
+      "local_frontend": "19 passed",
+      "local_quality": "all12_components_passed_v3_plus_format_only_repair; final_checksums_and_governance_passed",
+      "focused_source": "2af1a71802663813d603f8019fce5c9829c22ac9",
+      "focused_status": "in_progress",
+      "server_accessed": false,
+      "first_focused_run_id": 40692973051,
+      "first_focused_status": "failed_setup_all4_unexecuted",
+      "first_focused_failure": "MariaDB1066 same-name CREATE TEMPORARY TABLE LIKE source; template clone fixed; no service case ran",
+      "retry_focused_run_id": 40694061543,
+      "retry_focused_source": "2af1a71802663813d603f8019fce5c9829c22ac9",
+      "retry_focused_status": "in_progress",
+      "first_local_quality": "622 pure passed; checksums failed because native fixture corrected while run active; retain failure",
+      "first_local_quality_log": "quality-reservation-recovery-candidate.log",
+      "second_local_quality": "622 pure and checksums passed; typecheck failed with the same2 fixture errors, corrected; retain failure",
+      "second_local_quality_log": "quality-reservation-recovery-frozen-v2.log",
+      "uncertain_confirmation_recovery": "Clears the earlier empty directory after known original retry result, preventing a new preview before fresh history lookup",
+      "local_quality_log": "quality-reservation-recovery-frozen-v3.log",
+      "local_quality_scope": "v3 passed622 pure,19 frontend and type/lint/security; final Prettier failed on one new test assertion. Format-only repair passed complete formatter. No product/pure source changed after v3.",
+      "third_local_quality": "11 of12 passed; Prettier formatting failed and then passed after format-only repair",
+      "current_frontend_count": 19,
+      "source_proof": "reservation-recovery-source-proof.json",
+      "all6_financial_api_reader_and_http_blobs_match_focus": true,
+      "current_source_native": "pending; focus native fixture differs only explicit assertion/private-seam typing, Page/cache regression later added",
+      "final_governance": "passed COD-035-recovery-final-local against6a47d74,20 files,required high/record critical; no production/http write enabled"
     }
   },
   "previous_verified_release": {

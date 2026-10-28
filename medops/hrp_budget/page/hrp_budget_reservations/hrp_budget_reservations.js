@@ -6,6 +6,7 @@ frappe.pages["hrp-budget-reservations"].on_page_load = async (wrapper) => {
 	const form = $("<div class='row'></div>").appendTo(page.main);
 	const selection = $("<div class='mb-3'></div>").appendTo(page.main);
 	const picker = $("<div class='mb-3'></div>").appendTo(page.main);
+	const recoveryPanel = $("<div class='mb-3'></div>").appendTo(page.main);
 	const results = $("<div class='mb-3'></div>").appendTo(page.main);
 	const controls = {};
 	let source = null,
@@ -16,6 +17,8 @@ frappe.pages["hrp-budget-reservations"].on_page_load = async (wrapper) => {
 		version = 0,
 		syncing = false;
 	let allocation = null;
+	let recovery = null,
+		newAllowed = false;
 	let lastOriginal = null,
 		lastPosted = null;
 	const journal = new frappe.medops.ReservationSession(
@@ -47,8 +50,10 @@ frappe.pages["hrp-budget-reservations"].on_page_load = async (wrapper) => {
 	function update() {
 		tools.find("button").prop("disabled", blocked() || !!activeDialog);
 		resume.prop("disabled", journal.status.busy || !activeDialog);
+		lastResult.prop("disabled", blocked() || !!activeDialog || !lastPosted);
 		form.find("input,textarea,select,button").prop("disabled", blocked() || !!activeDialog);
 		picker.find("button").prop("disabled", blocked() || !!activeDialog);
+		recoveryPanel.find("button").prop("disabled", blocked() || !!activeDialog);
 	}
 	async function read(method, args, type = "GET") {
 		reads += 1;
@@ -81,9 +86,15 @@ frappe.pages["hrp-budget-reservations"].on_page_load = async (wrapper) => {
 			source = null;
 			budget = null;
 			allocation = null;
+			recovery = null;
+			newAllowed = false;
+			recoveryPanel.empty();
 		} else if (["fiscal_year", "currency"].includes(name)) {
 			budget = null;
 			allocation = null;
+			recovery = null;
+			newAllowed = false;
+			recoveryPanel.empty();
 		}
 		renderSelection();
 	}
@@ -146,6 +157,9 @@ frappe.pages["hrp-budget-reservations"].on_page_load = async (wrapper) => {
 			source = { snapshot: item.source_snapshot, digest: item.source_snapshot_digest, facts };
 			budget = null;
 			allocation = null;
+			recovery = null;
+			newAllowed = false;
+			recoveryPanel.empty();
 			book = null;
 			picker.empty();
 			syncing = true;
@@ -278,6 +292,7 @@ frappe.pages["hrp-budget-reservations"].on_page_load = async (wrapper) => {
 					}
 					picker.empty();
 					renderSelection();
+					await loadRecovery();
 				});
 			});
 			if (!matches)
@@ -292,6 +307,124 @@ frappe.pages["hrp-budget-reservations"].on_page_load = async (wrapper) => {
 				status.text(__("完整预算账簿未能核验，请重新查询并检查当前权限。"));
 			}
 		}
+	}
+	function recoveryQuery(extra = {}) {
+		if (!source || !budget) return null;
+		return {
+			source_snapshot: source.snapshot,
+			source_snapshot_digest: source.digest,
+			budget_key: budget.key,
+			...extra,
+		};
+	}
+	async function loadRecovery(offset = 0, decision = null) {
+		if (blocked() || activeDialog) return null;
+		const query = recoveryQuery({
+			offset,
+			limit: 20,
+			expected_digest: offset ? recovery?.directory_digest : null,
+			decision,
+		});
+		if (!query) return null;
+		const id = version;
+		try {
+			const result = await read(
+				"medops.api.v1.finance.reservation_operations.recovery",
+				{ payload: query },
+				"POST",
+			);
+			if (id !== version) return null;
+			if (
+				result.effect !== "read_only" ||
+				result.source_snapshot_digest !== query.source_snapshot_digest ||
+				!Array.isArray(result.rows) ||
+				Object.entries(query.budget_key).some(([key, value]) => result.budget_key?.[key] !== value)
+			)
+				throw new Error("Invalid recovery response");
+			if (decision) return result;
+			recovery = result;
+			newAllowed = result.total_rows === 0;
+			recoveryPanel.empty();
+			fact(
+				recoveryPanel,
+				"已确认操作与预占结果",
+				`${offset + (result.rows.length ? 1 : 0)} — ${offset + result.rows.length} / ${result.total_rows}`,
+			);
+			if (!result.rows.length)
+				fact(recoveryPanel, "当前未找到已确认记录", __("新预占仍须独立核对并明确确认。"));
+			for (const row of result.rows) {
+				const card = $("<div class='border rounded p-3 mb-2'></div>").appendTo(recoveryPanel);
+				fact(card, "分摊编号", row.allocation);
+				fact(card, "原决定金额", `${row.currency} ${row.amount}`);
+				fact(card, "确认时间（站点时间）", row.recorded_at);
+				fact(
+					card,
+					"当前状态",
+					{
+						Posted: __("已发生预占"),
+						Expired: __("已到期，尚未预占"),
+						"Decision Valid": __("决定仍有效，尚未预占"),
+						"Source Changed": __("来源已变化，禁止续期"),
+					}[row.state] || row.state,
+				);
+				if (row.expires_at) fact(card, "上一决定有效期至（站点时间）", row.expires_at);
+				if (row.state === "Posted") button(card, "查看已发生预占", () => showReservation(row.reservation));
+				if (row.state === "Expired") button(card, "恢复并重新核对续期", () => recoverDecision(row.decision));
+			}
+			if (offset) button(recoveryPanel, "上一页历史操作", () => loadRecovery(Math.max(0, offset - 20)));
+			if (offset + result.rows.length < result.total_rows)
+				button(recoveryPanel, "下一页历史操作", () => loadRecovery(offset + 20));
+			return result;
+		} catch {
+			if (id === version) {
+				recovery = null;
+				newAllowed = false;
+				recoveryPanel.empty();
+				status.text(__("历史操作未能完整核验，请重新查询第一页或重新选择采购来源。"));
+			}
+			return null;
+		}
+	}
+	async function recoverDecision(decision) {
+		if (blocked() || activeDialog) return;
+		const id = version,
+			query = recoveryQuery();
+		const result = await loadRecovery(0, decision);
+		if (!result || id !== version || !query) return;
+		const row = result.rows.find((row) => row.decision === decision);
+		if (!row) return status.text(__("该决定已不在当前可恢复目录中，请重新查询。"));
+		if (row.state === "Posted") return showReservation(row.reservation);
+		if (row.state !== "Expired" || !row.intent)
+			return status.text(__("上一决定尚未到期或来源已变化，请重新核对目录；不能提前续期。"));
+		const saved = Object.fromEntries(
+			["allocation", "currency", "precision", "amount", "budget_date", "reason"].map((field) => [
+				field,
+				row.intent[field],
+			]),
+		);
+		const payload = {
+			source_snapshot: query.source_snapshot,
+			source_snapshot_digest: query.source_snapshot_digest,
+			budget_key: query.budget_key,
+			...saved,
+		};
+		syncing = true;
+		try {
+			await controls.amount.set_value(row.intent.amount);
+			await controls.budget_date.set_value(row.intent.budget_date);
+			await controls.reason.set_value(row.intent.reason);
+		} finally {
+			syncing = false;
+		}
+		allocation = row.intent.allocation;
+		lastOriginal = {
+			confirmation: row.confirmation,
+			decision: row.decision,
+			expires_at: row.expires_at,
+			payload,
+		};
+		newAllowed = false;
+		return startPreview(payload, lastOriginal);
 	}
 	function reviewDialog(preview, payload, original = null, releaseSource = null) {
 		const id = version;
@@ -355,6 +488,8 @@ frappe.pages["hrp-budget-reservations"].on_page_load = async (wrapper) => {
 							payload,
 							expires_at: preview.expires_at,
 						};
+						recovery = null;
+						newAllowed = false;
 						if (id !== version) {
 							proof = null;
 							activeDialog = null;
@@ -465,6 +600,8 @@ frappe.pages["hrp-budget-reservations"].on_page_load = async (wrapper) => {
 				const pending = journal.retry();
 				update();
 				const result = await pending;
+				recovery = null;
+				newAllowed = false;
 				proof = null;
 				activeDialog = null;
 				dialog.hide();
@@ -530,6 +667,8 @@ frappe.pages["hrp-budget-reservations"].on_page_load = async (wrapper) => {
 	}
 	function prepare() {
 		if (blocked() || activeDialog) return;
+		if (!recovery || !newAllowed)
+			return frappe.msgprint(__("请先查询并恢复已有操作；需要新增独立分摊时，请明确选择新增。"));
 		const payload = intentPayload();
 		if (!payload) return frappe.msgprint(__("请选定采购明细和下达预算，并填写精确金额、业务日期及理由。"));
 		startPreview(payload);
@@ -547,6 +686,8 @@ frappe.pages["hrp-budget-reservations"].on_page_load = async (wrapper) => {
 				"POST",
 			);
 			if (id !== version) return;
+			if (item.effect !== "read_only" || item.position?.reservation !== name)
+				throw new Error("Invalid reservation response");
 			fact(results, "预占编号", name);
 			fact(results, "采购来源", `${item.source.request} · ${item.source.item_code} · ${item.source.line}`);
 			for (const [field, label] of [
@@ -613,6 +754,13 @@ frappe.pages["hrp-budget-reservations"].on_page_load = async (wrapper) => {
 	button(tools, "选择采购明细", lines);
 	button(tools, "选择下达预算", () => budgets());
 	button(tools, "核对预占", prepare, true);
+	button(tools, "查询历史决定与结果", () => loadRecovery());
+	button(tools, "新增独立分摊", () => {
+		if (blocked() || activeDialog || !recovery || !source || !budget) return;
+		allocation = `purchase-${frappe.utils.get_random(24)}`;
+		newAllowed = true;
+		status.text(__("将新增一份独立分摊，已有操作保留；请核对新的金额、日期和理由，再点核对预占。"));
+	});
 	button(tools, "续期上次已确认决定", () => {
 		if (blocked() || activeDialog) return;
 		const payload = intentPayload();
@@ -628,6 +776,12 @@ frappe.pages["hrp-budget-reservations"].on_page_load = async (wrapper) => {
 			return activeDialog?.retryOriginal();
 		activeDialog?.show();
 	});
+	const lastResult = button(tools, "查看上次完成结果", () => {
+		if (blocked() || activeDialog || !lastPosted) return;
+		const name = lastPosted;
+		lastPosted = null;
+		return showReservation(name);
+	});
 	button(tools, "下达与冲销", () => frappe.set_route("hrp-budget-operations"));
 	wrapper.reservationsRefresh = () => {
 		update();
@@ -635,13 +789,13 @@ frappe.pages["hrp-budget-reservations"].on_page_load = async (wrapper) => {
 			if (journal.status.uncertain) activeDialog.show();
 			return;
 		}
+		const name = frappe.get_route()[1];
+		if (name) return showReservation(name);
 		if (lastPosted) {
 			const name = lastPosted;
 			lastPosted = null;
 			return showReservation(name);
 		}
-		const name = frappe.get_route()[1];
-		if (name) return showReservation(name);
 		status.text(__("先选采购明细，再选历史下达预算。确认后才预占；查询完整当前位置后可独立确认释放。"));
 	};
 	return wrapper.reservationsRefresh();
