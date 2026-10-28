@@ -918,7 +918,7 @@
       "required_passed": true
     },
     "guarded_reservation_release_history": {
-      "status": "candidate_pending_validation",
+      "status": "focused_native_passed_full_ci_pending",
       "pure_added": 2,
       "native_added": 8,
       "scope_columns_added": 6,
@@ -932,7 +932,7 @@
       "initial_local_quality": "failed_governance_security_description_limit; replaced accumulated description with current bounded change summary; rerun required",
       "focused_run_id": 40654824650,
       "focused_source_commit": "410c50d7dd0fe4b82ade9b5e19f93818a53eab2e",
-      "focused_status": "pending_persisted_base_table_metadata_fix",
+      "focused_status": "passed",
       "local_quality_before_native_test_refinement": "passed613_all_steps_zero_type_errors_one_existing_warning",
       "attempts": [
         {
@@ -957,7 +957,25 @@
       "quality_log": "quality-release-history-base-final.log",
       "current_changed_code_tests_design_all_match_focus_source": true,
       "source_match_proof": "release-history-base-source-proof.json",
-      "full_current_source_ci": "not_dispatched_yet"
+      "full_current_source_ci": {
+        "run_id": 40656055185,
+        "source_commit": "cebf623241b838bb82ad28c28d2bf02323324386",
+        "status": "in_progress",
+        "url": "https://github.com/jerry317395616/medops/actions/runs/40656055185"
+      },
+      "focused_native_counts": [
+        2,
+        22,
+        32,
+        11,
+        2
+      ],
+      "focused_pure_count": 13,
+      "focused_native_total": 69,
+      "focused_error_log_count": 0,
+      "focused_skipped": 0,
+      "focused_log": "release-history-base-40654824650.log",
+      "product_commit": "cebf623241b838bb82ad28c28d2bf02323324386"
     },
     "prior_release_storage_full_ci": {
       "status": "passed",

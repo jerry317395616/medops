@@ -117,7 +117,7 @@
 		"New native release history cases use real budget guards and connection-private synthetic tables with source/access readers substituted. They do not prove a human financial release, all writer fencing or hospital load.",
 		"Verify6 new scope columns, reservation/company/budget_subject indexes and physical unique successors before private evidence reads. No migration or automatic evidence backfill on the maintained server.",
 		"Prior full CI40624593467 passed at12cc6f3 with600 pure and602+25 native per environment; six Error Log zero sites and Required. Closed21-field storage focus40631555969 passed at626ed2b. Neither validates the new guarded reads.",
-		"Record current-source focused/full CI separately. Prior full CI40631717201 passed at3e7a5be with611 pure,604+25 native and1 committed concurrency per environment;8 zero Error Log sites. Security timeout retry passed. New guarded read focus40654824650 remains pending.",
+		"Current-source focus40654824650 passed at410c50d:69 native+13 pure, no skips, Error Log0. All14 changed app/test/design blobs match productcebf623. Full CI40656055185 atcebf623 is running; keep its status separate from prior3e7a5be full pass.",
 		"Release posting, fresh human HTTP/UI confirmation, initial receipt replay after later events, write rollback/concurrency and hospital acceptance remain required before production."
 	],
 	"owner": "MedOps Maintainers",
