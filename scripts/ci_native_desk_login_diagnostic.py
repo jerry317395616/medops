@@ -18,7 +18,8 @@ def main():
     bench = Path(os.environ["BENCH_DIR"]).resolve()
     process = browser = context = page = None
     stage = "containment"
-    result = {"status": "failed", "page_errors": [], "failed_assets": [], "financial_calls": 0}
+    result = {"status": "failed", "page_errors": [], "failed_assets": [], "financial_calls": 0,
+              "network": []}
     output = Path(os.environ["RUNNER_TEMP"]) / "native-reservation-desk-evidence"
     try:
         frappe = connect(bench)
@@ -83,6 +84,9 @@ def main():
 
             def response_seen(response):
                 target = urlsplit(response.url)
+                if target.hostname == SITE and (target.path.startswith("/api/") or target.path.startswith("/assets/")):
+                    result["network"].append({"path": target.path[-200:], "status": response.status})
+                    result["network"] = result["network"][-50:]
                 if response.status >= 400 and target.path.startswith("/assets/"):
                     result["failed_assets"].append({"path": target.path[-250:], "status": response.status})
 
@@ -123,10 +127,17 @@ def main():
                 context.close()
                 browser.close()
                 page = context = browser = None
-            except BaseException:
-                result["browser_state"] = page.evaluate("() => ({path: location.pathname, has_frappe: !!window.frappe, has_boot: !!window.frappe?.boot, admin_boot: window.frappe?.boot?.user?.name === 'Administrator', has_jquery: !!window.jQuery, email_visible: !!document.querySelector('#login_email')?.offsetParent, password_visible: !!document.querySelector('#login_password')?.offsetParent})")
-                page.screenshot(path=str(output / "failed-native-desk.png"), full_page=True,
-                                mask=[page.locator("#login_password")], timeout=10000)
+            except BaseException as primary:
+                result["primary_error_type"] = type(primary).__name__
+                result["primary_error_sha256"] = hashlib.sha256(str(primary).encode()).hexdigest()
+                result["browser_state"] = page.evaluate("() => ({path: location.pathname, ready: document.readyState, has_frappe: !!window.frappe, has_boot: !!window.frappe?.boot, admin_boot: window.frappe?.boot?.user?.name === 'Administrator', has_jquery: !!window.jQuery, has_app: !!window.frappe?.app, has_application_class: !!window.frappe?.Application, has_container: !!window.frappe?.container, has_route: !!window.frappe?.set_route, body_children: document.querySelector('#body')?.childElementCount ?? -1, script_count: document.scripts.length, email_visible: !!document.querySelector('#login_email')?.offsetParent, password_visible: !!document.querySelector('#login_password')?.offsetParent})")
+                try:
+                    masks = [page.locator("#login_password")] if page.locator("#login_password").count() else []
+                    page.screenshot(path=str(output / "failed-native-desk.png"), full_page=False,
+                                    mask=masks, timeout=10000)
+                except BaseException as capture:
+                    result["capture_error_type"] = type(capture).__name__
+                context.unroute_all(behavior="ignoreErrors")
                 raise
 
         stage = "final_evidence"
