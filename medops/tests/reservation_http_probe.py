@@ -2,6 +2,11 @@
 
 from __future__ import annotations
 
+import cProfile
+import json
+import pstats
+from pathlib import Path
+from time import monotonic
 from contextlib import ExitStack
 from dataclasses import asdict
 from datetime import timedelta
@@ -48,13 +53,29 @@ def exercise_reservation_http(test, row, amount, item_name, unit_name):
 	frappe.db.rollback()
 	test.login_actor("Administrator")
 
+	profiled = False
+
 	def request(method, payload, *, key=None, status=200) -> dict[str, Any]:
+		nonlocal profiled
 		print("MEDOPS_HTTP_CI:" + method, flush=True)
+		profiler = cProfile.Profile() if method == OPERATIONS + "recovery" and not profiled else None
+		if profiler is not None:
+			profiled = True
+			profiler.enable()
+		started = monotonic()
 		response = test.post(
 			test.method(BASE + method),
 			{"payload": payload},
 			headers={"Idempotency-Key": key or "ci-human-http-" + uuid4().hex},
 		)
+		print(f"MEDOPS_HTTP_TIMING:{method}:{response.status_code}:{monotonic() - started:.6f}", flush=True)
+		if profiler is not None:
+			profiler.disable()
+			stats = pstats.Stats(profiler).stats
+			rows = []
+			for (filename, line, name), (primitive, calls, own, total, callers) in sorted(stats.items(), key=lambda pair: pair[1][3], reverse=True)[:45]:
+				rows.append({"file": "/".join(Path(filename).parts[-4:]), "line": line, "function": name, "calls": calls, "own_seconds": own, "cumulative_seconds": total})
+			print("MEDOPS_RECOVERY_PROFILE:" + json.dumps(rows), flush=True)
 		test.assertEqual(response.status_code, status, response.get_data(as_text=True))
 		frappe.db.rollback()
 		if status != 200:
@@ -244,6 +265,41 @@ def exercise_reservation_http(test, row, amount, item_name, unit_name):
 		test.login_actor("Administrator")
 		request(OPERATIONS + "post_release", unused, status=403)
 		test.assertEqual(recovered(data, original_post["decision"])["reservation"], root)
+	# Native ERP entry points must not destroy a valid registered source, even
+	# after its reservation has been fully released. No proof is sent here.
+	first_source = items_source(items[0])
+	for method, arguments in (
+		(
+			"erpnext.stock.doctype.material_request.material_request.update_status",
+			{"name": first_source["request"], "status": "Stopped"},
+		),
+		(
+			"frappe.client.set_value",
+			{
+				"doctype": "Material Request Item",
+				"name": first_source["line"],
+				"fieldname": "rate",
+				"value": "999",
+			},
+		),
+		("frappe.client.cancel", {"doctype": "Material Request", "name": first_source["request"]}),
+	):
+		response = test.post(test.method(method), arguments)
+		test.assertEqual(response.status_code, 403)
+		frappe.db.rollback()
+	test.assertEqual(frappe.get_doc(ROOT, initial["reservation"]).as_dict(), frozen)
+	frappe.db.rollback()
+	progress = test.post(
+		test.method("erpnext.stock.doctype.material_request.material_request.update_status"),
+		{"name": first_source["request"], "status": "Ordered"},
+	)
+	test.assertEqual(progress.status_code, 200)
+	frappe.db.rollback()
+	test.assertEqual(
+		request(OPERATIONS + "inspect", {"reservation": initial["reservation"]})["position"]["reservation"],
+		initial["reservation"],
+	)
+	test.assertEqual(recovered(payload(items[0]), command["decision"])["reservation"], initial["reservation"])
 	test.assertEqual(frappe.db.count(EVENT, {"reservation": root}), 1)
 	test.assertEqual(frappe.db.count(RELEASE, {"reservation": root, "event_kind": "Decision"}), 0)
 	test.assertEqual(frappe.db.count(ROOT), before[ROOT] + 2)

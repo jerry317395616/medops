@@ -85,6 +85,21 @@ def require_material_source_lock_order(request: str, line: str, unit: str) -> No
 	assert_budget_guards(marker.keys)
 
 
+def require_material_parent_lock_order(request: str) -> None:
+	"""Native hooks may revisit a prebound parent, never lock a new parent late."""
+	marker = getattr(getattr(frappe.local, "db", None), "_medops_budget_guard_marker", None)
+	if marker is None:
+		return
+	if (
+		not isinstance(marker, _GuardMarker)
+		or marker.state.invalidated
+		or not any(binding[0] == request for binding in marker.source_bindings)
+	):
+		invalidate_budget_guards()
+		raise_ione_error("OPERATION_NOT_ALLOWED")
+	assert_budget_guards(marker.keys)
+
+
 def assert_material_guard_binding(keys, binding: MaterialBinding) -> None:
 	"""Require the source snapshot associated with a live budget guard."""
 	assert_budget_guards(keys)
