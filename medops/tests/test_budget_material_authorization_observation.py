@@ -31,8 +31,19 @@ from medops.common.reservation_authorization import (
 	reservation_confirmation,
 	reservation_decision,
 	reservation_intent,
+	verify_reservation_authorization_rows,
+	verify_reservation_confirmation_row,
 )
-from medops.hrp_budget.services import budget_usage_observation, material_usage_sources
+from medops.common.reservation_renewal import (
+	RENEWAL_ROW_FIELDS,
+	reservation_renewal_decision,
+	reservation_renewal_row,
+)
+from medops.hrp_budget.services import (
+	budget_usage_observation,
+	material_usage_sources,
+	reservation_renewal_lineage,
+)
 from medops.hrp_budget.services import material_authorization_observation as observation
 from medops.hrp_budget.services.control_guards import (
 	acquire_multi_source_bound_budget_guards,
@@ -156,6 +167,7 @@ class TestBudgetMaterialAuthorizationObservation(IntegrationTestCase):
 			("tabHRP Budget Reservation", ANCHOR_ROW_FIELDS | {"source_snapshot_json"}),
 			("tabHRP Budget Reservation Event", ROW_FIELDS),
 			("tabHRP Budget Reservation Authorization", AUTHORIZATION_ROW_FIELDS),
+			("tabHRP Budget Reservation Renewal", RENEWAL_ROW_FIELDS),
 		)
 		integers = {"event_count", "sequence", "currency_precision", "proof_version", "acknowledged"}
 		for table, fields in self.tables:
@@ -183,6 +195,81 @@ class TestBudgetMaterialAuthorizationObservation(IntegrationTestCase):
 			f"INSERT INTO `{table}` ({columns}) VALUES ({placeholders})",  # nosec B608 - fixed synthetic rows
 			tuple(row[field] for field in fields),
 		)
+
+	def renewal_fixture(self):
+		source, item, _, _, first, original_row = synthetic_rows()
+		_, initial = verify_reservation_confirmation_row(first)
+		_, original = verify_reservation_authorization_rows(first, original_row)
+		proof = "synthetic_renewal_confirmation_1234567890"
+		start = datetime.fromisoformat(original.expires_at)
+		confirmed = reservation_confirmation(
+			item,
+			actor="manager@example.com",
+			proof_hash=hashlib.sha256(proof.encode()).hexdigest(),
+			session_digest="b" * 64,
+			recorded_at=start.isoformat(sep=" ", timespec="microseconds"),
+			expires_at=(start + timedelta(minutes=5)).isoformat(sep=" ", timespec="microseconds"),
+		)
+		decision = reservation_renewal_decision(
+			item,
+			initial,
+			original,
+			(),
+			confirmed,
+			proof=proof,
+			actor="manager@example.com",
+			session_digest="b" * 64,
+			recorded_at=(start + timedelta(seconds=1)).isoformat(sep=" ", timespec="microseconds"),
+			acknowledge=True,
+		)
+		for evidence in (first, original_row, reservation_authorization_row(item, confirmed)):
+			self.insert_row("tabHRP Budget Reservation Authorization", evidence)
+		self.insert_row(
+			"tabHRP Budget Reservation Renewal",
+			reservation_renewal_row(item, initial, original, (), confirmed, decision),
+		)
+		binding = (source.request, source.line, source.organization_unit, source.digest())
+		acquire_multi_source_bound_budget_guards([item.key], source_bindings=(binding,))
+		return source, item, first, original_row, confirmed, decision
+
+	def test_guarded_renewal_reads_complete_chain_and_rejects_tamper(self):
+		source, item, first, original, confirmed, decision = self.renewal_fixture()
+		with (
+			patch.object(reservation_renewal_lineage, "session_digest", return_value="a" * 64),
+			patch.object(reservation_renewal_lineage, "require_reservation_actor_scope"),
+			patch.object(reservation_renewal_lineage, "locked_material_request_source", return_value=source),
+		):
+			observed = reservation_renewal_lineage.locked_renewal_lineage(
+				item, source, first["name"], original["name"]
+			)
+			self.assertEqual(observed.renewals, ((confirmed, decision),))
+			assert_budget_guards([item.key])
+			# The table is connection-private and contains only synthetic evidence.
+			frappe.db.sql(
+				"UPDATE `tabHRP Budget Reservation Renewal` SET `previous_decision`=%s", ("f" * 64,)
+			)
+			with self.assertRaises(IoneApplicationError):
+				reservation_renewal_lineage.locked_renewal_lineage(
+					item, source, first["name"], original["name"]
+				)
+			with self.assertRaises(IoneApplicationError):
+				assert_budget_guards([item.key])
+
+	def test_guarded_renewal_rejects_missing_confirmation(self):
+		source, item, first, original, confirmed, _ = self.renewal_fixture()
+		# Only a connection-private synthetic fixture is modified.
+		frappe.db.sql(
+			"DELETE FROM `tabHRP Budget Reservation Authorization` WHERE `name`=%s", (confirmed.name,)
+		)
+		with (
+			patch.object(reservation_renewal_lineage, "session_digest", return_value="a" * 64),
+			patch.object(reservation_renewal_lineage, "require_reservation_actor_scope"),
+			patch.object(reservation_renewal_lineage, "locked_material_request_source", return_value=source),
+			self.assertRaises(IoneApplicationError),
+		):
+			reservation_renewal_lineage.locked_renewal_lineage(item, source, first["name"], original["name"])
+		with self.assertRaises(IoneApplicationError):
+			assert_budget_guards([item.key])
 
 	def test_real_sql_requires_one_bound_initial_decision(self):
 		source, item, root, events, confirmation, decision = synthetic_rows()

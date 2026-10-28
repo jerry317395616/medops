@@ -10,9 +10,51 @@ from medops.common.error_catalog import IoneApplicationError
 DOCTYPE = "HRP Budget Reservation Event"
 AGGREGATE = "HRP Budget Reservation"
 AUTHORIZATION = "HRP Budget Reservation Authorization"
+RENEWAL = "HRP Budget Reservation Renewal"
 
 
 class TestBudgetReservationStorage(FrappeTestCase):
+	def test_renewal_storage_denies_writes_and_has_database_unique_successor(self):
+		before = frappe.db.count(RENEWAL)
+		doc = frappe.get_doc(dict(doctype=RENEWAL))
+		for action in (
+			lambda: doc.insert(ignore_permissions=True, ignore_links=True, ignore_mandatory=True),
+			doc.db_insert,
+			doc.db_update,
+			lambda: doc.db_set("acknowledged", 1),
+			doc.on_trash,
+			lambda: doc.before_rename("old", "new", False),
+		):
+			with self.subTest(action=action), self.assertRaises(IoneApplicationError):
+				action()
+		self.assertEqual(frappe.db.count(RENEWAL), before)
+		meta = frappe.get_meta(RENEWAL)
+		self.assertFalse(meta.istable or meta.issingle or meta.is_submittable or meta.allow_rename)
+		self.assertEqual(meta.permissions, [])
+		for field in ("proof_hash", "session_digest"):
+			self.assertTrue(meta.get_field(field).hidden and int(meta.get_field(field).permlevel) == 1)
+		required = {"evidence_key", "confirmation", "one_time_key", "event_digest"}
+		for field in required:
+			self.assertTrue(meta.get_field(field).unique)
+			self.assertTrue(frappe.db.has_column(RENEWAL, field))
+		rows = frappe.db.sql(
+			"""SELECT COLUMN_NAME, INDEX_NAME, NON_UNIQUE, SEQ_IN_INDEX FROM information_schema.STATISTICS
+			WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME=%s""",
+			("tabHRP Budget Reservation Renewal",),
+			as_dict=True,
+		)
+		indexes = {}
+		for row in rows:
+			if not int(row.NON_UNIQUE):
+				indexes.setdefault(row.INDEX_NAME, []).append((int(row.SEQ_IN_INDEX), row.COLUMN_NAME))
+		unique_columns = {
+			columns[0][1] for columns in indexes.values() if len(columns) == 1 and columns[0][0] == 1
+		}
+		self.assertTrue(required <= unique_columns)
+		self.assertTrue(
+			any(row.COLUMN_NAME == "reservation_identity" and int(row.SEQ_IN_INDEX) == 1 for row in rows)
+		)
+
 	def test_reservation_authorization_storage_is_closed_and_has_unique_keys(self):
 		before = frappe.db.count(AUTHORIZATION)
 		doc = frappe.get_doc(dict(doctype=AUTHORIZATION))

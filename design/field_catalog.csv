@@ -13689,3 +13689,24 @@ medops,HRP Budget,HRP Budget Reservation Authorization,20,event_digest,证据摘
 medops,HRP Budget,HRP Budget Reservation Authorization,21,intent_snapshot_json,确认意图快照,Long Text,,1,0,0,1,0,,,,确认意图快照,Finance
 medops,HRP Budget,HRP Budget Reservation Authorization,22,source_snapshot_json,历史来源快照,Long Text,,1,0,0,1,0,,,,历史来源快照,Finance
 medops,HRP Budget,HRP Budget Reservation Authorization,23,proof_version,证明版本,Int,,1,0,0,1,0,,,,证明版本,Finance
+medops,HRP Budget,HRP Budget Reservation Renewal,1,evidence_key,续期证据标识,Data,,1,1,0,1,0,,,,续期证据标识,Finance
+medops,HRP Budget,HRP Budget Reservation Renewal,2,original_decision,原始决定,Link,HRP Budget Reservation Authorization,1,0,1,1,0,,,,原始决定,Finance
+medops,HRP Budget,HRP Budget Reservation Renewal,3,previous_decision,前一决定标识,Data,,1,0,0,1,0,,,,前一决定标识,Finance
+medops,HRP Budget,HRP Budget Reservation Renewal,4,sequence,续期序号,Int,,1,0,0,1,0,,,,续期序号,Finance
+medops,HRP Budget,HRP Budget Reservation Renewal,5,reservation_identity,来源分摊标识,Data,,1,0,1,1,0,,,,来源分摊标识,Finance
+medops,HRP Budget,HRP Budget Reservation Renewal,6,intent_digest,确认意图摘要,Data,,1,0,0,1,0,,,,确认意图摘要,Finance
+medops,HRP Budget,HRP Budget Reservation Renewal,7,source_snapshot_digest,来源快照摘要,Data,,1,0,0,1,0,,,,来源快照摘要,Finance
+medops,HRP Budget,HRP Budget Reservation Renewal,8,budget_key_digest,预算范围摘要,Data,,1,0,0,1,0,,,,预算范围摘要,Finance
+medops,HRP Budget,HRP Budget Reservation Renewal,9,company,法人,Link,Company,1,0,1,1,0,,,,法人,Finance
+medops,HRP Budget,HRP Budget Reservation Renewal,10,hospital,医院,Link,HRP Hospital,1,0,1,1,0,,,,医院,Finance
+medops,HRP Budget,HRP Budget Reservation Renewal,11,organization_unit,原始科室,Link,HRP Organization Unit,1,0,1,1,0,,,,原始科室,Finance
+medops,HRP Budget,HRP Budget Reservation Renewal,12,confirmation,续期确认,Link,HRP Budget Reservation Authorization,1,1,0,1,0,,,,续期确认,Finance
+medops,HRP Budget,HRP Budget Reservation Renewal,13,actor,确认人,Link,User,1,0,0,1,0,,,,确认人,Finance
+medops,HRP Budget,HRP Budget Reservation Renewal,14,proof_hash,确认凭证摘要,Data,,1,0,0,1,0,,,,确认凭证摘要,Finance
+medops,HRP Budget,HRP Budget Reservation Renewal,15,session_digest,会话摘要,Data,,1,0,0,1,0,,,,会话摘要,Finance
+medops,HRP Budget,HRP Budget Reservation Renewal,16,recorded_at,决定时间,Datetime,,1,0,0,1,0,,,,决定时间,Finance
+medops,HRP Budget,HRP Budget Reservation Renewal,17,expires_at,确认有效期,Datetime,,1,0,0,1,0,,,,确认有效期,Finance
+medops,HRP Budget,HRP Budget Reservation Renewal,18,acknowledged,明确确认,Check,,0,0,0,1,0,,,,明确确认,Finance
+medops,HRP Budget,HRP Budget Reservation Renewal,19,one_time_key,前任唯一后继键,Data,,1,1,0,1,0,,,,前任唯一后继键,Finance
+medops,HRP Budget,HRP Budget Reservation Renewal,20,event_digest,证据摘要,Data,,1,1,0,1,0,,,,证据摘要,Finance
+medops,HRP Budget,HRP Budget Reservation Renewal,21,proof_version,证明版本,Int,,1,0,0,1,0,,,,证明版本,Finance
