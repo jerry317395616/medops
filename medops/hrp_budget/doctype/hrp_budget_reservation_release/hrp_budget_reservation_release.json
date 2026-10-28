@@ -1,0 +1,221 @@
+{
+	"doctype": "DocType",
+	"name": "HRP Budget Reservation Release",
+	"module": "HRP Budget",
+	"custom": 0,
+	"engine": "InnoDB",
+	"autoname": "field:evidence_key",
+	"title_field": "evidence_key",
+	"is_submittable": 0,
+	"istable": 0,
+	"issingle": 0,
+	"track_changes": 0,
+	"allow_rename": 0,
+	"editable_grid": 0,
+	"field_order": [
+		"evidence_key",
+		"event_kind",
+		"reservation",
+		"previous_sequence",
+		"previous_event_digest",
+		"intent_digest",
+		"budget_key_digest",
+		"company",
+		"hospital",
+		"organization_unit",
+		"actor",
+		"proof_hash",
+		"session_digest",
+		"recorded_at",
+		"expires_at",
+		"confirmation",
+		"acknowledged",
+		"one_time_key",
+		"event_digest",
+		"intent_snapshot_json",
+		"proof_version"
+	],
+	"fields": [
+		{
+			"fieldname": "evidence_key",
+			"label": "证据标识",
+			"fieldtype": "Data",
+			"read_only": 1,
+			"reqd": 1,
+			"unique": 1
+		},
+		{
+			"fieldname": "event_kind",
+			"label": "证据类型",
+			"fieldtype": "Select",
+			"read_only": 1,
+			"reqd": 1,
+			"options": "Confirmation\nDecision"
+		},
+		{
+			"fieldname": "reservation",
+			"label": "Reservation",
+			"fieldtype": "Link",
+			"options": "HRP Budget Reservation",
+			"reqd": 1,
+			"read_only": 1,
+			"search_index": 1
+		},
+		{
+			"fieldname": "previous_sequence",
+			"label": "Previous Event Sequence",
+			"fieldtype": "Int",
+			"reqd": 1,
+			"read_only": 1
+		},
+		{
+			"fieldname": "previous_event_digest",
+			"label": "Previous Event Digest",
+			"fieldtype": "Data",
+			"reqd": 1,
+			"read_only": 1,
+			"hidden": 1
+		},
+		{
+			"fieldname": "intent_digest",
+			"label": "确认意图摘要",
+			"fieldtype": "Data",
+			"read_only": 1,
+			"reqd": 1,
+			"hidden": 1
+		},
+		{
+			"fieldname": "budget_key_digest",
+			"label": "预算范围摘要",
+			"fieldtype": "Data",
+			"read_only": 1,
+			"reqd": 1,
+			"hidden": 1
+		},
+		{
+			"fieldname": "company",
+			"label": "法人",
+			"fieldtype": "Link",
+			"read_only": 1,
+			"reqd": 1,
+			"options": "Company",
+			"search_index": 1
+		},
+		{
+			"fieldname": "hospital",
+			"label": "医院",
+			"fieldtype": "Link",
+			"read_only": 1,
+			"reqd": 1,
+			"options": "HRP Hospital",
+			"search_index": 1
+		},
+		{
+			"fieldname": "organization_unit",
+			"label": "原始科室",
+			"fieldtype": "Link",
+			"read_only": 1,
+			"reqd": 1,
+			"options": "HRP Organization Unit",
+			"search_index": 1
+		},
+		{
+			"fieldname": "actor",
+			"label": "确认人",
+			"fieldtype": "Link",
+			"read_only": 1,
+			"reqd": 1,
+			"options": "User"
+		},
+		{
+			"fieldname": "proof_hash",
+			"label": "确认凭证摘要",
+			"fieldtype": "Data",
+			"read_only": 1,
+			"reqd": 1,
+			"hidden": 1,
+			"permlevel": 1
+		},
+		{
+			"fieldname": "session_digest",
+			"label": "会话摘要",
+			"fieldtype": "Data",
+			"read_only": 1,
+			"reqd": 1,
+			"hidden": 1,
+			"permlevel": 1
+		},
+		{
+			"fieldname": "recorded_at",
+			"label": "记录时间",
+			"fieldtype": "Datetime",
+			"read_only": 1,
+			"reqd": 1
+		},
+		{
+			"fieldname": "expires_at",
+			"label": "确认有效期",
+			"fieldtype": "Datetime",
+			"read_only": 1,
+			"reqd": 1
+		},
+		{
+			"fieldname": "confirmation",
+			"label": "确认记录",
+			"fieldtype": "Link",
+			"read_only": 1,
+			"reqd": 0,
+			"options": "HRP Budget Reservation Release",
+			"unique": 1
+		},
+		{
+			"fieldname": "acknowledged",
+			"label": "明确确认",
+			"fieldtype": "Check",
+			"read_only": 1,
+			"reqd": 0
+		},
+		{
+			"fieldname": "one_time_key",
+			"label": "分摊决定唯一键",
+			"fieldtype": "Data",
+			"read_only": 1,
+			"reqd": 0,
+			"unique": 1,
+			"hidden": 1,
+			"permlevel": 1
+		},
+		{
+			"fieldname": "event_digest",
+			"label": "证据摘要",
+			"fieldtype": "Data",
+			"read_only": 1,
+			"reqd": 1,
+			"unique": 1,
+			"hidden": 1
+		},
+		{
+			"fieldname": "intent_snapshot_json",
+			"label": "确认意图快照",
+			"fieldtype": "Long Text",
+			"read_only": 1,
+			"reqd": 1,
+			"hidden": 1,
+			"permlevel": 1
+		},
+		{
+			"fieldname": "proof_version",
+			"label": "证明版本",
+			"fieldtype": "Int",
+			"read_only": 1,
+			"reqd": 1
+		}
+	],
+	"permissions": [],
+	"sort_field": "creation",
+	"sort_order": "DESC",
+	"description": "Append-only reservation release confirmation and posted decision evidence; private protocol only.",
+	"actions": [],
+	"links": [],
+	"states": []
+}
