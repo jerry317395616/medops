@@ -54,7 +54,7 @@ bench --site "$SITE_NAME" migrate --skip-search-index
 #!/usr/bin/env bash
 set -euo pipefail
 
-ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+# ROOT_DIR remains the absolute path resolved before entering the Bench.
 BENCH_DIR="${BENCH_DIR:?Set BENCH_DIR to an existing isolated CI Bench}"
 PROBE_SITE="hrp-reservation-concurrency.localhost"
 if [[ "${GITHUB_ACTIONS:-}" != "true" || -z "${RUNNER_TEMP:-}" ]]; then
