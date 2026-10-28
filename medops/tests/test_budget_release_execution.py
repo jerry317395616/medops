@@ -41,6 +41,8 @@ from medops.hrp_budget.services import (
 	initial_reservation_write,
 	release_usage_guard,
 	reservation_confirmation,
+	reservation_renewal_control,
+	reservation_renewal_write,
 )
 from medops.hrp_budget.services import release_execution as execution
 from medops.hrp_budget.services.approval import session_digest
@@ -916,7 +918,98 @@ class TestBudgetReleaseExecution(FrappeAPITestCase):
 	def test_private_initial_reservation_writes_and_rolls_back_atomically(self):
 		self.exercise_real_release_and_confirmation(initial_write=True)
 
-	def exercise_real_release_and_confirmation(self, *, initial_write):
+	def test_private_renewal_appends_replays_and_rolls_back_atomically(self):
+		self.exercise_real_release_and_confirmation(initial_write=True, renewal=True)
+
+	def exercise_renewal_transaction(self, primary, item, key, first, original, unique):
+		"""Real synthetic source and ledger; private temporary evidence and receipt tables."""
+		from medops.hrp_budget.doctype.hrp_budget_reservation_renewal.hrp_budget_reservation_renewal import (
+			HRPBudgetReservationRenewal,
+		)
+
+		future = now_datetime() + timedelta(minutes=6)
+		with patch.object(reservation_confirmation, "now_datetime", return_value=future):
+			new = reservation_confirmation.prepare_reservation_confirmation(item)
+		new["proof"] = ConfirmationProof(new["proof"])
+		primary.commit()
+		command = reservation_renewal_write.build_renewal_command(
+			{
+				"original_confirmation": first["confirmation"],
+				"original_decision": original["decision"],
+				"renewal_confirmation": new["confirmation"],
+				"proof": new["proof"],
+				"acknowledge": True,
+			}
+		)
+		service = reservation_renewal_write.RenewReservationDecision()
+		key_id = "synthetic-reservation-renewal-" + unique
+		with patch.dict(frappe.conf, {"medops_internal_reservation_renewal_enabled": False}):
+			with self.assertRaises(IoneApplicationError):
+				service.execute(command, idempotency_key=key_id)
+		primary.rollback()
+		with (
+			patch.dict(frappe.conf, {"medops_internal_reservation_renewal_enabled": True}),
+			patch.object(
+				reservation_renewal_write, "now_datetime", return_value=future + timedelta(seconds=1)
+			),
+			patch.object(
+				reservation_renewal_control, "now_datetime", return_value=future + timedelta(seconds=1)
+			),
+		):
+			session = session_digest("budget-reservation:" + item.reservation_identity)
+			reservation_confirmation.revalidate_reservation_intent(
+				item, actor="Administrator", session=session
+			)
+			bad = frappe.get_doc(dict(doctype="HRP Budget Reservation Renewal"))
+			with self.assertRaises(IoneApplicationError):
+				bad.insert(ignore_permissions=True, ignore_links=True, ignore_mandatory=True)
+			with self.assertRaises(IoneApplicationError):
+				assert_budget_guards([key])
+			primary.rollback()
+			with patch.object(
+				HRPBudgetReservationRenewal, "db_insert", side_effect=RuntimeError("synthetic failure")
+			):
+				with self.assertRaises(IoneApplicationError):
+					service.execute(command, idempotency_key=key_id)
+			primary.rollback()
+			self.assertEqual(frappe.db.count("HRP Budget Reservation Renewal"), 0)
+			self.assertEqual(frappe.db.count("HRP Service Idempotency"), 0)
+			created = service.execute(command, idempotency_key=key_id)
+			self.assertFalse(created.idempotency_replayed)
+			self.assertEqual(frappe.db.count("HRP Budget Reservation Renewal"), 1)
+			self.assertEqual(frappe.db.count("HRP Budget Reservation"), 0)
+			self.assertEqual(frappe.db.count("HRP Budget Reservation Event"), 0)
+			primary.commit()
+			with patch.object(
+				reservation_renewal_write, "now_datetime", return_value=future + timedelta(minutes=6)
+			):
+				replay = service.execute(command, idempotency_key=key_id)
+			self.assertTrue(replay.idempotency_replayed)
+			self.assertEqual(replay.result, created.result)
+			primary.rollback()
+			with patch.object(
+				reservation_renewal_write, "now_datetime", return_value=future + timedelta(minutes=6)
+			):
+				with self.assertRaises(IoneApplicationError) as expired:
+					service.execute(command, idempotency_key=key_id + "-new")
+			self.assertEqual(expired.exception.definition.key, "PERMISSION_DENIED")
+			primary.rollback()
+			frappe.session.sid = "synthetic-different-session"
+			with self.assertRaises(IoneApplicationError):
+				service.execute(command, idempotency_key=key_id)
+			primary.rollback()
+			frappe.session.sid = "synthetic-test-web-session"
+			changed = replace(command, proof="synthetic_other_proof_123456789012345")
+			with self.assertRaises(IoneApplicationError) as conflict:
+				service.execute(changed, idempotency_key=key_id)
+			self.assertEqual(conflict.exception.definition.key, "IDEMPOTENCY_CONFLICT")
+			primary.rollback()
+			with self.assertRaises(IoneApplicationError):
+				service.execute(command, idempotency_key=key_id + "-duplicate")
+			primary.rollback()
+			self.assertEqual(frappe.db.count("HRP Budget Reservation Renewal"), 1)
+
+	def exercise_real_release_and_confirmation(self, *, initial_write, renewal=False):
 		"""No budget, source or evidence substitutes; all documents are synthetic."""
 		self.assertEqual(self.execute(self.claim())["status"], "Posted")
 		frappe.db.rollback()
@@ -1014,6 +1107,7 @@ class TestBudgetReleaseExecution(FrappeAPITestCase):
 					("tabHRP Budget Reservation Authorization", "cod035_authorization_template"),
 					("tabHRP Budget Reservation", "cod035_reservation_template"),
 					("tabHRP Budget Reservation Event", "cod035_event_template"),
+					("tabHRP Budget Reservation Renewal", "cod035_renewal_template"),
 					("tabHRP Service Idempotency", "cod035_idempotency_template"),
 				):
 					primary.sql(
@@ -1046,6 +1140,9 @@ class TestBudgetReleaseExecution(FrappeAPITestCase):
 					result["confirmation"], result["proof"], True
 				)
 				primary.commit()
+				if renewal:
+					self.exercise_renewal_transaction(primary, item, key, result, decision, unique)
+					return
 				with patch.dict(frappe.conf, {"medops_internal_reservation_write_enabled": False}):
 					with self.assertRaises(IoneApplicationError):
 						initial_reservation_write.append_initial_reservation(
