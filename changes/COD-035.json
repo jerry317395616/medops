@@ -116,7 +116,7 @@
 		"Run24 guarded history cases including2 new receipt chain checks; unchanged2 storage,32 structural/source and11 strict source cases.",
 		"Extend2 actual native original/renewed posting tests with partial/full release replay, no duplicate events, exact encrypted receipt/frozen-root preservation, missing three evidence kinds and tampered intent rejection;71 focused native total.",
 		"Actual posting cases use native synthetic budgets/material sources and standard initial controllers. Later release facts exist only in connection-private test clones; release business controllers remain closed.",
-		"Focus40657417815 at94b460f is pending. Previous release-read focus40654824650 passed69 native+13 pure at410c50d; its productcebf623 full40656055185 remains running. Keep source-specific results separate.",
+		"Focus40657417815 at94b460f passed71 native+13 pure; no skips, Error Log0. All5 changed app/test blobs match product9030439. Full CI40658409448 at9030439 is running. Earlier release-read full40656055185 atcebf623 is separate.",
 		"No server connection, migration, grants or public workflow. Production still requires controlled release confirmation/posting, atomic rollback/concurrency, human UI and hospital acceptance."
 	],
 	"owner": "MedOps Maintainers",

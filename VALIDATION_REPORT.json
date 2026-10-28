@@ -9,7 +9,7 @@
     "ADR-0031",
     "ADR-0032"
   ],
-  "current_scope": "COD-035 remains in progress. Private initial and renewed reservation posting, guarded source/budget evidence and committed contention checks exist behind default-disabled flags. ADR0037 keeps roots immutable and requires independently authorized release tails. Guarded release-history productcebf623 passed613 local pure tests and focus40654824650 (69 native+13 pure, Error Log0); its full CI40656055185 has passed Quality/Security and both native environments remain running. This candidate extends original/renewed initial receipt verification after independently authorized releases, preserving the single-event guard-present path and encrypted original result. Focus40657417815 at94b460f is running; local quality and full current-source native CI remain pending. Release writes/confirmation workflow/UI, release concurrency, all-writer containment and hospital capacity/interfaces/UAT remain incomplete. Server maintenance is ongoing; no server contact or migration.",
+  "current_scope": "COD-035 remains in progress. Private initial and renewed reservation posting, guarded source/budget evidence and committed contention checks exist behind default-disabled flags. ADR0037 keeps roots immutable and requires independently authorized release tails. Guarded release-history productcebf623 passed613 local pure tests and focus40654824650 (69 native+13 pure, Error Log0); its full CI40656055185 has passed Quality/Security and both native environments remain running. This candidate extends original/renewed initial receipt verification after independently authorized releases, preserving the single-event guard-present path and encrypted original result. Focus40657417815 at94b460f passed71 native+13 pure with no skips and Error Log0; all5 changed application/test files match product9030439. Frozen local quality passed613 and all11 steps. Full current-source CI40658409448 at9030439 is running. Release writes/confirmation workflow/UI, release concurrency, all-writer containment and hospital capacity/interfaces/UAT remain incomplete. Server maintenance is ongoing; no server contact or migration.",
   "checks": {
     "pure_tests_expected": 613,
     "complete_frappe_tests_expected": 639,
@@ -997,13 +997,13 @@
       "scope": "Prior closed21-field release storage. Does not validate current6-column and guarded read changes."
     },
     "initial_receipt_after_releases": {
-      "status": "candidate_pending_validation",
+      "status": "focused_native_passed_full_ci_pending",
       "new_native_cases": 2,
       "existing_actual_source_posting_cases_extended": 2,
       "pure_tests_expected": 613,
       "focused_run_id": 40657417815,
       "focused_source_commit": "94b460ff895e03a89023c0fc33ca8a702743e10e",
-      "focused_status": "in_progress",
+      "focused_status": "passed",
       "expected_focused_native_counts": [
         2,
         24,
@@ -1027,7 +1027,26 @@
       "local_quality": "passed613_all11_steps_zero_type_errors_one_existing_warning",
       "quality_log": "quality-receipt-after-release-final.log",
       "all5_application_and_native_test_files_match_focus": true,
-      "source_match_proof": "receipt-after-release-source-proof.json"
+      "source_match_proof": "receipt-after-release-source-proof.json",
+      "focused_native_counts": [
+        2,
+        24,
+        32,
+        11,
+        2
+      ],
+      "focused_native_total": 71,
+      "focused_pure_count": 13,
+      "focused_skipped": 0,
+      "focused_error_log_count": 0,
+      "focused_log": "receipt-after-release-40657417815.log",
+      "product_commit": "90304395b5acc4ba4e0a5d02bc66e75d580aba46",
+      "full_current_source": {
+        "run_id": 40658409448,
+        "source_commit": "90304395b5acc4ba4e0a5d02bc66e75d580aba46",
+        "status": "in_progress",
+        "url": "https://github.com/jerry317395616/medops/actions/runs/40658409448"
+      }
     }
   },
   "previous_verified_release": {
