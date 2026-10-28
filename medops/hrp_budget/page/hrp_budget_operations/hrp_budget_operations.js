@@ -431,6 +431,7 @@ frappe.pages["hrp-budget-operations"].on_page_load = (wrapper) => {
 	button(tools, "凭证目录", () => navigateList("records"));
 	button(tools, "待下达汇总", () => navigateList("eligible"));
 	button(tools, "预算账簿", () => frappe.set_route("hrp-budget-statements"));
+	if (canManage()) button(tools, "采购预算预占", () => frappe.set_route("hrp-budget-reservations"));
 	wrapper.budgetOperationsRefresh = async () => {
 		invalidate();
 		const name = frappe.get_route()[1];

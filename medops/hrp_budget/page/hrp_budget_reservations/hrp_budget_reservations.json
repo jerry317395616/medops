@@ -1,0 +1,10 @@
+{
+	"doctype": "Page",
+	"name": "hrp-budget-reservations",
+	"page_name": "hrp-budget-reservations",
+	"title": "采购预算预占",
+	"module": "HRP Budget",
+	"standard": "Yes",
+	"system_page": 0,
+	"roles": [{ "role": "System Manager" }, { "role": "HRP System Manager" }, { "role": "HRP Budget Manager" }]
+}

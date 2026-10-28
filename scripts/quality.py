@@ -118,6 +118,7 @@ def build_quality_steps(
 			(npm_executable, "run", "typecheck", "--", "--pythonpath", python_executable),
 		),
 		QualityStep("eslint", (npm_executable, "run", "lint:frontend")),
+		QualityStep("frontend-tests", (npm_executable, "run", "test:frontend")),
 		QualityStep("prettier", (npm_executable, "run", "format:frontend:check")),
 	)
 	if mode == "python":
