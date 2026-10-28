@@ -167,6 +167,16 @@ def _exact_new_document(doctype, values):
 	return doc
 
 
+def check_persisted_document(doc, expected, docstatus):
+	"""Share exact persisted-document comparison with private budget transactions."""
+	return _check_persisted_document(doc, expected, docstatus)
+
+
+def exact_new_document(doctype, values):
+	"""Share default-suppressed construction with private budget transactions."""
+	return _exact_new_document(doctype, values)
+
+
 def append_initial_reservation(confirmation: str, decision: str, proof: str) -> dict[str, str]:
 	"""Append one initial reservation in an owned, clean transaction.
 
