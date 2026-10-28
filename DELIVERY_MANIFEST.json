@@ -10,8 +10,8 @@
 		"design_fields": 10145,
 		"doctype_blueprints": 405,
 		"starter_doctypes": 47,
-		"repository_contract_tests": 617,
-		"frappe_integration_tests": 645,
+		"repository_contract_tests": 618,
+		"frappe_integration_tests": 646,
 		"environment_profiles": 3,
 		"fixture_rules": 3,
 		"fixture_files": 3,
@@ -20,7 +20,8 @@
 		"change_risk_rules": 5,
 		"error_definitions": 12,
 		"error_translations": 28,
-		"committed_reservation_concurrency_probes": 1
+		"committed_reservation_concurrency_probes": 1,
+		"frontend_execution_tests": 13
 	},
 	"entrypoints": [
 		"README.md",
@@ -192,6 +193,8 @@
 		"medops/common/budget_ledger.py",
 		"architecture/adr/ADR-0039-human-reservation-http-boundary.md",
 		"medops/api/v1/finance/reservation_operations.py",
-		"architecture/reservation_operations.md"
+		"architecture/reservation_operations.md",
+		"medops/hrp_budget/page/hrp_budget_reservations/hrp_budget_reservations.js",
+		"medops/public/js/reservation_session.js"
 	]
 }

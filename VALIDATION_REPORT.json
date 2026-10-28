@@ -11,10 +11,10 @@
     "ADR-0038",
     "ADR-0039"
   ],
-  "current_scope": "COD035: default-disabled human reservation HTTP adapters under ADR0039, retaining independent immutable evidence and all service gates. Fixed617/all11 local quality passed, zero type errors and one prior warning. First native40671936652 failed test fixture/400 assertion; corrected focus40673023305 at6cc9414 running, all six application/probe/helper files match. Actual HTTP financial proof pending. UI, all-writer native lifecycle, hospital rules/capacity/UAT incomplete. User server maintenance active: no server access.",
+  "current_scope": "COD035 human Desk Page candidate and private command journal implemented; frontend13 and quality-tooling7 focused local tests passed, full618/all12 pending. API6 native passed in40673023305, committed HTTP probe failed only at premature-renewal test assumption; keep domain expired-only rule and rerun with fresh post-expiry confirmation/time simulation in40678619220 at996b70b. New Page metadata native check pending. Prior90-min full40663377621 cancelled with Required failure; new120-min e317 full remains pending. Production gates off, no server access during maintenance; real Desk browser, draft recovery, all writers and hospital acceptance incomplete.",
   "checks": {
-    "pure_tests_expected": 617,
-    "complete_frappe_tests_expected": 645,
+    "pure_tests_expected": 618,
+    "complete_frappe_tests_expected": 646,
     "exact_foundation_pure_tests_passed": 21,
     "native_foundation": {
       "status": "passed",
@@ -1231,14 +1231,76 @@
         "all four proof methods pre-authentication real SDK/deferred Error Log privacy"
       ],
       "corrected_focus_source": "6cc941472b9cb8d208a6988203ac26efbc20bb48",
-      "corrected_focus_status": "in_progress",
+      "corrected_focus_status": "failed_premature_renewal_test_assumption",
       "new_nonmanager_denial": "actual native System User with no manager role; direct service-boundary rejection",
       "corrected_local_quality": "passed617_all11_zero_type_errors_one_existing_warning",
       "corrected_focus_run_id": 40673023305,
       "corrected_focus_url": "https://github.com/jerry317395616/medops/actions/runs/40673023305",
       "corrected_local_quality_log": "quality-human-reservation-http-fixed-v2.log",
       "all_six_application_probe_helper_files_match": true,
-      "source_proof": "human-reservation-http-source-proof.json"
+      "source_proof": "human-reservation-http-source-proof.json",
+      "native_regular_passed": 6,
+      "committed_probe_seconds": 1081.988,
+      "committed_passed_until": "initial posting/replay/inspection; release Decision failure full rollback; partial/full release and historical receipt replay",
+      "committed_failure": "409 previous decision has not expired; intended domain restriction, test incorrectly expected renewal before expiry",
+      "source_proof_scope": "API baseline02ad11f before new Page sync test and expiry test changes",
+      "latest_retry_run_id": 40678619220,
+      "latest_retry_source": "996b70b81804a2bf7282fee228ee3422999d6833",
+      "latest_retry_status": "in_progress",
+      "clock_for_new_renewal_test": "simulated past original expiry; fresh confirmation required; actual native cookie session"
+    },
+    "reservation_desk_page": {
+      "status": "candidate_local_frontend_passed_native_and_browser_pending",
+      "route": "hrp-budget-reservations",
+      "standard_page_roles": "existing MANAGER_ROLES only",
+      "frontend_test_count": 13,
+      "frontend_scope": "actual JS helper/page scripts with native-control/DOM protocol doubles; not rendered Desk browser",
+      "new_native_page_permission_test": 1,
+      "quality_steps_expected": 12,
+      "pure_expected": 618,
+      "regular_native_expected": 646,
+      "gate": "operations/private flags remain default disabled; no automatic config activation",
+      "money": "strings only; historical ledger picker is not balance or spending authority",
+      "retry": "private per-page journal; same command/key; sticky unknown outcome; no auto renewal or edited-command retry",
+      "expiry": "renewal requires fresh preview after prior expiry; test uses simulated domain time",
+      "full_local_quality": "rerun_pending_after_native_bundle_entry_and_asset_assertion",
+      "migration": "future standard Page sync/build/cache only; no new financial schema",
+      "limitations": [
+        "real Desk/browser/UAT pending",
+        "resume directory across reload/session change pending",
+        "all-writer native procurement lifecycle pending",
+        "hospital rules/interfaces/capacity pending"
+      ],
+      "server_accessed": false,
+      "initial_local_quality": "failed_only_governance_path_globs108_over100; consolidated ten reservation service paths into one scoped glob; now99, no runtime change",
+      "prior_frozen_local_quality": "passed618_all12_zero_type_errors_one_existing_warning",
+      "prior_frozen_quality_log": "quality-reservation-desk-page-fixed-v2.log",
+      "asset": "native medops_reservation_session.bundle.js hashed manifest + compiled journal; new metadata assertion pending",
+      "source_proof": "reservation-desk-page-source-proof.json; matches996 before final hashed-loader/native-asset assertion"
+    },
+    "controlled_release_writer_full_timeout": {
+      "run_id": 40663377621,
+      "source": "327228e454cdb9c20dbb89d3df719c7e781a7e89",
+      "status": "cancelled",
+      "Required": "failed",
+      "cause": "both native jobs: The job has exceeded the maximum execution time of 1h30m0s",
+      "native_regular_each": [
+        614,
+        25
+      ],
+      "plain_older_probe": {
+        "tests": 1,
+        "seconds": 228.641,
+        "error_log_reports": 1,
+        "error_log_count": 0
+      },
+      "core_probe": "not completed",
+      "annotations": [
+        122732223870,
+        122732223893
+      ],
+      "log": "full-controlled-release-40663377621.log",
+      "scope": "does not prove full pass; preserve90-minute failure; later120-minute source separate"
     }
   },
   "previous_verified_release": {

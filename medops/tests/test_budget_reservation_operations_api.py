@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from pathlib import Path
 from types import SimpleNamespace
 from unittest.mock import patch
 from uuid import uuid4
@@ -9,7 +10,7 @@ from uuid import uuid4
 import frappe
 from frappe.tests.test_api import FrappeAPITestCase
 from frappe.tests.utils import FrappeTestCase
-from frappe.utils import set_request
+from frappe.utils import get_assets_json, get_bench_path, set_request
 
 from medops.api.v1.finance import reservation_operations as api
 from medops.common.confirmation_privacy import REDACTED_CONFIRMATION
@@ -89,6 +90,28 @@ class TestBudgetReservationOperationsBoundary(FrappeTestCase):
 					self.assertFalse(frappe.local._medops_reservation_http_started)
 		finally:
 			frappe.conf.medops_reservation_operations_enabled = previous
+
+	def test_standard_page_sync_uses_existing_manager_roles_without_evidence_grants(self):
+		page = frappe.get_doc("Page", "hrp-budget-reservations")
+		self.assertEqual(page.module, "HRP Budget")
+		self.assertEqual(page.standard, "Yes")
+		self.assertEqual({row.role for row in page.roles}, api.MANAGER_ROLES)
+		asset = get_assets_json().get("medops_reservation_session.bundle.js")
+		self.assertIsInstance(asset, str)
+		self.assertRegex(
+			asset, r"^/assets/medops/dist/js/medops_reservation_session\.bundle\.[A-Za-z0-9]+\.js$"
+		)
+		compiled = Path(get_bench_path()) / "sites" / asset.lstrip("/")
+		self.assertTrue(compiled.is_file())
+		self.assertIn("reservation_result_unresolved", compiled.read_text(encoding="utf-8"))
+		for doctype in (
+			"HRP Budget Reservation",
+			"HRP Budget Reservation Event",
+			"HRP Budget Reservation Authorization",
+			"HRP Budget Reservation Renewal",
+			"HRP Budget Reservation Release",
+		):
+			self.assertEqual(list(frappe.get_meta(doctype).permissions), [])
 
 	def test_token_get_background_and_missing_ack_never_start_owned_transaction(self):
 		previous = frappe.conf.get("medops_reservation_operations_enabled")

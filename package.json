@@ -9,10 +9,11 @@
 	"packageManager": "npm@11.17.0",
 	"scripts": {
 		"typecheck": "pyright --project pyrightconfig.json",
+		"test:frontend": "node --test scripts/tests/*.test.mjs",
 		"lint:frontend": "eslint . --max-warnings 0",
-		"format:frontend:check": "prettier --check \"medops/**/*.{js,ts,vue,css,scss,json}\" \".prettierrc.json\" \"eslint.config.mjs\" \"package.json\" \"package-lock.json\" \"pyrightconfig.json\"",
-		"format:frontend": "prettier --write \"medops/**/*.{js,ts,vue,css,scss,json}\" \".prettierrc.json\" \"eslint.config.mjs\" \"package.json\" \"package-lock.json\" \"pyrightconfig.json\"",
-		"quality:node": "npm run typecheck && npm run lint:frontend && npm run format:frontend:check",
+		"format:frontend:check": "prettier --check \"medops/**/*.{js,ts,vue,css,scss,json}\" \".prettierrc.json\" \"eslint.config.mjs\" \"package.json\" \"package-lock.json\" \"pyrightconfig.json\" \"scripts/tests/*.test.mjs\"",
+		"format:frontend": "prettier --write \"medops/**/*.{js,ts,vue,css,scss,json}\" \".prettierrc.json\" \"eslint.config.mjs\" \"package.json\" \"package-lock.json\" \"pyrightconfig.json\" \"scripts/tests/*.test.mjs\"",
+		"quality:node": "npm run typecheck && npm run lint:frontend && npm run test:frontend && npm run format:frontend:check",
 		"quality": "python scripts/quality.py"
 	},
 	"devDependencies": {
