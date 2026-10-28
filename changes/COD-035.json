@@ -121,7 +121,7 @@
 		"Run2 storage,24 guarded history,32 structural/source,11 strict-source and2 expanded native posting cases:71 focused native total; plus17 release/request pure cases.",
 		"Expanded original/renewed posting fixtures now call standard private preview/post controllers for partial/full release; assert root/original encrypted receipt preservation and earlier release receipt replay after a later release.",
 		"Inject event insert failure, proof expiry after decision and access denial after decision; verify full rollback; reject flag-alone bypass, stale successor, expired new writes, changed session and conflicting request. Synthetic access denial is not a real concurrent role revocation.",
-		"Focus40660621810 at39d9dda is live, not passed. All10 changed app/test blobs match pushed product327228e; its full CI40663377621 has passed Quality, native+Security remain running. Earlier receipt/release-read full runs stay source-specific.",
+		"Focus40660621810 at39d9dda passed71 native+17 pure, no skips, Error Log0. All10 changed app/test blobs match product327228e; full40663377621 Quality/Security passed, both native environments live. Pair runtime1118.036s includes fixtures, replay and failure loops; not transaction latency or capacity.",
 		"Do not enable production without current full native CI, committed release contention, all-writer lock protocol, genuine human HTTP/UI and hospital acceptance. No maintained server access."
 	],
 	"owner": "MedOps Maintainers",

@@ -9,7 +9,7 @@
     "ADR-0031",
     "ADR-0032"
   ],
-  "current_scope": "COD-035 remains in progress. Guarded original/renewed initial posting and immutable release history/receipt replay exist behind default-disabled gates. Release-write candidate adds an independently persisted preview confirmation and an audited/idempotent atomic Decision+Event append through standard controllers; full source/budget inspection, original/renewal/release evidence and current actor/session/scope checks are repeated. Default flag medops_internal_reservation_release_write_enabled is off. Four new pure request tests passed locally;617 pure and639 regular native expected. Focus40660621810 at39d9dda is running; product327228e is pushed and its full CI40663377621 has passed Quality; both native environments and Security remain running. Focused native40660621810 is still live, not a pass. Both earlier full runs40658409448 (9030439) and40656055185 (cebf623) have passed Quality/Security but integration remains running. No server contact during user maintenance. Controlled release-write native success, full rollback/expiry/revocation/replay, true committed release contention, human HTTP/UI and hospital rules/capacity/interfaces/UAT remain unproven; no production readiness claim.",
+  "current_scope": "COD-035 remains in progress. Product327228e implements default-disabled private independent release confirmation and atomic Decision+Event append through standard controllers, with immutable roots, source/budget guards, complete original/renewal/release evidence, current actor/session/scope rechecks and audited encrypted idempotency. Frozen local617 pure and all11 quality steps passed. Focus40660621810 at39d9dda passed71 native+17 pure, no skips and Error Log0; all10 changed app/test blobs match product327228e. Actual source/budget and standard release controllers were used in private financial copies; sessions/clocks and the access-denial injection remain synthetic. Full40663377621 at327228e has passed Quality/Security; both native environments remain running. Earlier40656055185 atcebf623 has passed Core but plain remains running;40658409448 at9030439 remains live. Committed release contention, full current-source pass, performance, real human HTTP/UI and hospital rules/interfaces/capacity/UAT remain required. Server maintenance remains in progress; no server access or migration; feature flag is off.",
   "checks": {
     "pure_tests_expected": 617,
     "complete_frappe_tests_expected": 639,
@@ -1049,7 +1049,7 @@
       }
     },
     "controlled_reservation_release_write": {
-      "status": "candidate_pending_validation",
+      "status": "focused_native_passed_full_ci_pending",
       "flag": "medops_internal_reservation_release_write_enabled",
       "default_disabled": true,
       "prepare_and_post_audited_encrypted_idempotency": true,
@@ -1060,7 +1060,7 @@
       "expanded_actual_native_posting_cases": 2,
       "focused_run_id": 40660621810,
       "focused_source_commit": "39d9dda12b349e997b5e70ec723242ce6afeabe6",
-      "focused_status": "in_progress",
+      "focused_status": "passed",
       "pure_request_and_release_cases_passed": 17,
       "typecheck": "zero errors;1 existing privacy_diagnostics warning",
       "tests_expected": [
@@ -1090,10 +1090,25 @@
         "source_commit": "327228e454cdb9c20dbb89d3df719c7e781a7e89",
         "status": "in_progress",
         "quality": "passed",
-        "native_and_security": "in_progress",
-        "url": "https://github.com/jerry317395616/medops/actions/runs/40663377621"
+        "native_and_security": "both native environments in_progress; Security passed",
+        "url": "https://github.com/jerry317395616/medops/actions/runs/40663377621",
+        "security": "passed"
       },
-      "product_commit": "327228e454cdb9c20dbb89d3df719c7e781a7e89"
+      "product_commit": "327228e454cdb9c20dbb89d3df719c7e781a7e89",
+      "focused_native_counts": [
+        2,
+        24,
+        32,
+        11,
+        2
+      ],
+      "focused_native_total": 71,
+      "focused_pure_count": 17,
+      "focused_skipped": 0,
+      "focused_error_log_count": 0,
+      "focused_log": "controlled-release-write-40660621810.log",
+      "expanded_native_pair_seconds": 1118.036,
+      "timing_scope": "Both full native fixtures plus many prepare/post/replay/failure-injection commands; not one transaction latency or hospital capacity."
     }
   },
   "previous_verified_release": {
