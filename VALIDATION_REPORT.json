@@ -10,12 +10,13 @@
     "ADR-0032",
     "ADR-0038",
     "ADR-0039",
-    "ADR-0040"
+    "ADR-0040",
+    "ADR-0041"
   ],
-  "current_scope": "COD035 scoped read-only recovery product4b70f5a pushed under ADR0040. Recovery focus40694061543 on2af1a71 passed4+4+3 native,18 frontend,1 committed1162.151s,2 zero Error Log sites;6 financial service/API/history/helper blobs match product. Local final622 pure/19 frontend/12 quality components and governance passed; current4b70f5a full40696687032 Quality/Security passed, plain/Core running. Separate CI-only real Chromium Desk/read/reload/input dialog experiment51f3983 with safe HTTP timings dispatched. No server access/deploy, production enablement or hospital performance/UAT claim. Real browser recovery controls, all writers, commitments/actuals, interfaces/rules/capacity incomplete.",
+  "current_scope": "COD035 ADR0041 source-integrity candidate and fresh-Bench native asset fix. Two local627/19/all12 passes before latest fixture/asset repair; frozen v3 pending. Source focus38396dd:6 native RR cases passed,2 guard cases failed strict RC precondition; fixture now selects RC only for those2, gate unchanged. Valid-root native-cookie counterpart/profile not yet run. Login diagnostic40711957910 proved missing $/unstyled UI; bootstrap now builds all apps and native boundary requires core bundles, empty native-login28f4397 retry dispatched. Prior4b full40696687032 Core passed/plain live, excludes current source hooks/assets. No server access/deploy, new schema/grants or production enablement. Whole lifecycle/commitments/actuals/all writers/real Desk/performance/hospital acceptance incomplete.",
   "checks": {
-    "pure_tests_expected": 622,
-    "complete_frappe_tests_expected": 650,
+    "pure_tests_expected": 627,
+    "complete_frappe_tests_expected": 658,
     "exact_foundation_pure_tests_passed": 21,
     "native_foundation": {
       "status": "passed",
@@ -1461,7 +1462,7 @@
       "performance": "1162.151s is the expanded whole probe with setup/concurrency/injected failures/replays/recovery, not one operation. Safe per-request timings being measured in a separate CI-only probe; no hospital performance claim."
     },
     "reservation_native_desk_browser": {
-      "status": "in_progress",
+      "status": "failed_before_hrp_route",
       "source_commit": "51f3983c5eb5979d8fb7409bb57c1a431982a43a",
       "product_source": "4b70f5a1e3605b8d33c088ebb0cb76163548775e",
       "branch": "cod/focused-budget-native-desk-20261028-134130",
@@ -1470,7 +1471,110 @@
       "scope": "Plain Desk root query render/reload and release input dialog only; browser blocks financial calls, full financial evidence hashes before/after, final zero Error Log/logout/process cleanup required. Recovery controls/Core browser/hospital UAT not established. Existing committed helper adds timing-only output.",
       "server_accessed": false,
       "run_id": 40698778414,
-      "url": "https://github.com/jerry317395616/medops/actions/runs/40698778414"
+      "url": "https://github.com/jerry317395616/medops/actions/runs/40698778414",
+      "failed_stage": "native_login",
+      "error_type": "TimeoutError",
+      "page_errors": 1,
+      "financial_commands": 0,
+      "native_financial_before_browser": {
+        "regular": [
+          4,
+          4,
+          3
+        ],
+        "frontend": 19,
+        "committed": 1,
+        "probe_seconds": 1430.576,
+        "error_log_sites_before_browser": 2,
+        "error_logs_before_browser": 0
+      },
+      "final_browser_error_log_audit": "not reached",
+      "log": "native-desk-40698778414.log",
+      "artifact": "native-desk-40698778414/native-reservation-desk.json"
+    },
+    "native_material_source_integrity": {
+      "status": "candidate_native_pending",
+      "ADR": "ADR-0041",
+      "pure_new": 5,
+      "native_new": 8,
+      "regular_expected": 658,
+      "runtime_models": 47,
+      "new_schema_or_grants": false,
+      "guard_bound": "10000 physical root rows/parent, refusal not capacity guarantee",
+      "source_economics": "Parent identity/company/type/date and referenced item identity/item/uom/CC/account/project/qty/rate/amount immutable",
+      "native_progress": "supported current history status and unbound lines allowed",
+      "lifecycle": "bound original stop/cancel/delete/rename denied; reviewed archival/amendment not implemented",
+      "locking": "parent lock then current physical binding read; child discovered parent rechecked under row lock; existing guard must prebind parent",
+      "temporal_scope": "No permission to change sources/financial evidence, no commit or external calls in hooks",
+      "native_evidence": "temporary binding presence uses actual MR but no authorized financial roots; committed HTTP counterpart pending",
+      "remaining": "other direct/native writers, whole source lifecycle/PO commitments/actual use, permission matrix/real Desk/performance/hospital acceptance",
+      "server_accessed": false,
+      "first_local_quality": "passed627 pure/19 frontend/all12,zero type errors/one preexisting warning before transient-flag hardening and fixture repair",
+      "first_local_quality_log": "quality-native-source-integrity-candidate.log",
+      "first_focus": {
+        "run": 40709871350,
+        "source": "5c5ad8a91c67544fd76d6dffeb5a5c72703781cd",
+        "status": "failed_all8_setup",
+        "cause": "Same item repeated in two MR lines; native duplicate-item validation prevented all8 cases before binding. No financial counterpart/profile ran.",
+        "log": "native-source-integrity-40709871350.log"
+      },
+      "fixture_fix": "Two distinct Item masters/lines. Root/child transient __islocal flag cannot skip current persisted binding reads; added assertions in existing cases.",
+      "local_quality": "frozen_v3_pending",
+      "native_status": "retry_pending",
+      "second_local_quality": "passed627 pure/19 frontend/all12 before isolation fixture and fresh-assets repair",
+      "second_local_quality_log": "quality-native-source-integrity-frozen-v2.log",
+      "second_focus": {
+        "run": 40712668918,
+        "source": "38396dd41dfe7230654d715fd7d8e9c79e258957",
+        "status": "failed6_passed2_errors",
+        "cause": "Both budget witness tests were still RR; strict READ COMMITTED precondition rejected before target check. Native6 source cases passed, valid-root HTTP/profile not run.",
+        "log": "native-source-integrity-40712668918.log"
+      },
+      "isolation_fixture_fix": "Ordinary native6 explicitly RR; only2 budget-witness cases set RC before transaction and restore RR in teardown. Domain RC gate retained."
+    },
+    "reservation_native_login_diagnostic": {
+      "run": 40708508528,
+      "source": "f508bd8d4227cde1c082354c6e3911f2d1556525",
+      "status": "failed_before_browser",
+      "scope": "Fresh exact disposable site; master fixtures only, no financial evidence; native login/empty Page diagnostic, password masked screenshots and sanitized static JS frames, no user server access. Does not contain new source hooks.",
+      "cause": "Concatenated setup recomputed relative BASH_SOURCE after cd Bench, so scripts/.. missing; fixed by preserving absolute ROOT_DIR",
+      "log": "native-login-40708508528.log",
+      "retry_source": "87cab6daa7ca2826561dafd80cb74979d36fc9d5",
+      "retry_branch": "cod/focused-budget-native-login-20261028-150238",
+      "retry_status": "failed_login_submit",
+      "retry_run": 40711957910,
+      "retry_artifact": "native-login-40711957910/native-desk-login.json",
+      "retry_cause": "Actual page error undefined $; jQuery absent; screenshot unstyled, no finance calls. Fresh bootstrap built MedOps assets only.",
+      "assets_retry_source": "28f4397168331e2fc09a0ef92183bd945322a006",
+      "assets_retry_branch": "cod/focused-budget-native-login-assets-20261028-152201",
+      "assets_retry_status": "dispatched"
+    },
+    "reservation_http_timings": {
+      "status": "measured_performance_gap",
+      "run": 40698778414,
+      "product_source": "4b70f5a1e3605b8d33c088ebb0cb76163548775e",
+      "proof": "reservation-http-timings-40698778414.json",
+      "recovery_samples": 6,
+      "recovery_seconds": {
+        "min": 22.75879,
+        "median": 26.948484,
+        "max": 31.794854
+      },
+      "scope": "Sequential actual native test-client request wall time on shared disposable CI, no controlled load/SLO/hospital capacity claim. Need profiler before optimization, retain full authorization/history checks."
+    },
+    "fresh_native_assets": {
+      "status": "candidate_native_pending",
+      "scope": "Bootstrap previously skipped framework build then built only MedOps. Actual password login had undefined $ and no styles. Change owned bootstrap to bench build all installed apps, not vendor source edits. Existing native Page boundary now checks actual nonempty Frappe web/Desk/login JS+CSS manifest/file paths.",
+      "required": [
+        "frappe-web.bundle.js",
+        "desk.bundle.js",
+        "website.bundle.css",
+        "login.bundle.css",
+        "desk.bundle.css",
+        "medops_reservation_session.bundle.js"
+      ],
+      "new_product_dependencies": false,
+      "server_accessed": false
     }
   },
   "previous_verified_release": {

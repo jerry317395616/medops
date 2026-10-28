@@ -204,6 +204,8 @@ if [[ "$MEDOPS_BOOTSTRAP_SKIP_SEARCH_INDEX" == "1" ]]; then
 else
   bench --site "$SITE_NAME" migrate
 fi
-bench build --app medops
+# Fresh Bench initialization skips assets. Build every installed app so the
+# native website/login/Desk dependencies exist before verifying the custom UI.
+bench build
 
 echo "Ready. Run: cd '$BENCH_DIR' && bench start"

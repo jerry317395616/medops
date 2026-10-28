@@ -43,6 +43,19 @@ extend_doctype_class = {
 	"Error Log": ["medops.extensions.error_log.MedOpsErrorLogMixin"],
 }
 doc_events = {
+	"Material Request": {
+		"before_save": "medops.hrp_budget.services.material_source_integrity.protect_material_request_edit",
+		"before_update_after_submit": "medops.hrp_budget.services.material_source_integrity.protect_material_request_edit",
+		"before_change": "medops.hrp_budget.services.material_source_integrity.protect_material_request_edit",
+		"before_cancel": "medops.hrp_budget.services.material_source_integrity.protect_material_request_lifecycle",
+		"on_trash": "medops.hrp_budget.services.material_source_integrity.protect_material_request_lifecycle",
+		"before_rename": "medops.hrp_budget.services.material_source_integrity.protect_material_request_lifecycle",
+	},
+	"Material Request Item": {
+		"before_change": "medops.hrp_budget.services.material_source_integrity.protect_material_request_item_edit",
+		"on_trash": "medops.hrp_budget.services.material_source_integrity.protect_material_request_item_lifecycle",
+		"before_rename": "medops.hrp_budget.services.material_source_integrity.protect_material_request_item_lifecycle",
+	},
 	"User": {"before_rename": "medops.hrp_budget.services.reference_integrity.protect_reference_rename"},
 	"Workflow": {
 		"validate": "medops.hrp_budget.services.approval_native.protect_workflow",

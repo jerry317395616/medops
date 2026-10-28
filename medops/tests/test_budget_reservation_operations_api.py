@@ -96,6 +96,20 @@ class TestBudgetReservationOperationsBoundary(FrappeTestCase):
 		self.assertEqual(page.module, "HRP Budget")
 		self.assertEqual(page.standard, "Yes")
 		self.assertEqual({row.role for row in page.roles}, api.MANAGER_ROLES)
+		for name in (
+			"frappe-web.bundle.js",
+			"desk.bundle.js",
+			"website.bundle.css",
+			"login.bundle.css",
+			"desk.bundle.css",
+		):
+			with self.subTest(native_asset=name):
+				native_asset = get_assets_json().get(name)
+				self.assertIsInstance(native_asset, str)
+				self.assertTrue(native_asset.startswith("/assets/frappe/dist/"))
+				file = Path(get_bench_path()) / "sites" / native_asset.lstrip("/")
+				self.assertTrue(file.is_file())
+				self.assertGreater(file.stat().st_size, 0)
 		asset = get_assets_json().get("medops_reservation_session.bundle.js")
 		self.assertIsInstance(asset, str)
 		self.assertRegex(
