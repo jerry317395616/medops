@@ -8,7 +8,10 @@ from dataclasses import asdict
 import frappe
 from frappe.utils import now_datetime
 
-from medops.common.authorized_reservation_projection import verify_authorized_initial_reservation
+from medops.common.authorized_reservation_projection import (
+	verify_authorized_initial_reservation,
+	verify_authorized_released_reservation,
+)
 from medops.common.budget_reservation_anchor import ANCHOR_ROW_FIELDS
 from medops.common.budget_reservation_storage import ROW_FIELDS, reservation_record_from_row
 from medops.common.domain_service import DomainServiceDefinition, normalize_sha256
@@ -34,6 +37,8 @@ from medops.hrp_budget.services.reservation_confirmation import (
 	require_reservation_actor_scope,
 	revalidate_reservation_intent,
 )
+from medops.hrp_budget.services.reservation_receipt_history import read_locked_initial_receipt_history
+from medops.hrp_budget.services.reservation_renewal_lineage import locked_renewal_lineage
 from medops.services.domain_service import DomainService
 from medops.services.errors import raise_ione_error
 
@@ -69,8 +74,8 @@ def verify_existing_initial_reservation(command: ReservationPostCommand, result:
 	"""Revalidate an actual posted result for the current actor and session.
 
 	Replay checks the recorded decision time rather than extending its validity to
-	a new write. The existing root, single event, source and current permissions
-	must be independently checked under the shared guard.
+	a new write. The frozen root, complete independently authorized release
+	history, source and current permissions are checked under the shared guard.
 	"""
 	try:
 		if frappe.conf.get("medops_internal_reservation_write_enabled") is not True:
@@ -87,6 +92,7 @@ def verify_existing_initial_reservation(command: ReservationPostCommand, result:
 		facts = parse_material_source_snapshot(
 			item.source_snapshot, expected_digest=item.source_snapshot_digest
 		)
+		observed_position = None
 		if getattr(frappe.local.db, "_medops_budget_guard_marker", None) is None:
 			inspection = inspect_existing_purchase_usage(
 				facts["request"],
@@ -96,8 +102,10 @@ def verify_existing_initial_reservation(command: ReservationPostCommand, result:
 				proposed_keys=[asdict(item.key)],
 			)
 			source = inspection.source
-			if not any(position.reservation == result["reservation"] for position in inspection.source_usage):
+			matches = [p for p in inspection.source_usage if p.reservation == result["reservation"]]
+			if len(matches) != 1:
 				raise ValueError("posted reservation is not in the checked source usage")
+			observed_position = matches[0]
 		else:
 			source = locked_material_request_source(
 				facts["request"], facts["line"], item.key.organization_unit
@@ -112,26 +120,28 @@ def verify_existing_initial_reservation(command: ReservationPostCommand, result:
 		)
 		if (locked_item, locked_decision, locked_session) != (item, decision, session):
 			raise ValueError("reservation authorization changed")
-		root = frappe.get_doc(ROOT, result["reservation"], for_update=True)
-		names = frappe.get_all(
-			EVENT, filters={"reservation": root.name}, pluck="name", order_by="name asc", limit_page_length=2
+		lineage = locked_renewal_lineage(
+			item, source, command.confirmation, command.decision, allow_progress=True
 		)
-		if names != [result["event"]]:
-			raise ValueError("single initial reservation event required")
-		event = frappe.get_doc(EVENT, names[0], for_update=True)
-		event_row = {field: event.get(field) for field in ROW_FIELDS}
-		record = reservation_record_from_row(event_row)
+		if lineage.original != decision or lineage.renewals:
+			raise ValueError("original receipt cannot have a renewal successor")
+		root = frappe.get_doc(ROOT, result["reservation"], for_update=True)
+		event_rows, releases = read_locked_initial_receipt_history(
+			item, source, root.name, result["event"], observed_position=observed_position
+		)
+		event = frappe.get_doc(EVENT, result["event"], for_update=True)
+		record = reservation_record_from_row(event_rows[0])
 		documents = initial_reservation_documents(locked_first, locked_second, occurred_at=record.occurred_at)
 		_check_persisted_document(root, documents.root, 1)
 		_check_persisted_document(event, documents.event, 0)
 		root_row = {field: root.get(field) for field in ANCHOR_ROW_FIELDS | {"source_snapshot_json"}}
-		position, _, checked = verify_authorized_initial_reservation(
-			root_row, [event_row], locked_first, locked_second, current_facts=asdict(source)
+		position, _, checked = verify_authorized_released_reservation(
+			root_row, event_rows, locked_first, locked_second, releases, current_facts=asdict(source)
 		)
 		if (
 			result["intent_digest"] != item.intent_digest
 			or checked != decision
-			or position.open_reservation != item.amount
+			or position.reserved != item.amount
 		):
 			raise ValueError("posted reservation differs from decision")
 		if locked_material_request_source(source.request, source.line, source.organization_unit) != source:

@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import hashlib
 from contextlib import contextmanager
 from copy import deepcopy
 from dataclasses import asdict, replace
@@ -23,8 +24,13 @@ from medops.common.budget_reservation_proof import (
 	ReservationSource,
 	reservation_event_key,
 	reservation_record,
+	verify_reservation_records,
 )
-from medops.common.budget_reservation_storage import reservation_record_row
+from medops.common.budget_reservation_storage import (
+	ROW_FIELDS,
+	reservation_record_from_row,
+	reservation_record_row,
+)
 from medops.common.confirmation_privacy import ConfirmationProof
 from medops.common.error_catalog import IoneApplicationError
 from medops.common.exact_money import exact_decimal_amount
@@ -32,6 +38,13 @@ from medops.common.initial_reservation_posting import initial_reservation_docume
 from medops.common.integration_outbox import OUTBOX
 from medops.common.material_source_snapshot import material_source_snapshot
 from medops.common.reservation_authorization import AUTHORIZATION_ROW_FIELDS, reservation_intent
+from medops.common.reservation_release import (
+	reservation_release_confirmation,
+	reservation_release_decision,
+	reservation_release_intent,
+	reservation_release_record,
+	reservation_release_row,
+)
 from medops.common.reservation_request import build_reservation_post
 from medops.hrp_budget.jobs import release as jobs
 from medops.hrp_budget.services import (
@@ -1166,6 +1179,126 @@ class TestBudgetReleaseExecution(FrappeAPITestCase):
 			self.assertEqual(frappe.db.count("HRP Budget Reservation"), 1)
 			self.assertEqual(frappe.db.count("HRP Budget Reservation Event"), 1)
 			self.assertEqual(frappe.db.count(LEDGER), ledger_before)
+			self.exercise_initial_receipt_after_releases(
+				primary, item, key, service, command, key_id, posted.result
+			)
+
+	def exercise_initial_receipt_after_releases(
+		self, primary, original, key, service, command, key_id, posted
+	):
+		"""Real native source/authorization; release facts only in private test tables."""
+		root_doctype = "HRP Budget Reservation"
+		event_doctype = "HRP Budget Reservation Event"
+		release_doctype = "HRP Budget Reservation Release"
+		frozen = frappe.get_doc(root_doctype, posted["reservation"]).as_dict()
+		first = frappe.get_doc(event_doctype, posted["event"])
+		records = [reservation_record_from_row({field: first.get(field) for field in ROW_FIELDS})]
+		primary.rollback()
+		receipts = frappe.get_all(
+			"HRP Service Idempotency",
+			fields=["name", "response_snapshot", "response_fingerprint"],
+			order_by="name",
+		)
+		primary.rollback()
+		for part in ("0.4", "0.6"):
+			with localcontext() as context:
+				context.prec = 48
+				amount = exact_decimal_amount(Decimal(original.amount) * Decimal(part), original.precision)
+			item = reservation_release_intent(
+				original,
+				verify_reservation_records(records),
+				records[-1],
+				amount=amount,
+				reason="Synthetic unused portion",
+			)
+			start = get_datetime(records[-1].occurred_at) + timedelta(minutes=6)
+			proof = ConfirmationProof("synthetic_release_confirmation_proof_1234567890")
+			confirmed = reservation_release_confirmation(
+				item,
+				actor="Administrator",
+				proof_hash=hashlib.sha256(proof.encode()).hexdigest(),
+				session_digest="c" * 64,
+				recorded_at=start.isoformat(sep=" ", timespec="microseconds"),
+				expires_at=(start + timedelta(minutes=5)).isoformat(sep=" ", timespec="microseconds"),
+			)
+			decision = reservation_release_decision(
+				item,
+				confirmed,
+				proof=proof,
+				actor="Administrator",
+				session_digest="c" * 64,
+				recorded_at=(start + timedelta(seconds=1)).isoformat(sep=" ", timespec="microseconds"),
+				acknowledge=True,
+			)
+			record = reservation_release_record(
+				item,
+				confirmed,
+				decision,
+				records[-1],
+				occurred_at=(start + timedelta(seconds=2)).isoformat(sep=" ", timespec="microseconds"),
+			)
+			for table, row in (
+				("tabHRP Budget Reservation Release", reservation_release_row(item, confirmed)),
+				("tabHRP Budget Reservation Release", reservation_release_row(item, decision, confirmed)),
+				("tabHRP Budget Reservation Event", reservation_record_row(record)),
+			):
+				# These tables are connection-private clones, never persisted ledgers.
+				fields = tuple(sorted(row))
+				columns = ", ".join(f"`{field}`" for field in fields)
+				placeholders = ", ".join(["%s"] * len(fields))
+				primary.sql(
+					f"INSERT INTO `{table}` ({columns}) VALUES ({placeholders})",  # nosec B608 - fixed synthetic tables/fields
+					tuple(row[field] for field in fields),
+				)
+			primary.commit()
+			records.append(record)
+			replayed = service.execute(command, idempotency_key=key_id)
+			self.assertTrue(replayed.idempotency_replayed)
+			self.assertEqual(replayed.result, posted)
+			self.assertEqual(frappe.db.count(event_doctype), len(records))
+			# A held guard alone is not a fresh complete inspection for replay.
+			with self.assertRaises(IoneApplicationError) as uninspected:
+				service.authorize_result(posted)
+			self.assertEqual(uninspected.exception.definition.key, "CONFLICT")
+			with self.assertRaises(IoneApplicationError):
+				assert_budget_guards([key])
+			primary.rollback()
+			self.assertEqual(frappe.get_doc(root_doctype, posted["reservation"]).as_dict(), frozen)
+			self.assertEqual(
+				frappe.get_all(
+					"HRP Service Idempotency",
+					fields=["name", "response_snapshot", "response_fingerprint"],
+					order_by="name",
+				),
+				receipts,
+			)
+			primary.rollback()
+		self.assertEqual(
+			verify_reservation_records(records).open_reservation,
+			exact_decimal_amount("0", original.precision),
+		)
+		for table, field, name in (
+			("tabHRP Budget Reservation Release", "name", decision.name),
+			("tabHRP Budget Reservation Release", "name", confirmed.name),
+			("tabHRP Budget Reservation Event", "name", records[-1].event.name),
+		):
+			primary.sql(f"DELETE FROM `{table}` WHERE `{field}`=%s", (name,))  # nosec B608 - fixed synthetic identifiers
+			with self.assertRaises(IoneApplicationError) as missing:
+				service.execute(command, idempotency_key=key_id)
+			self.assertEqual(missing.exception.definition.key, "CONFLICT")
+			primary.rollback()
+			self.assertEqual(frappe.db.count(release_doctype), 4)
+			self.assertEqual(frappe.db.count(event_doctype), 3)
+		primary.sql(
+			"UPDATE `tabHRP Budget Reservation Release` SET `intent_digest`=%s WHERE `name`=%s",
+			("0" * 64, decision.name),
+		)
+		with self.assertRaises(IoneApplicationError) as tampered:
+			service.execute(command, idempotency_key=key_id)
+		self.assertEqual(tampered.exception.definition.key, "CONFLICT")
+		primary.rollback()
+		self.assertEqual(service.execute(command, idempotency_key=key_id).result, posted)
+		primary.rollback()
 
 	def exercise_real_release_and_confirmation(self, *, initial_write, renewal=False, renewed_post=False):
 		"""No budget, source or evidence substitutes; all documents are synthetic."""
@@ -1266,6 +1399,7 @@ class TestBudgetReleaseExecution(FrappeAPITestCase):
 					("tabHRP Budget Reservation", "cod035_reservation_template"),
 					("tabHRP Budget Reservation Event", "cod035_event_template"),
 					("tabHRP Budget Reservation Renewal", "cod035_renewal_template"),
+					("tabHRP Budget Reservation Release", "cod035_release_template"),
 					("tabHRP Service Idempotency", "cod035_idempotency_template"),
 				):
 					primary.sql(
@@ -1444,6 +1578,9 @@ class TestBudgetReleaseExecution(FrappeAPITestCase):
 					primary.rollback()
 					self.assertEqual(frappe.db.count("HRP Budget Reservation"), 1)
 					self.assertEqual(frappe.db.count("HRP Budget Reservation Event"), 1)
+					self.exercise_initial_receipt_after_releases(
+						primary, item, key, service, command, key_id, posted
+					)
 		finally:
 			frappe.db.rollback()
 			frappe.local.request = previous_request
