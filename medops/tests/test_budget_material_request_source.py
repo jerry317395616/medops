@@ -32,6 +32,7 @@ from medops.common.reservation_authorization import (
 	reservation_intent,
 	verify_reservation_authorization_rows,
 )
+from medops.common.reservation_renewal import RENEWAL_ROW_FIELDS
 from medops.hrp_budget.services import (
 	material_budget_guards,
 	material_request_source,
@@ -790,6 +791,7 @@ class TestBudgetMaterialRequestSource(FrappeTestCase):
 					("tabHRP Budget Reservation", ANCHOR_ROW_FIELDS | {"source_snapshot_json"}),
 					("tabHRP Budget Reservation Event", ROW_FIELDS),
 					("tabHRP Budget Reservation Authorization", AUTHORIZATION_ROW_FIELDS),
+					("tabHRP Budget Reservation Renewal", RENEWAL_ROW_FIELDS),
 				)
 				integers = {"event_count", "sequence", "currency_precision", "proof_version", "acknowledged"}
 				for table, fields in tables:

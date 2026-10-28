@@ -12,6 +12,7 @@ from medops.common.reservation_renewal import (
 	reservation_renewal_row,
 	verify_reservation_renewal_chain,
 	verify_reservation_renewal_row,
+	verify_reservation_renewal_rows,
 )
 from tests.test_reservation_authorization import ACTOR, DECIDED, EXPIRES, PROOF, SESSION, confirmation, intent
 
@@ -172,6 +173,41 @@ class ReservationRenewalTest(unittest.TestCase):
 				verify_reservation_renewal_row(
 					self.item, self.first, self.original, [], self.new, row | changes
 				)
+
+	def test_batched_storage_rows_verify_complete_ordered_lineage(self):
+		one = self.build()
+		second = renewal_confirmation(self.item, start=one.expires_at)
+		two = self.build(
+			renewals=[(self.new, one)], confirmed=second, recorded_at="2026-01-01 10:10:01.000000"
+		)
+		row1 = reservation_renewal_row(self.item, self.first, self.original, [], self.new, one)
+		row2 = reservation_renewal_row(self.item, self.first, self.original, [(self.new, one)], second, two)
+		self.assertEqual(
+			verify_reservation_renewal_rows(
+				self.item, self.first, self.original, [(self.new, row1), (second, row2)]
+			),
+			((self.new, one), (second, two)),
+		)
+		self.assertEqual(verify_reservation_renewal_rows(self.item, self.first, self.original, []), ())
+		for values in (
+			[(second, row2)],
+			[(second, row2), (self.new, row1)],
+			[(self.new, row1), (second, row2 | {"company": "Other"})],
+		):
+			with self.subTest(values=values), self.assertRaises(ValueError):
+				verify_reservation_renewal_rows(self.item, self.first, self.original, values)
+
+	def test_batched_storage_rows_reject_noncanonical_and_oversized_input(self):
+		one = self.build()
+		row = reservation_renewal_row(self.item, self.first, self.original, [], self.new, one)
+		for values in (
+			None,
+			[(self.new, row | {"acknowledged": True})],
+			[(self.new, row | {"sequence": True})],
+			[(self.new, row)] * (MAX_RENEWALS + 1),
+		):
+			with self.assertRaises(ValueError):
+				verify_reservation_renewal_rows(self.item, self.first, self.original, values)
 
 	def test_rejects_malformed_or_oversized_chains(self):
 		for chain in (None, [()], [None], [()] * (MAX_RENEWALS + 1)):
