@@ -49,6 +49,12 @@ class InitialReservationDocumentsTest(unittest.TestCase):
 		)
 		self.assertNotEqual(result.root["name"], alternate.root["name"])
 
+	def test_original_decision_cannot_authorize_event_at_or_after_expiration(self):
+		_, _, _, first, second = evidence()
+		for stamp in ("2026-01-01 10:05:00.000000", "2026-01-01 10:05:01.000000"):
+			with self.subTest(stamp=stamp), self.assertRaises(ValueError):
+				initial_reservation_documents(first, second, occurred_at=stamp)
+
 	def test_tampering_and_posting_before_decision_fail(self):
 		_, _, _, first, second = evidence()
 		for confirmation, decision, stamp in (

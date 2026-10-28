@@ -43,6 +43,8 @@ ROW_FIELDS = frozenset(
 		"previous_digest",
 		"event_digest",
 		"proof_version",
+		"renewal_decision",
+		"renewal_digest",
 		*KEY_FIELDS,
 	}
 )
@@ -56,6 +58,8 @@ def reservation_record_row(record: ReservationRecord) -> dict[str, object]:
 		actor=record.actor,
 		occurred_at=record.occurred_at,
 		previous_digest=record.previous_digest,
+		renewal_decision=record.renewal_decision,
+		renewal_digest=record.renewal_digest,
 	):
 		raise ValueError("invalid reservation record")
 	event, source = record.event, record.source
@@ -81,7 +85,9 @@ def reservation_record_row(record: ReservationRecord) -> dict[str, object]:
 		"occurred_at": record.occurred_at,
 		"previous_digest": record.previous_digest,
 		"event_digest": record.event_digest,
-		"proof_version": 1,
+		"proof_version": 2 if record.renewal_decision is not None else 1,
+		"renewal_decision": record.renewal_decision,
+		"renewal_digest": record.renewal_digest,
 	}
 
 
@@ -89,8 +95,14 @@ def reservation_record_from_row(value: object) -> ReservationRecord:
 	"""Reconstruct and check a selected row; this does not check its source rights."""
 	if not isinstance(value, Mapping) or set(value) != ROW_FIELDS:
 		raise ValueError("complete reservation event row required")
-	if type(value["proof_version"]) is not int or value["proof_version"] != 1:
+	if type(value["proof_version"]) is not int or value["proof_version"] not in (1, 2):
 		raise ValueError("unsupported reservation proof version")
+	renewal_decision = None if value["renewal_decision"] in (None, "") else value["renewal_decision"]
+	renewal_digest = None if value["renewal_digest"] in (None, "") else value["renewal_digest"]
+	if (value["proof_version"] == 1 and (renewal_decision is not None or renewal_digest is not None)) or (
+		value["proof_version"] == 2 and (renewal_decision is None or renewal_digest is None)
+	):
+		raise ValueError("reservation proof version and renewal reference differ")
 	if value["name"] != value["event_key"]:
 		raise ValueError("reservation event row identity mismatch")
 	values = {field: value[field] for field in KEY_FIELDS}
@@ -147,6 +159,8 @@ def reservation_record_from_row(value: object) -> ReservationRecord:
 		actor=value["actor"],
 		occurred_at=stamp.isoformat(sep=" ", timespec="microseconds"),
 		previous_digest=previous,
+		renewal_decision=renewal_decision,
+		renewal_digest=renewal_digest,
 	)
 	if (
 		value["sequence_key"] != expected.sequence_key
