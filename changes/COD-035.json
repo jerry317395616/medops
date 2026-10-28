@@ -18,7 +18,8 @@
 		"ADR-0030",
 		"ADR-0031",
 		"ADR-0035",
-		"ADR-0036"
+		"ADR-0036",
+		"ADR-0037"
 	],
 	"path_globs": [
 		"DELIVERY_MANIFEST.json",
@@ -93,12 +94,18 @@
 		"medops/tests/reservation_concurrency_probe.py",
 		"scripts/ci_reservation_concurrency.sh",
 		"scripts/ci_integration.sh",
-		"scripts/reservation_concurrency_worker.py"
+		"scripts/reservation_concurrency_worker.py",
+		"architecture/adr/ADR-0037-immutable-reservation-release-history.md",
+		"medops/common/reservation_release.py",
+		"tests/test_reservation_release.py",
+		"doctype_blueprints/hrp_budget/hrp_budget_reservation_release.json",
+		"medops/hrp_budget/doctype/hrp_budget_reservation_release/**",
+		"medops/tests/test_budget_reservation_release.py"
 	],
-	"permissions_impact": "本次增加仅限CI专用新站点的并发探针，不新增业务权限或公开写入入口。专用站点显式开启内部候选开关；普通站点及本地环境拒绝运行。",
-	"migration_impact": "无业务模型迁移；CI额外创建独立的新测试站点，安装当前锁定应用并配置测试环境。探针保留已提交合成不可变证据，由整个运行器销毁，不修改既有站点。",
-	"rollback_plan": "撤回CI探针与集成脚本调用即可停止未来执行；运行器仅含合成数据且随作业销毁。生产功能开关保持关闭，不影响已有财务证据。",
-	"security_impact": "采购预览锁定当前来源后可暂时观察历史摘要，最终必须核验独立确认决定及原始经济事实，未通过即使围栏失效；严格来源核查仍要求摘要不变。后续生命周期、多个历史修订与写入围栏未完成，不能记账。 确认时间不得早于申请父单或明细的原始修改时间；不合条件的历史证据将失败关闭，须人工调查，不自动回填。 当前父单和明细修改时间不得早于历史快照，倒退时失败关闭；这不证明状态变化的来源。 确认预览按已核验采购行归集既有占用，既有占用加本次金额超过申请金额时拒绝；不计算预算余额或允许写账。 确认预检还以已核验同键净下达减已核验未结使用，拒绝超过当前受支持事实的意图；不能授权记账或视作医院历史余额。 既有确认证据重验时若当前差额不足则拒绝，保留证据并调查。 首笔根/事件仅在内存构造，不能证明授权或写账，控制器仍拒绝写入。 新增默认关闭的内部首笔预占事务和受控控制器，需当前会话/决定、预算围栏和来源，尚无公开接口、域服务幂等审计或医院验收。 凭证过期后同一分摊的重授权尚未设计，禁止生产启用。 受控新文档阻止 Frappe 自动填入未授权的业务默认值。 私有域服务首次写入及回读复核来源、权限和不可变证据；已完成回执可在原凭证过期后仅供同一会话核验，不延长新写入授权。凭证过期前未记账的重新授权仍未解决。 新增纯续期链契约，验证原意图、上一个决定到期、当前确认凭证与唯一后继键；不验证真实人或完整数据库链，尚不授予续期或过账权限，最长100次是待确定的保守上限。 新表无标准权限且控制器全部拒绝写入；后继键唯一数据库约束待隔离验证。私有只读链路在共同预算/来源围栏下验证来源、权限和全部续期行；调用方仍须完整回滚，尚不具备续期或写账权限。 新增默认关闭的私有续期事务及受控控制器，要求现有采购来源、当前预算、未过账状态和完整续期链，绑定新确认与加密幂等回执；无公开接口、无续期后过账连接，真实竞争、不可变数据完整性和医院验收仍待验证。 第二版首笔事件摘要绑定最终续期决定及证据摘要，必须同时核验完整续期链及决定的有效期；旧版不带续期引用且摘要保持不变。当前只有纯构造，数据库读取器及记账器未适配第二版。旧版事件发生时间在原决定有效期外的历史数据现会被拒绝，必须人工调查，禁止回填。 原生历史读取按分批和每个预占上限加载全部续期与确认，依赖受控不可变存储、共同围栏及续期表来源身份索引；读取前后复核只读角色/范围，旧版事件若有异常续期后继、第二版缺证或链被篡改均失败关闭。非协作写入及已删除证据仍无法由此证明。 新增独立默认关闭的续期后首笔预占候选：新写入要求最新有效续期和原始来源完全一致，在预算/来源围栏内重新验证额度、身份、权限及单次写入，标准控制器每阶段检查凭证并要求整笔回滚；重放仅核验既有事件，允许无财务变化的来源进度，不延长写入权限。跨进程争用、非协作写入和医院验收尚未完成。 原版预占控制器现在也锁定并核对续期链；一旦存在后继决定，即便系统时钟回拨使原凭证看似有效也拒绝使用旧决定。 并发探针要求Linux GitHub runner、RUNNER_TEMP内Bench、固定新站点名、严格布尔标记和初始空证据表；确认凭证通过私有载体及stdin传递，仅输出阶段和去敏结果。只包装实际取锁以观察和同步，不替代来源、预算、权限或持久化实现。普通测试发现不会自动运行此已提交数据探针。",
+	"permissions_impact": "New independent release evidence model has no standard roles; all insert/update/delete/rename/cancel paths remain closed. No public API, user grant or production write flag is added.",
+	"migration_impact": "Adds HRP Budget Reservation Release and its unique evidence/confirmation/predecessor keys and reservation index. Existing submitted roots, events and financial/stock ledgers are unchanged. Isolated migration is pending; the server has not been contacted or migrated.",
+	"rollback_plan": "For the current closed model, revert new code while retaining the empty table. Before any future release posting, stop all related writers and workers; never delete valid evidence. Once release facts exist, old readers require a compatible rollback path under ADR-0037.",
+	"security_impact": "采购预览锁定当前来源后可暂时观察历史摘要，最终必须核验独立确认决定及原始经济事实，未通过即使围栏失效；严格来源核查仍要求摘要不变。后续生命周期、多个历史修订与写入围栏未完成，不能记账。 确认时间不得早于申请父单或明细的原始修改时间；不合条件的历史证据将失败关闭，须人工调查，不自动回填。 当前父单和明细修改时间不得早于历史快照，倒退时失败关闭；这不证明状态变化的来源。 确认预览按已核验采购行归集既有占用，既有占用加本次金额超过申请金额时拒绝；不计算预算余额或允许写账。 确认预检还以已核验同键净下达减已核验未结使用，拒绝超过当前受支持事实的意图；不能授权记账或视作医院历史余额。 既有确认证据重验时若当前差额不足则拒绝，保留证据并调查。 首笔根/事件仅在内存构造，不能证明授权或写账，控制器仍拒绝写入。 新增默认关闭的内部首笔预占事务和受控控制器，需当前会话/决定、预算围栏和来源，尚无公开接口、域服务幂等审计或医院验收。 凭证过期后同一分摊的重授权尚未设计，禁止生产启用。 受控新文档阻止 Frappe 自动填入未授权的业务默认值。 私有域服务首次写入及回读复核来源、权限和不可变证据；已完成回执可在原凭证过期后仅供同一会话核验，不延长新写入授权。凭证过期前未记账的重新授权仍未解决。 新增纯续期链契约，验证原意图、上一个决定到期、当前确认凭证与唯一后继键；不验证真实人或完整数据库链，尚不授予续期或过账权限，最长100次是待确定的保守上限。 新表无标准权限且控制器全部拒绝写入；后继键唯一数据库约束待隔离验证。私有只读链路在共同预算/来源围栏下验证来源、权限和全部续期行；调用方仍须完整回滚，尚不具备续期或写账权限。 新增默认关闭的私有续期事务及受控控制器，要求现有采购来源、当前预算、未过账状态和完整续期链，绑定新确认与加密幂等回执；无公开接口、无续期后过账连接，真实竞争、不可变数据完整性和医院验收仍待验证。 第二版首笔事件摘要绑定最终续期决定及证据摘要，必须同时核验完整续期链及决定的有效期；旧版不带续期引用且摘要保持不变。当前只有纯构造，数据库读取器及记账器未适配第二版。旧版事件发生时间在原决定有效期外的历史数据现会被拒绝，必须人工调查，禁止回填。 原生历史读取按分批和每个预占上限加载全部续期与确认，依赖受控不可变存储、共同围栏及续期表来源身份索引；读取前后复核只读角色/范围，旧版事件若有异常续期后继、第二版缺证或链被篡改均失败关闭。非协作写入及已删除证据仍无法由此证明。 新增独立默认关闭的续期后首笔预占候选：新写入要求最新有效续期和原始来源完全一致，在预算/来源围栏内重新验证额度、身份、权限及单次写入，标准控制器每阶段检查凭证并要求整笔回滚；重放仅核验既有事件，允许无财务变化的来源进度，不延长写入权限。跨进程争用、非协作写入和医院验收尚未完成。 原版预占控制器现在也锁定并核对续期链；一旦存在后继决定，即便系统时钟回拨使原凭证看似有效也拒绝使用旧决定。 并发探针要求Linux GitHub runner、RUNNER_TEMP内Bench、固定新站点名、严格布尔标记和初始空证据表；确认凭证通过私有载体及stdin传递，仅输出阶段和去敏结果。只包装实际取锁以观察和同步，不替代来源、预算、权限或持久化实现。普通测试发现不会自动运行此已提交数据探针。 ADR-0037 release evidence binds original intent, source snapshot, complete scope, predecessor sequence/digest/time, prior open amount, exact release amount and reason. Session-bound five-minute proof and explicit acknowledgement are independent of the event hash. Only supplied-data verification exists now; all native storage writes remain denied. Hashes do not establish human authority or immutable storage.",
 	"test_plan": [
 		"隔离CI 40578844791通过同预算范围多个采购来源、状态转移及101范围分组等31项专项",
 		"拒绝孤立事件、缺失事件、跨范围父子不一致、未知来源、重复动作与超限并失效预算围栏",
@@ -129,7 +136,8 @@
 		"后台无请求时按已验证合成预算经理切换并重载角色，隔离验证待执行。",
 		"隔离CI 40595851888通过112项原生专项，含网络会话保留、后台授权人切换、证据与幂等测试；库存来源部分替身，Error Log为零。",
 		"新增默认关闭确认API、干净事务和回调/既有写入拒绝、真实HTTP默认拒绝、模拟来源的启用接线与原生诊断凭证脱敏测试，隔离结果待运行。",
-		"CI专用站点双进程探针验证真实围栏竞争、超预算全事务重试拒绝和同键回执重放；外层工作进程已移至scripts，隔离CI 40627381948运行中。实际来源与证据，合成会话/时钟，普通站点拒绝执行。 Final isolated CI 40627381948 passed one committed-data probe with zero Error Log; frozen local quality passed 600 tests. New full plain and IONE Core integration remains pending. Full CI 40628275807 for product commit 7125b9b is running in both plain and IONE Core environments."
+		"CI专用站点双进程探针验证真实围栏竞争、超预算全事务重试拒绝和同键回执重放；外层工作进程已移至scripts，隔离CI 40627381948运行中。实际来源与证据，合成会话/时钟，普通站点拒绝执行。 Final isolated CI 40627381948 passed one committed-data probe with zero Error Log; frozen local quality passed 600 tests. New full plain and IONE Core integration remains pending. Full CI 40628275807 for product commit 7125b9b is running in both plain and IONE Core environments.",
+		"Eleven new pure release checks passed. Two native migration and connection-private synthetic table tests pending. No real source/guard/posting or hospital acceptance is established by these tests."
 	],
 	"owner": "MedOps Maintainers",
 	"created_on": "2026-10-27",
