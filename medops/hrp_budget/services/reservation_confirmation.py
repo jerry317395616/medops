@@ -46,7 +46,7 @@ def _session(item):
 	return session_digest("budget-reservation:" + item.reservation_identity)
 
 
-def _require_actor_scope(item, actor, session):
+def require_reservation_actor_scope(item, actor, session):
 	require_web_session()
 	require_roles(MANAGER_ROLES)
 	if frappe.session.user != actor or not hmac.compare_digest(_session(item), session):
@@ -64,7 +64,7 @@ def _require_actor_scope(item, actor, session):
 def _inspect_intent(item, actor, session):
 	if type(item) is not ReservationIntent:
 		raise ValueError("validated reservation intent required")
-	_require_actor_scope(item, actor, session)
+	require_reservation_actor_scope(item, actor, session)
 	facts = parse_material_source_snapshot(item.source_snapshot, expected_digest=item.source_snapshot_digest)
 	inspection = inspect_purchase_usage(
 		facts["request"],
@@ -109,14 +109,14 @@ def _inspect_intent(item, actor, session):
 
 
 def _recheck(item, source, actor, session):
-	_require_actor_scope(item, actor, session)
+	require_reservation_actor_scope(item, actor, session)
 	assert_material_budget_guards(source, [item.key])
 	current = locked_material_request_source(source.request, source.line, source.organization_unit)
 	snapshot, digest = material_source_snapshot(asdict(current))
 	if current != source or snapshot != item.source_snapshot or digest != item.source_snapshot_digest:
 		raise_ione_error("CONFLICT")
 	assert_budget_guards([item.key])
-	_require_actor_scope(item, actor, session)
+	require_reservation_actor_scope(item, actor, session)
 
 
 def revalidate_reservation_intent(item, *, actor, session):
@@ -127,7 +127,7 @@ def revalidate_reservation_intent(item, *, actor, session):
 	"""
 	try:
 		require_web_session()
-		_require_actor_scope(item, actor, session)
+		require_reservation_actor_scope(item, actor, session)
 		if getattr(frappe.local.db, "_medops_budget_guard_marker", None) is None:
 			_inspect_intent(item, actor, session)
 		else:
