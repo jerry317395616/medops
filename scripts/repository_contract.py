@@ -169,6 +169,7 @@ REQUIRED_NODE_SCRIPTS = frozenset(
 		"format:frontend",
 		"format:frontend:check",
 		"lint:frontend",
+		"test:frontend",
 		"quality",
 		"quality:node",
 		"typecheck",
@@ -308,6 +309,8 @@ def validate_quality_tooling(root: Path) -> list[str]:
 		"pyrightconfig.json",
 		"scripts/quality.py",
 		"scripts/quality.sh",
+		"scripts/tests/reservation_session.test.mjs",
+		"scripts/tests/reservation_page.test.mjs",
 	)
 	for relative_path in required_files:
 		if not (root / relative_path).is_file():
@@ -342,6 +345,12 @@ def validate_quality_tooling(root: Path) -> list[str]:
 		violations.append("package.json is missing scripts: " + ", ".join(missing_scripts))
 	if scripts.get("quality") != "python scripts/quality.py":
 		violations.append("package.json quality must invoke scripts/quality.py")
+	if scripts.get("test:frontend") != "node --test scripts/tests/*.test.mjs":
+		violations.append("frontend tests must run the actual Node test suites")
+	if 'QualityStep("frontend-tests", (npm_executable, "run", "test:frontend"))' not in (
+		root / "scripts/quality.py"
+	).read_text(encoding="utf-8"):
+		violations.append("quality must include frontend execution tests")
 	if not re.fullmatch(r"npm@\d+\.\d+\.\d+", str(package.get("packageManager", ""))):
 		violations.append("packageManager must pin an exact npm version")
 

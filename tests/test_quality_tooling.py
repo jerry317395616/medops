@@ -29,6 +29,8 @@ QUALITY_FILES = (
 	"pyrightconfig.json",
 	"scripts/quality.py",
 	"scripts/quality.sh",
+	"scripts/tests/reservation_session.test.mjs",
+	"scripts/tests/reservation_page.test.mjs",
 )
 
 
@@ -57,6 +59,7 @@ class QualityToolingTest(unittest.TestCase):
 			"checksums",
 			"pyright",
 			"eslint",
+			"frontend-tests",
 			"prettier",
 		)
 		first = build_quality_steps(python_executable="python", npm_executable="npm")
@@ -105,7 +108,7 @@ class QualityToolingTest(unittest.TestCase):
 				python_executable="python",
 				npm_executable="npm",
 			)
-		self.assertEqual(len(completed), 11)
+		self.assertEqual(len(completed), 12)
 		self.assertEqual(
 			{path: _digest(ROOT / path) for path in QUALITY_FILES},
 			before,
@@ -131,6 +134,21 @@ class QualityToolingTest(unittest.TestCase):
 			self.assertIn(
 				"package-lock.json root devDependencies differ from package.json",
 				violations,
+			)
+
+	def test_dropped_frontend_execution_gate_is_rejected(self) -> None:
+		with tempfile.TemporaryDirectory() as temp:
+			root = Path(temp)
+			for relative_path in QUALITY_FILES:
+				target = root / relative_path
+				target.parent.mkdir(parents=True, exist_ok=True)
+				target.write_bytes((ROOT / relative_path).read_bytes())
+			package_path = root / "package.json"
+			package = json.loads(package_path.read_text(encoding="utf-8"))
+			package["scripts"]["test:frontend"] = "node -e ''"
+			package_path.write_text(json.dumps(package), encoding="utf-8")
+			self.assertIn(
+				"frontend tests must run the actual Node test suites", validate_quality_tooling(root)
 			)
 
 

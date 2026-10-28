@@ -2,18 +2,32 @@
 
 from __future__ import annotations
 
+from contextlib import ExitStack
 from dataclasses import asdict
+from datetime import timedelta
 from decimal import Decimal
 from typing import Any
 from unittest.mock import patch
 from uuid import uuid4
 
 import frappe
+from frappe.utils import get_datetime
 
 from medops.common.confirmation_privacy import ConfirmationProof
 from medops.common.domain_service import idempotency_record_name
 from medops.hrp_budget.doctype.hrp_budget_reservation_event.hrp_budget_reservation_event import (
 	HRPBudgetReservationEvent,
+)
+from medops.hrp_budget.services import (
+	initial_reservation_control,
+	initial_reservation_write,
+	renewed_initial_reservation_write,
+	reservation_confirmation,
+	reservation_confirmation_service,
+	reservation_release_control,
+	reservation_release_write,
+	reservation_renewal_control,
+	reservation_renewal_write,
 )
 from medops.hrp_budget.services.reservation_release_write import PostReservationRelease
 from medops.services.errors import raise_ione_error
@@ -34,6 +48,7 @@ def exercise_reservation_http(test, row, amount, item_name, unit_name):
 	test.login_actor("Administrator")
 
 	def request(method, payload, *, key=None, status=200) -> dict[str, Any]:
+		print("MEDOPS_HTTP_CI:" + method, flush=True)
 		response = test.post(
 			test.method(BASE + method),
 			{"payload": payload},
@@ -158,16 +173,35 @@ def exercise_reservation_http(test, row, amount, item_name, unit_name):
 		"proof": prepared["proof"],
 		"acknowledge": True,
 	}
-	renewed = request(OPERATIONS + "renew", renew_command)
-	test.assertEqual(renewed["effect"], "decision_renewed")
-	request(OPERATIONS + "post", original_post, status=409)
-	new_post = {**renew_command, "renewal_decision": renewed["renewal"]}
-	result = request(OPERATIONS + "post_renewed", new_post)
-	test.assertEqual(result["effect"], "reservation_posted")
-	root = result["reservation"]
-	unused = prepare_release(items[1].amount)
-	test.login_actor("Administrator")
-	request(OPERATIONS + "post_release", unused, status=403)
+	# A confirmation created before expiry cannot be used as a renewal, even
+	# if it is only submitted later. Keep that domain restriction unchanged.
+	request(OPERATIONS + "renew", renew_command, status=409)
+	future = get_datetime(prepared["expires_at"]) + timedelta(seconds=1)
+	with ExitStack() as clocks:
+		for module in (
+			reservation_confirmation,
+			reservation_confirmation_service,
+			reservation_renewal_control,
+			reservation_renewal_write,
+			renewed_initial_reservation_write,
+			initial_reservation_control,
+			initial_reservation_write,
+			reservation_release_control,
+			reservation_release_write,
+		):
+			clocks.enter_context(patch.object(module, "now_datetime", return_value=future))
+		prepared = request("reservation.prepare", data)
+		renew_command.update(renewal_confirmation=prepared["confirmation"], proof=prepared["proof"])
+		renewed = request(OPERATIONS + "renew", renew_command)
+		test.assertEqual(renewed["effect"], "decision_renewed")
+		request(OPERATIONS + "post", original_post, status=403)
+		new_post = {**renew_command, "renewal_decision": renewed["renewal"]}
+		result = request(OPERATIONS + "post_renewed", new_post)
+		test.assertEqual(result["effect"], "reservation_posted")
+		root = result["reservation"]
+		unused = prepare_release(items[1].amount)
+		test.login_actor("Administrator")
+		request(OPERATIONS + "post_release", unused, status=403)
 	test.assertEqual(frappe.db.count(EVENT, {"reservation": root}), 1)
 	test.assertEqual(frappe.db.count(RELEASE, {"reservation": root, "event_kind": "Decision"}), 0)
 	test.assertEqual(frappe.db.count(ROOT), before[ROOT] + 2)

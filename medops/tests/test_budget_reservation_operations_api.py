@@ -90,6 +90,20 @@ class TestBudgetReservationOperationsBoundary(FrappeTestCase):
 		finally:
 			frappe.conf.medops_reservation_operations_enabled = previous
 
+	def test_standard_page_sync_uses_existing_manager_roles_without_evidence_grants(self):
+		page = frappe.get_doc("Page", "hrp-budget-reservations")
+		self.assertEqual(page.module, "HRP Budget")
+		self.assertEqual(page.standard, "Yes")
+		self.assertEqual({row.role for row in page.roles}, api.MANAGER_ROLES)
+		for doctype in (
+			"HRP Budget Reservation",
+			"HRP Budget Reservation Event",
+			"HRP Budget Reservation Authorization",
+			"HRP Budget Reservation Renewal",
+			"HRP Budget Reservation Release",
+		):
+			self.assertEqual(list(frappe.get_meta(doctype).permissions), [])
+
 	def test_token_get_background_and_missing_ack_never_start_owned_transaction(self):
 		previous = frappe.conf.get("medops_reservation_operations_enabled")
 		frappe.conf.medops_reservation_operations_enabled = True

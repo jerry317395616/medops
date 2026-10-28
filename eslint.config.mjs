@@ -79,7 +79,7 @@ export default [
 		},
 	},
 	{
-		files: ["*.config.{js,mjs,cjs}", "eslint.config.mjs", "scripts/**/*.{js,ts}"],
+		files: ["*.config.{js,mjs,cjs}", "eslint.config.mjs", "scripts/**/*.{js,ts,mjs}"],
 		languageOptions: {
 			globals: globals.node,
 		},
