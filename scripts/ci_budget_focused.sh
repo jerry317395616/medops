@@ -50,26 +50,29 @@ cd "$BENCH_DIR"
   --correlation-id "FOCUSED-${GITHUB_RUN_ID:-local}-verify"
 bench --site "$SITE_NAME" migrate --skip-search-index
 
-test_log="$BENCH_DIR/logs/focused-budget-tests.log"
+run_case() {
+  local module="$1" case_name="$2" expected="$3"
+  local case_log="$BENCH_DIR/logs/focused-${case_name}.log"
+  bench --site "$SITE_NAME" run-tests --app medops --module "$module" --case "$case_name" 2>&1 | tee "$case_log"
+  if ! grep -Eq "Ran $expected tests? in [0-9.]+s" "$case_log" || grep -Eq 'OK \(skipped=|FAILED \(' "$case_log"; then
+    echo "Missing or incomplete focused native cases" >&2
+    exit 1
+  fi
+}
+run_case medops.tests.test_budget_reservation_release TestBudgetReservationRelease 2
+run_case medops.tests.test_budget_material_authorization_observation TestBudgetMaterialAuthorizationObservation 22
+run_case medops.tests.test_budget_usage_observation TestBudgetUsageObservation 32
+run_case medops.tests.test_budget_reservation_observation TestBudgetReservationObservation 11
+post_log="$BENCH_DIR/logs/focused-posting-regressions.log"
 bench --site "$SITE_NAME" run-tests --app medops --module medops.tests.test_budget_release_execution \
-  --test test_persisted_authorized_release_guard_checks_original_units_without_posting \
-  --test test_persisted_release_guard_poisoned_when_actor_check_is_revoked \
-  --test test_persisted_release_guard_detects_role_revocation_from_another_transaction \
-  --test test_persisted_reversal_guard_verifies_the_complete_original_batch \
-  --test test_guarded_release_inventory_reconciles_posted_batches_and_physical_entries \
-  2>&1 | tee "$test_log"
-if ! grep -Eq 'Ran 5 tests? in [0-9.]+s' "$test_log"; then
-  echo "Focused CI did not execute the expected five tests" >&2
+  --test test_private_initial_reservation_writes_and_rolls_back_atomically \
+  --test test_private_renewed_reservation_posts_replays_and_rolls_back_atomically 2>&1 | tee "$post_log"
+if ! grep -Eq 'Ran 2 tests? in [0-9.]+s' "$post_log" || grep -Eq 'OK \(skipped=|FAILED \(' "$post_log"; then
+  echo "Missing actual-source posting regressions" >&2
   exit 1
 fi
-
-storage_log="$BENCH_DIR/logs/focused-budget-storage-tests.log"
-bench --site "$SITE_NAME" run-tests --app medops --module medops.tests.test_budget_reservation_storage \
-  --case TestBudgetReservationStorage 2>&1 | tee "$storage_log"
-if ! grep -Eq 'Ran 3 tests? in [0-9.]+s' "$storage_log"; then
-  echo "Focused CI did not execute the expected three storage tests" >&2
-  exit 1
-fi
+cd "$ROOT_DIR"
+"$BENCH_DIR/env/bin/python" -m unittest tests.test_reservation_release
 
 "$BENCH_DIR/env/bin/python" - "$BENCH_DIR" "$SITE_NAME" <<'PY'
 import json
