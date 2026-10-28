@@ -1,23 +1,32 @@
-"""Reservation events admit only the private initial-write protocol."""
+"""Reservation events admit exact private initial or release append protocols."""
 
 from __future__ import annotations
 
 from medops.hrp_budget.services.initial_reservation_control import EVENT, require_initial_write
+from medops.hrp_budget.services.reservation_release_control import (
+	release_write_active,
+	require_reservation_release_write,
+)
 from medops.services.budget_documents import ControlledBudgetDocument
 from medops.services.errors import raise_ione_error
 
 
 class HRPBudgetReservationEvent(ControlledBudgetDocument):
-	"""Deny normal writes; only the gated protocol can append the first event."""
+	"""Deny normal writes; dispatch only an explicitly active private gate."""
+
+	def _require_append(self, *, named=True):
+		if release_write_active():
+			return require_reservation_release_write(self, doctype=EVENT, named=named)
+		return require_initial_write(self, doctype=EVENT, stage="insert", named=named)
 
 	def before_insert(self):
-		require_initial_write(self, doctype=EVENT, stage="insert", named=False)
+		self._require_append(named=False)
 
 	def validate(self):
-		require_initial_write(self, doctype=EVENT, stage="insert")
+		self._require_append()
 
 	def db_insert(self, *args, **kwargs):
-		state = require_initial_write(self, doctype=EVENT, stage="insert")
+		state = self._require_append()
 		result = super().db_insert(*args, **kwargs)
 		state.event_inserted = True
 		return result

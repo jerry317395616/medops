@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from unittest.mock import patch
+
 import frappe
 from frappe.tests import IntegrationTestCase
 
@@ -18,7 +20,7 @@ class TestBudgetReservationRelease(IntegrationTestCase):
 	def test_storage_migration_has_private_fields_unique_keys_and_denies_all_writes(self):
 		before = frappe.db.count(DOCTYPE)
 		doc = frappe.get_doc(dict(doctype=DOCTYPE))
-		for action in (
+		actions = (
 			lambda: doc.insert(ignore_permissions=True, ignore_links=True, ignore_mandatory=True),
 			doc.db_insert,
 			doc.db_update,
@@ -27,9 +29,15 @@ class TestBudgetReservationRelease(IntegrationTestCase):
 			lambda: doc.before_rename("old", "new", False),
 			doc.before_cancel,
 			doc.before_update_after_submit,
-		):
-			with self.subTest(action=action), self.assertRaises(IoneApplicationError):
-				action()
+		)
+		for setting in (False, True):
+			with patch.dict(frappe.conf, {"medops_internal_reservation_release_write_enabled": setting}):
+				for action in actions:
+					with (
+						self.subTest(enabled=setting, action=action),
+						self.assertRaises(IoneApplicationError),
+					):
+						action()
 		self.assertEqual(frappe.db.count(DOCTYPE), before)
 		meta = frappe.get_meta(DOCTYPE)
 		self.assertFalse(meta.istable or meta.issingle or meta.is_submittable or meta.allow_rename)
