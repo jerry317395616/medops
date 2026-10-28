@@ -23,7 +23,7 @@ from medops.common.reservation_renewal import (
 	MAX_RENEWALS,
 	RENEWAL_ROW_FIELDS,
 	ReservationRenewalDecision,
-	verify_reservation_renewal_row,
+	verify_reservation_renewal_rows,
 )
 from medops.hrp_budget.services.approval import session_digest
 from medops.hrp_budget.services.control_guards import invalidate_budget_guards
@@ -101,19 +101,17 @@ def locked_renewal_lineage(item, source, confirmation_name, decision_name):
 			raise ValueError("renewal history exceeds safe bound")
 		names = tuple(row["confirmation"] for row in rows)
 		confirmations = _evidence_rows(names) if names else {}
-		pairs = []
+		values = []
 		for row in rows:
 			stored_item, new_confirmation = verify_reservation_confirmation_row(
 				confirmations[row["confirmation"]]
 			)
 			if stored_item != item:
 				raise ValueError("renewal confirmation differs from original intent")
-			decision = verify_reservation_renewal_row(
-				item, confirmation, original, pairs, new_confirmation, row
-			)
-			pairs.append((new_confirmation, decision))
+			values.append((new_confirmation, row))
+		pairs = verify_reservation_renewal_rows(item, confirmation, original, values)
 		_check_source(item, source, actor, session)
-		return LockedRenewalLineage(confirmation, original, tuple(pairs))
+		return LockedRenewalLineage(confirmation, original, pairs)
 	except (ValueError, TypeError, KeyError) as error:
 		invalidate_budget_guards()
 		raise_ione_error("CONFLICT", cause=error)

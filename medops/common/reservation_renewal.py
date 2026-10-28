@@ -188,8 +188,8 @@ def reservation_renewal_row(item, first, original, renewals, confirmed, decision
 	return row
 
 
-def verify_reservation_renewal_row(item, first, original, renewals, confirmed, value):
-	"""Reconstruct exact supplied storage fields; callers must prove complete durable lineage."""
+def _normalize_renewal_row(value):
+	"""Normalize database representations before checking the complete lineage."""
 	if not isinstance(value, dict) or set(value) != RENEWAL_ROW_FIELDS:
 		raise ValueError("complete renewal row required")
 	row = dict(value)
@@ -219,6 +219,42 @@ def verify_reservation_renewal_row(item, first, original, renewals, confirmed, v
 	decision_values = {field: row[field] for field in ReservationRenewalDecision.__dataclass_fields__}
 	decision_values["acknowledged"] = True
 	decision = ReservationRenewalDecision(**decision_values)
+	return row, decision
+
+
+def verify_reservation_renewal_row(item, first, original, renewals, confirmed, value):
+	"""Reconstruct exact supplied storage fields; callers must prove complete durable lineage."""
+	row, decision = _normalize_renewal_row(value)
 	if reservation_renewal_row(item, first, original, renewals, confirmed, decision) != row:
 		raise ValueError("stored renewal differs from checked lineage")
 	return decision
+
+
+def verify_reservation_renewal_rows(item, first, original, values):
+	"""Check a bounded ordered chain once; storage completeness remains external."""
+	if not isinstance(values, (tuple, list)) or len(values) > MAX_RENEWALS:
+		raise ValueError("bounded renewal evidence sequence required")
+	rows = []
+	pairs = []
+	for value in values:
+		if not isinstance(value, (tuple, list)) or len(value) != 2:
+			raise ValueError("renewal confirmation and storage row required")
+		confirmed, raw = value
+		row, decision = _normalize_renewal_row(raw)
+		rows.append(row)
+		pairs.append((confirmed, decision))
+	verify_reservation_renewal_chain(item, first, original, pairs)
+	for row, (_, decision) in zip(rows, pairs, strict=True):
+		expected = asdict(decision)
+		expected.update(
+			evidence_key=decision.name,
+			company=item.key.company,
+			hospital=item.key.hospital,
+			organization_unit=item.key.organization_unit,
+			budget_key_digest=item.key.identity,
+			proof_version=1,
+		)
+		expected["acknowledged"] = 1
+		if row != expected:
+			raise ValueError("stored renewal differs from checked lineage")
+	return tuple(pairs)

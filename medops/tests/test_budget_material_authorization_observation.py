@@ -10,7 +10,10 @@ from unittest.mock import patch
 import frappe
 from frappe.tests import IntegrationTestCase
 
-from medops.common.authorized_reservation_projection import verify_authorized_initial_reservation
+from medops.common.authorized_reservation_projection import (
+	verify_authorized_initial_reservation,
+	verify_renewed_initial_reservation,
+)
 from medops.common.budget_control import budget_control_key
 from medops.common.budget_reservation_anchor import ANCHOR_ROW_FIELDS, reservation_anchor
 from medops.common.budget_reservation_events import ReservationEvent
@@ -21,6 +24,7 @@ from medops.common.budget_reservation_proof import (
 )
 from medops.common.budget_reservation_storage import ROW_FIELDS, reservation_record_row
 from medops.common.error_catalog import IoneApplicationError
+from medops.common.initial_reservation_posting import renewed_initial_reservation_documents
 from medops.common.material_source_snapshot import (
 	build_snapshot_reservation_projection,
 	material_source_snapshot,
@@ -50,9 +54,10 @@ from medops.hrp_budget.services.control_guards import (
 	assert_budget_guards,
 )
 from medops.hrp_budget.services.material_request_source import MaterialRequestSource
+from medops.services.errors import raise_ione_error
 
 
-def synthetic_rows(*, index=1, source=None, amount="10.00"):
+def synthetic_rows(*, index=1, source=None, amount="10.00", reservation_name=None):
 	base_source = MaterialRequestSource(
 		request="MR-001",
 		line="MR-LINE-001",
@@ -129,7 +134,7 @@ def synthetic_rows(*, index=1, source=None, amount="10.00"):
 	ref = ReservationSource(
 		"Material Request", source.request, digest, source.line, item.allocation, "Reserve"
 	)
-	name = f"RESERVATION-{index:03d}"
+	name = reservation_name or f"RESERVATION-{index:03d}"
 	event = ReservationEvent(
 		reservation_event_key(name, 1), name, 1, key, source.currency, 2, "Reserve", amount
 	)
@@ -156,10 +161,53 @@ def synthetic_rows(*, index=1, source=None, amount="10.00"):
 	)
 
 
+def synthetic_renewed_rows(*, index=1, source=None, amount="10.00"):
+	"""Build checked synthetic event and authorization rows without real writes."""
+	source, item, _, _, first, original_row = synthetic_rows(index=index, source=source, amount=amount)
+	_, initial = verify_reservation_confirmation_row(first)
+	_, original = verify_reservation_authorization_rows(first, original_row)
+	proof = "synthetic_renewal_confirmation_1234567890"
+	start = datetime.fromisoformat(original.expires_at)
+	confirmed = reservation_confirmation(
+		item,
+		actor="renewing-manager@example.com",
+		proof_hash=hashlib.sha256(proof.encode()).hexdigest(),
+		session_digest="b" * 64,
+		recorded_at=start.isoformat(sep=" ", timespec="microseconds"),
+		expires_at=(start + timedelta(minutes=5)).isoformat(sep=" ", timespec="microseconds"),
+	)
+	decision = reservation_renewal_decision(
+		item,
+		initial,
+		original,
+		(),
+		confirmed,
+		proof=proof,
+		actor="renewing-manager@example.com",
+		session_digest="b" * 64,
+		recorded_at=(start + timedelta(seconds=1)).isoformat(sep=" ", timespec="microseconds"),
+		acknowledge=True,
+	)
+	documents = renewed_initial_reservation_documents(
+		first,
+		original_row,
+		[(confirmed, decision)],
+		occurred_at=(start + timedelta(seconds=2)).isoformat(sep=" ", timespec="microseconds"),
+	)
+	root = {field: documents.root[field] for field in ANCHOR_ROW_FIELDS | {"source_snapshot_json"}}
+	events = [dict(documents.event)]
+	new_confirmation = reservation_authorization_row(item, confirmed)
+	renewal_row = reservation_renewal_row(item, initial, original, (), confirmed, decision)
+	return source, item, root, events, first, original_row, new_confirmation, renewal_row, confirmed, decision
+
+
 class TestBudgetMaterialAuthorizationObservation(IntegrationTestCase):
 	def setUp(self):
 		super().setUp()
 		frappe.set_user("Administrator")
+		access_patch = patch.object(budget_usage_observation, "check_usage_access")
+		access_patch.start()
+		self.addCleanup(access_patch.stop)
 		frappe.db.rollback()
 		frappe.db.sql("SET SESSION TRANSACTION ISOLATION LEVEL READ COMMITTED")
 		frappe.db.begin()
@@ -270,6 +318,144 @@ class TestBudgetMaterialAuthorizationObservation(IntegrationTestCase):
 			reservation_renewal_lineage.locked_renewal_lineage(item, source, first["name"], original["name"])
 		with self.assertRaises(IoneApplicationError):
 			assert_budget_guards([item.key])
+
+	def insert_renewed_fixture(self, fixture):
+		_, _, root, events, first, original, new_confirmation, renewal, _, _ = fixture
+		for table, row in (
+			("tabHRP Budget Reservation", root),
+			("tabHRP Budget Reservation Event", events[0]),
+			("tabHRP Budget Reservation Authorization", first),
+			("tabHRP Budget Reservation Authorization", original),
+			("tabHRP Budget Reservation Authorization", new_confirmation),
+			("tabHRP Budget Reservation Renewal", renewal),
+		):
+			self.insert_row(table, row)
+
+	def test_renewed_event_accepts_progressed_source_then_rejects_tampered_chain(self):
+		fixture = synthetic_renewed_rows()
+		historical, item, root, events, first, original, _, _, confirmed, decision = fixture
+		current = replace(historical, status="Ordered", request_modified="2026-01-02 09:00:00")
+		position, _, _ = verify_renewed_initial_reservation(
+			root, events, first, original, [(confirmed, decision)], current_facts=asdict(current)
+		)
+		self.insert_renewed_fixture(fixture)
+		binding = (current.request, current.line, current.organization_unit, current.digest())
+		acquire_multi_source_bound_budget_guards([item.key], source_bindings=(binding,))
+		with patch.object(observation, "locked_material_request_source", return_value=current):
+			by_source = observation.verify_guarded_initial_authorizations([item.key], (current,), (position,))
+			self.assertEqual(
+				by_source[(current.request, current.line, current.organization_unit)], (position,)
+			)
+			# The target is a connection-private table containing synthetic evidence.
+			frappe.db.sql("UPDATE `tabHRP Budget Reservation Renewal` SET `event_digest`=%s", ("f" * 64,))
+			with self.assertRaises(IoneApplicationError):
+				observation.verify_guarded_initial_authorizations([item.key], (current,), (position,))
+			with self.assertRaises(IoneApplicationError):
+				assert_budget_guards([item.key])
+
+	def test_revoked_read_access_invalidates_renewed_history_guard(self):
+		fixture = synthetic_renewed_rows()
+		source, item, root, events, first, original, _, _, confirmed, decision = fixture
+		position, _, _ = verify_renewed_initial_reservation(
+			root, events, first, original, [(confirmed, decision)], current_facts=asdict(source)
+		)
+		self.insert_renewed_fixture(fixture)
+		binding = (source.request, source.line, source.organization_unit, source.digest())
+		acquire_multi_source_bound_budget_guards([item.key], source_bindings=(binding,))
+		calls = []
+
+		def revoke_after_read(*args):
+			calls.append(args)
+			if len(calls) > 1:
+				raise_ione_error("PERMISSION_DENIED")
+
+		with (
+			patch.object(budget_usage_observation, "check_usage_access", side_effect=revoke_after_read),
+			patch.object(observation, "locked_material_request_source", return_value=source),
+		):
+			with self.assertRaises(IoneApplicationError):
+				observation.verify_guarded_initial_authorizations([item.key], (source,), (position,))
+			self.assertEqual(len(calls), 2)
+			with self.assertRaises(IoneApplicationError):
+				assert_budget_guards([item.key])
+
+	def test_renewed_event_rejects_missing_independent_confirmation(self):
+		fixture = synthetic_renewed_rows()
+		source, item, root, events, first, original, new_confirmation, _, confirmed, decision = fixture
+		position, _, _ = verify_renewed_initial_reservation(
+			root, events, first, original, [(confirmed, decision)], current_facts=asdict(source)
+		)
+		self.insert_renewed_fixture(fixture)
+		frappe.db.sql(
+			"DELETE FROM `tabHRP Budget Reservation Authorization` WHERE `name`=%s",
+			(new_confirmation["name"],),
+		)
+		binding = (source.request, source.line, source.organization_unit, source.digest())
+		acquire_multi_source_bound_budget_guards([item.key], source_bindings=(binding,))
+		with patch.object(observation, "locked_material_request_source", return_value=source):
+			with self.assertRaises(IoneApplicationError):
+				observation.verify_guarded_initial_authorizations([item.key], (source,), (position,))
+			with self.assertRaises(IoneApplicationError):
+				assert_budget_guards([item.key])
+
+	def test_original_event_rejects_unexpected_renewal_successor(self):
+		fixture = synthetic_renewed_rows()
+		source, item, _, _, _, _, new_confirmation, renewal, _, _ = fixture
+		_, _, root, events, first, original = synthetic_rows()
+		position, _, _ = verify_authorized_initial_reservation(
+			root, events, first, original, current_facts=asdict(source)
+		)
+		for table, row in (
+			("tabHRP Budget Reservation", root),
+			("tabHRP Budget Reservation Event", events[0]),
+			("tabHRP Budget Reservation Authorization", first),
+			("tabHRP Budget Reservation Authorization", original),
+			("tabHRP Budget Reservation Authorization", new_confirmation),
+			("tabHRP Budget Reservation Renewal", renewal),
+		):
+			self.insert_row(table, row)
+		binding = (source.request, source.line, source.organization_unit, source.digest())
+		acquire_multi_source_bound_budget_guards([item.key], source_bindings=(binding,))
+		with patch.object(observation, "locked_material_request_source", return_value=source):
+			with self.assertRaises(IoneApplicationError):
+				observation.verify_guarded_initial_authorizations([item.key], (source,), (position,))
+			with self.assertRaises(IoneApplicationError):
+				assert_budget_guards([item.key])
+
+	def test_renewed_event_after_100_original_events_is_not_skipped(self):
+		source, item, _, _, _, _ = synthetic_rows()
+		positions = []
+		for index in range(1, 101):
+			_, item, root, events, first, original = synthetic_rows(
+				index=index, source=source, amount="0.10", reservation_name=f"000-RESERVATION-{index:03d}"
+			)
+			position, _, _ = verify_authorized_initial_reservation(
+				root, events, first, original, current_facts=asdict(source)
+			)
+			positions.append(position)
+			for table, row in (
+				("tabHRP Budget Reservation", root),
+				("tabHRP Budget Reservation Event", events[0]),
+				("tabHRP Budget Reservation Authorization", first),
+				("tabHRP Budget Reservation Authorization", original),
+			):
+				self.insert_row(table, row)
+		fixture = synthetic_renewed_rows(index=101, source=source, amount="0.10")
+		_, item, root, events, first, original, _, _, confirmed, decision = fixture
+		self.assertGreater(root["name"], "000-RESERVATION-100")
+		position, _, _ = verify_renewed_initial_reservation(
+			root, events, first, original, [(confirmed, decision)], current_facts=asdict(source)
+		)
+		positions.append(position)
+		self.insert_renewed_fixture(fixture)
+		binding = (source.request, source.line, source.organization_unit, source.digest())
+		acquire_multi_source_bound_budget_guards([item.key], source_bindings=(binding,))
+		with patch.object(observation, "locked_material_request_source", return_value=source):
+			result = observation.verify_guarded_initial_authorizations(
+				[item.key], (source,), tuple(positions)
+			)
+			self.assertEqual(len(result[(source.request, source.line, source.organization_unit)]), 101)
+			self.assertIn(position, result[(source.request, source.line, source.organization_unit)])
 
 	def test_real_sql_requires_one_bound_initial_decision(self):
 		source, item, root, events, confirmation, decision = synthetic_rows()
