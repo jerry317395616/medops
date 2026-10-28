@@ -102,3 +102,7 @@ bash scripts/ci_integration.sh
 回滚工作流、`scripts/ci_integration.sh`、分支保护策略和对应契约测试即可恢复
 COD-004 状态。该任务没有 DocType、Patch、Fixture 或生产数据迁移，禁止以
 关闭必需检查的方式临时绕过失败；应修复失败原因后重新运行。
+
+## 完整集成的执行预算
+
+按 ADR-0038，普通和 IONE Core 集成作业各使用120分钟时限，仓库契约拒绝低于120的配置。Quality、Security、Required及全部原生、并发和Error Log检查继续必跑；超时或缺证仍是失败。该预算只约束CI，不改变确认凭证窗口、生产请求或数据库锁超时。原生测试分组须另行证明发现范围、状态隔离和失败传播等价。

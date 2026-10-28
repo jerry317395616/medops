@@ -440,8 +440,8 @@ def validate_ci_pipeline(root: Path) -> list[str]:
 	integration = jobs["integration"]
 	if isinstance(integration, dict):
 		timeout = integration.get("timeout-minutes")
-		if not isinstance(timeout, str) or not timeout.isdigit() or int(timeout) < 90:
-			violations.append("CI integration job must allow at least 90 minutes")
+		if not isinstance(timeout, str) or not timeout.isdigit() or int(timeout) < 120:
+			violations.append("CI integration job must allow at least 120 minutes")
 		if integration.get("needs") != "quality":
 			violations.append("CI integration job must depend on quality")
 		services = integration.get("services")
@@ -453,8 +453,8 @@ def validate_ci_pipeline(root: Path) -> list[str]:
 		violations.append("CI must retain the independent IONE Core compatibility job")
 	else:
 		timeout = core.get("timeout-minutes")
-		if not isinstance(timeout, str) or not timeout.isdigit() or int(timeout) < 90:
-			violations.append("IONE Core integration job must allow at least 90 minutes")
+		if not isinstance(timeout, str) or not timeout.isdigit() or int(timeout) < 120:
+			violations.append("IONE Core integration job must allow at least 120 minutes")
 		services = core.get("services")
 		mariadb = services.get("mariadb") if isinstance(services, dict) else None
 		if (

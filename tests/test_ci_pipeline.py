@@ -145,11 +145,11 @@ class CIPipelineTest(unittest.TestCase):
 
 	def test_rejects_integration_jobs_with_insufficient_timeout(self) -> None:
 		for job, title, expected in (
-			("integration", "Integration", "CI integration job must allow at least 90 minutes"),
+			("integration", "Integration", "CI integration job must allow at least 120 minutes"),
 			(
 				"integration-core",
 				"Integration with IONE Core",
-				"IONE Core integration job must allow at least 90 minutes",
+				"IONE Core integration job must allow at least 120 minutes",
 			),
 		):
 			with self.subTest(job=job), tempfile.TemporaryDirectory() as temp:
@@ -157,15 +157,19 @@ class CIPipelineTest(unittest.TestCase):
 				copy_ci_files(root)
 				path = root / ".github/workflows/ci.yml"
 				workflow = path.read_text(encoding="utf-8")
-				original = f"  {job}:\n    name: {title}\n    needs: quality\n    runs-on: ubuntu-latest\n    timeout-minutes: 90\n"
+				original = f"  {job}:\n    name: {title}\n    needs: quality\n    runs-on: ubuntu-latest\n    timeout-minutes: 120\n"
 				self.assertEqual(workflow.count(original), 1)
-				path.write_text(
-					workflow.replace(
-						original, original.replace("timeout-minutes: 90", "timeout-minutes: 45"), 1
-					),
-					encoding="utf-8",
-				)
-				self.assertIn(expected, validate_ci_pipeline(root))
+				for insufficient in (45, 119):
+					with self.subTest(minutes=insufficient):
+						path.write_text(
+							workflow.replace(
+								original,
+								original.replace("timeout-minutes: 120", f"timeout-minutes: {insufficient}"),
+								1,
+							),
+							encoding="utf-8",
+						)
+						self.assertIn(expected, validate_ci_pipeline(root))
 
 	def test_rejects_missing_secret_scan(self) -> None:
 		with tempfile.TemporaryDirectory() as temp:

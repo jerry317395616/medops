@@ -157,7 +157,7 @@ jobs:
     name: Integration
     needs: quality
     runs-on: ubuntu-latest
-    timeout-minutes: 90
+    timeout-minutes: 120
     services:
       mariadb:
         image: mariadb:11.8
@@ -216,7 +216,7 @@ jobs:
     name: Integration with IONE Core
     needs: quality
     runs-on: ubuntu-latest
-    timeout-minutes: 90
+    timeout-minutes: 120
     services:
       mariadb:
         image: mariadb:11.8

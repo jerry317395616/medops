@@ -7,9 +7,10 @@
   "architecture_decisions": [
     "ADR-0030",
     "ADR-0031",
-    "ADR-0032"
+    "ADR-0032",
+    "ADR-0038"
   ],
-  "current_scope": "COD-035 remains in progress. Product327228e implements default-disabled private independent release confirmation and atomic Decision+Event append through standard controllers, with immutable roots, source/budget guards, complete original/renewal/release evidence, current actor/session/scope rechecks and audited encrypted idempotency. Frozen local617 pure and all11 quality steps passed. Focus40660621810 at39d9dda passed71 native+17 pure, no skips and Error Log0; all10 changed app/test blobs match product327228e. Actual source/budget and standard release controllers were used in private financial copies; sessions/clocks and the access-denial injection remain synthetic. Full40663377621 at327228e has passed Quality/Security; both native environments remain running. Earlier40656055185 atcebf623 has passed Core but plain remains running;40658409448 at9030439 remains live. Committed release contention, full current-source pass, performance, real human HTTP/UI and hospital rules/interfaces/capacity/UAT remain required. Server maintenance remains in progress; no server access or migration; feature flag is off.",
+  "current_scope": "COD-035 in progress. Controlled release product327228e passed617 local pure and71 focused native tests at matching code; full40663377621 Quality/Security passed but native remains live. Earlier guarded-read productcebf623 full40656055185 passed613 pure,612+25 native and1 committed probe per plain/Core environment with8 Error Log zero sites and Required. This candidate extends the disposable committed-data probe with real release contention, duplicate release receipt, late initial receipt replay and reuse of released funds; focus40666378159 atd7ca283 is running, not passed. Probe source uses real controllers/commits and synthetic sessions/clocks under strict CI-only containment. ADR0038 raises both full integration limits from90 to120 based on measured suite growth without reducing gates. No production behavior, schema, role, public endpoint or server access in this slice. Current-source full native, release contention result, performance and human HTTP/UI/hospital acceptance remain pending.",
   "checks": {
     "pure_tests_expected": 617,
     "complete_frappe_tests_expected": 639,
@@ -1109,6 +1110,60 @@
       "focused_log": "controlled-release-write-40660621810.log",
       "expanded_native_pair_seconds": 1118.036,
       "timing_scope": "Both full native fixtures plus many prepare/post/replay/failure-injection commands; not one transaction latency or hospital capacity."
+    },
+    "prior_guarded_release_history_full_ci": {
+      "status": "passed",
+      "source_commit": "cebf623241b838bb82ad28c28d2bf02323324386",
+      "run_id": 40656055185,
+      "pure_count": 613,
+      "native_per_environment": [
+        612,
+        25
+      ],
+      "committed_probe_per_environment": 1,
+      "environments": [
+        "plain",
+        "IONE Core"
+      ],
+      "zero_error_log_sites": 8,
+      "Required": "passed",
+      "log": "full-release-read-40656055185.log",
+      "scope": "Earlier guarded release reads. Does not validate later controlled release writer or expanded release contention.",
+      "plain_job_minutes": 77.083,
+      "core_job_minutes": 61.5
+    },
+    "committed_reservation_release_contention": {
+      "status": "candidate_pending_validation",
+      "focused_run_id": 40666378159,
+      "focused_source_commit": "d7ca283824f5d769b048aba7ffd67d875b8e5261",
+      "focused_status": "in_progress",
+      "dedicated_test_count": 1,
+      "regular_native_count_unchanged": 639,
+      "pure_count_unchanged": 617,
+      "flow": [
+        "existing over-budget initial race and duplicate initial receipt",
+        "two independent confirmations racing same release tail:one accepted/one stale after whole-transaction retry",
+        "same release confirmation and idempotency key:one decision/event with matching replay",
+        "initial receipts replay after committed releases with clock beyond original proof lifetime",
+        "previously over-budget source posts only after fresh renewal using genuinely freed funds",
+        "original two frozen roots and encrypted initial receipts unchanged; final3 roots/5 events/5 release evidence rows;GL/stock/budget ledger unchanged"
+      ],
+      "isolation": "fresh exact named site in GHA RUNNER_TEMP; strict marker; now release evidence also must initially be empty; flag enabled only on this site",
+      "native_sessions_and_clock": "synthetic",
+      "transactions_and_processes": "actual committed InnoDB; independent child processes through real domain services",
+      "DB_retry_owner": "outer script; never domain commits",
+      "different_key_contender_observed_before_guard_acquisition": true,
+      "full_ci_budget_ADR": "ADR-0038;both integration120 minutes;all gates retained",
+      "server_accessed": false,
+      "new_production_API_schema_roles": false,
+      "all_writer_or_hospital_capacity_claim": false,
+      "initial_local_quality": "failed617_with2_old_timeout_fixture_subtests; fixtures still matched90 after workflow120",
+      "local_correction": "Updated repository minimum to120 and both test mutation fixtures;45 and119 rejected;29 focused CI/governance cases passed. Full frozen quality rerun required.",
+      "local_quality": "passed617_all11_zero_type_errors_one_existing_warning",
+      "local_quality_log": "quality-committed-release-contention-frozen-v2.log",
+      "all4_probe_worker_helper_files_match": true,
+      "source_proof": "committed-release-contention-source-proof.json",
+      "full_current_source_ci": "not_dispatched_yet"
     }
   },
   "previous_verified_release": {
