@@ -9,7 +9,7 @@
     "ADR-0031",
     "ADR-0032"
   ],
-  "current_scope": "COD-035 remains in progress. Guarded original/renewed initial posting and immutable release history/receipt replay exist behind default-disabled gates. Release-write candidate adds an independently persisted preview confirmation and an audited/idempotent atomic Decision+Event append through standard controllers; full source/budget inspection, original/renewal/release evidence and current actor/session/scope checks are repeated. Default flag medops_internal_reservation_release_write_enabled is off. Four new pure request tests passed locally;617 pure and639 regular native expected. Focus40660621810 at39d9dda is running; full current-source CI is not yet dispatched. Both earlier full runs40658409448 (9030439) and40656055185 (cebf623) have passed Quality/Security but integration remains running. No server contact during user maintenance. Controlled release-write native success, full rollback/expiry/revocation/replay, true committed release contention, human HTTP/UI and hospital rules/capacity/interfaces/UAT remain unproven; no production readiness claim.",
+  "current_scope": "COD-035 remains in progress. Guarded original/renewed initial posting and immutable release history/receipt replay exist behind default-disabled gates. Release-write candidate adds an independently persisted preview confirmation and an audited/idempotent atomic Decision+Event append through standard controllers; full source/budget inspection, original/renewal/release evidence and current actor/session/scope checks are repeated. Default flag medops_internal_reservation_release_write_enabled is off. Four new pure request tests passed locally;617 pure and639 regular native expected. Focus40660621810 at39d9dda is running; product327228e is pushed and its full CI40663377621 has passed Quality; both native environments and Security remain running. Focused native40660621810 is still live, not a pass. Both earlier full runs40658409448 (9030439) and40656055185 (cebf623) have passed Quality/Security but integration remains running. No server contact during user maintenance. Controlled release-write native success, full rollback/expiry/revocation/replay, true committed release contention, human HTTP/UI and hospital rules/capacity/interfaces/UAT remain unproven; no production readiness claim.",
   "checks": {
     "pure_tests_expected": 617,
     "complete_frappe_tests_expected": 639,
@@ -1085,7 +1085,15 @@
       "governance_correction": "Change check rejected an implementation-status edit to Accepted ADR0037; restored exact committed ADR bytes. Implementation status stays in budget_control/backlog/validation; no runtime code changed.",
       "changed_application_and_test_files_matched": 10,
       "source_proof": "controlled-release-write-source-proof.json",
-      "full_current_source_ci": "not_yet_dispatched"
+      "full_current_source_ci": {
+        "run_id": 40663377621,
+        "source_commit": "327228e454cdb9c20dbb89d3df719c7e781a7e89",
+        "status": "in_progress",
+        "quality": "passed",
+        "native_and_security": "in_progress",
+        "url": "https://github.com/jerry317395616/medops/actions/runs/40663377621"
+      },
+      "product_commit": "327228e454cdb9c20dbb89d3df719c7e781a7e89"
     }
   },
   "previous_verified_release": {
