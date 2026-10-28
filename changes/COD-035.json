@@ -121,7 +121,8 @@
 		"medops/api/v1/finance/reservation_operations.py",
 		"medops/tests/test_budget_reservation_operations_api.py",
 		"medops/tests/reservation_http_probe.py",
-		"architecture/adr/ADR-0039-human-reservation-http-boundary.md"
+		"architecture/adr/ADR-0039-human-reservation-http-boundary.md",
+		"architecture/reservation_operations.md"
 	],
 	"permissions_impact": "New default-disabled authenticated human web-session POST adapters reuse existing manager roles, current source/field/scope checks and closed standard DocType permissions. No role, grant, share or automatic activation. Confirmation proof privacy registered before native authentication/dispatch.",
 	"migration_impact": "No new schema. Depends on existing27-field release table/index migration. CI-only exact disposable site enables confirmation/master operations switches. Server maintenance: no connection, migration, deployment or configuration.",
@@ -132,7 +133,7 @@
 		"Native operations tests: exact-True master flag; GET/token/background/missing-ack/guest/unknown-field denial; real HTTP dispatch through clean transaction and all four proof methods shielded in form/JSON, v1/v2 compatibility aliases and real pre-auth SDK/deferred Error Log failures.",
 		"Run the one explicit dedicated fresh-site committed probe retaining initial/release races, then append real cookie HTTP: initial+replay, inspected history, release failure after Decision/full rollback including receipt, partial/full release+late receipt replay, independent renewal+post and superseded original refusal, changed-session denial.",
 		"HTTP uses real sources, committed budget and standard controllers; native sessions are actual. Existing contention workers still synthetic sessions/clocks. No real human/browser/hospital/capacity proof.",
-		"Frozen HTTP candidate passed617 pure/all11 quality, zero type errors and one existing warning. Native focus40671936652 source2d04269 running; no current-source native pass yet. Preserve earlier source-specific full/focus evidence. No skips/zero Error Log required. Server maintenance untouched."
+		"First focus40671936652 failed borrowed-super setup and400/422 assertion; routing/native SDK privacy subset passed. Corrected6cc9414 focus40673023305 running, all6 source blobs match. Fixed617/all11 quality passed, zero type errors/one prior warning; no full native pass yet. No server access."
 	],
 	"owner": "MedOps Maintainers",
 	"created_on": "2026-10-27",

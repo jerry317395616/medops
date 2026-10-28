@@ -1,0 +1,67 @@
+# 人工预占操作接口契约
+
+任务 COD-035，架构决策 ADR-0039。当前为默认关闭的开发候选；本文件不构成生产启用、医院验收或服务器维护结束的证据。原生页面尚未完成。
+
+## 边界与开关
+
+所有方法使用 `POST /api/method/medops.api.v1.finance.<方法>`，JSON 请求体包含 `payload`，可选 `correlation_id`。未知参数拒绝；不得传入服务类、任意字段或 SQL 条件。命令必须携带稳定的 `Idempotency-Key` 请求头。相同命令重试保留原键；改变命令须先核实上一笔结果。
+
+必须是当前已认证 System User 的网页 cookie 会话，且具有 `System Manager`、`HRP System Manager` 或 `HRP Budget Manager` 之一；仍逐次检查来源、字段、组织与财务数据范围。拒绝 GET、访客、带 Authorization 头的调用、后台任务和缺少明确 `acknowledge: true` 的财务命令。沿用原生 Frappe 认证/CSRF，标准证据 DocType 权限继续关闭，不授予用户任何新角色或范围。
+
+| 方法 | 总开关之外仍需严格为真的配置 | 影响 |
+| --- | --- | --- |
+| `reservation.source` / `reservation.prepare` / `reservation.confirm` | `medops_reservation_confirmation_enabled`；这组原有方法不受新总开关控制 | 来源快照 / 保存独立确认 / 保存原始决定，均不预占额度 |
+| `reservation_operations.post` | `medops_internal_reservation_write_enabled` | 首次预占 |
+| `reservation_operations.renew` | `medops_internal_reservation_renewal_enabled` | 追加续期决定，不预占额度 |
+| `reservation_operations.post_renewed` | 首次预占开关及 `medops_internal_renewed_reservation_write_enabled` | 基于当前有效续期的首次预占 |
+| `reservation_operations.prepare_release` / `post_release` | `medops_internal_reservation_release_write_enabled` | 保存独立释放确认 / 追加释放决定及事件 |
+| `reservation_operations.inspect` | 无额外财务写入开关 | 核验完整历史后返回当前位置 |
+
+所有 `reservation_operations.*` 另需 `medops_reservation_operations_enabled is True`。缺失、数字1和字符串 `"true"` 都不能开启。开发、安装和迁移过程不自动开启任何生产开关；目前仅精确命名的一次性 CI 探针站点显式开启。
+
+## 首次预占
+
+1. 调用 `reservation.source`，传 `request`（原生 Material Request）、`line`（原生子行标识）、`organization_unit`，获取已授权且精确的 `source_snapshot` 与 `source_snapshot_digest`。原生来源变化后必须重新核对。
+2. 调用 `reservation.prepare`，传完整快照、`allocation`、完整 `budget_key`、`currency`、整数 `precision`、精确字符串 `amount`、`budget_date`、`reason`。`budget_key` 包含 company、hospital、organization_unit、fiscal_year、budget_subject、funding_source、project、period_start、period_end。该方法重验来源、下达和完整占用历史后保存独立确认，返回供人工核对的 review、confirmation、proof、expires_at 和 intent_digest；effect 为 `confirmation_only`。
+3. 展示来源、预算、币种、金额、日期和理由，由当前人类明确勾选确认。调用 `reservation.confirm`，传 `{confirmation, proof, acknowledge: true}`，取得 `decision`。成功仅表示独立决定已保存，尚未预占额度。
+4. 调用 `reservation_operations.post`，传 `{confirmation, decision, proof, acknowledge: true}`。成功返回 `reservation`、`event`、`intent_digest`、审计标识和 `idempotency_replayed`；effect 为 `reservation_posted`。首次根与第一条事件在同一 HTTP 事务中落账。
+
+第3步和第4步是独立事务，必须分别保存同一命令的幂等键。第4步失败不能把第3步的成功显示成预占成功。不得自动更换 allocation 或键来绕过状态冲突。
+
+## 决定续期
+
+只针对尚未产生首次根的原意图。保留原 `confirmation` 与 `decision`，使用完全相同的原意图重新调用 `reservation.prepare`，取得新的独立确认和会话凭证并重新展示人工核对。
+
+人工明确确认后调用 `reservation_operations.renew`，传 `original_confirmation`、`original_decision`、`renewal_confirmation`、新 `proof` 和 `acknowledge: true`。成功返回 `renewal`、intent_digest、expires_at，effect 为 `decision_renewed`，仍没有预占额度。
+
+随后调用 `reservation_operations.post_renewed`，传相同字段并增加 `renewal_decision: renewal`。成功才显示 `reservation_posted`。过期、来源/权限变化、已有根、陈旧续期链或旧原始决定都不能创建新财务事件。续期不得自动触发；改变原经济意图需要新的业务核对，不能伪装成续期。
+
+## 查询与释放
+
+`reservation_operations.inspect` 只接收 `{reservation}`。它独立读取原始确认、决定、全部续期、全部物理事件及释放确认/决定，经过同一来源和预算围栏后返回：
+
+- `position`：预算键、币种/精度、当前序号及 reserved、committed、actual、released、open_reservation、open_commitment 等精确字符串；
+- 受限 `source` 事实：采购单、子行、物料、单位、数量、金额、成本中心、费用科目；
+- allocation、budget_date，effect 为 `read_only`。
+
+根单的旧金额、旧事件数量和旧链尾只描述首笔事实，不能用于替代当前位置。查询不是财务授权，后续写入必须重新核验。
+
+释放先调用 `reservation_operations.prepare_release`，传 `{reservation, amount, reason}`。返回 confirmation、proof、expires_at、intent_digest、reservation、amount、currency、precision、open_before 和规范化 reason；effect 为 `confirmation_only`。只允许正数，绑定当前前驱与未结余额，最大五分钟。
+
+展示已核验来源、预占编号、当前未结、精确释放金额、币种和理由，由当前人类明确确认后调用 `reservation_operations.post_release`，传 `{confirmation, proof, acknowledge: true}`。成功返回 reservation、release_decision、event、intent_digest 和审计/重放标识，effect 为 `reservation_released`。独立决定和释放事件同一事务追加；根单不改写。状态已被其他合法释放推进时，旧预览不能用于新写入，必须重新核对。
+
+## 失败、重试与凭证
+
+普通失败由最外层 Frappe 请求回滚；领域服务无提交。释放决定之后失败也不能留下单边决定、事件或已完成回执。请求开始已有写入、回调、围栏、读图或嵌套事务控制时拒绝，不能悄悄回滚其他工作。
+
+网络结果不明时，保留相同输入、会话、凭证和幂等键原样重试，或调查已有持久结果。原生数据库死锁/超时只允许最外层在完整事务回滚后重试。不得在同一已失败事务中继续后续步骤。相同键换输入拒绝；当前权限和完整历史在重放时仍须有效。
+
+历史已完成回执可验证当时的合法决定而重放，不延长任何新写入的凭证有效期。以后发生合法释放后，原首笔和早先释放的回执仍须核验完整当前历史；这不是允许使用过期凭证创建新事件。
+
+proof 只在页面私有内存保存，不能显示、复制进 URL、写浏览器存储、日志或通用对象序列化。预览响应提取后删除公开对象中的 proof。编辑输入清除旧确认，异步返回须比较页面代次；尚未核实的提交结果应使用原命令重试。前置隐私钩子覆盖四个新凭证方法及原有确认方法，屏蔽 form/JSON 与原生 SDK/错误日志诊断视图。
+
+## 当前验证范围
+
+固定候选本地617项纯测试与全部11步质量检查通过。首轮原生专项40671936652发现新测试夹具的 `super()` 复用错误及请求拒绝状态码断言错误，不能视为通过；业务路由和四方法认证前 SDK/日志隐私子集已执行通过。修正夹具和400断言后的专项40673023305针对6cc9414仍在运行；修正源码本地617项及全部11步质量再次通过，类型零错误、一项既有警告。
+
+真实财务 HTTP 仅在严格限制的一次性 CI 新站点中验证，使用合成业务数据和实际原生会话、来源、预算及控制器；不等于真实人员操作、浏览器验收或医院容量。普通 CI 测试只验证边界、路由和隐私，不能留下合成已提交不可变财务事实。目标服务器仍在用户维护中，本轮未连接或部署。

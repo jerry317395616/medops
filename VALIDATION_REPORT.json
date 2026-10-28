@@ -11,7 +11,7 @@
     "ADR-0038",
     "ADR-0039"
   ],
-  "current_scope": "COD035: default-disabled human reservation HTTP adapters in progress under ADR0039, retaining independent immutable evidence and all service gates. New API tests and actual committed HTTP probe pending native execution; Local quality passed617/all11 with zero type errors and one existing warning; native focus40671936652 at2d04269 running. Existing earlier source-specific CI proof retained below. UI, all-writer protocol, hospital rules/capacity/UAT incomplete. User server maintenance active: no server access.",
+  "current_scope": "COD035: default-disabled human reservation HTTP adapters under ADR0039, retaining independent immutable evidence and all service gates. Fixed617/all11 local quality passed, zero type errors and one prior warning. First native40671936652 failed test fixture/400 assertion; corrected focus40673023305 at6cc9414 running, all six application/probe/helper files match. Actual HTTP financial proof pending. UI, all-writer native lifecycle, hospital rules/capacity/UAT incomplete. User server maintenance active: no server access.",
   "checks": {
     "pure_tests_expected": 617,
     "complete_frappe_tests_expected": 645,
@@ -1197,7 +1197,7 @@
       "scope": "Earlier initial receipt replay after release facts in private copies. Does not prove later controlled release writer or expanded committed release race."
     },
     "human_reservation_http": {
-      "status": "candidate_native_pending",
+      "status": "candidate_native_fixture_retry_pending",
       "regular_native_new": 6,
       "regular_native_expected": 645,
       "pure_expected": 617,
@@ -1220,8 +1220,25 @@
       "local_quality_log": "quality-human-reservation-http-candidate.log",
       "focused_run_id": 40671936652,
       "focused_source_commit": "2d04269742343efa3b2a198c7431006ffb7e9778",
-      "focused_status": "in_progress",
-      "focused_url": "https://github.com/jerry317395616/medops/actions/runs/40671936652"
+      "focused_status": "failed_test_fixtures",
+      "focused_url": "https://github.com/jerry317395616/medops/actions/runs/40671936652",
+      "first_focus_failure": [
+        "borrowed setUp super called on unrelated test class",
+        "INVALID_REQUEST is400, assertions expected422"
+      ],
+      "first_focus_passed_subset": [
+        "native HTTP dispatch",
+        "all four proof methods pre-authentication real SDK/deferred Error Log privacy"
+      ],
+      "corrected_focus_source": "6cc941472b9cb8d208a6988203ac26efbc20bb48",
+      "corrected_focus_status": "in_progress",
+      "new_nonmanager_denial": "actual native System User with no manager role; direct service-boundary rejection",
+      "corrected_local_quality": "passed617_all11_zero_type_errors_one_existing_warning",
+      "corrected_focus_run_id": 40673023305,
+      "corrected_focus_url": "https://github.com/jerry317395616/medops/actions/runs/40673023305",
+      "corrected_local_quality_log": "quality-human-reservation-http-fixed-v2.log",
+      "all_six_application_probe_helper_files_match": true,
+      "source_proof": "human-reservation-http-source-proof.json"
     }
   },
   "previous_verified_release": {

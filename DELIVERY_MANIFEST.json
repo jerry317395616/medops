@@ -191,6 +191,7 @@
 		"architecture/budget_ledger.md",
 		"medops/common/budget_ledger.py",
 		"architecture/adr/ADR-0039-human-reservation-http-boundary.md",
-		"medops/api/v1/finance/reservation_operations.py"
+		"medops/api/v1/finance/reservation_operations.py",
+		"architecture/reservation_operations.md"
 	]
 }
