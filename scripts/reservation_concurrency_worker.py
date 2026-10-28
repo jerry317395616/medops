@@ -13,6 +13,7 @@ from frappe.utils import set_request
 
 from medops.common.confirmation_privacy import ConfirmationPayload
 from medops.common.error_catalog import IoneApplicationError
+from medops.common.reservation_release_request import build_release_reservation_post
 from medops.common.reservation_renewal_request import build_renewed_reservation_post
 from medops.tests.disposable_reservation_site import PROTOCOL_PREFIX, require_disposable_reservation_site
 
@@ -31,7 +32,12 @@ def main():
 	frappe.connect()
 	try:
 		require_disposable_reservation_site()
-		from medops.hrp_budget.services import initial_reservation_control, material_usage_preview
+		from medops.hrp_budget.services import (
+			initial_reservation_control,
+			material_usage_preview,
+			reservation_release_control,
+			reservation_release_write,
+		)
 		from medops.hrp_budget.services import renewed_initial_reservation_write as posting
 
 		frappe.set_user("Administrator")
@@ -43,7 +49,9 @@ def main():
 		clock = datetime.fromisoformat(_value(payload, "clock"))
 		if clock.tzinfo is not None:
 			raise ValueError("naive synthetic clock required")
-		command = build_renewed_reservation_post(ConfirmationPayload(_value(payload, "command")))
+		action = _value(payload, "action")
+		if action not in {"post_initial", "post_release"}:
+			raise ValueError("explicit disposable posting action required")
 		key = _value(payload, "idempotency_key")
 		hold = _value(payload, "hold") is True
 		retry = _value(payload, "retry_conflict") is True
@@ -51,6 +59,16 @@ def main():
 		source_counts = []
 		attempt = 0
 		held_once = False
+
+		def execute_post():
+			body = ConfirmationPayload(_value(payload, "command"))
+			if action == "post_initial":
+				return posting.PostRenewedInitialReservation().execute(
+					build_renewed_reservation_post(body), idempotency_key=key
+				)
+			return reservation_release_write.PostReservationRelease().execute(
+				build_release_reservation_post(body), idempotency_key=key
+			)
 
 		def observed_acquire(*args, **kwargs):
 			nonlocal held_once
@@ -72,6 +90,8 @@ def main():
 		with (
 			patch.object(posting, "now_datetime", return_value=clock),
 			patch.object(initial_reservation_control, "now_datetime", return_value=clock),
+			patch.object(reservation_release_control, "now_datetime", return_value=clock),
+			patch.object(reservation_release_write, "now_datetime", return_value=clock),
 			patch.object(
 				material_usage_preview,
 				"acquire_material_budget_guards_for_sources",
@@ -83,7 +103,7 @@ def main():
 				frappe.db.begin()
 				emit("started", attempt=attempt)
 				try:
-					execution = posting.PostRenewedInitialReservation().execute(command, idempotency_key=key)
+					execution = execute_post()
 					frappe.db.commit()
 					emit(
 						"done",
@@ -91,6 +111,20 @@ def main():
 						attempts=attempt,
 						replayed=execution.idempotency_replayed,
 						result=execution.result,
+						source_counts=source_counts,
+					)
+					return
+				except (frappe.QueryDeadlockError, frappe.QueryTimeoutError):
+					# Only this outer process owns the complete transaction retry.
+					frappe.db.rollback()
+					if retry and attempt == 1:
+						emit("retry", key="DATABASE_RETRY")
+						continue
+					emit(
+						"done",
+						status="rejected",
+						attempts=attempt,
+						key="DATABASE_RETRY",
 						source_counts=source_counts,
 					)
 					return

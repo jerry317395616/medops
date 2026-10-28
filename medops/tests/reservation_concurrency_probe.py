@@ -13,7 +13,7 @@ import sys
 import threading
 import time
 import unittest
-from dataclasses import dataclass
+from dataclasses import dataclass, field, replace
 from decimal import ROUND_FLOOR, Decimal, localcontext
 from typing import IO, Any
 from unittest.mock import patch
@@ -24,10 +24,15 @@ from frappe.utils import add_days, get_bench_path, now_datetime, set_request
 
 from medops.common.budget_control import KEY_FIELDS, budget_control_key
 from medops.common.budget_ledger import LEDGER
-from medops.common.confirmation_privacy import ConfirmationPayload
+from medops.common.confirmation_privacy import ConfirmationPayload, ConfirmationProof
 from medops.common.exact_money import exact_decimal_amount
 from medops.common.material_source_snapshot import material_source_snapshot
 from medops.common.reservation_authorization import reservation_intent
+from medops.common.reservation_release_request import (
+	ReleaseReservationPost,
+	build_release_reservation_post,
+	build_release_reservation_prepare,
+)
 from medops.common.reservation_renewal_request import (
 	RenewedReservationPostCommand,
 	build_renewal_command,
@@ -35,6 +40,9 @@ from medops.common.reservation_renewal_request import (
 )
 from medops.hrp_budget.services import (
 	reservation_confirmation,
+	reservation_release_control,
+	reservation_release_state,
+	reservation_release_write,
 	reservation_renewal_control,
 	reservation_renewal_write,
 )
@@ -45,9 +53,10 @@ from medops.tests.test_budget_release_execution import TestBudgetReleaseExecutio
 
 @dataclass(frozen=True, slots=True)
 class Scenario:
-	command: RenewedReservationPostCommand
+	command: RenewedReservationPostCommand | ReleaseReservationPost = field(repr=False)
 	sid: str
 	clock: str
+	action: str = "post_initial"
 
 
 @dataclass(slots=True)
@@ -119,6 +128,7 @@ class TestDisposableReservationConcurrency(TestBudgetReleaseExecution):
 		set_request(method="POST", path="/")
 		frappe.session.sid = sid
 		prepared = reservation_confirmation.prepare_reservation_confirmation(item)
+		prepared["proof"] = ConfirmationProof(prepared["proof"])
 		connection = frappe.local.db
 		connection.commit()
 		decided = reservation_confirmation.confirm_reservation_confirmation(
@@ -135,6 +145,7 @@ class TestDisposableReservationConcurrency(TestBudgetReleaseExecution):
 		frappe.session.sid = sid
 		with patch.object(reservation_confirmation, "now_datetime", return_value=future):
 			prepared = reservation_confirmation.prepare_reservation_confirmation(item)
+		prepared["proof"] = ConfirmationProof(prepared["proof"])
 		connection = frappe.local.db
 		connection.commit()
 		command = build_renewal_command(
@@ -199,6 +210,23 @@ class TestDisposableReservationConcurrency(TestBudgetReleaseExecution):
 
 		reader = threading.Thread(target=read_messages, daemon=True)
 		reader.start()
+		if type(scenario.command) is RenewedReservationPostCommand and scenario.action == "post_initial":
+			command = {
+				"original_confirmation": scenario.command.original_confirmation,
+				"original_decision": scenario.command.original_decision,
+				"renewal_confirmation": scenario.command.renewal_confirmation,
+				"renewal_decision": scenario.command.renewal_decision,
+				"proof": scenario.command.proof,
+				"acknowledge": True,
+			}
+		elif type(scenario.command) is ReleaseReservationPost and scenario.action == "post_release":
+			command = {
+				"confirmation": scenario.command.confirmation,
+				"proof": scenario.command.proof,
+				"acknowledge": True,
+			}
+		else:
+			raise ValueError("explicit matching disposable action and command required")
 		payload = ConfirmationPayload(
 			{
 				"site": frappe.local.site,
@@ -207,14 +235,8 @@ class TestDisposableReservationConcurrency(TestBudgetReleaseExecution):
 				"idempotency_key": key,
 				"hold": hold,
 				"retry_conflict": retry,
-				"command": {
-					"original_confirmation": scenario.command.original_confirmation,
-					"original_decision": scenario.command.original_decision,
-					"renewal_confirmation": scenario.command.renewal_confirmation,
-					"renewal_decision": scenario.command.renewal_decision,
-					"proof": scenario.command.proof,
-					"acknowledge": True,
-				},
+				"action": scenario.action,
+				"command": command,
 			}
 		)
 		assert process.stdin is not None
@@ -258,6 +280,9 @@ class TestDisposableReservationConcurrency(TestBudgetReleaseExecution):
 		self._stage(one, "guard_acquired")
 		self._signal(two, "go")
 		self._stage(two, "started")
+		if not same_key:
+			# Confirm the contender entered the real source/guard acquisition call.
+			self._stage(two, "before_guard")
 		deadline = time.monotonic() + 1
 		while time.monotonic() < deadline:
 			try:
@@ -274,7 +299,150 @@ class TestDisposableReservationConcurrency(TestBudgetReleaseExecution):
 		self.assertEqual(two.process.wait(timeout=30), 0)
 		one.reader.join(timeout=5)
 		two.reader.join(timeout=5)
-		return result_one, result_two
+		return dict(result_one, request_key=key), dict(
+			result_two, request_key=key if same_key else key + "-second"
+		)
+
+	def _single(self, scenario, *, key, errors):
+		worker = self._spawn(scenario, key=key, hold=False, retry=True, errors=errors)
+		self._stage(worker, "ready")
+		self._signal(worker, "go")
+		result = self._stage(worker, "done")
+		self.assertEqual(worker.process.wait(timeout=30), 0)
+		worker.reader.join(timeout=5)
+		return result
+
+	def _release(self, scenario, reservation, amount, clock):
+		from datetime import timedelta
+
+		frappe.set_user("Administrator")
+		set_request(method="POST", path="/")
+		frappe.session.sid = scenario.sid
+		command = build_release_reservation_prepare(
+			{
+				"reservation": reservation,
+				"amount": str(amount),
+				"reason": "Disposable committed release contention",
+			}
+		)
+		with (
+			patch.object(reservation_release_write, "now_datetime", return_value=clock),
+			patch.object(
+				reservation_release_control, "now_datetime", return_value=clock + timedelta(seconds=1)
+			),
+		):
+			prepared = reservation_release_write.PrepareReservationRelease().execute(
+				command, idempotency_key="ci-release-preview-" + uuid4().hex
+			)
+		prepared.result["proof"] = ConfirmationProof(prepared.result["proof"])
+		connection = frappe.local.db
+		connection.commit()
+		post = build_release_reservation_post(
+			ConfirmationPayload(
+				{
+					"confirmation": prepared.result["confirmation"],
+					"proof": prepared.result["proof"],
+					"acknowledge": True,
+				}
+			)
+		)
+		return Scenario(
+			post,
+			scenario.sid,
+			(clock + timedelta(seconds=2)).isoformat(sep=" ", timespec="microseconds"),
+			"post_release",
+		)
+
+	def _release_contention(
+		self, row, items, originals, scenarios, initial_large, initial_small, future, errors
+	):
+		from datetime import timedelta
+
+		large_root = initial_large["result"]["reservation"]
+		small_root = initial_small["result"]["reservation"]
+		frozen = {
+			name: frappe.get_doc("HRP Budget Reservation", name).as_dict()
+			for name in (large_root, small_root)
+		}
+		receipts = frappe.get_all(
+			"HRP Service Idempotency",
+			filters={"service_name": "hrp_budget.reservation.post_renewed"},
+			fields=["name", "response_snapshot", "response_fingerprint"],
+			order_by="name",
+		)
+		frappe.db.rollback()
+		with localcontext() as context:
+			context.prec = 48
+			amount = (Decimal(items[0].amount) * Decimal("0.75")).quantize(Decimal(1), rounding=ROUND_FLOOR)
+		self.assertGreater(amount * 2, Decimal(items[0].amount))
+		clock = future + timedelta(minutes=6)
+		one = self._release(scenarios[0], large_root, amount, clock)
+		two = self._release(scenarios[0], large_root, amount, clock)
+		winner, loser = self._pair(one, two, same_key=False, retry_second=True, errors=errors)
+		self.assertEqual((winner["status"], winner["replayed"]), ("posted", False))
+		self.assertEqual((loser["status"], loser["key"], loser["attempts"]), ("rejected", "CONFLICT", 2))
+		frappe.db.rollback()
+		self.assertEqual(frappe.db.count("HRP Budget Reservation Event", {"reservation": large_root}), 2)
+		self.assertEqual(
+			frappe.db.count(
+				"HRP Budget Reservation Release", {"reservation": large_root, "event_kind": "Decision"}
+			),
+			1,
+		)
+		state = reservation_release_state.inspect_reservation_release(large_root)
+		self.assertEqual(Decimal(state.position.open_reservation), Decimal(items[0].amount) - amount)
+		frappe.db.rollback()
+		full = self._release(scenarios[2], small_root, items[2].amount, clock)
+		posted, replayed = self._pair(full, full, same_key=True, retry_second=True, errors=errors)
+		self.assertEqual((posted["status"], posted["replayed"]), ("posted", False))
+		self.assertEqual((replayed["status"], replayed["replayed"]), ("posted", True))
+		self.assertEqual(posted["result"], replayed["result"])
+		frappe.db.rollback()
+		self.assertEqual(frappe.db.count("HRP Budget Reservation Event", {"reservation": small_root}), 2)
+		self.assertEqual(
+			frappe.db.count(
+				"HRP Budget Reservation Release", {"reservation": small_root, "event_kind": "Decision"}
+			),
+			1,
+		)
+		state = reservation_release_state.inspect_reservation_release(small_root)
+		self.assertEqual(Decimal(state.position.open_reservation), 0)
+		frappe.db.rollback()
+		# Both original initial receipts remain replayable after committed releases.
+		late = clock + timedelta(minutes=6)
+		for scenario, original in ((scenarios[0], initial_large), (scenarios[2], initial_small)):
+			replayed_initial = self._single(
+				replace(scenario, clock=late.isoformat(sep=" ", timespec="microseconds")),
+				key=original["request_key"],
+				errors=errors,
+			)
+			self.assertEqual((replayed_initial["status"], replayed_initial["replayed"]), ("posted", True))
+			self.assertEqual(replayed_initial["result"], original["result"])
+		# Funds genuinely freed by the new release events allow the previously
+		# over-budget source to post only after obtaining a fresh renewed decision.
+		new_scenario = self._renew(items[1], scenarios[1].sid, originals[1][0], originals[1][1], late)
+		new_result = self._single(new_scenario, key="ci-after-release-" + uuid4().hex, errors=errors)
+		self.assertEqual((new_result["status"], new_result["replayed"]), ("posted", False))
+		frappe.db.rollback()
+		self.assertEqual(
+			{name: frappe.get_doc("HRP Budget Reservation", name).as_dict() for name in frozen}, frozen
+		)
+		self.assertEqual(
+			frappe.get_all(
+				"HRP Service Idempotency",
+				filters={"name": ["in", [item.name for item in receipts]]},
+				fields=["name", "response_snapshot", "response_fingerprint"],
+				order_by="name",
+			),
+			receipts,
+		)
+		frappe.db.rollback()
+		exposure = Decimal(0)
+		for name in (large_root, small_root, new_result["result"]["reservation"]):
+			state = reservation_release_state.inspect_reservation_release(name)
+			exposure += Decimal(state.position.open_reservation)
+			frappe.db.rollback()
+		self.assertLessEqual(exposure, Decimal(row.amount))
 
 	def test_two_process_budget_contention_and_duplicate_receipt_are_safe(self):
 		from datetime import timedelta
@@ -351,10 +519,16 @@ class TestDisposableReservationConcurrency(TestBudgetReleaseExecution):
 				self.assertEqual((first["status"], first["replayed"]), ("posted", False))
 				self.assertEqual((replay["status"], replay["replayed"]), ("posted", True))
 				self.assertEqual(first["result"], replay["result"])
+				frappe.db.rollback()
+				self.assertEqual(frappe.db.count("HRP Budget Reservation"), 2)
+				self.assertEqual(frappe.db.count("HRP Budget Reservation Event"), 2)
+				frappe.db.rollback()
+				self._release_contention(row, items, originals, scenarios, winner, first, future, errors)
 			frappe.db.rollback()
-			self.assertEqual(frappe.db.count("HRP Budget Reservation"), 2)
-			self.assertEqual(frappe.db.count("HRP Budget Reservation Event"), 2)
-			self.assertEqual(frappe.db.count("HRP Budget Reservation Event", {"proof_version": 2}), 2)
+			self.assertEqual(frappe.db.count("HRP Budget Reservation"), 3)
+			self.assertEqual(frappe.db.count("HRP Budget Reservation Event"), 5)
+			self.assertEqual(frappe.db.count("HRP Budget Reservation Event", {"proof_version": 2}), 3)
+			self.assertEqual(frappe.db.count("HRP Budget Reservation Release"), 5)
 			self.assertEqual(before, {doctype: frappe.db.count(doctype) for doctype in before})
 		finally:
 			for process in self.workers:
