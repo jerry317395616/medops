@@ -41,7 +41,9 @@
     "source_line",
     "source_allocation",
     "source_action",
-    "proof_version"
+    "proof_version",
+    "renewal_decision",
+    "renewal_digest"
   ],
   "fields": [
     {
@@ -274,6 +276,25 @@
       "fieldtype": "Int",
       "read_only": 1,
       "reqd": 1
+    },
+    {
+      "fieldname": "renewal_decision",
+      "label": "续期决定",
+      "fieldtype": "Link",
+      "options": "HRP Budget Reservation Renewal",
+      "read_only": 1,
+      "reqd": 0,
+      "hidden": 1,
+      "permlevel": 1
+    },
+    {
+      "fieldname": "renewal_digest",
+      "label": "续期证据摘要",
+      "fieldtype": "Data",
+      "read_only": 1,
+      "reqd": 0,
+      "hidden": 1,
+      "permlevel": 1
     }
   ],
   "permissions": [],
