@@ -6,23 +6,28 @@ from collections.abc import Iterator, Mapping
 from contextlib import contextmanager
 from contextvars import ContextVar
 from dataclasses import asdict, dataclass
+from dataclasses import field as dataclass_field
 
 import frappe
 from frappe.utils import now_datetime
 
 from medops.common.budget_ledger import LEDGER
+from medops.common.confirmation_privacy import ConfirmationProof
 from medops.common.initial_reservation_posting import (
 	InitialReservationDocuments,
 	initial_reservation_documents,
+	renewed_initial_reservation_documents,
 )
 from medops.common.material_source_snapshot import material_source_snapshot
 from medops.common.reservation_authorization import (
 	AUTHORIZATION_ROW_FIELDS,
+	ReservationConfirmation,
+	ReservationIntent,
 	verify_reservation_authorization_rows,
 	verify_reservation_confirmation_proof,
 	verify_reservation_confirmation_row,
 )
-from medops.hrp_budget.services.approval import session_digest
+from medops.hrp_budget.services.approval import require_web_session, session_digest
 from medops.hrp_budget.services.control_guards import invalidate_budget_guards
 from medops.hrp_budget.services.material_budget_guards import assert_material_budget_guards
 from medops.hrp_budget.services.material_request_source import (
@@ -31,6 +36,8 @@ from medops.hrp_budget.services.material_request_source import (
 )
 from medops.hrp_budget.services.planning_access import MANAGER_ROLES
 from medops.hrp_budget.services.release_documents import same_value
+from medops.hrp_budget.services.reservation_confirmation import require_reservation_actor_scope
+from medops.hrp_budget.services.reservation_renewal_lineage import locked_renewal_lineage
 from medops.services.data_access import require_scope
 from medops.services.errors import raise_ione_error, require_roles
 
@@ -47,11 +54,44 @@ class InitialWrite:
 	root_inserted: bool = False
 	root_submitted: bool = False
 	event_inserted: bool = False
+	renewal_item: ReservationIntent | None = None
+	renewal_confirmation: ReservationConfirmation | None = None
+	renewal_session: str | None = None
+	renewal_proof: str | None = dataclass_field(default=None, repr=False)
 
 
 def _enabled():
 	if frappe.conf.get("medops_internal_reservation_write_enabled") is not True:
 		raise_ione_error("OPERATION_NOT_ALLOWED")
+
+
+def enabled_renewed_reservation():
+	_enabled()
+	if frappe.conf.get("medops_internal_renewed_reservation_write_enabled") is not True:
+		raise_ione_error("OPERATION_NOT_ALLOWED")
+
+
+def _require_renewal_authority(state):
+	enabled_renewed_reservation()
+	require_web_session()
+	item, confirmation, session, proof = (
+		state.renewal_item,
+		state.renewal_confirmation,
+		state.renewal_session,
+		state.renewal_proof,
+	)
+	if item is None or confirmation is None or session is None or proof is None:
+		raise_ione_error("OPERATION_NOT_ALLOWED")
+	require_reservation_actor_scope(item, frappe.session.user, session)
+	verify_reservation_confirmation_proof(
+		item,
+		confirmation,
+		proof=proof,
+		actor=frappe.session.user,
+		session_digest=session,
+		now=now_datetime().isoformat(sep=" ", timespec="microseconds"),
+	)
+	assert_material_budget_guards(state.source, state.keys)
 
 
 @contextmanager
@@ -63,6 +103,8 @@ def expected_initial_reservation(
 	confirmation: str,
 	decision: str,
 	proof: str,
+	renewal_confirmation: str | None = None,
+	renewal_decision: str | None = None,
 ) -> Iterator[InitialWrite]:
 	"""Limit controllers to one complete exact write, never authorizing its caller.
 
@@ -98,30 +140,64 @@ def expected_initial_reservation(
 		item, confirmed = verify_reservation_confirmation_row(rows[0])
 		checked, decided = verify_reservation_authorization_rows(*rows)
 		session = session_digest("budget-reservation:" + item.reservation_identity)
-		verify_reservation_confirmation_proof(
-			item,
-			confirmed,
-			proof=proof,
-			actor=frappe.session.user,
-			session_digest=session,
-			now=now_datetime().isoformat(sep=" ", timespec="microseconds"),
-		)
+		is_renewed = renewal_confirmation is not None or renewal_decision is not None
+		if is_renewed:
+			enabled_renewed_reservation()
+			if renewal_confirmation is None or renewal_decision is None:
+				raise_ione_error("CONFLICT")
+			lineage = locked_renewal_lineage(item, source, confirmation, decision)
+			if not lineage.renewals:
+				raise_ione_error("CONFLICT")
+			renewed_confirmation, latest = lineage.renewals[-1]
+			if (
+				lineage.original != decided
+				or renewed_confirmation.name != renewal_confirmation
+				or latest.name != renewal_decision
+				or latest.actor != frappe.session.user
+			):
+				raise_ione_error("CONFLICT")
+			proof = ConfirmationProof(proof)
+			state = InitialWrite(
+				documents,
+				source,
+				keys,
+				renewal_item=item,
+				renewal_confirmation=renewed_confirmation,
+				renewal_session=session,
+				renewal_proof=proof,
+			)
+			_require_renewal_authority(state)
+			expected = renewed_initial_reservation_documents(
+				rows[0], rows[1], lineage.renewals, occurred_at=documents.event.get("occurred_at")
+			)
+		else:
+			verify_reservation_confirmation_proof(
+				item,
+				confirmed,
+				proof=proof,
+				actor=frappe.session.user,
+				session_digest=session,
+				now=now_datetime().isoformat(sep=" ", timespec="microseconds"),
+			)
+			if decided.actor != frappe.session.user:
+				raise_ione_error("PERMISSION_DENIED")
+			expected = initial_reservation_documents(*rows, occurred_at=documents.event.get("occurred_at"))
+			state = InitialWrite(documents, source, keys)
 		if (
 			checked != item
-			or decided.actor != frappe.session.user
 			or keys != (item.key,)
 			or material_source_snapshot(asdict(source)) != (item.source_snapshot, item.source_snapshot_digest)
-			or initial_reservation_documents(*rows, occurred_at=documents.event.get("occurred_at"))
-			!= documents
+			or expected != documents
 		):
 			raise_ione_error("CONFLICT")
-		state = InitialWrite(documents, source, keys)
 		token = _active.set(state)
 		try:
 			yield state
 			if not (state.root_inserted and state.root_submitted and state.event_inserted):
 				raise_ione_error("OPERATION_NOT_ALLOWED")
 			assert_material_budget_guards(source, keys)
+			if is_renewed:
+				_require_renewal_authority(state)
 		finally:
 			_active.reset(token)
 	except BaseException:
@@ -139,6 +215,8 @@ def _check_initial_write(doc, *, doctype: str, stage: str, named: bool = True) -
 	):
 		raise_ione_error("OPERATION_NOT_ALLOWED")
 	assert_material_budget_guards(state.source, state.keys)
+	if state.renewal_confirmation is not None:
+		_require_renewal_authority(state)
 	if doctype == ROOT:
 		expected: Mapping[str, object] = state.documents.root
 		allowed = (
