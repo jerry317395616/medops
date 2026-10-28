@@ -7,6 +7,7 @@ from frappe.tests import IntegrationTestCase
 
 from medops.common.error_catalog import IoneApplicationError
 from medops.common.reservation_release import RELEASE_ROW_FIELDS, verify_reservation_release_row
+from medops.hrp_budget.services.reservation_release_observation import require_release_evidence_storage
 from medops.tests.reservation_release_fixtures import release_evidence, rows
 from medops.tests.test_budget_material_authorization_observation import synthetic_rows
 
@@ -52,6 +53,8 @@ class TestBudgetReservationRelease(IntegrationTestCase):
 		self.assertTrue(
 			any(row.COLUMN_NAME == "reservation" and int(row.SEQ_IN_INDEX) == 1 for row in indexes)
 		)
+
+		require_release_evidence_storage()
 
 	def test_connection_private_synthetic_rows_roundtrip_and_unique_successor(self):
 		"""Use a connection-private copy, never bypass the real evidence controller."""

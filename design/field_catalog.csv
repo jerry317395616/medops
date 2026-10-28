@@ -13723,14 +13723,20 @@ medops,HRP Budget,HRP Budget Reservation Release,7,budget_key_digest,预算范�
 medops,HRP Budget,HRP Budget Reservation Release,8,company,法人,Link,Company,1,0,1,1,0,,,,法人,Finance
 medops,HRP Budget,HRP Budget Reservation Release,9,hospital,医院,Link,HRP Hospital,1,0,1,1,0,,,,医院,Finance
 medops,HRP Budget,HRP Budget Reservation Release,10,organization_unit,原始科室,Link,HRP Organization Unit,1,0,1,1,0,,,,原始科室,Finance
-medops,HRP Budget,HRP Budget Reservation Release,11,actor,确认人,Link,User,1,0,0,1,0,,,,确认人,Finance
-medops,HRP Budget,HRP Budget Reservation Release,12,proof_hash,确认凭证摘要,Data,,1,0,0,1,0,,,,确认凭证摘要,Finance
-medops,HRP Budget,HRP Budget Reservation Release,13,session_digest,会话摘要,Data,,1,0,0,1,0,,,,会话摘要,Finance
-medops,HRP Budget,HRP Budget Reservation Release,14,recorded_at,记录时间,Datetime,,1,0,0,1,0,,,,记录时间,Finance
-medops,HRP Budget,HRP Budget Reservation Release,15,expires_at,确认有效期,Datetime,,1,0,0,1,0,,,,确认有效期,Finance
-medops,HRP Budget,HRP Budget Reservation Release,16,confirmation,确认记录,Link,HRP Budget Reservation Release,0,1,0,1,0,,,,确认记录,Finance
-medops,HRP Budget,HRP Budget Reservation Release,17,acknowledged,明确确认,Check,,0,0,0,1,0,,,,明确确认,Finance
-medops,HRP Budget,HRP Budget Reservation Release,18,one_time_key,分摊决定唯一键,Data,,0,1,0,1,0,,,,分摊决定唯一键,Finance
-medops,HRP Budget,HRP Budget Reservation Release,19,event_digest,证据摘要,Data,,1,1,0,1,0,,,,证据摘要,Finance
-medops,HRP Budget,HRP Budget Reservation Release,20,intent_snapshot_json,确认意图快照,Long Text,,1,0,0,1,0,,,,确认意图快照,Finance
-medops,HRP Budget,HRP Budget Reservation Release,21,proof_version,证明版本,Int,,1,0,0,1,0,,,,证明版本,Finance
+medops,HRP Budget,HRP Budget Reservation Release,17,actor,确认人,Link,User,1,0,0,1,0,,,,确认人,Finance
+medops,HRP Budget,HRP Budget Reservation Release,18,proof_hash,确认凭证摘要,Data,,1,0,0,1,0,,,,确认凭证摘要,Finance
+medops,HRP Budget,HRP Budget Reservation Release,19,session_digest,会话摘要,Data,,1,0,0,1,0,,,,会话摘要,Finance
+medops,HRP Budget,HRP Budget Reservation Release,20,recorded_at,记录时间,Datetime,,1,0,0,1,0,,,,记录时间,Finance
+medops,HRP Budget,HRP Budget Reservation Release,21,expires_at,确认有效期,Datetime,,1,0,0,1,0,,,,确认有效期,Finance
+medops,HRP Budget,HRP Budget Reservation Release,22,confirmation,确认记录,Link,HRP Budget Reservation Release,0,1,0,1,0,,,,确认记录,Finance
+medops,HRP Budget,HRP Budget Reservation Release,23,acknowledged,明确确认,Check,,0,0,0,1,0,,,,明确确认,Finance
+medops,HRP Budget,HRP Budget Reservation Release,24,one_time_key,分摊决定唯一键,Data,,0,1,0,1,0,,,,分摊决定唯一键,Finance
+medops,HRP Budget,HRP Budget Reservation Release,25,event_digest,证据摘要,Data,,1,1,0,1,0,,,,证据摘要,Finance
+medops,HRP Budget,HRP Budget Reservation Release,26,intent_snapshot_json,确认意图快照,Long Text,,1,0,0,1,0,,,,确认意图快照,Finance
+medops,HRP Budget,HRP Budget Reservation Release,27,proof_version,证明版本,Int,,1,0,0,1,0,,,,证明版本,Finance
+medops,HRP Budget,HRP Budget Reservation Release,11,fiscal_year,财政年度,Link,Fiscal Year,1,0,1,1,0,,,,财政年度,Finance
+medops,HRP Budget,HRP Budget Reservation Release,12,budget_subject,预算科目,Link,HRP Dimension Value,1,0,1,1,0,,,,预算科目,Finance
+medops,HRP Budget,HRP Budget Reservation Release,13,funding_source,资金来源,Link,HRP Funding Source,1,0,1,1,0,,,,资金来源,Finance
+medops,HRP Budget,HRP Budget Reservation Release,14,project,项目,Link,Project,0,0,0,1,0,,,,项目,Finance
+medops,HRP Budget,HRP Budget Reservation Release,15,period_start,期间开始,Date,,1,0,0,1,0,,,,期间开始,Finance
+medops,HRP Budget,HRP Budget Reservation Release,16,period_end,期间结束,Date,,1,0,0,1,0,,,,期间结束,Finance
