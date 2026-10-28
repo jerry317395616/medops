@@ -244,6 +244,41 @@ def exercise_reservation_http(test, row, amount, item_name, unit_name):
 		test.login_actor("Administrator")
 		request(OPERATIONS + "post_release", unused, status=403)
 		test.assertEqual(recovered(data, original_post["decision"])["reservation"], root)
+	# Native ERP entry points must not destroy a valid registered source, even
+	# after its reservation has been fully released. No proof is sent here.
+	first_source = items_source(items[0])
+	for method, arguments in (
+		(
+			"erpnext.stock.doctype.material_request.material_request.update_status",
+			{"name": first_source["request"], "status": "Stopped"},
+		),
+		(
+			"frappe.client.set_value",
+			{
+				"doctype": "Material Request Item",
+				"name": first_source["line"],
+				"fieldname": "rate",
+				"value": "999",
+			},
+		),
+		("frappe.client.cancel", {"doctype": "Material Request", "name": first_source["request"]}),
+	):
+		response = test.post(test.method(method), arguments)
+		test.assertEqual(response.status_code, 403)
+		frappe.db.rollback()
+	test.assertEqual(frappe.get_doc(ROOT, initial["reservation"]).as_dict(), frozen)
+	frappe.db.rollback()
+	progress = test.post(
+		test.method("erpnext.stock.doctype.material_request.material_request.update_status"),
+		{"name": first_source["request"], "status": "Ordered"},
+	)
+	test.assertEqual(progress.status_code, 200)
+	frappe.db.rollback()
+	test.assertEqual(
+		request(OPERATIONS + "inspect", {"reservation": initial["reservation"]})["position"]["reservation"],
+		initial["reservation"],
+	)
+	test.assertEqual(recovered(payload(items[0]), command["decision"])["reservation"], initial["reservation"])
 	test.assertEqual(frappe.db.count(EVENT, {"reservation": root}), 1)
 	test.assertEqual(frappe.db.count(RELEASE, {"reservation": root, "event_kind": "Decision"}), 0)
 	test.assertEqual(frappe.db.count(ROOT), before[ROOT] + 2)
