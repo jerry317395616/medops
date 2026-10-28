@@ -117,6 +117,10 @@ class TestBudgetReservationStorage(FrappeTestCase):
 		for field in ("source_line", "source_allocation", "source_action", "proof_version"):
 			self.assertTrue(meta.get_field(field).reqd)
 			self.assertTrue(frappe.db.has_column(DOCTYPE, field))
+		for field in ("renewal_decision", "renewal_digest"):
+			self.assertFalse(meta.get_field(field).reqd)
+			self.assertTrue(meta.get_field(field).hidden and int(meta.get_field(field).permlevel) == 1)
+			self.assertTrue(frappe.db.has_column(DOCTYPE, field))
 		rows = frappe.db.sql(
 			"""SELECT COLUMN_NAME, INDEX_NAME, NON_UNIQUE, SEQ_IN_INDEX
 			FROM information_schema.STATISTICS

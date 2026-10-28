@@ -13710,3 +13710,5 @@ medops,HRP Budget,HRP Budget Reservation Renewal,18,acknowledged,明确确认,Ch
 medops,HRP Budget,HRP Budget Reservation Renewal,19,one_time_key,前任唯一后继键,Data,,1,1,0,1,0,,,,前任唯一后继键,Finance
 medops,HRP Budget,HRP Budget Reservation Renewal,20,event_digest,证据摘要,Data,,1,1,0,1,0,,,,证据摘要,Finance
 medops,HRP Budget,HRP Budget Reservation Renewal,21,proof_version,证明版本,Int,,1,0,0,1,0,,,,证明版本,Finance
+medops,HRP Budget,HRP Budget Reservation Event,31,renewal_decision,续期决定,Link,HRP Budget Reservation Renewal,0,0,0,1,0,,,,续期决定,Finance
+medops,HRP Budget,HRP Budget Reservation Event,32,renewal_digest,续期证据摘要,Data,,0,0,0,1,0,,,,续期证据摘要,Finance

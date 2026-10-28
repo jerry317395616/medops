@@ -40,6 +40,8 @@ class ReservationRecord:
 	sequence_key: str
 	source_action_key: str
 	event_digest: str
+	renewal_decision: str | None = None
+	renewal_digest: str | None = None
 
 
 def reservation_event_key(reservation: object, sequence: object) -> str:
@@ -68,6 +70,8 @@ def reservation_record(
 	actor: object,
 	occurred_at: object,
 	previous_digest: object,
+	renewal_decision: object = None,
+	renewal_digest: object = None,
 ) -> ReservationRecord:
 	"""Construct deterministic evidence; callers must authenticate the source.
 
@@ -114,8 +118,29 @@ def reservation_record(
 		"sequence_key": sequence_key,
 		"source_action_key": source_key,
 	}
+	renewal_name: str | None = None
+	renewal_hash: str | None = None
+	if (renewal_decision is None) != (renewal_digest is None):
+		raise ValueError("complete renewal evidence reference required")
+	if renewal_decision is not None:
+		if event.sequence != 1 or event.kind != "Reserve":
+			raise ValueError("renewal evidence is supported only for the first reservation")
+		renewal_name = normalize_sha256(renewal_decision, label="renewal_decision")
+		renewal_hash = normalize_sha256(renewal_digest, label="renewal_digest")
+		content["schema_version"] = 2
+		content["renewal_decision"] = renewal_name
+		content["renewal_digest"] = renewal_hash
 	return ReservationRecord(
-		event, source, actor_name, occurred_at, previous, sequence_key, source_key, fingerprint_json(content)
+		event,
+		source,
+		actor_name,
+		occurred_at,
+		previous,
+		sequence_key,
+		source_key,
+		fingerprint_json(content),
+		renewal_name,
+		renewal_hash,
 	)
 
 
@@ -135,6 +160,8 @@ def verify_reservation_records(value: object) -> ReservationPosition:
 			actor=record.actor,
 			occurred_at=record.occurred_at,
 			previous_digest=record.previous_digest,
+			renewal_decision=record.renewal_decision,
+			renewal_digest=record.renewal_digest,
 		)
 		if record != expected or record.source_action_key in sources:
 			raise ValueError("reservation evidence mismatch or duplicate source action")
