@@ -177,6 +177,27 @@ def exact_new_document(doctype, values):
 	return _exact_new_document(doctype, values)
 
 
+def require_initial_identity_available(item, source):
+	"""Reject duplicate identities and unsupported mixed source revisions under guard."""
+	assert_material_budget_guards(source, [item.key])
+	# The current reader supports only one historical revision per source line.
+	# Do not create a second revision until lifecycle adapters support it.
+	prior = frappe.get_all(
+		ROOT,
+		filters={
+			"source_doctype": "Material Request",
+			"source_name": source.request,
+			"source_line": source.line,
+		},
+		fields=["name", "source_snapshot_digest"],
+		limit_page_length=101,
+	)
+	if len(prior) > 100 or any(row.source_snapshot_digest != item.source_snapshot_digest for row in prior):
+		raise_ione_error("CONFLICT")
+	if frappe.db.get_value(ROOT, {"source_identity_key": item.reservation_identity}, "name", for_update=True):
+		raise_ione_error("CONFLICT")
+
+
 def append_initial_reservation(confirmation: str, decision: str, proof: str) -> dict[str, str]:
 	"""Append one initial reservation in an owned, clean transaction.
 
@@ -204,26 +225,7 @@ def append_initial_reservation(confirmation: str, decision: str, proof: str) -> 
 		)
 		source = locked_material_request_source(facts["request"], facts["line"], item.key.organization_unit)
 		assert_material_budget_guards(source, [item.key])
-		# The current reader supports only one historical revision per source line.
-		# Do not create a second revision until lifecycle adapters support it.
-		prior = frappe.get_all(
-			ROOT,
-			filters={
-				"source_doctype": "Material Request",
-				"source_name": source.request,
-				"source_line": source.line,
-			},
-			fields=["name", "source_snapshot_digest"],
-			limit_page_length=101,
-		)
-		if len(prior) > 100 or any(
-			row.source_snapshot_digest != item.source_snapshot_digest for row in prior
-		):
-			raise_ione_error("CONFLICT")
-		if frappe.db.get_value(
-			ROOT, {"source_identity_key": item.reservation_identity}, "name", for_update=True
-		):
-			raise_ione_error("CONFLICT")
+		require_initial_identity_available(item, source)
 		documents = initial_reservation_documents(
 			locked_first,
 			locked_second,

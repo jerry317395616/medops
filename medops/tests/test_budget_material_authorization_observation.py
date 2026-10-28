@@ -244,7 +244,7 @@ class TestBudgetMaterialAuthorizationObservation(IntegrationTestCase):
 			tuple(row[field] for field in fields),
 		)
 
-	def renewal_fixture(self):
+	def renewal_fixture(self, *, progressed=False):
 		source, item, _, _, first, original_row = synthetic_rows()
 		_, initial = verify_reservation_confirmation_row(first)
 		_, original = verify_reservation_authorization_rows(first, original_row)
@@ -276,6 +276,8 @@ class TestBudgetMaterialAuthorizationObservation(IntegrationTestCase):
 			"tabHRP Budget Reservation Renewal",
 			reservation_renewal_row(item, initial, original, (), confirmed, decision),
 		)
+		if progressed:
+			source = replace(source, status="Ordered", request_modified="2026-01-02 09:00:00")
 		binding = (source.request, source.line, source.organization_unit, source.digest())
 		acquire_multi_source_bound_budget_guards([item.key], source_bindings=(binding,))
 		return source, item, first, original_row, confirmed, decision
@@ -296,6 +298,24 @@ class TestBudgetMaterialAuthorizationObservation(IntegrationTestCase):
 			frappe.db.sql(
 				"UPDATE `tabHRP Budget Reservation Renewal` SET `previous_decision`=%s", ("f" * 64,)
 			)
+			with self.assertRaises(IoneApplicationError):
+				reservation_renewal_lineage.locked_renewal_lineage(
+					item, source, first["name"], original["name"]
+				)
+			with self.assertRaises(IoneApplicationError):
+				assert_budget_guards([item.key])
+
+	def test_guarded_renewal_replay_allows_only_nonfinancial_source_progress(self):
+		source, item, first, original, confirmed, decision = self.renewal_fixture(progressed=True)
+		with (
+			patch.object(reservation_renewal_lineage, "session_digest", return_value="a" * 64),
+			patch.object(reservation_renewal_lineage, "require_reservation_actor_scope"),
+			patch.object(reservation_renewal_lineage, "locked_material_request_source", return_value=source),
+		):
+			observed = reservation_renewal_lineage.locked_renewal_lineage(
+				item, source, first["name"], original["name"], allow_progress=True
+			)
+			self.assertEqual(observed.renewals, ((confirmed, decision),))
 			with self.assertRaises(IoneApplicationError):
 				reservation_renewal_lineage.locked_renewal_lineage(
 					item, source, first["name"], original["name"]
