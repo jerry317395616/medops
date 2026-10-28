@@ -13,7 +13,7 @@
     "ADR-0040",
     "ADR-0041"
   ],
-  "current_scope": "COD035 candidatea02d81e pushed: ADR0041 native source integrity and complete native asset build, local627/19/all12 passed. Exact-source full40719053510 Quality/Security passed, plain/Core live; native focus40716449289 still live for8+4+4+3 and valid-root ERP-cookie/profile. Earlier4b recovery full passed650+1 each, separate source. Native real password login40717947212 authenticated Admin at/desk with jquery/styles and zero JS/asset errors but Desk readiness unproven; screenshot masked primary failure, corrected diagnostic40720837738 live. No server contact/deploy/schema/grants/production enablement. Commitment/actuals/source amendments/all writers/real root UI/performance/hospital acceptance incomplete.",
+  "current_scope": "Producta02d81e ADR0041 source/asset focus40716449289/6cd42d3 passed8+4+4+3 native,19 frontend,1 committed1473.593s,2 zero Error Log sites;9 runtime/native/pure/bootstrap blobs match. Current full40719053510 Quality/Security passed,native plain/Core live. Prior4b recovery full passed650+1 each,separate source. Real native password login reached Admin /desk,Desk initialization unproven; diagnostic40720837738 live. Profile one recovery34.523s:74 fresh-authority calls31.562s,2258 native Meta constructions,28208 SQL; performance bottleneck measured, no authorization checks removed. No server access/deploy/schema/grants/production enablement. Whole lifecycle/commitment/actual/all writers/root UI/hospital performance and acceptance incomplete.",
   "checks": {
     "pure_tests_expected": 627,
     "complete_frappe_tests_expected": 658,
@@ -1507,7 +1507,7 @@
       "artifact": "native-desk-40698778414/native-reservation-desk.json"
     },
     "native_material_source_integrity": {
-      "status": "candidate_native_pending",
+      "status": "focused_native_passed_full_current_running",
       "ADR": "ADR-0041",
       "pure_new": 5,
       "native_new": 8,
@@ -1534,7 +1534,7 @@
       },
       "fixture_fix": "Two distinct Item masters/lines. Root/child transient __islocal flag cannot skip current persisted binding reads; added assertions in existing cases.",
       "local_quality": "passed627 pure/19 frontend/all12 exact frozen v3",
-      "native_status": "in_progress",
+      "native_status": "passed",
       "second_local_quality": "passed627 pure/19 frontend/all12 before isolation fixture and fresh-assets repair",
       "second_local_quality_log": "quality-native-source-integrity-frozen-v2.log",
       "second_focus": {
@@ -1551,7 +1551,7 @@
       "current_focus": {
         "run": 40716449289,
         "source": "6cd42d314c2c1fb7d7a0c0964786d4d439cb20c0",
-        "status": "in_progress",
+        "status": "passed",
         "native_expected": [
           8,
           4,
@@ -1574,7 +1574,21 @@
         "url": "https://github.com/jerry317395616/medops/actions/runs/40719053510",
         "expected_regular_each": 658,
         "expected_committed_each": 1
-      }
+      },
+      "focused_native_counts": [
+        8,
+        4,
+        4,
+        3
+      ],
+      "focused_frontend": 19,
+      "focused_committed": {
+        "tests": 1,
+        "seconds": 1473.593
+      },
+      "focused_skipped": 0,
+      "focused_zero_error_log_sites": 2,
+      "focused_log": "native-source-integrity-40716449289.log"
     },
     "reservation_native_login_diagnostic": {
       "run": 40708508528,
@@ -1649,6 +1663,21 @@
       ],
       "new_product_dependencies": false,
       "server_accessed": false
+    },
+    "reservation_http_call_profile": {
+      "status": "measured_bottleneck",
+      "run": 40716449289,
+      "source": "6cd42d314c2c1fb7d7a0c0964786d4d439cb20c0",
+      "proof": "recovery-call-profile-40716449289.json",
+      "request_seconds": 34.523405,
+      "refresh_financial_authority": {
+        "calls": 74,
+        "cumulative_seconds": 31.562
+      },
+      "native_meta_constructions": 2258,
+      "get_meta_calls": 15042,
+      "sql_calls": 28208,
+      "scope": "One cProfile-instrumented actual native request on shared CI; cumulative times include callees and instrumentation overhead. No controlled production latency/SLO/capacity claim. Keep independent current-role/permission/field/data-scope checks; investigate coherent current metadata reuse rather than relaxing authorization."
     }
   },
   "previous_verified_release": {
