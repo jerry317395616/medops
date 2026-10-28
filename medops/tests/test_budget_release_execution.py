@@ -40,6 +40,7 @@ from medops.hrp_budget.services import (
 	initial_reservation_control,
 	initial_reservation_write,
 	release_usage_guard,
+	renewed_initial_reservation_write,
 	reservation_confirmation,
 	reservation_renewal_control,
 	reservation_renewal_write,
@@ -921,7 +922,12 @@ class TestBudgetReleaseExecution(FrappeAPITestCase):
 	def test_private_renewal_appends_replays_and_rolls_back_atomically(self):
 		self.exercise_real_release_and_confirmation(initial_write=True, renewal=True)
 
-	def exercise_renewal_transaction(self, primary, item, key, first, original, unique):
+	def test_private_renewed_reservation_posts_replays_and_rolls_back_atomically(self):
+		self.exercise_real_release_and_confirmation(initial_write=True, renewal=True, renewed_post=True)
+
+	def exercise_renewal_transaction(
+		self, primary, item, key, first, original, unique, *, renewed_post=False
+	):
 		"""Real synthetic source and ledger; private temporary evidence and receipt tables."""
 		from medops.hrp_budget.doctype.hrp_budget_reservation_renewal.hrp_budget_reservation_renewal import (
 			HRPBudgetReservationRenewal,
@@ -1036,8 +1042,98 @@ class TestBudgetReleaseExecution(FrappeAPITestCase):
 				reservation_renewal_control.require_unposted(item)
 			self.assertEqual(posted.exception.definition.key, "CONFLICT")
 			primary.rollback()
+			if renewed_post:
+				self.exercise_renewed_reservation(
+					primary, item, key, first, original, new, created, future, unique
+				)
 
-	def exercise_real_release_and_confirmation(self, *, initial_write, renewal=False):
+	def exercise_renewed_reservation(
+		self, primary, item, key, first, original, new, renewal_result, future, unique
+	):
+		"""Real synthetic source and release; temporary authorization and accounting tables."""
+		from medops.hrp_budget.doctype.hrp_budget_reservation_event.hrp_budget_reservation_event import (
+			HRPBudgetReservationEvent,
+		)
+
+		command = renewed_initial_reservation_write.build_renewed_reservation_post(
+			{
+				"original_confirmation": first["confirmation"],
+				"original_decision": original["decision"],
+				"renewal_confirmation": new["confirmation"],
+				"renewal_decision": renewal_result.result["renewal"],
+				"proof": new["proof"],
+				"acknowledge": True,
+			}
+		)
+		service = renewed_initial_reservation_write.PostRenewedInitialReservation()
+		key_id = "synthetic-post-renewed-" + unique
+		with patch.dict(
+			frappe.conf,
+			{
+				"medops_internal_reservation_write_enabled": True,
+				"medops_internal_renewed_reservation_write_enabled": False,
+			},
+		):
+			with self.assertRaises(IoneApplicationError):
+				service.execute(command, idempotency_key=key_id)
+		primary.rollback()
+		with (
+			patch.dict(
+				frappe.conf,
+				{
+					"medops_internal_reservation_write_enabled": True,
+					"medops_internal_renewed_reservation_write_enabled": True,
+				},
+			),
+			patch.object(
+				renewed_initial_reservation_write, "now_datetime", return_value=future + timedelta(seconds=2)
+			),
+			patch.object(
+				initial_reservation_control, "now_datetime", return_value=future + timedelta(seconds=2)
+			),
+		):
+			with patch.object(
+				HRPBudgetReservationEvent, "db_insert", side_effect=RuntimeError("synthetic event failure")
+			):
+				with self.assertRaises(IoneApplicationError):
+					service.execute(command, idempotency_key=key_id)
+			primary.rollback()
+			self.assertEqual(frappe.db.count("HRP Budget Reservation"), 0)
+			self.assertEqual(frappe.db.count("HRP Budget Reservation Event"), 0)
+			self.assertEqual(frappe.db.count("HRP Budget Reservation Renewal"), 1)
+			posted = service.execute(command, idempotency_key=key_id)
+			self.assertFalse(posted.idempotency_replayed)
+			event = frappe.get_doc("HRP Budget Reservation Event", posted.result["event"])
+			self.assertEqual((event.proof_version, event.renewal_decision), (2, command.renewal_decision))
+			self.assertEqual(
+				frappe.db.get_value("HRP Budget Reservation", posted.result["reservation"], "docstatus"), 1
+			)
+			self.assertEqual(frappe.db.count("HRP Budget Reservation Event"), 1)
+			primary.commit()
+			with patch.object(
+				renewed_initial_reservation_write, "now_datetime", return_value=future + timedelta(minutes=6)
+			):
+				replayed = service.execute(command, idempotency_key=key_id)
+			self.assertTrue(replayed.idempotency_replayed)
+			self.assertEqual(replayed.result, posted.result)
+			primary.rollback()
+			frappe.session.sid = "synthetic-different-session"
+			with self.assertRaises(IoneApplicationError):
+				service.execute(command, idempotency_key=key_id)
+			primary.rollback()
+			frappe.session.sid = "synthetic-test-web-session"
+			changed = replace(command, proof="synthetic_other_proof_123456789012345")
+			with self.assertRaises(IoneApplicationError) as conflict:
+				service.execute(changed, idempotency_key=key_id)
+			self.assertEqual(conflict.exception.definition.key, "IDEMPOTENCY_CONFLICT")
+			primary.rollback()
+			with self.assertRaises(IoneApplicationError):
+				service.execute(command, idempotency_key=key_id + "-duplicate")
+			primary.rollback()
+			self.assertEqual(frappe.db.count("HRP Budget Reservation"), 1)
+			self.assertEqual(frappe.db.count("HRP Budget Reservation Event"), 1)
+
+	def exercise_real_release_and_confirmation(self, *, initial_write, renewal=False, renewed_post=False):
 		"""No budget, source or evidence substitutes; all documents are synthetic."""
 		self.assertEqual(self.execute(self.claim())["status"], "Posted")
 		frappe.db.rollback()
@@ -1169,7 +1265,9 @@ class TestBudgetReleaseExecution(FrappeAPITestCase):
 				)
 				primary.commit()
 				if renewal:
-					self.exercise_renewal_transaction(primary, item, key, result, decision, unique)
+					self.exercise_renewal_transaction(
+						primary, item, key, result, decision, unique, renewed_post=renewed_post
+					)
 					return
 				with patch.dict(frappe.conf, {"medops_internal_reservation_write_enabled": False}):
 					with self.assertRaises(IoneApplicationError):
