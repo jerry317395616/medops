@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from types import SimpleNamespace
 from unittest.mock import patch
+from uuid import uuid4
 
 import frappe
 from frappe.tests.test_api import FrappeAPITestCase
@@ -21,7 +22,6 @@ from medops.common.reservation_renewal_request import (
 from medops.common.reservation_request import build_reservation_post
 from medops.services.confirmation_privacy import RPC_PREFIXES, protect_confirmation_request
 from medops.services.errors import raise_ione_error
-from medops.tests import test_budget_reservation_api as boundary
 
 PREFIX = "medops.api.v1.finance.reservation_operations."
 PROOF = "synthetic_operations_proof_12345678901234567890"
@@ -56,8 +56,27 @@ ENDPOINTS = (*(case[0] for case in CASES), "prepare_release", "inspect")
 
 
 class TestBudgetReservationOperationsBoundary(FrappeTestCase):
-	setUp = boundary.TestBudgetReservationAPI.setUp
-	tearDown = boundary.TestBudgetReservationAPI.tearDown
+	def setUp(self):
+		super().setUp()
+		frappe.set_user("Administrator")
+		frappe.db.rollback()
+		self.request_before = getattr(frappe.local, "request", None)
+		self.sid_before = frappe.session.sid
+		self.form_before = frappe.local.form_dict
+		self.marker_before = getattr(frappe.local, "_medops_reservation_http_started", None)
+		set_request(method="POST", path="/api/method/" + PREFIX + "post")
+		frappe.session.sid = "synthetic-operations-test-session"
+		frappe.local.form_dict = frappe._dict()
+		frappe.local._medops_reservation_http_started = False
+
+	def tearDown(self):
+		frappe.db.rollback()
+		frappe.db.sql("SET SESSION TRANSACTION ISOLATION LEVEL REPEATABLE READ")
+		frappe.local.request = self.request_before
+		frappe.session.sid = self.sid_before
+		frappe.local.form_dict = self.form_before
+		frappe.local._medops_reservation_http_started = self.marker_before
+		super().tearDown()
 
 	def test_only_strict_true_opens_master_gate_before_parsing_or_transactions(self):
 		previous = frappe.conf.get("medops_reservation_operations_enabled")
@@ -84,11 +103,26 @@ class TestBudgetReservationOperationsBoundary(FrappeTestCase):
 			for name, _, payload, _, _ in CASES:
 				with self.assertRaises(IoneApplicationError):
 					getattr(api, name)(dict(payload, acknowledge=False))
+			user = frappe.get_doc(
+				{
+					"doctype": "User",
+					"email": "reservation-nonmanager-" + uuid4().hex + "@example.invalid",
+					"first_name": "Synthetic nonmanager",
+					"user_type": "System User",
+					"send_welcome_email": 0,
+				}
+			).insert(ignore_permissions=True)
+			frappe.set_user(user.name)
+			for name in ENDPOINTS:
+				with self.assertRaises(IoneApplicationError):
+					getattr(api, name)({})
+			frappe.set_user("Administrator")
 			frappe.local.request = None
 			with self.assertRaises(IoneApplicationError):
 				api.post(POST)
 			self.assertFalse(frappe.local._medops_reservation_http_started)
 		finally:
+			frappe.set_user("Administrator")
 			frappe.conf.medops_reservation_operations_enabled = previous
 
 	def test_all_proof_methods_mask_json_form_and_rpc_aliases_before_dispatch(self):
@@ -118,7 +152,7 @@ class TestBudgetReservationOperationsHTTP(FrappeAPITestCase):
 				response = self.get(self.method(PREFIX + name), {"payload": {}})
 				self.assertNotEqual(response.status_code, 200)
 				response = self.post(self.method(PREFIX + name), {"payload": {}, "unknown": "x"})
-				self.assertEqual(response.status_code, 422, response.get_data(as_text=True))
+				self.assertEqual(response.status_code, 400, response.get_data(as_text=True))
 		self.TEST_CLIENT.delete_cookie(key="sid")
 		response = self.post(self.method(PREFIX + "post"), {"payload": POST})
 		self.assertEqual(response.status_code, 401, response.get_data(as_text=True))

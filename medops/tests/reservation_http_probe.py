@@ -134,7 +134,7 @@ def exercise_reservation_http(test, row, amount, item_name, unit_name):
 	)
 	first = request(OPERATIONS + "post_release", release, key=release_key)
 	test.assertFalse(first["idempotency_replayed"])
-	request(OPERATIONS + "post_release", dict(release, acknowledge=False), status=422)
+	request(OPERATIONS + "post_release", dict(release, acknowledge=False), status=400)
 	second = prepare_release(partial)
 	request(OPERATIONS + "post_release", second)
 	test.assertEqual(
