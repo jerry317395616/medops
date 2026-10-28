@@ -13,7 +13,7 @@
     "ADR-0040",
     "ADR-0041"
   ],
-  "current_scope": "COD035 ADR0041 source protection plus complete native asset bootstrap candidate: exact frozen v3 passed627 pure/19 frontend/all12,zero type errors/one preexisting warning;9 runtime/native/pure/bootstrap blobs match live focus40716449289/6cd42d3.8+4+4+3 native and valid-root native-cookie counterpart/profile pending. Existing4b70f5a full40696687032 passed622 pure,650 regular+1 committed each plain/Core,8 zero Error Log sites,Required; excludes new hooks/assets. Browser40715222239 now styled/jQuery loaded/zero JS errors; obsolete submit selector blocked login, corrected08e78f5 empty-Page retry dispatched. No server access/deploy, new schema/grants or production enablement. Full lifecycle/commitment/actuals/other writers/real root UI/performance/hospital acceptance incomplete.",
+  "current_scope": "COD035 candidatea02d81e pushed: ADR0041 native source integrity and complete native asset build, local627/19/all12 passed. Exact-source full40719053510 Quality/Security passed, plain/Core live; native focus40716449289 still live for8+4+4+3 and valid-root ERP-cookie/profile. Earlier4b recovery full passed650+1 each, separate source. Native real password login40717947212 authenticated Admin at/desk with jquery/styles and zero JS/asset errors but Desk readiness unproven; screenshot masked primary failure, corrected diagnostic40720837738 live. No server contact/deploy/schema/grants/production enablement. Commitment/actuals/source amendments/all writers/real root UI/performance/hospital acceptance incomplete.",
   "checks": {
     "pure_tests_expected": 627,
     "complete_frappe_tests_expected": 658,
@@ -1562,7 +1562,19 @@
         "scope": "Corrected RC-only witness cases, ordinary6 RR, all-app assets and exact native bundle checks. Timing/profile-only helper instrumentation."
       },
       "source_proof": "native-source-integrity-source-proof.json",
-      "all9_current_blobs_match": true
+      "all9_current_blobs_match": true,
+      "product_commit": "a02d81e962bcf45cbb4126163b4a6bf494d27cc4",
+      "full_current_source_ci": {
+        "run": 40719053510,
+        "source": "a02d81e962bcf45cbb4126163b4a6bf494d27cc4",
+        "status": "in_progress",
+        "Quality": "passed",
+        "Security": "passed",
+        "native": "plain and IONE Core live",
+        "url": "https://github.com/jerry317395616/medops/actions/runs/40719053510",
+        "expected_regular_each": 658,
+        "expected_committed_each": 1
+      }
     },
     "reservation_native_login_diagnostic": {
       "run": 40708508528,
@@ -1592,7 +1604,24 @@
       "assets_retry_cause": "Pinned template uses visible form submit Continue, not obsolete .btn-login; login attempt not submitted. Actual assets/style problem resolved.",
       "selector_retry_source": "08e78f54d0fb98e7055e3564532137bf2cd95eeb",
       "selector_retry_branch": "cod/focused-budget-native-login-selector-20261028-153803",
-      "selector_retry_status": "dispatched"
+      "selector_retry_status": "authenticated_native_password_login_observed;desk_initialization_unproven",
+      "selector_retry_run": 40717947212,
+      "selector_retry_artifact": "native-login-40717947212/native-desk-login.json",
+      "native_password_login": {
+        "path": "/desk",
+        "admin_boot": true,
+        "jquery": true,
+        "page_errors": 0,
+        "failed_assets": 0,
+        "financial_calls": 0
+      },
+      "selector_retry_failure": "Desk readiness predicate not completed; subsequent full-page screenshot failure masked primary error. No screenshot/HRP page/immutable final audit completed.",
+      "state_retry": {
+        "run": 40720837738,
+        "source": "d94dd6a25051186a7e4571002534c32aeb0b0b48",
+        "status": "in_progress",
+        "scope": "Preserve primary exception type/hash, safe app/container flags and endpoint/status without query/headers/bodies; viewport capture does not mask error. Native no-finance diagnostic only."
+      }
     },
     "reservation_http_timings": {
       "status": "measured_performance_gap",
