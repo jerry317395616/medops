@@ -50,45 +50,39 @@ cd "$BENCH_DIR"
   --correlation-id "FOCUSED-${GITHUB_RUN_ID:-local}-verify"
 bench --site "$SITE_NAME" migrate --skip-search-index
 
-test_log="$BENCH_DIR/logs/focused-budget-tests.log"
-bench --site "$SITE_NAME" run-tests --app medops --module medops.tests.test_budget_release_execution \
-  --test test_persisted_authorized_release_guard_checks_original_units_without_posting \
-  --test test_persisted_release_guard_poisoned_when_actor_check_is_revoked \
-  --test test_persisted_release_guard_detects_role_revocation_from_another_transaction \
-  --test test_persisted_reversal_guard_verifies_the_complete_original_batch \
-  --test test_guarded_release_inventory_reconciles_posted_batches_and_physical_entries \
-  2>&1 | tee "$test_log"
-if ! grep -Eq 'Ran 5 tests? in [0-9.]+s' "$test_log"; then
-  echo "Focused CI did not execute the expected five tests" >&2
-  exit 1
-fi
 
-storage_log="$BENCH_DIR/logs/focused-budget-storage-tests.log"
-bench --site "$SITE_NAME" run-tests --app medops --module medops.tests.test_budget_reservation_storage \
-  --case TestBudgetReservationStorage 2>&1 | tee "$storage_log"
-if ! grep -Eq 'Ran 3 tests? in [0-9.]+s' "$storage_log"; then
-  echo "Focused CI did not execute the expected three storage tests" >&2
-  exit 1
+if [[ "${INCLUDE_IONE_CORE:-0}" == "1" ]]; then
+  read -r CORE_BUILD_DIGEST _ < <(sha256sum "$BENCH_DIR/.medops-core-build-integrity.json")
 fi
-
-"$BENCH_DIR/env/bin/python" - "$BENCH_DIR" "$SITE_NAME" <<'PY'
-import json
-import os
-import subprocess
-import sys
+cd "$BENCH_DIR/sites"
+cd "$ROOT_DIR"
+pure_log="$BENCH_DIR/logs/commitment-evidence-pure.log"
+"$BENCH_DIR/env/bin/python" -m unittest tests.test_commitment_evidence tests.test_reservation_commitment 2>&1 | tee "$pure_log"
+if ! grep -Eq 'Ran 20 tests? in [0-9.]+s' "$pure_log" || grep -Eq 'OK \(skipped=|FAILED \(' "$pure_log"; then exit 1; fi
+cd "$BENCH_DIR/sites"
+for group in evidence purchase source boundary; do
+  expected=2
+  args=(--module medops.tests.test_budget_commitment_authorization)
+  case "$group" in
+    purchase) expected=24; args=(--module medops.tests.test_budget_purchase_order_source);;
+    source) expected=1; args=(--module medops.tests.test_budget_material_request_source --test test_real_submitted_purchase_order_is_linked_to_material_request);;
+    boundary) expected=4; args=(--module medops.tests.test_budget_reservation_operations_api --case TestBudgetReservationOperationsBoundary);;
+  esac
+  native_log="$BENCH_DIR/logs/commitment-evidence-$group.log"
+  "$BENCH_DIR/env/bin/python" "$ROOT_DIR/scripts/ci_focus_without_locals.py" frappe --site "$SITE_NAME" run-tests --app medops "${args[@]}" 2>&1 | tee "$native_log"
+  if ! grep -Eq "Ran $expected tests? in [0-9.]+s" "$native_log" || grep -Eq 'OK \(skipped=|FAILED \(' "$native_log"; then exit 1; fi
+done
+"$BENCH_DIR/env/bin/python" - "$BENCH_DIR" "$SITE_NAME" <<'PYLOG'
+import json,os,subprocess,sys
 from pathlib import Path
-
-bench_dir = Path(sys.argv[1]).resolve()
-site = json.loads((bench_dir / "sites" / sys.argv[2] / "site_config.json").read_text(encoding="utf-8"))
-common = json.loads((bench_dir / "sites" / "common_site_config.json").read_text(encoding="utf-8"))
-result = subprocess.run(
-    ["mariadb", "--batch", "--skip-column-names", "--host", site.get("db_host") or common.get("db_host") or "127.0.0.1",
-     "--port", str(site.get("db_port") or common.get("db_port") or 3306), "--user", site["db_name"],
-     site["db_name"], "--execute", "SELECT COUNT(*) FROM `tabError Log`"],
-    env={**os.environ, "MYSQL_PWD": site["db_password"]}, capture_output=True, text=True, check=True,
-)
-count = int(result.stdout.strip())
-print(json.dumps({"site": sys.argv[2], "error_log_count": count, "scope": "focused_budget_only"}))
-if count:
-    raise SystemExit("Focused CI site contains Error Log records")
-PY
+bench=Path(sys.argv[1]);site=json.loads((bench/'sites'/sys.argv[2]/'site_config.json').read_text());common=json.loads((bench/'sites/common_site_config.json').read_text())
+result=subprocess.run(['mariadb','--batch','--skip-column-names','--host',site.get('db_host') or common.get('db_host') or '127.0.0.1','--port',str(site.get('db_port') or common.get('db_port') or 3306),'--user',site['db_name'],site['db_name'],'--execute','SELECT COUNT(*) FROM `tabError Log`'],env={**os.environ,'MYSQL_PWD':site['db_password']},capture_output=True,text=True,check=True)
+count=int(result.stdout.strip());print(json.dumps({'site':sys.argv[2],'error_log_count':count,'scope':'commitment schema2,PO24,actual MR/PO1,boundary4 only'}))
+if count:raise SystemExit('Focused metadata site contains Error Log')
+PYLOG
+if [[ "${INCLUDE_IONE_CORE:-0}" == "1" ]]; then
+  "$BENCH_DIR/env/bin/python" "$ROOT_DIR/scripts/core_build_integrity.py" verify --app "$BENCH_DIR/apps/ione_core" --proof "$BENCH_DIR/.medops-core-build-integrity.json" --digest "$CORE_BUILD_DIGEST"
+fi
+for app in frappe erpnext hrms medops; do
+  if [[ -n "$(git -C "$BENCH_DIR/apps/$app" status --porcelain)" ]]; then echo "Focused tests changed $app source" >&2; exit 1; fi
+done

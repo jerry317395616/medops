@@ -26,7 +26,8 @@
 		"ADR-0041",
 		"ADR-0042",
 		"ADR-0043",
-		"ADR-0044"
+		"ADR-0044",
+		"ADR-0045"
 	],
 	"path_globs": [
 		"DELIVERY_MANIFEST.json",
@@ -121,12 +122,19 @@
 		"scripts/core_build_integrity.py",
 		"tests/test_core_build_integrity.py",
 		"medops/hrp_budget/services/authority_metadata.py",
-		"medops/tests/test_budget_authority_metadata.py"
+		"medops/tests/test_budget_authority_metadata.py",
+		"medops/common/commitment_evidence.py",
+		"medops/hrp_budget/services/commitment_authorization.py",
+		"medops/hrp_budget/doctype/hrp_budget_commitment_authorization/**",
+		"medops/tests/commitment_evidence_fixtures.py",
+		"medops/tests/test_budget_commitment_authorization.py",
+		"tests/test_commitment_evidence.py",
+		"doctype_blueprints/hrp_budget/hrp_budget_commitment_authorization.json"
 	],
-	"permissions_impact": "No grants or existing actor/role/field/scope changes. PO snapshot and commitment intent are structure, not financial authority. Native reader still checks submitted status, conversion rate, permissions and locks. No new API/hook/evidence controller/Commit writer.",
-	"migration_impact": "No model/schema/index/dependency migration;47 runtime DocTypes unchanged. Pure provenance/intent helper and native PO DTO method only; native assertions expanded. Existing UI hint needs normal assets/cache refresh. No financial flags enabled. Server maintenance: no access/deploy.",
-	"rollback_plan": "Restore per-type native cached=False metadata refresh; retain all current identity/role/field/scope/source/guard checks, ADR0041 bound-source protection and immutable original/renewal/release evidence, roots/events/receipts and compatible history/recovery readers. No data reversal for this read-only optimization. UI-only recovery status can be reverted independently; preserve backend checks, history cards and explicit new-allocation gate.",
-	"security_impact": "ADR0044 starts purchase commitment with canonical PO/MR provenance and exact original reservation/tail/open/PO amount/period/reason binding. Preserve native v1 PO digest and stable line identity. Eight pure tests do not prove stored-history completeness, prior authority, global PO allocations or human confirmation. No commitment evidence/event/API/UI posting enabled. Next: independent confirmation/decision, complete PO/MR parents before budget locks, cross-root allocation limits, full authorized mixed history/old receipts, source lifecycle protection, atomic append/rollback/concurrency, actual conversion. Existing current authority/default-off gates retained. ADR0043 full40832608462 native still live; cookie/browser40832870602 and posted recovery40834757012 passed both. UI hint35f3be3 local632/19/all12 passed; visual40837475564 passed/screenshot verified. A/B40836398869 passed4 samples each,20.0195965s batched vs30.065283s native,results/finance hashes equal. Synthetic not SLO. No server access/readiness claim.",
+	"permissions_impact": "No grants. New private evidence has empty standard permissions plus query/document denial, even with extra Custom DocPerm. Controller rejects all real mutations. No public confirmation/post API or automatic acknowledgement.",
+	"migration_impact": "One new private authorization table/indexes:406 design/10180 fields/48 runtime. Existing business blueprint/financial facts unchanged. Intent v2 source_modified_at replaces only unpersisted v1 prototype; no stored conversion/backfill. Normal future migrate/cache/reload; no server during maintenance.",
+	"rollback_plan": "Actual evidence writes remain closed; revert code while retaining the empty new table and original facts. After future valid persistence/Commit writes, first close entry points and preserve all evidence/indexes/receipts and compatible mixed-history readers. Never delete facts or revert to release-only history.",
+	"security_impact": "ADR0045 binds actor/proof/session, strict True, half-open<=5-minute window, predecessor and max current MR/PO parent/child modification time; v2 digest and every scope/source column cross-check. Raw proof never stored; hashes/reason hidden from repr. Real controller always rejects mutation, raw hooks deny configured grants. Temp-only native copies test schema/roundtrip/unique successor/extra Custom DocPerm denial, not actual person or authorization writing. Shared release/Commit exclusion still needs common locks,event uniqueness and full atomic rollback. Owned persistence, pre-budget MR/PO parent discovery, global allocations, authorized mixed history/old receipts, source lifecycle,human HTTP/UI and actual conversion remain. Default-off gates retained; no upstream edits/role grants/server access.",
 	"test_plan": [
 		"Expected632 pure/666 regular native+1 dedicated committed probe/19 frontend/43 ADR/37 records/47 runtime DocTypes; all12 quality gates, native8 metadata+4 actual financial revoke cases, exact plain/Core full CI, committed/HTTP timings, governance/checksums.",
 		"Five pure source-edit tests: allow operational progress/unbound rows, reject bound header/economic changes, missing/duplicate identities, native float precision loss/nonfinite values and uninspectable lifecycle states.",
@@ -150,7 +158,10 @@
 		"ADR0044 new8 pure cover native-format PO snapshot/identity; malformed/forged/duplicate inputs; links/scope/money/status/time; original/current MR progress; exact intent/tail; release/prior-commit replay; missing/forged/cross-source/second Reserve; quota/terminal/period/reason failures. Native PO mock and real submitted MR/PO case assert snapshot/unchanged digest. Expected640 pure/666 native+1/19 frontend/44 ADR/47 models. Full quality/native pending.",
 		"Prior A/B40836398869 passed19 native/19 frontend/1 committed,zero logs,Core inventory;4 timed each median20.0195965 batched vs30.065283 native,results/finance hashes equal,not SLO. Exact35f3 UI40837475564 passed current hint/repeat query,5 inspect200/2 recovery200,0 errors/commands/data change,screenshot reviewed. ADR0044 first640 pure passed but17 type errors; explicit constructor/object negative-input fixed,targeted0 errors/1 old warning. Full v2/native pending.",
 		"Fixed ADR0044 source passed640 pure/19 frontend/all12 gates,0 type errors/1 old warning; first type failure retained. Native40841183689/1f6291b running plain/Core,pure8+PO24+real submitted MR/PO1 each,no skip/zero Error Log/pristine sources/Core inventory required. Five runtime/test source files match. No new schema/permissions/API/Commit writer; independent authority/full history/atomic conversion remains next.",
-		"ADR0044 focus40841183689/1f6291b passed both:8 pure+24 adapter+1 actual submitted MR/PO each (31.340/24.068s),no skips/2 zero logs,Core inventory. Adapter cases include document/SQL substitutes; actual source verifies snapshot/digest,not financial authority. Five files match producte048175. Full40842314848 dispatched exact product on separate ref to preserve live prior40832608462. Independent confirmation/decision/full history/atomic Commit/actual/UI still incomplete."
+		"ADR0044 focus40841183689/1f6291b passed both:8 pure+24 adapter+1 actual submitted MR/PO each (31.340/24.068s),no skips/2 zero logs,Core inventory. Adapter cases include document/SQL substitutes; actual source verifies snapshot/digest,not financial authority. Five files match producte048175. Full40842314848 dispatched exact product on separate ref to preserve live prior40832608462. Independent confirmation/decision/full history/atomic Commit/actual/UI still incomplete.",
+		"ADR0045 new12 pure/prior8 cover v2,source-time floor,canonical inputs,actor/session/proof/window/strict True,successor uniqueness,row/date/null/tamper/privacy. New2 native validate schema/controller denial and temp-only roundtrip/unique successor/custom-grant raw-read denial. Expected652 pure/668 native+1/19 frontend/45 ADR/406 design/10180 fields/48 runtime. Targeted20 pure passed; full quality/native pending.",
+		"Fixed ADR0045 local652 pure/19 frontend/all12 passed,0 type errors/1 existing warning; focused40849741378/b9d4e35 running both20 pure+2 schema/access+24 PO+1 actual source+4 boundary,no skips/zero logs/pristine/Core required,11 files match. Prior524 full40832608462 passed617+49 regular+1 probe each,8 zero logs,Core inventory/Required; excludes current schema and v2 component. Current model writes stay closed.",
+		"Native40849741378/b9d4e35 both:20 pure passed;schema/controller case passed,second case errored only finally DROP after writes (ImplicitCommitError),later PO/source/boundary groups not run. Preserve failure. Test-only fix rolls back owned synthetic data before temp DROP; no commit/guard disabling/product behavior change. Fixed-source full quality and native retry required."
 	],
 	"owner": "MedOps Maintainers",
 	"created_on": "2026-10-27",

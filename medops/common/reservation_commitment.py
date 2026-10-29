@@ -12,7 +12,7 @@ from dataclasses import asdict, dataclass, field, replace
 from datetime import datetime
 from decimal import Decimal
 
-from medops.common.budget_control import BudgetControlKey
+from medops.common.budget_control import BudgetControlKey, budget_control_key
 from medops.common.budget_reservation_events import MAX_RESERVATION_EVENTS
 from medops.common.budget_reservation_proof import ReservationSource, verify_reservation_records
 from medops.common.domain_service import canonical_json, fingerprint_json, normalize_sha256
@@ -195,6 +195,7 @@ class ReservationCommitmentIntent:
 	previous_sequence: int
 	previous_event_digest: str
 	previous_occurred_at: str
+	source_modified_at: str
 	open_before: str
 	order_amount: str
 	amount: str
@@ -273,15 +274,110 @@ def reservation_commitment_intent(
 		previous_sequence=position.last_sequence,
 		previous_event_digest=last.event_digest,
 		previous_occurred_at=last.occurred_at,
+		source_modified_at=max(
+			datetime.fromisoformat(value)
+			for value in (
+				material["request_modified"],
+				material["line_modified"],
+				order["order_modified"],
+				order["line_modified"],
+			)
+		).isoformat(sep=" ", timespec="microseconds"),
 		open_before=position.open_reservation,
 		order_amount=order["amount"],
 		amount=value,
 		reason=text,
 		intent_digest="",
 	)
+	return require_commitment_intent(replace(item, intent_digest=_commitment_digest(item)))
+
+
+def _commitment_digest(item):
 	payload = asdict(item)
 	del payload["intent_digest"]
-	digest = fingerprint_json(
-		{"schema_version": 1, "kind": "reservation_commitment_intent", "action": "Commit", **payload}
+	return fingerprint_json(
+		{"schema_version": 2, "kind": "reservation_commitment_intent", "action": "Commit", **payload}
 	)
-	return replace(item, intent_digest=digest)
+
+
+def require_commitment_intent(value):
+	"""Validate self-consistency only; an independent caller must verify its sources."""
+	if type(value) is not ReservationCommitmentIntent or type(value.key) is not BudgetControlKey:
+		raise ValueError("canonical commitment intent required")
+	if budget_control_key(asdict(value.key)) != value.key:
+		raise ValueError("canonical commitment budget key required")
+	for name in (
+		"reservation",
+		"original_intent_digest",
+		"original_source_digest",
+		"current_source_digest",
+		"order_snapshot_digest",
+		"commitment_identity",
+		"previous_event_digest",
+		"intent_digest",
+	):
+		if normalize_sha256(getattr(value, name), label=name) != getattr(value, name):
+			raise ValueError("canonical commitment digest required")
+	if (
+		type(value.precision) is not int
+		or not 0 <= value.precision <= 9
+		or type(value.previous_sequence) is not int
+		or not 1 <= value.previous_sequence < MAX_RESERVATION_EVENTS
+		or normalize_reference(value.currency, label="currency") != value.currency
+		or normalize_required_text(value.reason, label="reason", maximum=1000) != value.reason
+	):
+		raise ValueError("canonical commitment currency, sequence and reason required")
+	for name in ("previous_occurred_at", "source_modified_at"):
+		_time(getattr(value, name))
+		if datetime.fromisoformat(getattr(value, name)).isoformat(
+			sep=" ", timespec="microseconds"
+		) != getattr(value, name):
+			raise ValueError("canonical commitment microsecond time required")
+	for name in ("open_before", "amount"):
+		amount = getattr(value, name)
+		if (
+			exact_decimal_amount(amount, value.precision, maximum=MAX_APPROVAL_AMOUNT) != amount
+			or Decimal(amount) <= 0
+		):
+			raise ValueError("canonical positive commitment amount required")
+	if (
+		exact_decimal_amount(value.order_amount, 9, maximum=MAX_APPROVAL_AMOUNT) != value.order_amount
+		or Decimal(value.amount) > min(Decimal(value.open_before), Decimal(value.order_amount))
+		or _commitment_digest(value) != value.intent_digest
+	):
+		raise ValueError("commitment differs from exact intent digest")
+	return value
+
+
+def reservation_commitment_snapshot(value):
+	item = require_commitment_intent(value)
+	return canonical_json(
+		{"schema_version": 2, "kind": "reservation_commitment_intent", "action": "Commit", **asdict(item)}
+	)
+
+
+def parse_reservation_commitment_snapshot(value):
+	if not isinstance(value, str) or len(value.encode("utf-8")) > MAX_ORDER_SNAPSHOT_BYTES:
+		raise ValueError("bounded commitment intent snapshot required")
+	try:
+		payload = json.loads(value, object_pairs_hook=_unique_object)
+	except (TypeError, ValueError, RecursionError) as error:
+		raise ValueError("invalid commitment intent snapshot") from error
+	if (
+		not isinstance(payload, dict)
+		or set(payload)
+		!= set(ReservationCommitmentIntent.__dataclass_fields__) | {"schema_version", "kind", "action"}
+		or type(payload["schema_version"]) is not int
+		or payload["schema_version"] != 2
+		or payload["kind"] != "reservation_commitment_intent"
+		or payload["action"] != "Commit"
+		or canonical_json(payload) != value
+	):
+		raise ValueError("canonical commitment v2 snapshot required")
+	key = budget_control_key(payload["key"])
+	if asdict(key) != payload["key"]:
+		raise ValueError("canonical commitment budget key required")
+	for name in ("schema_version", "kind", "action"):
+		del payload[name]
+	payload["key"] = key
+	return require_commitment_intent(ReservationCommitmentIntent(**payload))

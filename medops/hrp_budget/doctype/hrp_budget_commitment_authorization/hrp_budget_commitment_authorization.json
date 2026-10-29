@@ -1,0 +1,381 @@
+{
+	"doctype": "DocType",
+	"name": "HRP Budget Commitment Authorization",
+	"module": "HRP Budget",
+	"custom": 0,
+	"engine": "InnoDB",
+	"autoname": "field:evidence_key",
+	"title_field": "evidence_key",
+	"is_submittable": 0,
+	"istable": 0,
+	"issingle": 0,
+	"track_changes": 0,
+	"allow_rename": 0,
+	"editable_grid": 0,
+	"field_order": [
+		"evidence_key",
+		"event_kind",
+		"reservation",
+		"previous_sequence",
+		"previous_event_digest",
+		"intent_digest",
+		"budget_key_digest",
+		"company",
+		"hospital",
+		"organization_unit",
+		"fiscal_year",
+		"budget_subject",
+		"funding_source",
+		"project",
+		"period_start",
+		"period_end",
+		"actor",
+		"proof_hash",
+		"session_digest",
+		"recorded_at",
+		"expires_at",
+		"confirmation",
+		"acknowledged",
+		"one_time_key",
+		"event_digest",
+		"intent_snapshot_json",
+		"proof_version",
+		"commitment_identity",
+		"purchase_order",
+		"purchase_order_line",
+		"current_source_digest",
+		"order_snapshot_digest",
+		"source_modified_at",
+		"material_snapshot_json",
+		"order_snapshot_json"
+	],
+	"fields": [
+		{
+			"fieldname": "evidence_key",
+			"label": "证据标识",
+			"fieldtype": "Data",
+			"read_only": 1,
+			"reqd": 1,
+			"unique": 1,
+			"no_copy": 1
+		},
+		{
+			"fieldname": "event_kind",
+			"label": "证据类型",
+			"fieldtype": "Select",
+			"read_only": 1,
+			"reqd": 1,
+			"options": "Confirmation\nDecision",
+			"no_copy": 1
+		},
+		{
+			"fieldname": "reservation",
+			"label": "Reservation",
+			"fieldtype": "Link",
+			"options": "HRP Budget Reservation",
+			"reqd": 1,
+			"read_only": 1,
+			"search_index": 1,
+			"no_copy": 1
+		},
+		{
+			"fieldname": "previous_sequence",
+			"label": "Previous Event Sequence",
+			"fieldtype": "Int",
+			"reqd": 1,
+			"read_only": 1,
+			"no_copy": 1
+		},
+		{
+			"fieldname": "previous_event_digest",
+			"label": "Previous Event Digest",
+			"fieldtype": "Data",
+			"reqd": 1,
+			"read_only": 1,
+			"hidden": 1,
+			"no_copy": 1
+		},
+		{
+			"fieldname": "intent_digest",
+			"label": "确认意图摘要",
+			"fieldtype": "Data",
+			"read_only": 1,
+			"reqd": 1,
+			"hidden": 1,
+			"no_copy": 1
+		},
+		{
+			"fieldname": "budget_key_digest",
+			"label": "预算范围摘要",
+			"fieldtype": "Data",
+			"read_only": 1,
+			"reqd": 1,
+			"hidden": 1,
+			"no_copy": 1
+		},
+		{
+			"fieldname": "company",
+			"label": "法人",
+			"fieldtype": "Link",
+			"read_only": 1,
+			"reqd": 1,
+			"options": "Company",
+			"search_index": 1,
+			"no_copy": 1
+		},
+		{
+			"fieldname": "hospital",
+			"label": "医院",
+			"fieldtype": "Link",
+			"read_only": 1,
+			"reqd": 1,
+			"options": "HRP Hospital",
+			"search_index": 1,
+			"no_copy": 1
+		},
+		{
+			"fieldname": "organization_unit",
+			"label": "原始科室",
+			"fieldtype": "Link",
+			"read_only": 1,
+			"reqd": 1,
+			"options": "HRP Organization Unit",
+			"search_index": 1,
+			"no_copy": 1
+		},
+		{
+			"fieldname": "fiscal_year",
+			"label": "财政年度",
+			"fieldtype": "Link",
+			"read_only": 1,
+			"reqd": 1,
+			"options": "Fiscal Year",
+			"search_index": 1,
+			"no_copy": 1
+		},
+		{
+			"fieldname": "budget_subject",
+			"label": "预算科目",
+			"fieldtype": "Link",
+			"read_only": 1,
+			"reqd": 1,
+			"options": "HRP Dimension Value",
+			"search_index": 1,
+			"no_copy": 1
+		},
+		{
+			"fieldname": "funding_source",
+			"label": "资金来源",
+			"fieldtype": "Link",
+			"read_only": 1,
+			"reqd": 1,
+			"options": "HRP Funding Source",
+			"search_index": 1,
+			"no_copy": 1
+		},
+		{
+			"fieldname": "project",
+			"label": "项目",
+			"fieldtype": "Link",
+			"read_only": 1,
+			"reqd": 0,
+			"options": "Project",
+			"no_copy": 1
+		},
+		{
+			"fieldname": "period_start",
+			"label": "期间开始",
+			"fieldtype": "Date",
+			"read_only": 1,
+			"reqd": 1,
+			"no_copy": 1
+		},
+		{
+			"fieldname": "period_end",
+			"label": "期间结束",
+			"fieldtype": "Date",
+			"read_only": 1,
+			"reqd": 1,
+			"no_copy": 1
+		},
+		{
+			"fieldname": "actor",
+			"label": "确认人",
+			"fieldtype": "Link",
+			"read_only": 1,
+			"reqd": 1,
+			"options": "User",
+			"no_copy": 1
+		},
+		{
+			"fieldname": "proof_hash",
+			"label": "确认凭证摘要",
+			"fieldtype": "Data",
+			"read_only": 1,
+			"reqd": 1,
+			"hidden": 1,
+			"permlevel": 1,
+			"no_copy": 1
+		},
+		{
+			"fieldname": "session_digest",
+			"label": "会话摘要",
+			"fieldtype": "Data",
+			"read_only": 1,
+			"reqd": 1,
+			"hidden": 1,
+			"permlevel": 1,
+			"no_copy": 1
+		},
+		{
+			"fieldname": "recorded_at",
+			"label": "记录时间",
+			"fieldtype": "Datetime",
+			"read_only": 1,
+			"reqd": 1,
+			"no_copy": 1
+		},
+		{
+			"fieldname": "expires_at",
+			"label": "确认有效期",
+			"fieldtype": "Datetime",
+			"read_only": 1,
+			"reqd": 1,
+			"no_copy": 1
+		},
+		{
+			"fieldname": "confirmation",
+			"label": "确认记录",
+			"fieldtype": "Link",
+			"read_only": 1,
+			"reqd": 0,
+			"options": "HRP Budget Commitment Authorization",
+			"unique": 1,
+			"no_copy": 1
+		},
+		{
+			"fieldname": "acknowledged",
+			"label": "明确确认",
+			"fieldtype": "Check",
+			"read_only": 1,
+			"reqd": 0,
+			"no_copy": 1
+		},
+		{
+			"fieldname": "one_time_key",
+			"label": "分摊决定唯一键",
+			"fieldtype": "Data",
+			"read_only": 1,
+			"reqd": 0,
+			"unique": 1,
+			"hidden": 1,
+			"permlevel": 1,
+			"no_copy": 1
+		},
+		{
+			"fieldname": "event_digest",
+			"label": "证据摘要",
+			"fieldtype": "Data",
+			"read_only": 1,
+			"reqd": 1,
+			"unique": 1,
+			"hidden": 1,
+			"no_copy": 1
+		},
+		{
+			"fieldname": "intent_snapshot_json",
+			"label": "确认意图快照",
+			"fieldtype": "Long Text",
+			"read_only": 1,
+			"reqd": 1,
+			"hidden": 1,
+			"permlevel": 1,
+			"no_copy": 1
+		},
+		{
+			"fieldname": "proof_version",
+			"label": "证明版本",
+			"fieldtype": "Int",
+			"read_only": 1,
+			"reqd": 1,
+			"no_copy": 1
+		},
+		{
+			"fieldname": "commitment_identity",
+			"label": "采购订单行稳定标识",
+			"fieldtype": "Data",
+			"reqd": 1,
+			"read_only": 1,
+			"no_copy": 1,
+			"search_index": 1
+		},
+		{
+			"fieldname": "purchase_order",
+			"label": "采购订单标识",
+			"fieldtype": "Data",
+			"reqd": 1,
+			"read_only": 1,
+			"no_copy": 1,
+			"search_index": 1
+		},
+		{
+			"fieldname": "purchase_order_line",
+			"label": "采购订单行标识",
+			"fieldtype": "Data",
+			"reqd": 1,
+			"read_only": 1,
+			"no_copy": 1
+		},
+		{
+			"fieldname": "current_source_digest",
+			"label": "当前申请摘要",
+			"fieldtype": "Data",
+			"reqd": 1,
+			"read_only": 1,
+			"no_copy": 1
+		},
+		{
+			"fieldname": "order_snapshot_digest",
+			"label": "订单快照摘要",
+			"fieldtype": "Data",
+			"reqd": 1,
+			"read_only": 1,
+			"no_copy": 1
+		},
+		{
+			"fieldname": "source_modified_at",
+			"label": "来源最后修改时间",
+			"fieldtype": "Datetime",
+			"reqd": 1,
+			"read_only": 1,
+			"no_copy": 1
+		},
+		{
+			"fieldname": "material_snapshot_json",
+			"label": "当前申请私有快照",
+			"fieldtype": "Long Text",
+			"reqd": 1,
+			"read_only": 1,
+			"no_copy": 1,
+			"hidden": 1,
+			"permlevel": 1
+		},
+		{
+			"fieldname": "order_snapshot_json",
+			"label": "采购订单私有快照",
+			"fieldtype": "Long Text",
+			"reqd": 1,
+			"read_only": 1,
+			"no_copy": 1,
+			"hidden": 1,
+			"permlevel": 1
+		}
+	],
+	"permissions": [],
+	"sort_field": "creation",
+	"sort_order": "DESC",
+	"description": "Independent append-only purchase commitment confirmation/decision evidence; no standard grants or posting authority.",
+	"actions": [],
+	"links": [],
+	"states": []
+}
