@@ -18,12 +18,13 @@
     "ADR-0045",
     "ADR-0046",
     "ADR-0047",
-    "ADR-0048"
+    "ADR-0048",
+    "ADR-0049"
   ],
-  "current_scope": "ADR0048 fixed source passed663 pure/19 frontend/all12 quality gates,0 type errors/1 existing warning. Focus40863049983/102f8c3 passed plain/Core44 pure+151 regular each,zero skips/two zero Error Log sites,pristine sources/Core seal;7 files match.9 new cross-budget/root capacity cases and actual native MR/PO bridge passed. Expected700 regular+1/48 ADR/48 runtime. Prior709830a focus40859656646 passed128 regular+1 committed each with4 zero logs;full70940863525030 separately live,excludes this new observer. Complete source/key preparation,controlled confirmation/atomic Commit,PO lifecycle/actual/human UI and whole hospital readiness still incomplete;no server access.",
+  "current_scope": "ADR0049 candidate adds complete source/key discovery and prepared native commitment state;historical identity discovery with every original version independently checked;default-disabled exact standard-controller Confirmation append and real persisted-row/expiry/state revalidation. Decision/Commit/event/API remain closed;no DomainService/audit/idempotency wrapper yet.5 new regular native cases and extended disposable real MR/PO/root/table/controller probe planned,expected705 regular+1/663 pure/19 frontend/49 ADR/48 runtime. Type0 errors/1 old warning;full quality/native pending. No server or structure migration;whole HRP not ready.",
   "checks": {
     "pure_tests_expected": 663,
-    "complete_frappe_tests_expected": 700,
+    "complete_frappe_tests_expected": 705,
     "exact_foundation_pure_tests_passed": 21,
     "native_foundation": {
       "status": "passed",
@@ -3411,22 +3412,32 @@
     }
   },
   "last_completed_full_budget_ci": {
-    "run": 40842314848,
-    "source": "e048175bb524f4002a0e92ff4c158224433486a0",
-    "result": "all jobs passed including Required",
-    "pure": 640,
+    "run": 40855709340,
+    "source": "052ca3ef731e0d94d0d9f1845c8a4c79e574c38a",
+    "result": "all Quality/Security/plain/Core/Required jobs passed",
+    "pure": 652,
     "regular_each": [
-      617,
+      631,
       49
     ],
     "committed_probe_each": 1,
+    "regular_seconds": {
+      "plain": [
+        4035.133,
+        61.673
+      ],
+      "Core": [
+        4339.435,
+        64.339
+      ]
+    },
     "probe_seconds": {
-      "plain": 828.532,
-      "Core": 1009.661
+      "plain": 969.492,
+      "Core": 988.738
     },
     "zero_error_log_sites": 8,
     "Core_sealed_inventory": "verified",
-    "scope_limit": "excludes ADR45/46/47;full052ca3 run40855709340 still live"
+    "scope_limit": "covers ADR46; excludes ADR47/48/49;full709830a40863525030 independently live"
   },
   "cross_root_commitment_capacity": {
     "adr": "ADR-0048",
@@ -3477,5 +3488,80 @@
       "runtime_source_files_match": 7,
       "committed_probe": "not repeated here; previous709830a 40859656646 probe passed,excludes new capacity observer"
     }
+  },
+  "commitment_confirmation_persistence": {
+    "adr": "ADR-0049",
+    "status": "candidate; quality/native persistence not yet proved",
+    "new_regular_native_cases": 5,
+    "extended_committed_probe": "real actual-table standard-controller append/commit/rollback/expiry,actor/session/clock synthetic; not real human HTTP",
+    "flag": "medops_internal_commitment_confirmation_enabled must be exactly true; default absent/off",
+    "controller_permission": "one exact Confirmation/doc only via private context; raw access/no grants/Decision and financial events remain closed",
+    "api_audit_idempotency": "not yet connected; private internal preparation only",
+    "migration": "no structure/index/role changes; model description sync only",
+    "server": "maintenance; no access",
+    "first_local_quality": {
+      "pure": 663,
+      "pure_seconds": 97.905,
+      "frontend": 19,
+      "steps": 12,
+      "type_errors": 0,
+      "existing_warnings": 1
+    },
+    "first_native_failure": {
+      "run": 40870163871,
+      "candidate": "aca7ca8d7a1b71f9f884583b63ba146caf058095",
+      "profiles": [
+        "plain",
+        "Core"
+      ],
+      "pure_each": 44,
+      "passed_regular_groups_each": [
+        9,
+        2,
+        14,
+        29,
+        49,
+        32
+      ],
+      "preview": {
+        "run": 14,
+        "passed": 6,
+        "errors": 8
+      },
+      "cause": "old test substitute discover(keys) rejected new historical keyword; no controller persistence/probe reached",
+      "fix": "explicit historical keyword plus assert True on substitute; no production relaxation"
+    },
+    "probe_test_type_fix": "protected method copying rejected by pyright; use normal inherited helper with explicit load_tests selection; no diagnostic ignores",
+    "native_candidates": {
+      "original": {
+        "run": 40872639626,
+        "candidate": "ec410aed58db50c0b984af11d4ea998680400e76",
+        "status": "running;before test-only inheritance type fix"
+      },
+      "renewed": {
+        "run": 40872718678,
+        "candidate": "52878b04352d0f375b7c17d1a61885ee23cfdd18",
+        "status": "pending"
+      },
+      "scope": "each44 pure+156 regular+1 explicit disposable real controller probe;original and renewed roots run on different fresh sites/runners"
+    }
+  },
+  "previous_completed_full_budget_ci": {
+    "run": 40842314848,
+    "source": "e048175bb524f4002a0e92ff4c158224433486a0",
+    "result": "all jobs passed including Required",
+    "pure": 640,
+    "regular_each": [
+      617,
+      49
+    ],
+    "committed_probe_each": 1,
+    "probe_seconds": {
+      "plain": 828.532,
+      "Core": 1009.661
+    },
+    "zero_error_log_sites": 8,
+    "Core_sealed_inventory": "verified",
+    "scope_limit": "excludes ADR45/46/47;full052ca3 run40855709340 still live"
   }
 }
