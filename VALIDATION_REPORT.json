@@ -16,12 +16,13 @@
     "ADR-0043",
     "ADR-0044",
     "ADR-0045",
-    "ADR-0046"
+    "ADR-0046",
+    "ADR-0047"
   ],
-  "current_scope": "ADR0045 schema focus40851511007/bc0a8cf passed both profiles:20 pure+2 schema/access+24 PO adapter+1 actual submitted MR/PO+4 boundary each;2 zero Error Log sites,Core sealed inventory/pristine sources. Producte570543 source matches. New ADR0046 adds bounded common MR/PO parent prelocking and exact source-bound PO revisit;12 additional native cases plus actual source extension,expected680 regular+1/652 pure/19 frontend/46 ADR/48 runtime. 652 pure/19 frontend/all12 local quality passed;new native40854728952/788b387 passed both20 pure+59 regular,zero skips/two zero logs,Core inventory;6 source files match. Complete product CI pending. No real evidence persistence/Commit/API/UI/migration/server access; whole HRP incomplete.",
+  "current_scope": "ADR0047 candidate wires independent Commit and release evidence into full budget/source/original/renewed receipt histories. Corrected unpersisted commitment root binding to actual root-v1 derivation; real source test extended. New11 pure and prior33 targeted passed;expected663 pure/691 regular+1/19 frontend/47 ADR/48 runtime. 663 pure/19 frontend/all12 local quality passed,0 type errors/1 old warning;native40858364254 running both44 pure+128 regular+1 committed probe,19 source files match. Actual commitment evidence writes/Commit/actual/API/UI closed. Source052ca3 full40855709340 live and excludes this candidate; no server access. First native plain failed10 new fixture setups using old arbitrary root names;25 history cases including renewed Commit passed. Fixtures now use real initial document construction;no product guard relaxed;v2 quality/native pending.",
   "checks": {
-    "pure_tests_expected": 652,
-    "complete_frappe_tests_expected": 680,
+    "pure_tests_expected": 663,
+    "complete_frappe_tests_expected": 691,
     "exact_foundation_pure_tests_passed": 21,
     "native_foundation": {
       "status": "passed",
@@ -44,7 +45,7 @@
     },
     "protected_ci": "not run for COD-033",
     "local_quality": "Full458/11 quality steps and1449 committed Git blobs passed at f500cf4; proof cod033-f500cf4-quality.json",
-    "pure_tests_passed": 652,
+    "pure_tests_passed": 663,
     "complete_frappe_tests": "Prior f500 full446 passed at its own source; current 448 candidate has not yet run.",
     "current_protocol": {
       "status": "full local quality passed",
@@ -68,7 +69,7 @@
         "Outbox stale-snapshot full transaction retry"
       ]
     },
-    "current_local_quality": "ADR0046 fixed source passed652 pure(92.424s),19 frontend and all12 quality steps;0 type errors/1 existing warning. First attempt failed only hardcoded ADR count45,updated46; preserved first log. Native40854728952/788b387 runs plain/Core20 pure+9 guards+2 evidence+14 multi+29 PO+1 actual source+4 boundary,not yet passed. All6 runtime/native files match.",
+    "current_local_quality": "ADR0047 fixed source passed663 pure in59.503s,19 frontend and all12 gates,0 type errors/1 existing warning. Native40858364254 running both44 pure+128 regular+1 committed probe;19 runtime/native/pure source blobs match.",
     "runtime_native_partial": {
       "source_commit": "daaed16f7765c0fb2e796fa100ca817970585499",
       "passed_counts": [
@@ -3330,6 +3331,70 @@
       },
       "Core_build_inventory": "verified",
       "source_worktrees": "pristine"
+    }
+  },
+  "mixed_commitment_history": {
+    "adr": "ADR-0047",
+    "status": "first native failed fixture root names; standard document fixtures fixed; v2 local quality running",
+    "new_pure": 11,
+    "new_native": 11,
+    "root_fix": "use actual root-v1 derivation; previous unpersisted source-identity substitution rejected",
+    "runtime_readers": "budget/source/original and renewed receipts/release history",
+    "new_schema_permissions_api": "none",
+    "real_commitment_writes": "closed",
+    "local_quality": {
+      "result": "passed",
+      "pure": 663,
+      "pure_seconds": 59.503,
+      "frontend": 19,
+      "quality_steps": 12,
+      "type_errors": 0,
+      "existing_type_warnings": 1
+    },
+    "native": {
+      "run": 40858364254,
+      "candidate": "7c211e44f5f1c9067a111ab597c348212e24d5df",
+      "status": "running",
+      "profiles": [
+        "plain",
+        "IONE Core"
+      ],
+      "pure_each": 44,
+      "regular_each": [
+        9,
+        2,
+        14,
+        29,
+        35,
+        32,
+        2,
+        1,
+        4
+      ],
+      "committed_probe_each": 1,
+      "source_files_match": 19
+    },
+    "first_native_attempt": {
+      "run": 40858364254,
+      "candidate": "7c211e44f5f1c9067a111ab597c348212e24d5df",
+      "plain_status": "failed",
+      "passed_before_history": {
+        "pure": 44,
+        "native": [
+          9,
+          2,
+          14,
+          29
+        ]
+      },
+      "history": {
+        "run": 35,
+        "passed": 25,
+        "errors": 10,
+        "cause": "new nonrenewed fixtures used arbitrary old synthetic reservation names; rejected before target paths. Renewed fixture already uses real docs and passed."
+      },
+      "later_groups_and_probe": "not reached",
+      "fix": "test fixtures and real source case now construct initial root/events using official MedOps initial_reservation_documents; no financial guard relaxation; new source quality/native pending"
     }
   }
 }

@@ -54,7 +54,9 @@ def order_facts(digest, **changes):
 
 def record(original, previous=(), *, kind="Reserve", amount=None, source=None):
 	sequence = len(previous) + 1
-	name = original.reservation_identity
+	name = fingerprint_json(
+		{"namespace": "budget-reservation-root-v1", "source_identity": original.reservation_identity}
+	)
 	event = ReservationEvent(
 		reservation_event_key(name, sequence),
 		name,

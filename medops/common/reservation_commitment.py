@@ -13,8 +13,12 @@ from datetime import datetime
 from decimal import Decimal
 
 from medops.common.budget_control import BudgetControlKey, budget_control_key
-from medops.common.budget_reservation_events import MAX_RESERVATION_EVENTS
-from medops.common.budget_reservation_proof import ReservationSource, verify_reservation_records
+from medops.common.budget_reservation_events import MAX_RESERVATION_EVENTS, ReservationPosition
+from medops.common.budget_reservation_proof import (
+	ReservationRecord,
+	ReservationSource,
+	verify_reservation_records,
+)
 from medops.common.domain_service import canonical_json, fingerprint_json, normalize_sha256
 from medops.common.exact_money import MAX_APPROVAL_AMOUNT, exact_decimal_amount
 from medops.common.material_source_snapshot import (
@@ -212,6 +216,52 @@ def reservation_commitment_intent(
 	human confirmation, current rights/locks or permission to write is implied.
 	"""
 	reservation_intent_snapshot(original)
+	position = verify_reservation_records(records)
+	material = parse_material_source_snapshot(material_snapshot, expected_digest=material_digest)
+	first = records[0]
+	if (
+		first.source
+		!= ReservationSource(
+			"Material Request",
+			material["request"],
+			original.source_snapshot_digest,
+			material["line"],
+			original.allocation,
+			"Reserve",
+		)
+		or first.event.kind != "Reserve"
+		or first.event.amount != original.amount
+	):
+		raise ValueError("purchase commitment differs from original reservation source")
+	return commitment_intent_for_position(
+		original,
+		position,
+		records[-1],
+		order_snapshot=order_snapshot,
+		order_digest=order_digest,
+		material_snapshot=material_snapshot,
+		material_digest=material_digest,
+		amount=amount,
+		reason=reason,
+	)
+
+
+def commitment_intent_for_position(
+	original,
+	position,
+	last,
+	*,
+	order_snapshot,
+	order_digest,
+	material_snapshot,
+	material_digest,
+	amount,
+	reason,
+):
+	"""Internal linear-replay step; its supplied position is never authority."""
+	reservation_intent_snapshot(original)
+	if type(position) is not ReservationPosition or type(last) is not ReservationRecord:
+		raise ValueError("checked commitment predecessor and position required")
 	if normalize_sha256(order_digest, label="order_digest") != order_digest:
 		raise ValueError("canonical purchase order digest required")
 	material = parse_material_source_snapshot(material_snapshot, expected_digest=material_digest)
@@ -224,23 +274,21 @@ def reservation_commitment_intent(
 		material_snapshot=material_snapshot,
 		material_digest=material_digest,
 	)
-	position = verify_reservation_records(records)
-	first, last = records[0], records[-1]
-	expected_source = ReservationSource(
-		"Material Request",
-		material["request"],
-		original.source_snapshot_digest,
-		material["line"],
-		original.allocation,
-		"Reserve",
-	)
 	if (
-		first.source != expected_source
-		or first.event.kind != "Reserve"
-		or first.event.amount != original.amount
-		or position.reservation != original.reservation_identity
+		position.reservation
+		!= fingerprint_json(
+			{"namespace": "budget-reservation-root-v1", "source_identity": original.reservation_identity}
+		)
 		or (position.key, position.currency, position.precision, position.reserved)
 		!= (original.key, original.currency, original.precision, original.amount)
+		or (
+			last.event.reservation,
+			last.event.sequence,
+			last.event.key,
+			last.event.currency,
+			last.event.precision,
+		)
+		!= (position.reservation, position.last_sequence, position.key, position.currency, position.precision)
 		or position.last_sequence >= MAX_RESERVATION_EVENTS
 		or not original.key.period_start <= order["transaction_date"] <= original.key.period_end
 	):

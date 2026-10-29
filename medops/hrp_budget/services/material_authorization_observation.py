@@ -30,7 +30,7 @@ from medops.hrp_budget.services.material_request_source import (
 	MaterialRequestSource,
 	locked_material_request_source,
 )
-from medops.hrp_budget.services.reservation_release_observation import locked_release_pairs
+from medops.hrp_budget.services.reservation_action_observation import locked_reservation_action_pairs
 from medops.services.errors import raise_ione_error
 
 QUERY_CHUNK = 100
@@ -152,7 +152,7 @@ def _read_projections(positions, keys):
 		if len(confirmations) != len(chunk) or set(by_confirmation) != set(confirmation_names):
 			raise ValueError("confirmation evidence set differs")
 		renewals, renewal_confirmations = _read_renewals(identities)
-		releases = locked_release_pairs(keys, chunk_positions)
+		actions = locked_reservation_action_pairs(keys, chunk_positions, by_reservation)
 		for name in chunk:
 			root = by_name[name]
 			decision = by_identity[root.source_identity_key]
@@ -163,16 +163,17 @@ def _read_projections(positions, keys):
 				decision,
 				renewals[root.source_identity_key],
 				renewal_confirmations,
-				releases[name],
+				actions.releases[name],
+				actions.commitments[name],
 			)
 
 
 def verify_guarded_initial_authorizations(keys, sources, positions):
-	"""Fail closed on usage lacking complete initial and release decisions.
+	"""Fail closed on usage lacking complete initial and action decisions.
 
 	The caller supplies the exact source set returned by the guarded purchase
-	inspection and complete usage positions. Only initial Reserve and independently
-	authorized Release Reservation tails are supported. This grants no write.
+	inspection and complete usage positions. Initial Reserve and independently
+	authorized Release Reservation/Commit tails are supported. This grants no write.
 	"""
 	actor = frappe.session.user
 	try:
@@ -216,6 +217,7 @@ def verify_guarded_initial_authorizations(keys, sources, positions):
 			renewal_rows,
 			renewal_confirmations,
 			releases,
+			commitments,
 		) in zip(ordered_positions, _read_projections(ordered_positions, ordered), strict=True):
 			if (
 				root["source_identity_key"] in used_identities
@@ -252,7 +254,14 @@ def verify_guarded_initial_authorizations(keys, sources, positions):
 					values.append((new_confirmation, row))
 				pairs = verify_reservation_renewal_rows(item, first, original, values)
 			verified, _, _ = verify_authorized_released_reservation(
-				root, events, confirmation, decision, releases, current_facts=asdict(source), renewals=pairs
+				root,
+				events,
+				confirmation,
+				decision,
+				releases,
+				current_facts=asdict(source),
+				renewals=pairs,
+				commitments=commitments,
 			)
 			if verified != position or position.key not in ordered or frappe.session.user != actor:
 				raise ValueError("authorized position differs from guarded usage")

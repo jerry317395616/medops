@@ -109,7 +109,7 @@ def _locked_state(reservation, item, source, position):
 	if checked != item:
 		raise ValueError("release original intent changed")
 	lineage = locked_renewal_lineage(item, source, first["name"], second["name"], allow_progress=True)
-	rows, releases = read_locked_initial_receipt_history(
+	rows, releases, commitments = read_locked_initial_receipt_history(
 		item, source, reservation, reservation_event_key(reservation, 1), observed_position=position
 	)
 	records = tuple(reservation_record_from_row(row) for row in rows)
@@ -126,7 +126,14 @@ def _locked_state(reservation, item, source, position):
 	)
 	root_values = {name: root.get(name) for name in ANCHOR_ROW_FIELDS | {"source_snapshot_json"}}
 	actual, _, _ = verify_authorized_released_reservation(
-		root_values, rows, first, second, releases, current_facts=asdict(source), renewals=lineage.renewals
+		root_values,
+		rows,
+		first,
+		second,
+		releases,
+		current_facts=asdict(source),
+		renewals=lineage.renewals,
+		commitments=commitments,
 	)
 	if actual != position:
 		raise ValueError("release history differs from inspected position")

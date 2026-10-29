@@ -113,9 +113,9 @@ def reservation_release_intent(original, position, last, *, amount, reason) -> R
 		or last.event.currency != original.currency
 		or last.event.precision != original.precision
 		or position.reserved != original.amount
-		or any(Decimal(getattr(position, name)) != 0 for name in ("committed", "actual", "open_commitment"))
+		or Decimal(position.actual) != 0
 	):
-		raise ValueError("only the independently verified uncommitted reservation may be released")
+		raise ValueError("only independently verified remaining reservation may be released")
 	with localcontext() as context:
 		context.prec = 48
 		if Decimal(position.open_reservation) + Decimal(position.released) != Decimal(original.amount):

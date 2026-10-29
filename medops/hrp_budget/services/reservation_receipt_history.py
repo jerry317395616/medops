@@ -8,7 +8,7 @@ from medops.common.budget_reservation_events import MAX_RESERVATION_EVENTS, Rese
 from medops.common.budget_reservation_proof import verify_reservation_records
 from medops.common.budget_reservation_storage import ROW_FIELDS, reservation_record_from_row
 from medops.hrp_budget.services.material_budget_guards import assert_material_budget_guards
-from medops.hrp_budget.services.reservation_release_observation import locked_release_pairs
+from medops.hrp_budget.services.reservation_action_observation import locked_reservation_action_pairs
 
 
 def read_locked_initial_receipt_history(item, source, reservation, event, *, observed_position=None):
@@ -48,6 +48,6 @@ def read_locked_initial_receipt_history(item, source, reservation, event, *, obs
 		observed_position is not None and position != observed_position
 	):
 		raise ValueError("receipt history changed after full purchase inspection")
-	pairs = locked_release_pairs([item.key], (position,))[reservation]
+	actions = locked_reservation_action_pairs([item.key], (position,), {reservation: rows})
 	assert_material_budget_guards(source, [item.key])
-	return rows, pairs
+	return rows, actions.releases[reservation], actions.commitments[reservation]
