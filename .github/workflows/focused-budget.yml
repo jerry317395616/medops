@@ -62,3 +62,12 @@ jobs:
           PYTHON_BIN: python3.14
           SITE_NAME: hrp-focused.localhost
         run: bash scripts/ci_budget_focused.sh
+
+      - name: Upload metadata hydration experiment without payloads
+        if: always()
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f
+        with:
+          name: metadata-hydration
+          path: ${{ runner.temp }}/metadata-hydration-evidence
+          if-no-files-found: ignore
+          retention-days: 7
