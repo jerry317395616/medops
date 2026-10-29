@@ -124,6 +124,9 @@ class TestBudgetPurchaseOrderSource(IntegrationTestCase):
 	def test_parents_are_prelocked_before_material_source_and_order_rechecked(self):
 		(source, order), calls = self.read()
 		self.assertEqual(source, self.source)
+		text, digest = order.commitment_snapshot(source)
+		self.assertEqual(digest, order.digest())
+		self.assertIn('"kind":"purchase_order_source"', text)
 		self.assertEqual(
 			(order.order, order.line, order.quantity, order.amount),
 			("order-a", "order-line", "2.000000000", "12.000000000"),

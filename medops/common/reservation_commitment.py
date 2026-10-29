@@ -1,0 +1,287 @@
+"""Purchase commitment provenance and exact intent, never authority to post.
+
+Callers must independently prove native rights, approval, complete stored
+history, every earlier authorization, all PO allocations and current locks.
+"""
+
+from __future__ import annotations
+
+import hmac
+import json
+from dataclasses import asdict, dataclass, field, replace
+from datetime import datetime
+from decimal import Decimal
+
+from medops.common.budget_control import BudgetControlKey
+from medops.common.budget_reservation_events import MAX_RESERVATION_EVENTS
+from medops.common.budget_reservation_proof import ReservationSource, verify_reservation_records
+from medops.common.domain_service import canonical_json, fingerprint_json, normalize_sha256
+from medops.common.exact_money import MAX_APPROVAL_AMOUNT, exact_decimal_amount
+from medops.common.material_source_snapshot import (
+	compare_material_source_history,
+	parse_material_source_snapshot,
+)
+from medops.common.organization import normalize_reference, normalize_required_date, normalize_required_text
+from medops.common.reservation_authorization import reservation_intent_snapshot
+
+ORDER_FIELDS = frozenset(
+	{
+		"order",
+		"line",
+		"order_modified",
+		"line_modified",
+		"material_request",
+		"material_request_line",
+		"material_request_digest",
+		"company",
+		"hospital",
+		"organization_unit",
+		"cost_center",
+		"expense_account",
+		"project",
+		"supplier",
+		"currency",
+		"transaction_date",
+		"status",
+		"item_code",
+		"uom",
+		"quantity",
+		"rate",
+		"amount",
+		"base_amount",
+	}
+)
+MONEY_FIELDS = frozenset({"quantity", "rate", "amount", "base_amount"})
+ORDER_STATUSES = frozenset({"To Receive and Bill", "To Receive", "To Bill"})
+MAX_ORDER_SNAPSHOT_BYTES = 32768
+
+
+def _time(value):
+	if not isinstance(value, str) or len(value) not in (19, 26):
+		raise ValueError("canonical purchase order timestamp required")
+	try:
+		stamp = datetime.fromisoformat(value)
+	except ValueError as error:
+		raise ValueError("canonical purchase order timestamp required") from error
+	if (
+		stamp.tzinfo is not None
+		or stamp.isoformat(sep=" ", timespec="seconds" if len(value) == 19 else "microseconds") != value
+	):
+		raise ValueError("canonical purchase order timestamp required")
+
+
+def _order_facts(value, material_snapshot, material_digest):
+	if normalize_sha256(material_digest, label="material_digest") != material_digest:
+		raise ValueError("canonical material source digest required")
+	material = parse_material_source_snapshot(material_snapshot, expected_digest=material_digest)
+	if not isinstance(value, dict) or set(value) != ORDER_FIELDS:
+		raise ValueError("complete purchase order facts required")
+	facts = dict(value)
+	excluded = MONEY_FIELDS | {
+		"order_modified",
+		"line_modified",
+		"material_request_digest",
+		"project",
+		"transaction_date",
+		"status",
+	}
+	for name in ORDER_FIELDS - excluded:
+		if normalize_reference(facts[name], label=name) != facts[name]:
+			raise ValueError("canonical purchase order reference required")
+	if (
+		facts["project"] is not None
+		and normalize_reference(facts["project"], label="project") != facts["project"]
+	):
+		raise ValueError("canonical purchase project required")
+	for name in ("order_modified", "line_modified"):
+		_time(facts[name])
+	if (
+		normalize_required_date(facts["transaction_date"], label="transaction_date")
+		!= facts["transaction_date"]
+	):
+		raise ValueError("canonical purchase order date required")
+	if not isinstance(facts["status"], str) or facts["status"] not in ORDER_STATUSES:
+		raise ValueError("supported open purchase order required")
+	if facts["material_request_digest"] != material_digest:
+		raise ValueError("purchase order differs from current material snapshot")
+	for order_field, source_field in (
+		("material_request", "request"),
+		("material_request_line", "line"),
+		*(
+			(name, name)
+			for name in (
+				"company",
+				"hospital",
+				"organization_unit",
+				"cost_center",
+				"expense_account",
+				"project",
+				"currency",
+				"item_code",
+				"uom",
+			)
+		),
+	):
+		if facts[order_field] != material[source_field]:
+			raise ValueError("purchase order differs from material request economics")
+	for name in MONEY_FIELDS:
+		if exact_decimal_amount(facts[name], 9, maximum=MAX_APPROVAL_AMOUNT) != facts[name]:
+			raise ValueError("canonical exact purchase order amounts required")
+	if (
+		Decimal(facts["quantity"]) <= 0
+		or Decimal(facts["quantity"]) > Decimal(material["quantity"])
+		or Decimal(facts["amount"]) <= 0
+		or facts["amount"] != facts["base_amount"]
+	):
+		raise ValueError("positive same-currency purchase line within request quantity required")
+	return facts
+
+
+def purchase_order_snapshot(value, *, material_snapshot, material_digest):
+	"""Preserve the existing native PO digest format, bound to current MR facts.
+
+	The native adapter must still prove submitted status, conversion rate one,
+	permissions and fresh parent/child locks. A self-consistent snapshot does not.
+	"""
+	facts = _order_facts(value, material_snapshot, material_digest)
+	payload = {"schema_version": 1, "kind": "purchase_order_source", **facts}
+	text = canonical_json(payload)
+	if len(text.encode("utf-8")) > MAX_ORDER_SNAPSHOT_BYTES:
+		raise ValueError("bounded purchase order snapshot required")
+	return text, fingerprint_json(payload)
+
+
+def _unique_object(pairs):
+	result = {}
+	for name, value in pairs:
+		if name in result:
+			raise ValueError("duplicate purchase snapshot key")
+		result[name] = value
+	return result
+
+
+def parse_purchase_order_snapshot(value, *, expected_digest, material_snapshot, material_digest):
+	digest = normalize_sha256(expected_digest, label="purchase_order_digest")
+	if not isinstance(value, str) or len(value.encode("utf-8")) > MAX_ORDER_SNAPSHOT_BYTES:
+		raise ValueError("bounded purchase order snapshot required")
+	try:
+		payload = json.loads(value, object_pairs_hook=_unique_object)
+	except (ValueError, TypeError, RecursionError) as error:
+		raise ValueError("invalid purchase order snapshot") from error
+	if (
+		not isinstance(payload, dict)
+		or set(payload) != ORDER_FIELDS | {"schema_version", "kind"}
+		or type(payload["schema_version"]) is not int
+		or payload["schema_version"] != 1
+		or payload["kind"] != "purchase_order_source"
+		or canonical_json(payload) != value
+		or not hmac.compare_digest(fingerprint_json(payload), digest)
+	):
+		raise ValueError("purchase order snapshot format or digest differs")
+	return _order_facts({name: payload[name] for name in ORDER_FIELDS}, material_snapshot, material_digest)
+
+
+@dataclass(frozen=True, slots=True)
+class ReservationCommitmentIntent:
+	reservation: str
+	original_intent_digest: str
+	original_source_digest: str
+	current_source_digest: str
+	order_snapshot_digest: str
+	commitment_identity: str
+	key: BudgetControlKey
+	currency: str
+	precision: int
+	previous_sequence: int
+	previous_event_digest: str
+	previous_occurred_at: str
+	open_before: str
+	order_amount: str
+	amount: str
+	reason: str = field(repr=False)
+	intent_digest: str
+
+
+def reservation_commitment_intent(
+	original, records, *, order_snapshot, order_digest, material_snapshot, material_digest, amount, reason
+) -> ReservationCommitmentIntent:
+	"""Derive a proposed conversion from complete supplied chain structure.
+
+	No stored-history completeness, historical authority, cumulative PO allocation,
+	human confirmation, current rights/locks or permission to write is implied.
+	"""
+	reservation_intent_snapshot(original)
+	if normalize_sha256(order_digest, label="order_digest") != order_digest:
+		raise ValueError("canonical purchase order digest required")
+	material = parse_material_source_snapshot(material_snapshot, expected_digest=material_digest)
+	compare_material_source_history(
+		original.source_snapshot, expected_digest=original.source_snapshot_digest, current_facts=material
+	)
+	order = parse_purchase_order_snapshot(
+		order_snapshot,
+		expected_digest=order_digest,
+		material_snapshot=material_snapshot,
+		material_digest=material_digest,
+	)
+	position = verify_reservation_records(records)
+	first, last = records[0], records[-1]
+	expected_source = ReservationSource(
+		"Material Request",
+		material["request"],
+		original.source_snapshot_digest,
+		material["line"],
+		original.allocation,
+		"Reserve",
+	)
+	if (
+		first.source != expected_source
+		or first.event.kind != "Reserve"
+		or first.event.amount != original.amount
+		or position.reservation != original.reservation_identity
+		or (position.key, position.currency, position.precision, position.reserved)
+		!= (original.key, original.currency, original.precision, original.amount)
+		or position.last_sequence >= MAX_RESERVATION_EVENTS
+		or not original.key.period_start <= order["transaction_date"] <= original.key.period_end
+	):
+		raise ValueError("purchase commitment differs from original reservation or budget period")
+	value = exact_decimal_amount(amount, original.precision, maximum=MAX_APPROVAL_AMOUNT)
+	text = normalize_required_text(reason, label="reason", maximum=1000)
+	if (
+		value != amount
+		or Decimal(value) <= 0
+		or text != reason
+		or Decimal(value) > Decimal(position.open_reservation)
+		or Decimal(value) > Decimal(order["amount"])
+	):
+		raise ValueError("canonical positive commitment within reservation and purchase line required")
+	item = ReservationCommitmentIntent(
+		reservation=position.reservation,
+		original_intent_digest=original.intent_digest,
+		original_source_digest=original.source_snapshot_digest,
+		current_source_digest=material_digest,
+		order_snapshot_digest=order_digest,
+		commitment_identity=fingerprint_json(
+			{
+				"namespace": "budget-purchase-order-commitment-v1",
+				"order": order["order"],
+				"line": order["line"],
+			}
+		),
+		key=original.key,
+		currency=original.currency,
+		precision=original.precision,
+		previous_sequence=position.last_sequence,
+		previous_event_digest=last.event_digest,
+		previous_occurred_at=last.occurred_at,
+		open_before=position.open_reservation,
+		order_amount=order["amount"],
+		amount=value,
+		reason=text,
+		intent_digest="",
+	)
+	payload = asdict(item)
+	del payload["intent_digest"]
+	digest = fingerprint_json(
+		{"schema_version": 1, "kind": "reservation_commitment_intent", "action": "Commit", **payload}
+	)
+	return replace(item, intent_digest=digest)
