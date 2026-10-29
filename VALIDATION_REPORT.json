@@ -14,7 +14,7 @@
     "ADR-0041",
     "ADR-0042"
   ],
-  "current_scope": "Build integrity candidate ADR0042: preserve all-app build, pinned Core source immutability and explicit generated outputs, seal full output/source inventory before tests, verify pre-test digest and final files. Expected632 pure/658 regular+1 committed/19 frontend/42 ADR; All12 local quality gates passed:632 pure/19 frontend,0 type errors/1 existing warning. Current full CI pending. Producta02d81e full40719053510 failed: plain success, Core business658+1 passed but final generated-file worktree gate failed; Required failed. No production readiness, browser initialization/performance/lifecycle/hospital acceptance claim. Server maintenance active; no connections/deploy.",
+  "current_scope": "Product17781ac Core generated-build attestation passed632 pure/19 frontend/all12 local quality; exact full40816048987 Quality/Security passed, both native jobs live. Native empty-Page Chromium40821426381/519c23c passed password login, explicit Page route, no modal/JS/asset/RPC failure, financial snapshots unchanged, ErrorLog0 and logout; screenshot visually verified. Earlier green40816808093 had Page null modal and is rejected as clean UI proof. Root UI40822250244/d74a028 runs independently. Metadata-only experiment40820688375/a1521cf matched all29 full native dictionaries with fresh raw construction, SQL342->174, median0.255582->0.153388s; own DocField/DocPerm mutation/rollback observed. Prototype not adopted; full permission/financial/Core/actual latency still required. No server access/deploy, whole HRP lifecycle/hospital readiness incomplete.",
   "checks": {
     "pure_tests_expected": 632,
     "complete_frappe_tests_expected": 658,
@@ -1712,6 +1712,76 @@
         "first_attempt": "failed only Ruff formatting; fixed and full rerun passed",
         "actual_locked_checkout": "prepare/seal/verify passed against unchanged local Core committed outputs; this is not a fresh Linux build"
       }
+    },
+    "native_empty_desk_current": {
+      "status": "passed and screenshot visually verified",
+      "run": 40821426381,
+      "source": "519c23c6ef1858713db77180d3c553d9345e6750",
+      "product_base": "17781ac4c35533149f03e9ac36d60767cba3b1b9",
+      "scope": "Plain native Chromium/password login and empty MedOps Page only",
+      "page_errors": 0,
+      "failed_assets": 0,
+      "failed_local_rpc": 0,
+      "financial_commands": 0,
+      "blocking_dialogs": 0,
+      "financial_snapshots_identical": true,
+      "error_log_count": 0,
+      "native_logout": true,
+      "screenshot": "native-boolean-ready-40821426381/empty-native-desk.png",
+      "prior_green_not_accepted": {
+        "run": 40816808093,
+        "reason": "screenshot showed blocking Page null not found; prior locator-only success insufficient"
+      },
+      "cause": "CI-only readiness expression ended in frappe.set_route callable; Playwright auto-invoked it with null. Return a boolean instead; locally reproduced and confirmed against pinned Playwright implementation.",
+      "primary_tool_source": "https://github.com/microsoft/playwright/blob/v1.64.1/packages/playwright-core/src/server/frames.ts#L1492-L1503",
+      "strict_initialization_retry": {
+        "run": 40818500994,
+        "result": "failed modal check; completing native setup alone did not fix callable predicate"
+      },
+      "route_trace_retry": {
+        "run": 40820539001,
+        "result": "failed before boolean fix; preserve evidence"
+      },
+      "remaining": [
+        "valid-root UI/reload/release input",
+        "recovery-directory controls",
+        "Core browser",
+        "non-admin permission matrix",
+        "human hospital UAT/capacity"
+      ]
+    },
+    "native_valid_root_desk_candidate": {
+      "run": 40822250244,
+      "source": "d74a0287d24418618e2f91e73bb5fa614f242d2b",
+      "status": "running, no pass claimed",
+      "scope": "native19/frontend19/committed1 then actual Chromium valid-root inspect/reload/release-input; no browser financial writes"
+    },
+    "fresh_metadata_experiment": {
+      "run": 40820688375,
+      "source": "a1521cf66aa6208243bf196ab05b99a66c67d03f",
+      "status": "experiment passed; not product adoption",
+      "metadata_types": 29,
+      "complete_native_dictionary_mismatches": 0,
+      "samples": 3,
+      "native_median_seconds": 0.255582,
+      "candidate_median_seconds": 0.153388,
+      "constructor_time_reduction_percent": 39.98,
+      "native_sql_per_batch": 342,
+      "candidate_sql_per_batch": 174,
+      "own_uncommitted_mutation_and_rollback": [
+        "DocField.permlevel",
+        "DocPerm.read"
+      ],
+      "financial_snapshots_identical": true,
+      "error_log_count": 0,
+      "native_document_clone_mismatches": 29,
+      "official_get_docs_clone_mismatches": 29,
+      "rejected_clone_differences": "extra/missing root fields and DocField.show_preview_popup int -> None; exact equality was not weakened",
+      "earlier_failed_runs": [
+        40817290822,
+        40818511295
+      ],
+      "remaining": "review pinned raw Meta constructor compatibility; current roles/field/scope and concurrent revocation/own transaction tests; ordinary/Core native suite; actual API latency. No metadata or permission success cache introduced."
     }
   },
   "previous_verified_release": {
