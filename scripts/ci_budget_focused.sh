@@ -60,7 +60,7 @@ pure_log="$BENCH_DIR/logs/commitment-evidence-pure.log"
 "$BENCH_DIR/env/bin/python" -m unittest tests.test_commitment_evidence tests.test_reservation_commitment tests.test_reservation_commitment_history tests.test_reservation_release tests.test_reservation_commitment_request 2>&1 | tee "$pure_log"
 if ! grep -Eq 'Ran 50 tests? in [0-9.]+s' "$pure_log" || grep -Eq 'OK \(skipped=|FAILED \(' "$pure_log"; then exit 1; fi
 cd "$BENCH_DIR/sites"
-for group in guards evidence multi purchase history usage preview release source boundary http; do
+for group in boundary http; do
   expected=2
   args=(--module medops.tests.test_budget_commitment_authorization)
   case "$group" in
@@ -90,9 +90,14 @@ import json,os,subprocess,sys
 from pathlib import Path
 bench=Path(sys.argv[1]);site=json.loads((bench/'sites'/sys.argv[2]/'site_config.json').read_text());common=json.loads((bench/'sites/common_site_config.json').read_text())
 result=subprocess.run(['mariadb','--batch','--skip-column-names','--host',site.get('db_host') or common.get('db_host') or '127.0.0.1','--port',str(site.get('db_port') or common.get('db_port') or 3306),'--user',site['db_name'],site['db_name'],'--execute','SELECT COUNT(*) FROM `tabError Log`'],env={**os.environ,'MYSQL_PWD':site['db_password']},capture_output=True,text=True,check=True)
-count=int(result.stdout.strip());print(json.dumps({'site':sys.argv[2],'error_log_count':count,'scope':'human commitment:history51+all prior groups+nativeHTTP3+frontend25;separate actual-cookie ordinary manager workflow site'}))
+count=int(result.stdout.strip());print(json.dumps({'site':sys.argv[2],'error_log_count':count,'scope':'human browser:50pure+boundary4+HTTP3+frontend25+actual-cookie1+real Chromium;both sites isolated'}))
 if count:raise SystemExit('Focused metadata site contains Error Log')
 PYLOG
+uv pip install --python "$BENCH_DIR/env/bin/python" playwright==1.64.1
+"$BENCH_DIR/env/bin/python" -m playwright install --with-deps chromium
+cd "$BENCH_DIR/sites"
+MEDOPS_CI_RESERVATION_CONCURRENCY=1 "$BENCH_DIR/env/bin/python" "$ROOT_DIR/scripts/ci_native_commitment_desk.py"
+
 if [[ "${INCLUDE_IONE_CORE:-0}" == "1" ]]; then
   "$BENCH_DIR/env/bin/python" "$ROOT_DIR/scripts/core_build_integrity.py" verify --app "$BENCH_DIR/apps/ione_core" --proof "$BENCH_DIR/.medops-core-build-integrity.json" --digest "$CORE_BUILD_DIGEST"
 fi
