@@ -5,6 +5,7 @@ from __future__ import annotations
 import hashlib
 from dataclasses import asdict, replace
 from datetime import datetime, timedelta
+from types import SimpleNamespace
 from unittest.mock import patch
 
 import frappe
@@ -62,6 +63,7 @@ from medops.hrp_budget.services import (
 )
 from medops.hrp_budget.services import material_authorization_observation as observation
 from medops.hrp_budget.services import reservation_commitment_allocations as allocations
+from medops.hrp_budget.services import reservation_commitment_state as commitment_state
 from medops.hrp_budget.services.control_guards import (
 	acquire_multi_source_bound_budget_guards,
 	assert_budget_guards,
@@ -1218,3 +1220,104 @@ class TestBudgetMaterialAuthorizationObservation(IntegrationTestCase):
 		inspection, purchase, proposed, _ = self.quota_fixture()
 		with patch.object(allocations, "MAX_ORDER_DECISIONS", 1), self.assertRaises(IoneApplicationError):
 			self.check_quota(inspection, purchase, proposed)
+
+	def insert_initial_root(self, *, index=1, source=None, key=None):
+		source, original, _, events, first, second = synthetic_rows(index=index, source=source, key=key)
+		documents = initial_reservation_documents(first, second, occurred_at=events[0]["occurred_at"])
+		root = {field: documents.root[field] for field in ANCHOR_ROW_FIELDS | {"source_snapshot_json"}}
+		for table, row in (
+			("tabHRP Budget Reservation", root),
+			("tabHRP Budget Reservation Event", dict(documents.event)),
+			("tabHRP Budget Reservation Authorization", first),
+			("tabHRP Budget Reservation Authorization", second),
+		):
+			self.insert_row(table, row)
+		return source, original, root
+
+	def historical_version_fixture(self, *, economic=False):
+		old, original, _ = self.insert_initial_root()
+		changes = {"status": "Partially Ordered", "request_modified": "2026-01-02 09:00:00"}
+		if economic:
+			changes.update(rate="7.000000000", amount="35.000000000")
+		current = replace(old, **changes)
+		self.insert_initial_root(index=2, source=current)
+		with self.assertRaises(IoneApplicationError):
+			material_usage_sources.discover_material_usage_sources([original.key])
+		discovered = material_usage_sources.discover_material_usage_sources([original.key], historical=True)
+		self.assertEqual(len(discovered), 1)
+		self.bind_release_source(current, original)
+		with patch.object(material_usage_sources, "locked_material_request_source", return_value=current):
+			positions = material_usage_sources.guarded_verify_provisional_material_usage_sources(
+				[original.key], (current,), discovered=discovered
+			)
+		return current, original, positions
+
+	def test_historical_discovery_checks_each_nonfinancial_source_version_independently(self):
+		current, original, positions = self.historical_version_fixture()
+		with patch.object(observation, "locked_material_request_source", return_value=current):
+			checked = observation.verify_guarded_initial_authorizations([original.key], (current,), positions)
+		self.assertEqual(len(checked[(current.request, current.line, current.organization_unit)]), 2)
+		assert_budget_guards([original.key])
+
+	def test_historical_discovery_does_not_authorize_economic_source_changes(self):
+		current, original, positions = self.historical_version_fixture(economic=True)
+		with (
+			patch.object(observation, "locked_material_request_source", return_value=current),
+			self.assertRaises(IoneApplicationError),
+		):
+			observation.verify_guarded_initial_authorizations([original.key], (current,), positions)
+		with self.assertRaises(IoneApplicationError):
+			assert_budget_guards([original.key])
+
+	def discover_scope_fixture(self, *, extra_source=False, alias=False, bound=None):
+		source, original, _ = self.insert_initial_root()
+		key = replace(original.key, funding_source="Other Fund")
+		if extra_source:
+			key = original.key
+		second_source = replace(source, request="OTHER-MR", line="OTHER-LINE") if extra_source else source
+		self.insert_initial_root(index=2, source=second_source, key=key)
+		calls = []
+
+		def native(doctype, name, fields, *, lock=False):
+			calls.append((doctype, name, lock))
+			return SimpleNamespace(name=name, company=source.company, hospital=source.hospital)
+
+		def resolve(value):
+			key = budget_control_key(value)
+			return replace(key, funding_source="Canonical Alias") if alias else key
+
+		with (
+			patch.object(commitment_state, "native_document", side_effect=native),
+			patch.object(commitment_state, "resolve_budget_control_key", side_effect=resolve),
+			patch.object(commitment_state, "_actor"),
+			patch.object(commitment_state, "MAX_BOUND_MATERIAL_SOURCES", bound or 100),
+		):
+			keys = commitment_state.discover_commitment_scope(
+				original, "PO-001", "PO-LINE-001", "Administrator"
+			)
+		return original, keys, calls
+
+	def test_commitment_scope_closure_discovers_other_budget_for_same_source_without_locks(self):
+		original, keys, calls = self.discover_scope_fixture()
+		self.assertEqual({key.funding_source for key in keys}, {original.key.funding_source, "Other Fund"})
+		self.assertTrue(calls and all(not lock for _, _, lock in calls))
+		self.assertIsNone(getattr(frappe.local.db, "_medops_budget_guard_marker", None))
+
+	def test_commitment_scope_closure_rejects_aliases_and_source_overflow(self):
+		with self.assertRaises(ValueError):
+			self.discover_scope_fixture(alias=True)
+		frappe.db.rollback()
+		with self.assertRaises(ValueError):
+			self.discover_scope_fixture(extra_source=True, bound=1)
+		self.assertIsNone(getattr(frappe.local.db, "_medops_budget_guard_marker", None))
+
+	def test_commitment_prepare_cannot_upgrade_an_existing_budget_guard(self):
+		source, original, root = self.insert_initial_root()
+		self.bind_release_source(source, original)
+		with patch.object(commitment_state, "_actor"), self.assertRaises(IoneApplicationError) as denied:
+			commitment_state.inspect_reservation_commitment(
+				root["name"], "PO-001", "PO-LINE-001", amount="1.00", reason="Synthetic"
+			)
+		self.assertEqual(denied.exception.definition.key, "OPERATION_NOT_ALLOWED")
+		with self.assertRaises(IoneApplicationError):
+			assert_budget_guards([original.key])

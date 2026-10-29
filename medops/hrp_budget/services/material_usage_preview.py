@@ -135,7 +135,7 @@ def _inspect_purchase_usage(
 		inputs = tuple(asdict(budget_control_key(value)) for value in proposed_keys)
 		keys = ordered_budget_keys([resolve_budget_control_key(value) for value in inputs])
 		_assert_actor(actor)
-		discovered = discover_material_usage_sources(keys)
+		discovered = discover_material_usage_sources(keys, historical=True)
 		_assert_actor(actor)
 		identity = (proposed.request, proposed.line, proposed.organization_unit)
 		if existing_only and not any(

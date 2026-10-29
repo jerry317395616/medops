@@ -36,7 +36,7 @@ def _roots(keys, actor):
 	return rows
 
 
-def _references(rows):
+def _references(rows, *, historical=False):
 	refs = {}
 	for row in rows.values():
 		if row.get("source_doctype") != "Material Request" or row.get("source_revision") != row.get(
@@ -48,7 +48,11 @@ def _references(rows):
 		)
 		identity = (ref.request, ref.line, ref.organization_unit)
 		if identity in refs and refs[identity] != ref:
-			raise ValueError("conflicting source snapshots")
+			if not historical:
+				raise ValueError("conflicting source snapshots")
+			# Discovery carries an identity/version marker, never approval. Historical
+			# mode verifies every full original snapshot independently after locking.
+			ref = min((refs[identity], ref), key=lambda value: value.expected_digest)
 		refs[identity] = ref
 		if len(refs) > MAX_BOUND_MATERIAL_SOURCES:
 			raise ValueError("too many material sources")
@@ -136,7 +140,9 @@ def _check_all_source_roots(rows, sources, *, positions=None):
 				raise ValueError("source event count differs from complete guarded history")
 
 
-def discover_material_usage_sources(value: object) -> tuple[MaterialSourceReference, ...]:
+def discover_material_usage_sources(
+	value: object, *, historical=False
+) -> tuple[MaterialSourceReference, ...]:
 	"""Return untrusted references for prelocking, never for financial decisions.
 
 	Discovery must start in the owned transaction before source/master locks.
@@ -144,10 +150,12 @@ def discover_material_usage_sources(value: object) -> tuple[MaterialSourceRefere
 	is acquired. Empty results are not evidence that there are no orphan events.
 	"""
 	try:
+		if type(historical) is not bool:
+			raise ValueError("explicit historical discovery option required")
 		if getattr(frappe.local.db, "_medops_budget_guard_marker", None) is not None:
 			raise_ione_error("OPERATION_NOT_ALLOWED")
 		keys = ordered_budget_keys(value)
-		return _references(_roots(keys, frappe.session.user))
+		return _references(_roots(keys, frappe.session.user), historical=historical)
 	except (ValueError, TypeError, KeyError) as error:
 		invalidate_budget_guards()
 		raise_ione_error("CONFLICT", cause=error)
@@ -213,7 +221,7 @@ def _guarded_verify_material_usage_sources(
 		bindings = tuple(sorted((*identity, source.digest()) for identity, source in by_id.items()))
 		assert_material_guard_bindings(keys, bindings)
 		rows = _roots(keys, actor)
-		refs = _references(rows)
+		refs = _references(rows, historical=historical)
 		if refs != discovered:
 			raise ValueError("reservation source set changed")
 		if any(
