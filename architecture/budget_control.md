@@ -364,3 +364,8 @@ Cleanup-fixed source again passed652 pure/19 frontend/all12 quality gates,0 type
 ## Prebound purchase parent revisits (ADR-0046)
 
 The internal multi-source guard accepts at most100 canonical sorted unique PO parents. All MR/PO permission checks precede all parent locks; MR parents precede PO parents,then dependent sources and budget guards. Company,MR-line linkage and actor are checked. A guarded single-PO reread requires its prelocked parent and exact current MR binding. Generic guards,unbound PO names,stale MR digests and lost witnesses fail; linked-order discovery remains disallowed after any budget guard. Parent names do not prove PO snapshots,complete membership,independent authority or allocation balances. Those require a separate complete preparation/recheck protocol and whole-transaction retry on change. Actual commitment evidence writes,Commit/actual conversion and human UI remain incomplete.
+
+
+## Independent Commit history (ADR-0047)
+
+Mixed release/Commit history uses separate complete confirmation/decision pairs,one ordered replay and immutable initial roots. Commit events retain original MR lineage;their Commit:decision action binds private native PO/MR snapshots and exact intent. The intent root now follows the actual root-v1 derivation,not the source allocation identity. Full budget/source observations and original/renewed receipts read both evidence tables,including zero-expected/orphan decisions and reverse-parent scope errors. Remaining open_reservation may be released after a verified Commit;open_commitment/Actual are not supported by the release protocol. No real commitment writer/API/UI is enabled. Current PO authority,full membership,global allocations,lifecycle and atomic conversion still require completion.

@@ -183,7 +183,7 @@ COMMITMENT_ROW_FIELDS = frozenset(CommitmentEvidence.__dataclass_fields__) | {
 }
 
 
-def _sources(item, material_snapshot, order_snapshot):
+def commitment_sources(item, material_snapshot, order_snapshot):
 	material = parse_material_source_snapshot(material_snapshot, expected_digest=item.current_source_digest)
 	order = parse_purchase_order_snapshot(
 		order_snapshot,
@@ -224,7 +224,7 @@ def _sources(item, material_snapshot, order_snapshot):
 def commitment_evidence_row(item, value, *, material_snapshot, order_snapshot, confirmed=None):
 	item = require_commitment_intent(item)
 	checked = verify_commitment_evidence(item, value, confirmed)
-	order = _sources(item, material_snapshot, order_snapshot)
+	order = commitment_sources(item, material_snapshot, order_snapshot)
 	return {
 		**asdict(checked),
 		"evidence_key": checked.name,

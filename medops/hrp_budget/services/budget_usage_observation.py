@@ -16,10 +16,12 @@ from medops.common.budget_reservation_anchor import (
 from medops.common.budget_reservation_events import ReservationPosition
 from medops.common.budget_reservation_proof import ReservationSource
 from medops.common.budget_reservation_storage import ROW_FIELDS
+from medops.common.reservation_commitment_history import COMMIT_ACTION_PREFIX
 from medops.common.reservation_release import RELEASE_ACTION_PREFIX
 from medops.hrp_budget.services.control_guards import assert_budget_guards, invalidate_budget_guards
 from medops.hrp_budget.services.planning_access import READ_ROLES
 from medops.hrp_budget.services.release_usage_guard import require_valid_usage_storage
+from medops.hrp_budget.services.reservation_action_observation import guarded_commitment_decision_inventory
 from medops.hrp_budget.services.reservation_release_observation import guarded_release_decision_inventory
 from medops.hrp_workflow_authorization.services.rule_contracts import can_read_named_fields
 from medops.services.data_access import require_scope
@@ -145,16 +147,21 @@ def guarded_budget_usage_observation(value: object) -> tuple[ReservationPosition
 		events = query_usage_scope("tabHRP Budget Reservation Event", ROW_FIELDS, scopes, MAX_USAGE_EVENTS)
 		_parent_events(tuple(sorted(roots)), events)
 		release_decisions = guarded_release_decision_inventory(keys, tuple(sorted(roots)))
+		commitment_decisions = guarded_commitment_decision_inventory(keys, tuple(sorted(roots)))
 		decisions_by_root = {name: {} for name in roots}
-		for name, decision in release_decisions.items():
-			parent = decision["reservation"]
-			if parent not in roots:
-				raise ValueError("orphan release decision in guarded budget scope")
-			key = budget_control_key({field: decision[field] for field in KEY_FIELDS})
-			root_key = budget_control_key({field: roots[parent][field] for field in KEY_FIELDS})
-			if key != root_key or decision["budget_key_digest"] != key.identity:
-				raise ValueError("release decision scope differs from its reservation")
-			decisions_by_root[parent][RELEASE_ACTION_PREFIX + name] = decision
+		for prefix, kind, inventory in (
+			(RELEASE_ACTION_PREFIX, "Release Reservation", release_decisions),
+			(COMMIT_ACTION_PREFIX, "Commit", commitment_decisions),
+		):
+			for name, decision in inventory.items():
+				parent = decision["reservation"]
+				if parent not in roots:
+					raise ValueError("orphan independent decision in guarded budget scope")
+				key = budget_control_key({field: decision[field] for field in KEY_FIELDS})
+				root_key = budget_control_key({field: roots[parent][field] for field in KEY_FIELDS})
+				if key != root_key or decision["budget_key_digest"] != key.identity:
+					raise ValueError("independent decision scope differs from its reservation")
+				decisions_by_root[parent][prefix + name] = (decision, kind)
 		groups: dict[str, list[Mapping]] = {name: [] for name in roots}
 		actions = set()
 		sequences = set()
@@ -214,6 +221,7 @@ def guarded_budget_usage_observation(value: object) -> tuple[ReservationPosition
 				expected_source=source,
 				source_snapshot_digest=row["source_snapshot_digest"],
 				cost_center=row["cost_center"],
+				**({"allow_commitments": True} if frozen else {}),
 			)
 			decisions = decisions_by_root[name]
 			if decisions and not frozen:
@@ -222,9 +230,13 @@ def guarded_budget_usage_observation(value: object) -> tuple[ReservationPosition
 				if len(decisions) != len(chain) - 1:
 					raise ValueError("physical release decisions and tail events differ")
 				for event in chain[1:]:
-					decision = decisions.get(event["source_action"])
-					if decision is None or (
-						decision["previous_sequence"] != event["sequence"] - 1
+					bound = decisions.get(event["source_action"])
+					if bound is None:
+						raise ValueError("independent event decision is missing")
+					decision, kind = bound
+					if (
+						kind != event["kind"]
+						or decision["previous_sequence"] != event["sequence"] - 1
 						or decision["previous_event_digest"] != event["previous_digest"]
 					):
 						raise ValueError("release event predecessor differs from its decision")

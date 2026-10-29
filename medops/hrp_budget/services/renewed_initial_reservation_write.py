@@ -227,7 +227,7 @@ def verify_existing_renewed_reservation(
 		):
 			raise ValueError("renewal authorization changed")
 		root = frappe.get_doc(ROOT, result["reservation"], for_update=True)
-		event_rows, releases = read_locked_initial_receipt_history(
+		event_rows, releases, commitments = read_locked_initial_receipt_history(
 			item, source, root.name, result["event"], observed_position=observed_position
 		)
 		event = frappe.get_doc(EVENT, result["event"], for_update=True)
@@ -245,6 +245,7 @@ def verify_existing_renewed_reservation(
 			second,
 			releases,
 			renewals=lineage.renewals,
+			commitments=commitments,
 			current_facts=asdict(source),
 		)
 		if (

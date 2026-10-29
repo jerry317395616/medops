@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import hashlib
+from datetime import datetime, timedelta
 
 from medops.common.budget_control import budget_control_key
 from medops.common.budget_reservation_events import ReservationEvent
@@ -12,9 +13,11 @@ from medops.common.budget_reservation_proof import (
 	reservation_record,
 )
 from medops.common.commitment_evidence import commitment_confirmation, commitment_decision
-from medops.common.material_source_snapshot import material_source_snapshot
+from medops.common.domain_service import fingerprint_json
+from medops.common.material_source_snapshot import material_source_snapshot, parse_material_source_snapshot
 from medops.common.reservation_authorization import reservation_intent
 from medops.common.reservation_commitment import purchase_order_snapshot, reservation_commitment_intent
+from medops.common.reservation_commitment_history import commitment_record
 
 ACTOR = "manager@example.com"
 PROOF = "synthetic_commitment_proof_1234567890"
@@ -74,7 +77,9 @@ def commitment_fixture(*, amount="6.00", order_changes=None):
 		budget_date="2026-01-01",
 		reason="Synthetic original purchase review",
 	)
-	name = original.reservation_identity
+	name = fingerprint_json(
+		{"namespace": "budget-reservation-root-v1", "source_identity": original.reservation_identity}
+	)
 	event = ReservationEvent(reservation_event_key(name, 1), name, 1, key, "CNY", 2, "Reserve", "10.00")
 	record = reservation_record(
 		event,
@@ -148,3 +153,93 @@ def evidence_fixture():
 		acknowledge=True,
 	)
 	return item, confirmed, decided, material, order
+
+
+def history_commitment(original, records, *, amount="4.00", order_changes=None):
+	"""Supply synthetic historical pairs for pure/private-table tests only."""
+	material = parse_material_source_snapshot(
+		original.source_snapshot, expected_digest=original.source_snapshot_digest
+	)
+	start = max(
+		datetime.fromisoformat(records[-1].occurred_at),
+		*(datetime.fromisoformat(material[n]) for n in ("request_modified", "line_modified")),
+	) + timedelta(minutes=1)
+
+	def stamp(at):
+		return at.isoformat(sep=" ", timespec="microseconds")
+
+	order_facts = dict(
+		order="PO-001",
+		line="PO-LINE-001",
+		order_modified=stamp(start),
+		line_modified=stamp(start),
+		material_request=material["request"],
+		material_request_line=material["line"],
+		material_request_digest=original.source_snapshot_digest,
+		company=material["company"],
+		hospital=material["hospital"],
+		organization_unit=material["organization_unit"],
+		cost_center=material["cost_center"],
+		expense_account=material["expense_account"],
+		project=material["project"],
+		supplier="Supplier",
+		currency=material["currency"],
+		transaction_date=original.budget_date,
+		status="To Receive and Bill",
+		item_code=material["item_code"],
+		uom=material["uom"],
+		quantity=material["quantity"],
+		rate=material["rate"],
+		amount=material["amount"],
+		base_amount=material["amount"],
+	) | (order_changes or {})
+	order, digest = purchase_order_snapshot(
+		order_facts,
+		material_snapshot=original.source_snapshot,
+		material_digest=original.source_snapshot_digest,
+	)
+	item = reservation_commitment_intent(
+		original,
+		records,
+		order_snapshot=order,
+		order_digest=digest,
+		material_snapshot=original.source_snapshot,
+		material_digest=original.source_snapshot_digest,
+		amount=amount,
+		reason="Synthetic historical commitment",
+	)
+	confirmed = commitment_confirmation(
+		item,
+		actor=ACTOR,
+		proof_hash=hashlib.sha256(PROOF.encode()).hexdigest(),
+		session_digest=SESSION,
+		recorded_at=stamp(start),
+		expires_at=stamp(start + timedelta(minutes=5)),
+	)
+	decided = commitment_decision(
+		item,
+		confirmed,
+		proof=PROOF,
+		actor=ACTOR,
+		session_digest=SESSION,
+		recorded_at=stamp(start + timedelta(seconds=1)),
+		acknowledge=True,
+	)
+	from medops.common.commitment_evidence import commitment_evidence_row
+
+	first = commitment_evidence_row(
+		item, confirmed, material_snapshot=original.source_snapshot, order_snapshot=order
+	)
+	second = commitment_evidence_row(
+		item, decided, material_snapshot=original.source_snapshot, order_snapshot=order, confirmed=confirmed
+	)
+	record = commitment_record(
+		item,
+		confirmed,
+		decided,
+		records[-1],
+		material_snapshot=original.source_snapshot,
+		order_snapshot=order,
+		occurred_at=stamp(start + timedelta(seconds=2)),
+	)
+	return item, (first, second), record

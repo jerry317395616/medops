@@ -222,17 +222,26 @@ def verify_reservation_anchor_row(
 
 
 def verify_frozen_reservation_anchor_row(
-	row, record_rows, *, expected_source, source_snapshot_digest, cost_center
+	row,
+	record_rows,
+	*,
+	expected_source,
+	source_snapshot_digest,
+	cost_center,
+	allow_commitments: object = False,
 ) -> ReservationPosition:
-	"""Check a frozen first-event anchor and structurally replay release tails.
+	"""Check a frozen anchor and replay release/explicit optional Commit tails.
 
 	This is not release authorization. The caller must discover all physical
 	events and independently validate every posted release decision and its
 	confirmation under the shared guard before using the resulting position.
 	"""
 	from medops.common.budget_reservation_storage import reservation_record_from_row
+	from medops.common.reservation_commitment_history import COMMIT_ACTION_PREFIX
 	from medops.common.reservation_release import RELEASE_ACTION_PREFIX
 
+	if type(allow_commitments) is not bool:
+		raise ValueError("explicit structural commitment replay option required")
 	if not isinstance(record_rows, (tuple, list)) or not 1 <= len(record_rows) <= MAX_RESERVATION_EVENTS:
 		raise ValueError("complete bounded frozen reservation history required")
 	verify_reservation_anchor_row(
@@ -244,12 +253,17 @@ def verify_frozen_reservation_anchor_row(
 	)
 	records = [reservation_record_from_row(value) for value in record_rows]
 	for record in records[1:]:
+		prefix = RELEASE_ACTION_PREFIX
+		if allow_commitments is True and record.event.kind == "Commit":
+			prefix = COMMIT_ACTION_PREFIX
 		if (
-			record.event.kind != "Release Reservation"
-			or not record.source.action.startswith(RELEASE_ACTION_PREFIX)
+			record.event.kind
+			not in (
+				{"Release Reservation", "Commit"} if allow_commitments is True else {"Release Reservation"}
+			)
+			or not record.source.action.startswith(prefix)
 			or record.source.action
-			!= RELEASE_ACTION_PREFIX
-			+ normalize_sha256(record.source.action[len(RELEASE_ACTION_PREFIX) :], label="release_decision")
+			!= prefix + normalize_sha256(record.source.action[len(prefix) :], label="action_decision")
 			or (
 				record.source.doctype,
 				record.source.name,
@@ -265,5 +279,5 @@ def verify_frozen_reservation_anchor_row(
 				expected_source.allocation,
 			)
 		):
-			raise ValueError("only bound release tails may extend the frozen initial root")
+			raise ValueError("only bound supported action tails may extend the frozen initial root")
 	return verify_reservation_records(records)
