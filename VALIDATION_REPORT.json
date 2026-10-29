@@ -19,12 +19,13 @@
     "ADR-0046",
     "ADR-0047",
     "ADR-0048",
-    "ADR-0049"
+    "ADR-0049",
+    "ADR-0050"
   ],
-  "current_scope": "ADR0049 private native preparation/Confirmation persistence passed full local663 pure/19 frontend/all12 gates (96.999s,0 type errors/1 existing warning). Original-root focus40872639626/ec410ae passed both profiles 44 pure+156 regular+1 actual standard-controller probe each (plain155.968s/Core79.459s),4 zero Error Log sites,Core sealed inventory/pristine sources. Actor/session/clock synthetic,not human UI or Commit. Final strict expiry-after-insert assertion focus40874252897/427d518 and expanded renewed-root 40872718678/52878b0 still running. No schema/index/role changes or server access. Audit/idempotency/API/UI,atomic Decision/Commit,lifecycle/Actual and whole hospital readiness remain incomplete.",
+  "current_scope": "ADR0050 atomic conversion candidate: first local667pure/19frontend/all12 passed,but both original native profiles failed after48pure+158regular because preview request amount lost captured precision. Native preparation now normalizes against independently captured precision,strict pure factory unchanged. Audited preview/Decision/Commit success not yet proved;new full quality/native needed. No public API/grants/server change;both flags default off and whole HRP incomplete.",
   "checks": {
-    "pure_tests_expected": 663,
-    "complete_frappe_tests_expected": 705,
+    "pure_tests_expected": 667,
+    "complete_frappe_tests_expected": 707,
     "exact_foundation_pure_tests_passed": 21,
     "native_foundation": {
       "status": "passed",
@@ -3412,32 +3413,33 @@
     }
   },
   "last_completed_full_budget_ci": {
-    "run": 40855709340,
-    "source": "052ca3ef731e0d94d0d9f1845c8a4c79e574c38a",
-    "result": "all Quality/Security/plain/Core/Required jobs passed",
-    "pure": 652,
+    "run": 40863525030,
+    "source": "709830ae833f8998afd1dfacee13a79e8612c136",
+    "result": "all jobs including Required passed",
+    "pure": 663,
+    "pure_seconds": 35.194,
     "regular_each": [
-      631,
+      642,
       49
     ],
-    "committed_probe_each": 1,
     "regular_seconds": {
       "plain": [
-        4035.133,
-        61.673
+        3550.852,
+        54.723
       ],
       "Core": [
-        4339.435,
-        64.339
+        4132.425,
+        63.75
       ]
     },
+    "committed_probe_each": 1,
     "probe_seconds": {
-      "plain": 969.492,
-      "Core": 988.738
+      "plain": 787.174,
+      "Core": 956.377
     },
     "zero_error_log_sites": 8,
     "Core_sealed_inventory": "verified",
-    "scope_limit": "covers ADR46; excludes ADR47/48/49;full709830a40863525030 independently live"
+    "scope_limit": "excludes ADR48/49/50;exactbf59364full40874750171live"
   },
   "cross_root_commitment_capacity": {
     "adr": "ADR-0048",
@@ -3491,7 +3493,7 @@
   },
   "commitment_confirmation_persistence": {
     "adr": "ADR-0049",
-    "status": "local full quality and original-root native persistence passed; strict final probe and expanded renewed-root probe running",
+    "status": "product bf59364 local/CI quality and focused original+renewed persistence passed;full exact product native still live;excludes ADR50",
     "new_regular_native_cases": 5,
     "extended_committed_probe": "real actual-table standard-controller append/commit/rollback/expiry,actor/session/clock synthetic; not real human HTTP",
     "flag": "medops_internal_commitment_confirmation_enabled must be exactly true; default absent/off",
@@ -3536,12 +3538,12 @@
       "original": {
         "run": 40874252897,
         "candidate": "427d5187c2eb7676cde03159c0c6a4fdf9ba8ad2",
-        "status": "running;final helper/current precise post-insert expiry assertions"
+        "status": "passed both"
       },
       "renewed": {
         "run": 40872718678,
         "candidate": "52878b04352d0f375b7c17d1a61885ee23cfdd18",
-        "status": "running"
+        "status": "passed both"
       },
       "scope": "each44 pure+156 regular+1 explicit disposable real controller probe;original and renewed roots run on different fresh sites/runners"
     },
@@ -3582,6 +3584,47 @@
       "Core_sealed_inventory": "verified",
       "source_worktrees": "pristine",
       "scope": "actual posted original root/real MR/PO/private base table/standard controller;synthetic actor/session/clock;no Decision or financial Commit;later helper inheritance/owned-connection spelling and precise assertion changes excluded"
+    },
+    "native_final_original": {
+      "run": 40874252897,
+      "candidate": "427d5187c2eb7676cde03159c0c6a4fdf9ba8ad2",
+      "result": "both passed",
+      "pure_each": 44,
+      "regular_each": 156,
+      "committed_probe_each": 1,
+      "probe_seconds": {
+        "plain": 82.539,
+        "Core": 148.758
+      },
+      "zero_error_log_sites": 4,
+      "Core_sealed_inventory": "verified",
+      "source_worktrees": "pristine",
+      "source_proof": "14 runtime/native/governance files+manifest match product bf59364;only report/test evidence differ"
+    },
+    "native_renewed": {
+      "run": 40872718678,
+      "candidate": "52878b04352d0f375b7c17d1a61885ee23cfdd18",
+      "result": "both passed",
+      "pure_each": 44,
+      "regular_each": 156,
+      "committed_probe_each": 1,
+      "probe_seconds": {
+        "plain": 604.6,
+        "Core": 1071.595
+      },
+      "zero_error_log_sites": 4,
+      "Core_sealed_inventory": "verified",
+      "source_worktrees": "pristine",
+      "limit": "runtime same;helper predates later precise expiry assertion and owned connection spelling"
+    },
+    "exact_product_full": {
+      "run": 40874750171,
+      "source": "bf593647465bf07ea4da5dc1c6c134e00a4c93d5",
+      "quality": "passed:663 pure+19 frontend/all12 gates",
+      "pure": 663,
+      "pure_seconds": 39.694,
+      "native": "live;not claimed passed",
+      "scope": "excludes ADR50"
     }
   },
   "previous_completed_full_budget_ci": {
@@ -3601,5 +3644,86 @@
     "zero_error_log_sites": 8,
     "Core_sealed_inventory": "verified",
     "scope_limit": "excludes ADR45/46/47;full052ca3 run40855709340 still live"
+  },
+  "completed_full_budget_ci_history": [
+    {
+      "run": 40855709340,
+      "source": "052ca3ef731e0d94d0d9f1845c8a4c79e574c38a",
+      "result": "all Quality/Security/plain/Core/Required jobs passed",
+      "pure": 652,
+      "regular_each": [
+        631,
+        49
+      ],
+      "committed_probe_each": 1,
+      "regular_seconds": {
+        "plain": [
+          4035.133,
+          61.673
+        ],
+        "Core": [
+          4339.435,
+          64.339
+        ]
+      },
+      "probe_seconds": {
+        "plain": 969.492,
+        "Core": 988.738
+      },
+      "zero_error_log_sites": 8,
+      "Core_sealed_inventory": "verified",
+      "scope_limit": "covers ADR46; excludes ADR47/48/49;full709830a40863525030 independently live"
+    }
+  ],
+  "atomic_commitment_posting": {
+    "adr": "ADR-0050",
+    "status": "first local quality passed;native rejected preview precision boundary;fixed native normalization,new source quality/native pending",
+    "new_pure": 4,
+    "ordinary_native": 707,
+    "expanded_disposable_probe": "actual original full conversion and renewed partial conversion;synthetic actor/session/clock/acknowledgement,not real human HTTP",
+    "flags": [
+      "medops_internal_commitment_confirmation_enabled",
+      "medops_internal_commitment_write_enabled"
+    ],
+    "API": "none;private audited/idempotent domain services only",
+    "migration": "no table/field/index/role changes;description sync only",
+    "server": "maintenance;no access",
+    "remaining": "PO lifecycle/shared native writer protection,actual/release commitment,nonadmin/human UI/HTTP/concurrency/hospital capacity/UAT",
+    "new_regular_native_cases": 2,
+    "temporal_check": "native PO parent and line cannot predate any committed snapshot,even with equal economics",
+    "local_quality": {
+      "pure": 667,
+      "pure_seconds": 78.445,
+      "frontend": 19,
+      "steps": 12,
+      "type_errors": 0,
+      "existing_warnings": 1,
+      "result": "passed",
+      "scope": "before precision boundary fix"
+    },
+    "native": {
+      "original": {
+        "run": 40878864787,
+        "candidate": "536e1c65cae8c6c2e297bcf515a9d6c937d4e917",
+        "status": "failed both before audited preview persistence;see first_native_failure"
+      },
+      "renewed": {
+        "run": 40878884662,
+        "candidate": "e971280b89ee58a181edbd140e26b3222866d462",
+        "status": "superseded known-bad precision source;cancel requested to avoid redundant CI;not a test pass"
+      },
+      "expected": "48 pure+158 regular+1 actual committed probe per profile;27 source files match snapshot;original full/renewed partial Commit"
+    },
+    "first_native_failure": {
+      "run": 40878864787,
+      "candidate": "536e1c65cae8c6c2e297bcf515a9d6c937d4e917",
+      "result": "both original profiles failed",
+      "passed_pure_each": 48,
+      "passed_regular_each": 158,
+      "original_committed_probe": "actual Confirmation checks passed;audited preview failed before any Decision/Commit",
+      "cause": "request canonicalization removed trailing zeros;strict intent factory requires captured currency precision (9999 vs 9999.000000000)",
+      "fix": "normalize amount to independently captured original precision at native preparation boundary;keep strict pure factory/finite decimal/amount/scope/proof/role checks",
+      "proof": "actual native original full-conversion regression retained;new source quality/native pending"
+    }
   }
 }

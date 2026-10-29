@@ -120,12 +120,18 @@ def expected_initial_reservation(
 	guard; the caller must roll back the whole transaction.
 	"""
 	try:
+		from medops.hrp_budget.services.reservation_commitment_confirmation import (
+			commitment_confirmation_active,
+		)
+		from medops.hrp_budget.services.reservation_commitment_control import commitment_post_active
 		from medops.hrp_budget.services.reservation_release_control import release_write_active
 
 		_enabled()
 		if (
 			_active.get() is not None
 			or release_write_active()
+			or commitment_confirmation_active()
+			or commitment_post_active()
 			or type(documents) is not InitialReservationDocuments
 		):
 			raise_ione_error("OPERATION_NOT_ALLOWED")

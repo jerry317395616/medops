@@ -60,6 +60,10 @@ def enabled():
 		raise_ione_error("OPERATION_NOT_ALLOWED")
 
 
+def commitment_confirmation_active():
+	return _active.get() is not None
+
+
 def timestamp():
 	return now_datetime().isoformat(sep=" ", timespec="microseconds")
 
@@ -74,7 +78,7 @@ def read_commitment_confirmation(name, *, lock=False):
 	return item, confirmed, doc
 
 
-def _proof(state, confirmed, proof):
+def check_commitment_confirmation_proof(state, confirmed, proof, *, at=None):
 	try:
 		verify_commitment_proof(
 			state.item,
@@ -82,7 +86,7 @@ def _proof(state, confirmed, proof):
 			proof=proof,
 			actor=frappe.session.user,
 			session_digest=commitment_session(state.item.reservation),
-			now=timestamp(),
+			now=timestamp() if at is None else at,
 		)
 	except ValueError as error:
 		raise_ione_error("PERMISSION_DENIED", cause=error)
@@ -96,13 +100,20 @@ def expected_commitment_confirmation(state, confirmed, proof):
 	caller owning the transaction may commit; any failure requires full rollback.
 	"""
 	try:
+		from medops.hrp_budget.services.reservation_commitment_control import commitment_post_active
+
 		enabled()
-		if _active.get() is not None or initial_write_active() or release_write_active():
+		if (
+			_active.get() is not None
+			or initial_write_active()
+			or release_write_active()
+			or commitment_post_active()
+		):
 			raise_ione_error("OPERATION_NOT_ALLOWED")
 		require_commitment_evidence_storage()
 		state = recheck_reservation_commitment(state)
 		proof = ConfirmationProof(proof)
-		_proof(state, confirmed, proof)
+		check_commitment_confirmation_proof(state, confirmed, proof)
 		material, _ = material_source_snapshot(asdict(state.inspection.source))
 		order, _ = state.purchase.commitment_snapshot(state.inspection.source)
 		values = MappingProxyType(
@@ -120,7 +131,7 @@ def expected_commitment_confirmation(state, confirmed, proof):
 			if item != state.item or persisted != confirmed or doc.owner != state.actor:
 				raise_ione_error("CONFLICT")
 			check_persisted_document(doc, values, 0)
-			_proof(state, confirmed, proof)
+			check_commitment_confirmation_proof(state, confirmed, proof)
 			recheck_reservation_commitment(state)
 		finally:
 			_active.reset(token)
@@ -158,7 +169,7 @@ def require_commitment_confirmation_write(doc, *, named=True):
 				meta, doc.get(meta.fieldname), write.values[meta.fieldname]
 			):
 				raise_ione_error("CONFIGURATION_INVALID")
-		_proof(write.state, write.confirmed, write.proof)
+		check_commitment_confirmation_proof(write.state, write.confirmed, write.proof)
 		check_commitment_state_access(write.state)
 		return write
 	except (TypeError, ValueError, KeyError) as error:
@@ -169,15 +180,10 @@ def require_commitment_confirmation_write(doc, *, named=True):
 		raise
 
 
-def prepare_commitment_confirmation(reservation, order, line, *, amount, reason):
-	"""Persist a private preview through the real controller, never auto-approve.
-
-	No public endpoint or DomainService wrapper exists yet. Caller owns the clean
-	transaction and must provide audit/idempotency before external exposure.
-	"""
+def persist_prepared_commitment_confirmation(state):
+	"""Persist one prepared preview; the audited domain service owns the transaction."""
 	try:
 		enabled()
-		state = inspect_reservation_commitment(reservation, order, line, amount=amount, reason=reason)
 		proof = ConfirmationProof(secrets.token_urlsafe(32))
 		start = now_datetime()
 		confirmed = commitment_confirmation(
@@ -205,6 +211,20 @@ def prepare_commitment_confirmation(reservation, order, line, *, amount, reason)
 			"currency": state.item.currency,
 			"precision": state.item.precision,
 		}
+	except (TypeError, ValueError, KeyError) as error:
+		invalidate_budget_guards()
+		raise_ione_error("CONFLICT", cause=error)
+	except BaseException:
+		invalidate_budget_guards()
+		raise
+
+
+def prepare_commitment_confirmation(reservation, order, line, *, amount, reason):
+	"""Private primitive retained for internal callers; public exposure requires DomainService."""
+	try:
+		enabled()
+		state = inspect_reservation_commitment(reservation, order, line, amount=amount, reason=reason)
+		return persist_prepared_commitment_confirmation(state)
 	except (TypeError, ValueError, KeyError) as error:
 		invalidate_budget_guards()
 		raise_ione_error("CONFLICT", cause=error)

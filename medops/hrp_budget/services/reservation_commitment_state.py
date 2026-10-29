@@ -7,6 +7,7 @@ from dataclasses import asdict, dataclass, field
 import frappe
 
 from medops.common.budget_control import KEY_FIELDS, MAX_CONTROL_KEYS, budget_control_key, ordered_budget_keys
+from medops.common.exact_money import MAX_APPROVAL_AMOUNT, exact_decimal_amount
 from medops.common.material_source_snapshot import material_source_snapshot, parse_material_source_snapshot
 from medops.common.organization import normalize_reference
 from medops.common.reservation_commitment import ReservationCommitmentIntent, reservation_commitment_intent
@@ -144,8 +145,8 @@ class LockedCommitmentState:
 	session: str = field(repr=False)
 
 
-def inspect_reservation_commitment(reservation, order, line, *, amount, reason):
-	"""Prepare native full scope and exact intent in a clean owned transaction."""
+def inspect_commitment_history(reservation, order, line):
+	"""Prepare native full scope without assuming any amount remains to convert."""
 	try:
 		actor = frappe.session.user
 		_actor(actor)
@@ -188,6 +189,22 @@ def inspect_reservation_commitment(reservation, order, line, *, amount, reason):
 		)
 		if source != inspection.source:
 			raise ValueError("prepared material source changed")
+		_actor(actor)
+		return actor, original, inspection, purchase
+	except (TypeError, ValueError, KeyError) as error:
+		invalidate_budget_guards()
+		raise_ione_error("CONFLICT", cause=error)
+	except BaseException:
+		invalidate_budget_guards()
+		raise
+
+
+def inspect_reservation_commitment(reservation, order, line, *, amount, reason):
+	"""Prepare native full scope and exact intent in a clean owned transaction."""
+	try:
+		actor, original, inspection, purchase = inspect_commitment_history(reservation, order, line)
+		source = inspection.source
+		keys = inspection.keys
 		positions = [p for p in inspection.source_usage if p.reservation == reservation]
 		if len(positions) != 1:
 			raise ValueError("one complete selected reservation required")
@@ -201,7 +218,7 @@ def inspect_reservation_commitment(reservation, order, line, *, amount, reason):
 			order_digest=order_digest,
 			material_snapshot=material,
 			material_digest=digest,
-			amount=amount,
+			amount=exact_decimal_amount(amount, original.precision, maximum=MAX_APPROVAL_AMOUNT),
 			reason=reason,
 		)
 		capacity = verify_guarded_commitment_capacity(inspection, purchase, item)
