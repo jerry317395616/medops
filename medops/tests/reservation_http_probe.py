@@ -6,6 +6,7 @@ from contextlib import ExitStack
 from dataclasses import asdict
 from datetime import timedelta
 from decimal import Decimal
+from time import perf_counter
 from typing import Any
 from unittest.mock import patch
 from uuid import uuid4
@@ -50,11 +51,13 @@ def exercise_reservation_http(test, row, amount, item_name, unit_name):
 
 	def request(method, payload, *, key=None, status=200) -> dict[str, Any]:
 		print("MEDOPS_HTTP_CI:" + method, flush=True)
+		started = perf_counter()
 		response = test.post(
 			test.method(BASE + method),
 			{"payload": payload},
 			headers={"Idempotency-Key": key or "ci-human-http-" + uuid4().hex},
 		)
+		print("MEDOPS_HTTP_TIMING:" + frappe.as_json({"method": method, "status": response.status_code, "seconds": round(perf_counter() - started, 6)}), flush=True)
 		test.assertEqual(response.status_code, status, response.get_data(as_text=True))
 		frappe.db.rollback()
 		if status != 200:
