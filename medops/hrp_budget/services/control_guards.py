@@ -29,6 +29,7 @@ class _GuardMarker:
 	keys: tuple[BudgetControlKey, ...]
 	witness: str
 	source_bindings: tuple[MaterialBinding, ...] = ()
+	purchase_parents: tuple[str, ...] = ()
 	state: _GuardState = field(default_factory=_GuardState)
 
 
@@ -118,6 +119,21 @@ def assert_material_guard_bindings(keys, bindings: tuple[MaterialBinding, ...]) 
 		raise_ione_error("OPERATION_NOT_ALLOWED")
 
 
+def require_purchase_source_lock_order(order: str, binding: MaterialBinding) -> None:
+	"""Revisit only a PO parent locked before this exact current MR binding.
+
+	Names and digests check cooperating lock order, never approval, complete
+	purchase membership, a PO version, or an allocation balance.
+	"""
+	marker = getattr(getattr(frappe.local, "db", None), "_medops_budget_guard_marker", None)
+	if marker is None:
+		return
+	if not isinstance(marker, _GuardMarker) or order not in marker.purchase_parents:
+		invalidate_budget_guards()
+		raise_ione_error("OPERATION_NOT_ALLOWED")
+	assert_material_guard_binding(marker.keys, binding)
+
+
 def _before_guard_commit(db, marker):
 	# Frappe clears rollback callbacks before running before_commit. Restore the
 	# marker cleanup in case this callback or a later callback fails.
@@ -162,7 +178,9 @@ def acquire_source_bound_budget_guards(keys, *, source_binding: MaterialBinding 
 	)
 
 
-def acquire_multi_source_bound_budget_guards(keys, *, source_bindings: tuple[MaterialBinding, ...]):
+def acquire_multi_source_bound_budget_guards(
+	keys, *, source_bindings: tuple[MaterialBinding, ...], purchase_parents: tuple[str, ...] = ()
+):
 	"""Acquire same-key exclusive locks until the caller commits or rolls back.
 
 	This internal helper trusts a cooperating caller to have locked any bound
@@ -194,6 +212,14 @@ def acquire_multi_source_bound_budget_guards(keys, *, source_bindings: tuple[Mat
 		identities.add(binding[:3])
 	if tuple(sorted(source_bindings)) != source_bindings:
 		raise ValueError("ordered material source bindings required")
+	if (
+		not isinstance(purchase_parents, tuple)
+		or len(purchase_parents) > MAX_BOUND_MATERIAL_SOURCES
+		or (purchase_parents and not source_bindings)
+		or any(normalize_reference(name, label="purchase_order") != name for name in purchase_parents)
+		or tuple(sorted(set(purchase_parents))) != purchase_parents
+	):
+		raise ValueError("bounded unique ordered purchase parents require material bindings")
 	db = frappe.local.db
 	if getattr(db, "_medops_budget_guard_marker", None) is not None:
 		raise_ione_error("OPERATION_NOT_ALLOWED")
@@ -218,7 +244,9 @@ def acquire_multi_source_bound_budget_guards(keys, *, source_bindings: tuple[Mat
 	pending = getattr(db.before_commit, "_functions", None)
 	if not isinstance(pending, deque):
 		raise_ione_error("CONFIGURATION_INVALID")
-	marker = _GuardMarker(ordered, "medops:budget:witness:" + token_hex(16), source_bindings)
+	marker = _GuardMarker(
+		ordered, "medops:budget:witness:" + token_hex(16), source_bindings, purchase_parents
+	)
 	db._medops_budget_guard_marker = marker
 	pending.appendleft(lambda: _before_guard_commit(db, marker))
 	db.after_commit.add(lambda: _finish_guard_transaction(db, marker))

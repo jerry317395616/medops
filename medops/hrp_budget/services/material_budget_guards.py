@@ -7,6 +7,7 @@ from dataclasses import dataclass
 import frappe
 
 from medops.common.budget_control import ordered_budget_keys
+from medops.common.budget_planning import MAX_LINES
 from medops.common.domain_service import normalize_sha256
 from medops.common.organization import normalize_reference
 from medops.hrp_budget.services.control_guards import (
@@ -97,7 +98,7 @@ def assert_material_budget_guards(source: MaterialRequestSource, keys: object) -
 
 
 def acquire_material_budget_guards_for_sources(
-	references: object, keys: object
+	references: object, keys: object, *, purchase_parents: tuple[str, ...] = ()
 ) -> tuple[MaterialRequestSource, ...]:
 	"""Lock all named purchase parents first, then verify sources and guards.
 
@@ -109,10 +110,16 @@ def acquire_material_budget_guards_for_sources(
 	fully roll back on any failure. A MaterialSourceIdentity binds current facts
 	without checking a historical digest; callers must independently authenticate
 	and compare every historical snapshot before using any resulting observation.
+	Optional PO parents must be independently discovered before this call. They
+	are permission-checked together with all MR parents before any parent lock;
+	MR parents precede PO parents, then dependent sources and budget guards.
+	The registered PO names allow only source-bound revisits, not late discovery
+	or proof of an unchanged PO snapshot or complete linked-order membership.
 	"""
 	try:
 		if getattr(frappe.local.db, "_medops_budget_guard_marker", None) is not None:
 			raise_ione_error("OPERATION_NOT_ALLOWED")
+		actor = frappe.session.user
 		if (
 			not isinstance(references, (list, tuple))
 			or not 1 <= len(references) <= MAX_BOUND_MATERIAL_SOURCES
@@ -131,18 +138,43 @@ def acquire_material_budget_guards_for_sources(
 			raise ValueError("duplicate material source reference")
 		ordered_keys = ordered_budget_keys(keys)
 		requests = sorted({item.request for item in ordered_refs})
+		if (
+			not isinstance(purchase_parents, tuple)
+			or len(purchase_parents) > MAX_BOUND_MATERIAL_SOURCES
+			or any(normalize_reference(name, label="purchase_order") != name for name in purchase_parents)
+			or tuple(sorted(set(purchase_parents))) != purchase_parents
+		):
+			raise ValueError("bounded unique ordered purchase parents required")
+		parents = [("Material Request", name, SOURCE_FIELDS) for name in requests]
+		if purchase_parents:
+			from medops.hrp_budget.services.purchase_order_source import ORDER_FIELDS
+
+			parents.extend(("Purchase Order", name, ORDER_FIELDS) for name in purchase_parents)
+		companies = {key.company for key in ordered_keys}
+		request_lines = {(item.request, item.line) for item in ordered_refs}
 		# Check every parent without locks first, then lock all canonical parents
 		# in a shared order before taking any dependent source/master locks.
 		for lock in (False, True):
-			for name in requests:
-				doc = native_document("Material Request", name, SOURCE_FIELDS, lock=lock)
-				if doc.name != name:
+			for doctype, name, fields in parents:
+				doc = native_document(doctype, name, fields, lock=lock)
+				if doc.name != name or frappe.session.user != actor:
+					raise_ione_error("CONFLICT")
+				if doctype == "Purchase Order" and (
+					doc.company not in companies
+					or not 1 <= len(doc.items) <= MAX_LINES
+					or not any(
+						(item.material_request, item.material_request_item) in request_lines
+						for item in doc.items
+					)
+				):
 					raise_ione_error("CONFLICT")
 		sources = []
 		for reference in ordered_refs:
 			source = locked_material_request_source(
 				reference.request, reference.line, reference.organization_unit
 			)
+			if frappe.session.user != actor:
+				raise_ione_error("CONFLICT")
 			if (source.request, source.line, source.organization_unit) != (
 				reference.request,
 				reference.line,
@@ -166,10 +198,12 @@ def acquire_material_budget_guards_for_sources(
 		):
 			raise ValueError("material sources and budget guard scopes differ")
 		bindings = tuple(sorted(_binding(source) for source in sources))
-		acquire_multi_source_bound_budget_guards(ordered_keys, source_bindings=bindings)
+		acquire_multi_source_bound_budget_guards(
+			ordered_keys, source_bindings=bindings, purchase_parents=purchase_parents
+		)
 		for source in sources:
 			current = locked_material_request_source(source.request, source.line, source.organization_unit)
-			if current != source:
+			if current != source or frappe.session.user != actor:
 				raise_ione_error("CONFLICT")
 		assert_material_guard_bindings(ordered_keys, bindings)
 		return tuple(sources)

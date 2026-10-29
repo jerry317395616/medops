@@ -13,7 +13,11 @@ from frappe.tests import IntegrationTestCase
 from medops.common.budget_control import budget_control_key
 from medops.common.error_catalog import IoneApplicationError
 from medops.hrp_budget.services import purchase_order_source as adapter
-from medops.hrp_budget.services.control_guards import acquire_budget_guards, assert_budget_guards
+from medops.hrp_budget.services.control_guards import (
+	acquire_budget_guards,
+	acquire_multi_source_bound_budget_guards,
+	assert_budget_guards,
+)
 from medops.hrp_budget.services.material_request_source import MaterialRequestSource
 from medops.tests.test_budget_control_sources import input_key
 
@@ -89,6 +93,7 @@ class TestBudgetPurchaseOrderSource(IntegrationTestCase):
 
 	def read(self, *, native_effect=None, source_effect=None, sql_effect=None, transaction_state=None):
 		calls = []
+		original_sql = frappe.db.sql
 
 		def native(doctype, name, fields, *, lock=False):
 			calls.append((doctype, name, lock))
@@ -100,6 +105,8 @@ class TestBudgetPurchaseOrderSource(IntegrationTestCase):
 			return source_effect() if source_effect else self.source
 
 		def sql(*args, **kwargs):
+			if "`tabSeries`" in args[0]:
+				return original_sql(*args, **kwargs)
 			if args[0] == "SELECT @@tx_isolation, @@autocommit":
 				return transaction_state if transaction_state is not None else [("READ-COMMITTED", 0)]
 			return sql_effect() if sql_effect else [self.values]
@@ -243,6 +250,59 @@ class TestBudgetPurchaseOrderSource(IntegrationTestCase):
 		acquire_budget_guards([self.key])
 		with self.assertRaises(IoneApplicationError):
 			self.read()
+		with self.assertRaises(IoneApplicationError):
+			assert_budget_guards([self.key])
+
+	def bind_purchase(self, *, parents=("order-a",), digest=None):
+		# Synthetic adapter tests exercise a real DB guard. The multi-source and
+		# actual submitted MR/PO tests independently prove parent prelocking.
+		acquire_multi_source_bound_budget_guards(
+			[self.key],
+			source_bindings=(
+				(
+					self.source.request,
+					self.source.line,
+					self.source.organization_unit,
+					digest or self.source.digest(),
+				),
+			),
+			purchase_parents=parents,
+		)
+
+	def test_prebound_purchase_revisit_still_rechecks_complete_native_facts(self):
+		self.bind_purchase()
+		(source, purchase), calls = self.read()
+		self.assertEqual(source, self.source)
+		self.assertEqual(purchase.order, "order-a")
+		self.assertEqual(len(calls), 6)
+		assert_budget_guards([self.key])
+
+	def test_material_only_guard_cannot_admit_purchase_parent(self):
+		self.bind_purchase(parents=())
+		with self.assertRaises(IoneApplicationError):
+			self.read()
+		with self.assertRaises(IoneApplicationError):
+			assert_budget_guards([self.key])
+
+	def test_purchase_revisit_rejects_stale_material_binding_before_native_read(self):
+		self.bind_purchase(digest="f" * 64)
+		with self.assertRaises(IoneApplicationError):
+			self.read(native_effect=lambda *args: self.fail("native read preceded binding validation"))
+		with self.assertRaises(IoneApplicationError):
+			assert_budget_guards([self.key])
+
+	def test_prebound_purchase_revisit_does_not_authorize_changed_order(self):
+		self.bind_purchase()
+		self.order.company = "other-company"
+		with self.assertRaises(IoneApplicationError):
+			self.read()
+		with self.assertRaises(IoneApplicationError):
+			assert_budget_guards([self.key])
+
+	def test_purchase_prebinding_does_not_allow_late_linked_order_discovery(self):
+		self.bind_purchase()
+		with self.assertRaises(IoneApplicationError):
+			self.linked((), [])
 		with self.assertRaises(IoneApplicationError):
 			assert_budget_guards([self.key])
 

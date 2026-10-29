@@ -13,7 +13,11 @@ from frappe.tests import IntegrationTestCase
 from medops.common.budget_control import budget_control_key
 from medops.common.error_catalog import IoneApplicationError
 from medops.hrp_budget.services import material_budget_guards as material_guards
-from medops.hrp_budget.services.control_guards import assert_budget_guards, require_material_source_lock_order
+from medops.hrp_budget.services.control_guards import (
+	assert_budget_guards,
+	require_material_source_lock_order,
+	require_purchase_source_lock_order,
+)
 from medops.hrp_budget.services.material_request_source import MaterialRequestSource
 from medops.tests.test_budget_control_sources import input_key
 
@@ -64,14 +68,22 @@ class TestBudgetMultiSourceGuards(IntegrationTestCase):
 			source.request, source.line, source.organization_unit, source.digest()
 		)
 
-	def acquire(self, *, source_reads=None, native_reads=None, references=None, keys=None):
+	def acquire(self, *, source_reads=None, native_reads=None, references=None, keys=None, purchases=()):
 		calls = []
 
 		def native(doctype, name, fields, *, lock=False):
 			calls.append((name, lock))
 			if native_reads:
 				return native_reads(name, lock)
-			return SimpleNamespace(name=name)
+			return SimpleNamespace(
+				name=name,
+				company=self.key.company,
+				items=[
+					SimpleNamespace(
+						material_request=self.first.request, material_request_item=self.first.line
+					)
+				],
+			)
 
 		def source(request, line, unit):
 			if source_reads:
@@ -85,6 +97,7 @@ class TestBudgetMultiSourceGuards(IntegrationTestCase):
 			result = material_guards.acquire_material_budget_guards_for_sources(
 				references if references is not None else list(reversed(self.references)),
 				keys if keys is not None else [self.key],
+				purchase_parents=purchases,
 			)
 		return result, calls
 
@@ -176,3 +189,108 @@ class TestBudgetMultiSourceGuards(IntegrationTestCase):
 		with self.assertRaises(PermissionError):
 			self.acquire(native_reads=deny)
 		self.assertIsNone(getattr(frappe.local.db, "_medops_budget_guard_marker", None))
+
+	def test_purchase_parents_precede_sources_and_only_bound_revisits_are_allowed(self):
+		_, calls = self.acquire(purchases=("order-a", "order-b"))
+		self.assertEqual(
+			calls,
+			[
+				(name, lock)
+				for lock in (False, True)
+				for name in ("request-a", "request-b", "order-a", "order-b")
+			],
+		)
+		binding = (self.first.request, self.first.line, self.first.organization_unit, self.first.digest())
+		require_purchase_source_lock_order("order-a", binding)
+		frappe.db.savepoint("bound_purchase_revisit")
+		with self.assertRaises(IoneApplicationError):
+			require_purchase_source_lock_order("order-c", binding)
+		frappe.db.rollback(save_point="bound_purchase_revisit")
+		with self.assertRaises(IoneApplicationError):
+			assert_budget_guards([self.key])
+
+	def test_purchase_binding_requires_exact_material_snapshot(self):
+		self.acquire(purchases=("order-a",))
+		with self.assertRaises(IoneApplicationError):
+			require_purchase_source_lock_order(
+				"order-a", (self.first.request, self.first.line, self.first.organization_unit, "f" * 64)
+			)
+		with self.assertRaises(IoneApplicationError):
+			assert_budget_guards([self.key])
+
+	def test_purchase_parent_permission_denial_precedes_all_locks(self):
+		seen = []
+
+		def deny(name, lock):
+			seen.append((name, lock))
+			if name == "order-a":
+				raise PermissionError("synthetic purchase denial")
+			return SimpleNamespace(name=name)
+
+		with self.assertRaises(PermissionError):
+			self.acquire(purchases=("order-a",), native_reads=deny)
+		self.assertTrue(seen and all(not lock for _, lock in seen))
+		self.assertIsNone(getattr(frappe.local.db, "_medops_budget_guard_marker", None))
+
+	def test_purchase_parent_alias_company_and_unrelated_request_are_denied(self):
+		for change in ("alias", "company", "request"):
+			with self.subTest(change=change):
+
+				def native(name, lock, change=change):
+					if name.startswith("request-"):
+						return SimpleNamespace(name=name)
+					return SimpleNamespace(
+						name="ORDER-A" if change == "alias" else name,
+						company="other-company" if change == "company" else self.key.company,
+						items=[
+							SimpleNamespace(
+								material_request="other-request"
+								if change == "request"
+								else self.first.request,
+								material_request_item=self.first.line,
+							)
+						],
+					)
+
+				with self.assertRaises(IoneApplicationError):
+					self.acquire(purchases=("order-a",), native_reads=native)
+				self.assertIsNone(getattr(frappe.local.db, "_medops_budget_guard_marker", None))
+
+	def test_purchase_parent_set_is_bounded_canonical_ordered_and_unique(self):
+		for parents in (
+			["order-a"],
+			(" order-a",),
+			("order-b", "order-a"),
+			("order-a", "order-a"),
+			tuple(f"order-{i:03}" for i in range(101)),
+		):
+			with self.subTest(parents=parents), self.assertRaises(ValueError):
+				self.acquire(purchases=parents)
+		self.assertIsNone(getattr(frappe.local.db, "_medops_budget_guard_marker", None))
+
+	def test_actor_change_during_parent_precheck_prevents_locks_and_guard(self):
+		actor = frappe.session.user
+		seen = []
+
+		def native(name, lock):
+			seen.append((name, lock))
+			frappe.session.user = "synthetic-other@example.com"
+			return SimpleNamespace(name=name)
+
+		try:
+			with self.assertRaises(IoneApplicationError):
+				self.acquire(purchases=("order-a",), native_reads=native)
+		finally:
+			frappe.session.user = actor
+		self.assertEqual(seen, [("request-a", False)])
+		self.assertIsNone(getattr(frappe.local.db, "_medops_budget_guard_marker", None))
+
+	def test_purchase_revisit_cannot_survive_rollback_before_guard(self):
+		frappe.db.savepoint("before_purchase_guard")
+		self.acquire(purchases=("order-a",))
+		frappe.db.rollback(save_point="before_purchase_guard")
+		with self.assertRaises(IoneApplicationError):
+			require_purchase_source_lock_order(
+				"order-a",
+				(self.first.request, self.first.line, self.first.organization_unit, self.first.digest()),
+			)
