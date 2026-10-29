@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import asdict, dataclass, field
+from datetime import datetime
 from decimal import Decimal, localcontext
 
 import frappe
@@ -131,7 +132,7 @@ def read_guarded_commitment_records(keys, reservation, expected_sequence):
 	if (
 		normalize_sha256(reservation, label="reservation") != reservation
 		or type(expected_sequence) is not int
-		or not 1 <= expected_sequence < MAX_RESERVATION_EVENTS
+		or not 1 <= expected_sequence <= MAX_RESERVATION_EVENTS
 	):
 		raise ValueError("canonical bounded reservation predecessor required")
 	rows = frappe.db.sql(
@@ -146,8 +147,17 @@ def read_guarded_commitment_records(keys, reservation, expected_sequence):
 	return tuple(reservation_record_from_row(row) for row in rows)
 
 
-def verify_guarded_commitment_capacity(inspection, purchase, proposed):
-	"""Re-read all relevant roots and PO decisions, then check the global line cap.
+def commitment_decision_set_digest(pairs):
+	return fingerprint_json(
+		[
+			{"intent": i.intent_digest, "confirmation": c.event_digest, "decision": d.event_digest}
+			for i, c, d, _, _ in pairs
+		]
+	)
+
+
+def verify_guarded_purchase_allocations(inspection, purchase):
+	"""Authenticate all current roots and independent PO allocations, without a new intent.
 
 	The inspector must have prelocked the PO parent and the complete source/key
 	set in an owned transaction. Missing outside-scope allocations fail instead
@@ -159,7 +169,6 @@ def verify_guarded_commitment_capacity(inspection, purchase, proposed):
 		actor = frappe.session.user
 		if type(inspection) is not PurchaseUsageInspection or type(purchase) is not PurchaseOrderSource:
 			raise ValueError("native complete purchase inspection required")
-		item = require_commitment_intent(proposed)
 		assert_budget_guards(inspection.keys)
 		material = inspection.source
 		require_purchase_source_lock_order(
@@ -185,26 +194,6 @@ def verify_guarded_commitment_capacity(inspection, purchase, proposed):
 			raise ValueError("complete budget usage changed")
 		history.verify_guarded_initial_authorizations(inspection.keys, inspection.sources, current)
 		by_root = {position.reservation: position for position in current}
-		if item.reservation not in by_root or item.key != by_root[item.reservation].key:
-			raise ValueError("selected reservation is outside complete guarded usage")
-		_, original, _, _ = read_reservation_original(item.reservation, lock=True)
-		records = read_guarded_commitment_records(inspection.keys, item.reservation, item.previous_sequence)
-		order_snapshot, order_digest = purchase.commitment_snapshot(material)
-		from medops.common.material_source_snapshot import material_source_snapshot
-
-		material_snapshot, material_digest = material_source_snapshot(asdict(material))
-		expected = reservation_commitment_intent(
-			original,
-			records,
-			order_snapshot=order_snapshot,
-			order_digest=order_digest,
-			material_snapshot=material_snapshot,
-			material_digest=material_digest,
-			amount=item.amount,
-			reason=item.reason,
-		)
-		if item != expected:
-			raise ValueError("proposed commitment differs from current independent history")
 		with localcontext() as context:
 			context.prec = 48
 			total = Decimal(0)
@@ -219,6 +208,11 @@ def verify_guarded_commitment_capacity(inspection, purchase, proposed):
 				old = commitment_sources(
 					committed_item, first["material_snapshot_json"], first["order_snapshot_json"]
 				)
+				if any(
+					datetime.fromisoformat(getattr(purchase, name)) < datetime.fromisoformat(old[name])
+					for name in ("order_modified", "line_modified")
+				):
+					raise ValueError("current purchase modification time precedes committed history")
 				allowed_progress = {"order_modified", "line_modified", "status", "material_request_digest"}
 				if {k: v for k, v in old.items() if k not in allowed_progress} != {
 					k: v for k, v in asdict(purchase).items() if k not in allowed_progress
@@ -226,7 +220,7 @@ def verify_guarded_commitment_capacity(inspection, purchase, proposed):
 					raise ValueError("committed purchase economic facts changed")
 				total += Decimal(committed_item.amount)
 			limit = Decimal(purchase.amount)
-			if total > limit or total + Decimal(item.amount) > limit:
+			if total > limit:
 				raise ValueError("purchase line commitment capacity exceeded")
 			committed = exact_decimal_amount(total, 9)
 			remaining = exact_decimal_amount(limit - total, 9)
@@ -249,13 +243,57 @@ def verify_guarded_commitment_capacity(inspection, purchase, proposed):
 			committed,
 			remaining,
 			len(pairs),
-			fingerprint_json(
-				[
-					{"intent": i.intent_digest, "confirmation": c.event_digest, "decision": d.event_digest}
-					for i, c, d, _, _ in pairs
-				]
-			),
-		)
+			commitment_decision_set_digest(pairs),
+		), pairs
+	except (ValueError, TypeError, KeyError) as error:
+		invalidate_budget_guards()
+		raise_ione_error("CONFLICT", cause=error)
+	except BaseException:
+		invalidate_budget_guards()
+		raise
+
+
+def verify_guarded_commitment_capacity(inspection, purchase, proposed):
+	"""Check complete current allocations and reconstruct one additional exact intent."""
+	try:
+		actor = frappe.session.user
+		item = require_commitment_intent(proposed)
+		capacity, _ = verify_guarded_purchase_allocations(inspection, purchase)
+		by_root = {position.reservation: position for position in inspection.usage}
+		if item.reservation not in by_root or item.key != by_root[item.reservation].key:
+			raise ValueError("selected reservation is outside complete guarded usage")
+		_, original, _, _ = read_reservation_original(item.reservation, lock=True)
+		records = read_guarded_commitment_records(inspection.keys, item.reservation, item.previous_sequence)
+		order_snapshot, order_digest = purchase.commitment_snapshot(inspection.source)
+		from medops.common.material_source_snapshot import material_source_snapshot
+
+		material_snapshot, material_digest = material_source_snapshot(asdict(inspection.source))
+		if item != reservation_commitment_intent(
+			original,
+			records,
+			order_snapshot=order_snapshot,
+			order_digest=order_digest,
+			material_snapshot=material_snapshot,
+			material_digest=material_digest,
+			amount=item.amount,
+			reason=item.reason,
+		):
+			raise ValueError("proposed commitment differs from current independent history")
+		if Decimal(capacity.remaining) < Decimal(item.amount):
+			raise ValueError("purchase line commitment capacity exceeded")
+		material = inspection.source
+		if (material, purchase) != locked_purchase_order_source(
+			purchase.order,
+			purchase.line,
+			material.request,
+			material.line,
+			material.organization_unit,
+			expected_request_digest=material.digest(),
+		) or frappe.session.user != actor:
+			raise ValueError("purchase source or actor changed during exact intent verification")
+		require_roles(MANAGER_ROLES)
+		assert_budget_guards(inspection.keys)
+		return capacity
 	except (ValueError, TypeError, KeyError) as error:
 		invalidate_budget_guards()
 		raise_ione_error("CONFLICT", cause=error)

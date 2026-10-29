@@ -374,7 +374,7 @@
 	"permissions": [],
 	"sort_field": "creation",
 	"sort_order": "DESC",
-	"description": "Private commitment evidence: exact gated Confirmation append only; Decisions and financial events remain closed.",
+	"description": "Private commitment evidence: exact gated Confirmation and atomic Decision/Commit appends; no raw mutation grants.",
 	"actions": [],
 	"links": [],
 	"states": []
