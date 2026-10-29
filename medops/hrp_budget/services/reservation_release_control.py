@@ -101,9 +101,19 @@ def expected_reservation_release(history, item, confirmed, proof, *, post=False,
 	"""Re-read independent authority; allow exactly one confirmation or decision/event pair."""
 	try:
 		from medops.hrp_budget.services.initial_reservation_control import initial_write_active
+		from medops.hrp_budget.services.reservation_commitment_confirmation import (
+			commitment_confirmation_active,
+		)
+		from medops.hrp_budget.services.reservation_commitment_control import commitment_post_active
 
 		enabled()
-		if _active.get() is not None or initial_write_active() or type(post) is not bool:
+		if (
+			_active.get() is not None
+			or initial_write_active()
+			or commitment_confirmation_active()
+			or commitment_post_active()
+			or type(post) is not bool
+		):
 			raise_ione_error("OPERATION_NOT_ALLOWED")
 		proof = ConfirmationProof(proof)
 		checked_history = recheck_reservation_release(history)
