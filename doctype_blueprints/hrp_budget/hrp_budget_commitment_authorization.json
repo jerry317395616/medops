@@ -374,7 +374,7 @@
   "permissions": [],
   "sort_field": "creation",
   "sort_order": "DESC",
-  "description": "Independent append-only purchase commitment confirmation/decision evidence; no standard grants or posting authority.",
+  "description": "Private commitment evidence: exact gated Confirmation append only; Decisions and financial events remain closed.",
   "actions": [],
   "links": [],
   "states": [],

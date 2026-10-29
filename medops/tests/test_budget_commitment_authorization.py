@@ -41,7 +41,13 @@ class TestBudgetCommitmentAuthorization(IntegrationTestCase):
 		before = frappe.db.count(DOCTYPE)
 		doc = frappe.get_doc(dict(doctype=DOCTYPE))
 		for enabled in (False, True):
-			with patch.dict(frappe.conf, {"medops_internal_commitment_authorization_enabled": enabled}):
+			with patch.dict(
+				frappe.conf,
+				{
+					"medops_internal_commitment_authorization_enabled": enabled,
+					"medops_internal_commitment_confirmation_enabled": enabled,
+				},
+			):
 				for action in (
 					lambda: doc.insert(ignore_permissions=True, ignore_links=True, ignore_mandatory=True),
 					doc.db_insert,

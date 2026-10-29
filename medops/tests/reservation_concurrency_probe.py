@@ -530,6 +530,9 @@ class TestDisposableReservationConcurrency(TestBudgetReleaseExecution):
 			self.assertEqual(frappe.db.count("HRP Budget Reservation Event", {"proof_version": 2}), 3)
 			self.assertEqual(frappe.db.count("HRP Budget Reservation Release"), 5)
 			self.assertEqual(before, {doctype: frappe.db.count(doctype) for doctype in before})
+			from medops.tests.commitment_confirmation_probe import exercise_commitment_confirmation
+
+			exercise_commitment_confirmation(self, winner["result"]["reservation"])
 			from medops.tests.reservation_http_probe import exercise_reservation_http
 
 			exercise_reservation_http(self, row, small, item_name, unit)

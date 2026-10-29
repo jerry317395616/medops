@@ -77,7 +77,8 @@ class TestBudgetUsagePreview(IntegrationTestCase):
 		stages = []
 		discovered = (self.ref(self.first),) if discovered is None else discovered
 
-		def discover(keys):
+		def discover(keys, *, historical=False):
+			self.assertIs(historical, True)
 			stages.append("discover")
 			return discovered
 
