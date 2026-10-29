@@ -6,6 +6,7 @@ from contextlib import ExitStack
 from dataclasses import asdict
 from datetime import timedelta
 from decimal import Decimal
+from time import perf_counter
 from typing import Any
 from unittest.mock import patch
 from uuid import uuid4
@@ -50,11 +51,13 @@ def exercise_reservation_http(test, row, amount, item_name, unit_name):
 
 	def request(method, payload, *, key=None, status=200) -> dict[str, Any]:
 		print("MEDOPS_HTTP_CI:" + method, flush=True)
+		started = perf_counter()
 		response = test.post(
 			test.method(BASE + method),
 			{"payload": payload},
 			headers={"Idempotency-Key": key or "ci-human-http-" + uuid4().hex},
 		)
+		print("MEDOPS_HTTP_TIMING:" + frappe.as_json({"method": method, "status": response.status_code, "seconds": round(perf_counter() - started, 6)}), flush=True)
 		test.assertEqual(response.status_code, status, response.get_data(as_text=True))
 		frappe.db.rollback()
 		if status != 200:
@@ -284,3 +287,71 @@ def exercise_reservation_http(test, row, amount, item_name, unit_name):
 	test.assertEqual(frappe.db.count(ROOT), before[ROOT] + 2)
 	test.assertEqual(frappe.db.count(EVENT), before[EVENT] + 4)
 	test.assertEqual(frappe.db.count(RELEASE), before[RELEASE] + 5)
+	_ci_benchmark_authority_reads(test, payload(items[0]), command["decision"], initial["reservation"])
+
+
+def _ci_benchmark_authority_reads(test, data, decision, reservation):
+    """CI-only ABBA reads: same native cookie/input, full guards and exact result."""
+    import cProfile
+    import hashlib
+    import json
+    import pstats
+    import statistics
+    from contextlib import nullcontext
+    from medops.hrp_budget.services import authority_metadata as metadata
+
+    require_disposable_reservation_site()
+    test.assertTrue(metadata.supported_native_constructor())
+    query = {key: data[key] for key in ("source_snapshot", "source_snapshot_digest", "budget_key")}
+    query["decision"] = decision
+    tables = (ROOT, EVENT, RELEASE, "HRP Budget Reservation Authorization", "HRP Budget Reservation Renewal", "HRP Budget Ledger", "HRP Service Idempotency", "GL Entry", "Stock Ledger Entry")
+    def snapshot():
+        values = {table: hashlib.sha256(frappe.as_json(frappe.get_all(table,fields=["*"],order_by="name",limit_page_length=0)).encode()).hexdigest() for table in tables}
+        frappe.db.rollback()
+        return values
+    before = snapshot()
+    expected = None
+    observations = []
+    invalid = tuple("0" * 64 for _ in metadata.CONSTRUCTOR_HASHES)
+    for i, mode in enumerate(("batched", "native", "batched", "native", "native", "batched", "batched", "native", "native", "batched")):
+        guard = patch.object(metadata, "CONSTRUCTOR_HASHES", invalid) if mode == "native" else nullcontext()
+        with guard:
+            test.assertEqual(metadata.supported_native_constructor(), mode == "batched")
+            started = perf_counter()
+            response = test.post(test.method(BASE + OPERATIONS + "recovery"), {"payload": query})
+            elapsed = perf_counter() - started
+        test.assertEqual(response.status_code, 200, "Controlled native recovery request failed")
+        frappe.db.rollback()
+        result = response.get_json()["message"]
+        test.assertFalse(result["idempotency_replayed"])
+        result = {key:value for key,value in result.items() if key not in {"correlation_id", "request_id"}}
+        test.assertEqual(result["effect"], "read_only")
+        test.assertEqual(result["total_rows"], 1)
+        test.assertEqual((result["rows"][0]["state"],result["rows"][0]["reservation"]),("Posted",reservation))
+        if expected is None:
+            expected = result
+        test.assertEqual(result, expected, "Controlled read business response changed")
+        if i >= 2:
+            observations.append({"mode":mode,"seconds":round(elapsed,6)})
+    profile = cProfile.Profile()
+    original_post = test.TEST_CLIENT.post
+    def profile_in_native_request_thread(*args, **kwargs):
+        profile.enable()
+        try:
+            return original_post(*args, **kwargs)
+        finally:
+            profile.disable()
+    with patch.object(test.TEST_CLIENT,"post",new=profile_in_native_request_thread):
+        response = test.post(test.method(BASE + OPERATIONS + "recovery"),{"payload":query})
+    test.assertEqual(response.status_code,200,"Profiled native recovery request failed")
+    frappe.db.rollback()
+    result = {key:value for key,value in response.get_json()["message"].items() if key not in {"correlation_id","request_id"}}
+    test.assertEqual(result,expected)
+    test.assertTrue(metadata.supported_native_constructor())
+    test.assertEqual(snapshot(),before,"Controlled reads changed financial evidence/receipts")
+    stats = pstats.Stats(profile).stats
+    top=[]
+    for (filename,line,function),(primitive,calls,own,cumulative,callers) in sorted(stats.items(),key=lambda item:item[1][3],reverse=True)[:24]:
+        top.append({"file":"/".join(filename.replace("\\","/").split("/")[-4:]),"line":line,"function":function,"calls":calls,"own_seconds":round(own,6),"cumulative_seconds":round(cumulative,6)})
+    medians={mode:statistics.median(item["seconds"] for item in observations if item["mode"]==mode) for mode in ("batched","native")}
+    print("MEDOPS_AUTHORITY_AB:"+json.dumps({"warmup_per_mode":1,"samples":observations,"medians_seconds":medians,"full_business_responses_equal":True,"financial_snapshots_identical":True,"profile_thread":"native request thread","profile_top":top,"scope":"Synthetic same-runner/native-cookie stable Posted recovery input; native mode forces only unsupported-constructor fresh fallback, all current authority checkpoints retained. No production SLO/capacity claim."}),flush=True)
