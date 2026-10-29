@@ -13,6 +13,8 @@ from medops.common.budget_reservation_proof import (
 from medops.common.domain_service import canonical_json, fingerprint_json
 from medops.common.material_source_snapshot import material_source_snapshot
 from medops.common.reservation_commitment import (
+	HISTORICAL_ORDER_STATUSES,
+	ORDER_STATUSES,
 	parse_purchase_order_snapshot,
 	purchase_order_snapshot,
 	reservation_commitment_intent,
@@ -161,6 +163,23 @@ class ReservationCommitmentTest(unittest.TestCase):
 		for patch in ({"schema_version": True}, {"kind": "other"}, {"unknown": "x"}):
 			data = json.loads(text) | patch
 			with self.assertRaises(ValueError):
+				parse_purchase_order_snapshot(
+					canonical_json(data),
+					expected_digest=fingerprint_json(data),
+					material_snapshot=self.material,
+					material_digest=self.material_digest,
+				)
+
+	def test_historical_native_states_never_create_new_authorization_snapshots(self):
+		for status in sorted(HISTORICAL_ORDER_STATUSES - ORDER_STATUSES):
+			with self.subTest(status=status), self.assertRaises(ValueError):
+				self.proposed(status=status)
+
+	def test_rehashed_historical_status_cannot_change_persisted_authorization_semantics(self):
+		text, _ = self.snapshot()
+		for status in sorted(HISTORICAL_ORDER_STATUSES - ORDER_STATUSES):
+			data = json.loads(text) | {"status": status}
+			with self.subTest(status=status), self.assertRaises(ValueError):
 				parse_purchase_order_snapshot(
 					canonical_json(data),
 					expected_digest=fingerprint_json(data),

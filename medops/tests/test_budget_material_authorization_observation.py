@@ -49,7 +49,11 @@ from medops.common.reservation_authorization import (
 	verify_reservation_authorization_rows,
 	verify_reservation_confirmation_row,
 )
-from medops.common.reservation_commitment import reservation_commitment_intent
+from medops.common.reservation_commitment import (
+	HISTORICAL_ORDER_STATUSES,
+	ORDER_STATUSES,
+	reservation_commitment_intent,
+)
 from medops.common.reservation_release import RELEASE_ROW_FIELDS
 from medops.common.reservation_renewal import (
 	RENEWAL_ROW_FIELDS,
@@ -1163,6 +1167,63 @@ class TestBudgetMaterialAuthorizationObservation(IntegrationTestCase):
 		)
 		self.assertNotIn("decision_set_digest", repr(result))
 		assert_budget_guards(inspection.keys)
+
+	def check_historical_allocations(self, inspection, purchase):
+		def read_order(*args, historical, **kwargs):
+			self.assertIs(historical, True)
+			return inspection.source, purchase
+
+		with (
+			patch.object(allocations, "locked_purchase_order_source", side_effect=read_order),
+			patch.object(
+				material_usage_sources, "locked_material_request_source", return_value=inspection.source
+			),
+			patch.object(observation, "locked_material_request_source", return_value=inspection.source),
+		):
+			return allocations.verify_guarded_purchase_allocations(inspection, purchase)
+
+	def test_completed_and_closed_purchase_history_preserves_all_allocations_and_old_snapshot_bytes(self):
+		inspection, purchase, _, pairs = self.quota_fixture()
+		before = [(p[0]["order_snapshot_json"], p[1]["order_snapshot_json"]) for p in pairs]
+		for status in sorted(HISTORICAL_ORDER_STATUSES - ORDER_STATUSES):
+			with self.subTest(status=status):
+				current = replace(purchase, status=status, order_modified="2026-01-04 10:00:00")
+				capacity, checked = self.check_historical_allocations(inspection, current)
+				self.assertEqual(
+					(capacity.committed, capacity.remaining, capacity.decision_count),
+					("8.000000000", "4.000000000", 2),
+				)
+				self.assertEqual(capacity.order_snapshot_digest, current.digest())
+				self.assertEqual(
+					[(p[3]["order_snapshot_json"], p[4]["order_snapshot_json"]) for p in checked], before
+				)
+		assert_budget_guards(inspection.keys)
+
+	def test_closed_history_cannot_hide_changed_economic_facts(self):
+		inspection, purchase, _, _ = self.quota_fixture()
+		current = replace(
+			purchase, status="Closed", rate="5.500000000", amount="11.000000000", base_amount="11.000000000"
+		)
+		with self.assertRaises(IoneApplicationError):
+			self.check_historical_allocations(inspection, current)
+
+	def test_closed_history_with_remaining_capacity_cannot_authorize_old_open_intent(self):
+		inspection, purchase, proposed, _ = self.quota_fixture()
+		current = replace(purchase, status="Closed")
+		capacity, _ = self.check_historical_allocations(inspection, current)
+		self.assertEqual(capacity.remaining, "4.000000000")
+		with self.assertRaises(IoneApplicationError):
+			self.check_quota(inspection, current, proposed)
+		with self.assertRaises(IoneApplicationError):
+			assert_budget_guards(inspection.keys)
+
+	def test_newer_open_purchase_version_requires_a_new_confirmation(self):
+		inspection, purchase, proposed, _ = self.quota_fixture()
+		current = replace(purchase, order_modified="2026-01-04 10:00:00")
+		capacity, _ = self.check_historical_allocations(inspection, current)
+		self.assertEqual(capacity.remaining, "4.000000000")
+		with self.assertRaises(IoneApplicationError):
+			self.check_quota(inspection, current, proposed)
 
 	def test_purchase_capacity_overflow_poisons_guard_even_after_savepoint_rollback(self):
 		inspection, purchase, proposed, _ = self.quota_fixture(amount="4.01")

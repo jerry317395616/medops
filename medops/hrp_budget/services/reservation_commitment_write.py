@@ -258,7 +258,7 @@ class PostReservationCommitment(DomainService[CommitmentPost]):
 				frappe.session.user,
 				commitment_session(item.reservation),
 			)
-			check_commitment_state_access(state)
+			check_commitment_state_access(state, historical=True)
 			confirmation.check_commitment_confirmation_proof(
 				state, confirmed, self.command.proof, at=decision.recorded_at
 			)
@@ -284,6 +284,6 @@ class PostReservationCommitment(DomainService[CommitmentPost]):
 				or frappe.get_doc(EVENT, record.event.name, for_update=True).owner != decision.actor
 			):
 				raise ValueError("commitment owner differs from its recorded actor")
-			check_commitment_state_access(state)
+			check_commitment_state_access(state, historical=True)
 		except BaseException as error:
 			poison(error)

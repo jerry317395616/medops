@@ -59,9 +59,10 @@ config.update(
 )
 path.write_text(json.dumps(config, indent=2) + "\n", encoding="utf-8")
 PY
-probe_log="$bench_real/logs/reservation-concurrency-probe.log"
-MEDOPS_CI_RESERVATION_CONCURRENCY=1 bench --site "$PROBE_SITE" run-tests --app medops \
-  --module medops.tests.reservation_concurrency_probe 2>&1 | tee "$probe_log"
+probe_log="$bench_real/logs/purchase-lifecycle-probe.log"
+cd "$bench_real/sites"
+MEDOPS_CI_RESERVATION_CONCURRENCY=1 "$bench_real/env/bin/python" "$ROOT_DIR/scripts/ci_focus_without_locals.py" frappe --site "$PROBE_SITE" run-tests --app medops \
+  --module medops.tests.purchase_lifecycle_http_probe 2>&1 | tee "$probe_log"
 if ! grep -Eq 'Ran 1 tests? in [0-9.]+s' "$probe_log" || grep -Eq 'OK \(skipped=|FAILED \(' "$probe_log"; then
   echo "Missing committed-data reservation concurrency probe" >&2
   exit 1
@@ -83,7 +84,7 @@ result = subprocess.run(
     env={**os.environ, "MYSQL_PWD": site["db_password"]}, capture_output=True, text=True, check=True,
 )
 count = int(result.stdout.strip())
-print(json.dumps({"site": sys.argv[2], "error_log_count": count, "scope": "disposable_reservation_concurrency"}))
+print(json.dumps({"site": sys.argv[2], "error_log_count": count, "scope": "disposable_purchase_lifecycle"}))
 if count:
     raise SystemExit("Concurrency probe site contains Error Log records")
 PY
