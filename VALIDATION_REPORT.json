@@ -17,12 +17,13 @@
     "ADR-0044",
     "ADR-0045",
     "ADR-0046",
-    "ADR-0047"
+    "ADR-0047",
+    "ADR-0048"
   ],
-  "current_scope": "ADR0047 corrected source passed663 pure/19 frontend/all12 quality gates,0 type errors/1 old warning. Independent Commit/release history now flows through budget/source/original+renewed receipts;actual root-v1 derivation corrected. First native40858364254 failed10 new fixture preparations in each profile;25 history cases including renewed Commit passed. Fixtures/actual source now use standard initial document construction;no authority gate relaxed. Fixed native40859656646/a1691cf runs44 pure+128 regular+1 committed probe each;19 source files match,not yet passed. Expected691 regular+1/47 ADR/48 runtime. No real commitment writes/actual/API/UI/server;whole HRP incomplete.",
+  "current_scope": "ADR0048 fixed source passed663 pure/19 frontend/all12 quality gates,0 type errors/1 existing warning. Focus40863049983/102f8c3 passed plain/Core44 pure+151 regular each,zero skips/two zero Error Log sites,pristine sources/Core seal;7 files match.9 new cross-budget/root capacity cases and actual native MR/PO bridge passed. Expected700 regular+1/48 ADR/48 runtime. Prior709830a focus40859656646 passed128 regular+1 committed each with4 zero logs;full70940863525030 separately live,excludes this new observer. Complete source/key preparation,controlled confirmation/atomic Commit,PO lifecycle/actual/human UI and whole hospital readiness still incomplete;no server access.",
   "checks": {
     "pure_tests_expected": 663,
-    "complete_frappe_tests_expected": 691,
+    "complete_frappe_tests_expected": 700,
     "exact_foundation_pure_tests_passed": 21,
     "native_foundation": {
       "status": "passed",
@@ -69,7 +70,7 @@
         "Outbox stale-snapshot full transaction retry"
       ]
     },
-    "current_local_quality": "Fixture-corrected ADR0047 source passed663 pure(98.617s),19 frontend/all12,0 type errors/1 old warning. Native40859656646 running;first failed40858364254 retained.",
+    "current_local_quality": "ADR0048 final source663 pure(97.163s)/19 frontend/all12 passed;0 type errors/1 old warning. First checksum-only failure preserved/fixed. Focus40863049983 passed plain/Core44 pure+151 native;whole current full CI pending.",
     "runtime_native_partial": {
       "source_commit": "daaed16f7765c0fb2e796fa100ca817970585499",
       "passed_counts": [
@@ -2857,11 +2858,11 @@
     "proof": "cod033-e87d901-recovery-ui-integrity-v3.json"
   },
   "next_unblocked_tasks": [
-    "Validate ADR0044 component with fixed640 full quality and native PO/source cases",
-    "Continue same full commitment slice: independent Confirmation/Decision, guarded atomic append, all authorized mixed history and old receipts",
-    "Complete cross-root PO allocation/native lifecycle protocol, actual conversion and human HTTP/UI",
-    "Get existing live full40832608462, A/B40836398869 and hint40837475564 results; do not restart live jobs",
-    "Remaining HRP,capacity/interfaces/backup/operations/UAT and protected release; server only after maintenance ends"
+    "Complete automatic whole source/key preparation for purchase commitment,including related roots in other budgets and historical source progress.",
+    "Implement standard-controller independent confirmation persistence and atomic human-authorized decision/Commit,event and idempotent receipt with rollback/revocation/concurrency proofs.",
+    "Protect PO economic/lifecycle changes and every cooperating write entry;recheck global allocations and current native/scope authority in the complete transaction.",
+    "Complete Release Commitment and Actual conversion through native purchase/accounting sources,independent evidence,mixed history and compatible old receipts.",
+    "Finish human HTTP/Desk and non-admin matrices,full exact-source plain/Core CI,capacity/interfaces/backup/UAT and all remaining HRP release requirements;server validation only after user ends maintenance."
   ],
   "input_invalidation_followup": {
     "status": "actual browser verification passed at bcc952c",
@@ -3335,7 +3336,7 @@
   },
   "mixed_commitment_history": {
     "adr": "ADR-0047",
-    "status": "fixture-corrected full local quality passed; native v2 matrix/probe running",
+    "status": "fixed focus passed in plain and Core; complete709830a CI separately live",
     "new_pure": 11,
     "new_native": 11,
     "root_fix": "use actual root-v1 derivation; previous unpersisted source-identity substitution rejected",
@@ -3355,7 +3356,7 @@
     "native": {
       "run": 40859656646,
       "candidate": "a1691cffa5ce480495f47ad22c614244b91e358e",
-      "status": "running; do not claim pass",
+      "status": "passed",
       "profiles": [
         "plain",
         "IONE Core"
@@ -3373,7 +3374,17 @@
         4
       ],
       "committed_probe_each": 1,
-      "source_files_match": 19
+      "source_files_match": 19,
+      "zero_error_log_sites": 4,
+      "skips": 0,
+      "probe_seconds": {
+        "plain": 982.621,
+        "Core": 1003.795
+      },
+      "Core_sealed_inventory": "verified",
+      "source_worktrees": "pristine",
+      "product_source": "709830ae833f8998afd1dfacee13a79e8612c136",
+      "source_scope": "excludes ADR0048 capacity"
     },
     "first_native_attempt": {
       "run": 40858364254,
@@ -3416,5 +3427,55 @@
     "zero_error_log_sites": 8,
     "Core_sealed_inventory": "verified",
     "scope_limit": "excludes ADR45/46/47;full052ca3 run40855709340 still live"
+  },
+  "cross_root_commitment_capacity": {
+    "adr": "ADR-0048",
+    "status": "local quality and focused plain/Core native passed; whole feature remains in progress",
+    "new_native_cases": 9,
+    "actual_source_case": "extended with real native source/prebinding and zero-global-allocation capacity",
+    "schema_permissions_api": "unchanged; existing stable-line index now required",
+    "write_authority": "none",
+    "real_commitment_controller": "still closed",
+    "local_quality": {
+      "pure": 663,
+      "pure_seconds": 97.163,
+      "frontend": 19,
+      "steps": 12,
+      "type_errors": 0,
+      "existing_warnings": 1,
+      "first_failure": "checksums only: ADR explanation edited during run; fixed final manifest and full rerun passed"
+    },
+    "native": {
+      "run": 40863049983,
+      "candidate": "102f8c3165a81c7219b8767a7709f833a40c386c",
+      "profiles": [
+        "plain",
+        "Core"
+      ],
+      "result": "passed",
+      "pure_each": 44,
+      "regular_each": [
+        9,
+        2,
+        14,
+        29,
+        44,
+        32,
+        14,
+        2,
+        1,
+        4
+      ],
+      "skips": 0,
+      "zero_error_log_sites": 2,
+      "actual_source_seconds": {
+        "plain": 38.938,
+        "Core": 34.838
+      },
+      "Core_sealed_inventory": "verified",
+      "source_worktrees": "pristine",
+      "runtime_source_files_match": 7,
+      "committed_probe": "not repeated here; previous709830a 40859656646 probe passed,excludes new capacity observer"
+    }
   }
 }

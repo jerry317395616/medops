@@ -15,7 +15,7 @@ from medops.common.authorized_reservation_projection import (
 	verify_authorized_released_reservation,
 	verify_renewed_initial_reservation,
 )
-from medops.common.budget_control import budget_control_key
+from medops.common.budget_control import budget_control_key, ordered_budget_keys
 from medops.common.budget_reservation_anchor import ANCHOR_ROW_FIELDS, reservation_anchor
 from medops.common.budget_reservation_events import ReservationEvent
 from medops.common.budget_reservation_proof import (
@@ -29,7 +29,7 @@ from medops.common.budget_reservation_storage import (
 	reservation_record_from_row,
 	reservation_record_row,
 )
-from medops.common.commitment_evidence import COMMITMENT_ROW_FIELDS
+from medops.common.commitment_evidence import COMMITMENT_ROW_FIELDS, commitment_sources
 from medops.common.error_catalog import IoneApplicationError
 from medops.common.initial_reservation_posting import (
 	initial_reservation_documents,
@@ -48,6 +48,7 @@ from medops.common.reservation_authorization import (
 	verify_reservation_authorization_rows,
 	verify_reservation_confirmation_row,
 )
+from medops.common.reservation_commitment import reservation_commitment_intent
 from medops.common.reservation_release import RELEASE_ROW_FIELDS
 from medops.common.reservation_renewal import (
 	RENEWAL_ROW_FIELDS,
@@ -60,11 +61,14 @@ from medops.hrp_budget.services import (
 	reservation_renewal_lineage,
 )
 from medops.hrp_budget.services import material_authorization_observation as observation
+from medops.hrp_budget.services import reservation_commitment_allocations as allocations
 from medops.hrp_budget.services.control_guards import (
 	acquire_multi_source_bound_budget_guards,
 	assert_budget_guards,
 )
 from medops.hrp_budget.services.material_request_source import MaterialRequestSource
+from medops.hrp_budget.services.material_usage_preview import PurchaseUsageInspection
+from medops.hrp_budget.services.purchase_order_source import PurchaseOrderSource
 from medops.hrp_budget.services.reservation_action_observation import guarded_commitment_decision_inventory
 from medops.hrp_budget.services.reservation_receipt_history import read_locked_initial_receipt_history
 from medops.services.errors import raise_ione_error
@@ -73,7 +77,7 @@ from medops.tests.reservation_release_fixtures import release_evidence
 from medops.tests.reservation_release_fixtures import rows as release_rows
 
 
-def synthetic_rows(*, index=1, source=None, amount="10.00", reservation_name=None):
+def synthetic_rows(*, index=1, source=None, amount="10.00", reservation_name=None, key=None):
 	base_source = MaterialRequestSource(
 		request="MR-001",
 		line="MR-LINE-001",
@@ -98,7 +102,7 @@ def synthetic_rows(*, index=1, source=None, amount="10.00", reservation_name=Non
 		amount="30.000000000",
 	)
 	source = source or base_source
-	key = budget_control_key(
+	key = key or budget_control_key(
 		{
 			"company": source.company,
 			"hospital": source.hospital,
@@ -1038,3 +1042,179 @@ class TestBudgetMaterialAuthorizationObservation(IntegrationTestCase):
 		acquire_multi_source_bound_budget_guards(keys, source_bindings=(binding,))
 		found = guarded_commitment_decision_inventory(keys, [])
 		self.assertEqual(set(found), {pairs[0][1]["name"]})
+
+	def quota_fixture(
+		self,
+		*,
+		amount="4.00",
+		commits=("4.00", "4.00"),
+		order_changes=None,
+		other_line=False,
+		purchase_changes=None,
+		prebind=True,
+		guard_all=True,
+	):
+		source, base, _, _, _, _ = synthetic_rows()
+		keys = [base.key, replace(base.key, funding_source="Other Fund")]
+		changes = {"quantity": "2.000000000", "amount": "12.000000000", "base_amount": "12.000000000"} | (
+			order_changes or {}
+		)
+		pairs = []
+		selected = None
+		for index, key in enumerate(keys, 1):
+			_, original, _, events, first, second = synthetic_rows(index=index, source=source, key=key)
+			documents = initial_reservation_documents(first, second, occurred_at=events[0]["occurred_at"])
+			root = {field: documents.root[field] for field in ANCHOR_ROW_FIELDS | {"source_snapshot_json"}}
+			first_record = reservation_record_from_row(documents.event)
+			_, pair, record = history_commitment(
+				original, [first_record], amount=commits[index - 1], order_changes=changes
+			)
+			for table, row in (
+				("tabHRP Budget Reservation", root),
+				("tabHRP Budget Reservation Event", dict(documents.event)),
+				("tabHRP Budget Reservation Authorization", first),
+				("tabHRP Budget Reservation Authorization", second),
+				("tabHRP Budget Commitment Authorization", pair[0]),
+				("tabHRP Budget Commitment Authorization", pair[1]),
+				("tabHRP Budget Reservation Event", reservation_record_row(record)),
+			):
+				self.insert_row(table, row)
+			pairs.append(pair)
+			if selected is None:
+				selected = original, (first_record, record)
+		if other_line:
+			key = replace(base.key, funding_source="Third Fund")
+			keys.append(key)
+			_, original, _, events, first, second = synthetic_rows(index=3, source=source, key=key)
+			documents = initial_reservation_documents(first, second, occurred_at=events[0]["occurred_at"])
+			root = {field: documents.root[field] for field in ANCHOR_ROW_FIELDS | {"source_snapshot_json"}}
+			_, pair, record = history_commitment(
+				original,
+				[reservation_record_from_row(documents.event)],
+				amount="4.00",
+				order_changes=changes | {"line": "OTHER-PO-LINE"},
+			)
+			for table, row in (
+				("tabHRP Budget Reservation", root),
+				("tabHRP Budget Reservation Event", dict(documents.event)),
+				("tabHRP Budget Reservation Authorization", first),
+				("tabHRP Budget Reservation Authorization", second),
+				("tabHRP Budget Commitment Authorization", pair[0]),
+				("tabHRP Budget Commitment Authorization", pair[1]),
+				("tabHRP Budget Reservation Event", reservation_record_row(record)),
+			):
+				self.insert_row(table, row)
+		assert selected is not None
+		original, records = selected
+		from medops.common.commitment_evidence import verify_commitment_evidence_row
+
+		committed, _ = verify_commitment_evidence_row(pairs[0][0])
+		purchase = PurchaseOrderSource(
+			**commitment_sources(
+				committed, pairs[0][0]["material_snapshot_json"], pairs[0][0]["order_snapshot_json"]
+			)
+		)
+		if purchase_changes:
+			purchase = replace(purchase, **purchase_changes)
+		keys = ordered_budget_keys(keys)
+		if not guard_all:
+			keys = keys[:1]
+		discovered = material_usage_sources.discover_material_usage_sources(keys)
+		binding = (source.request, source.line, source.organization_unit, source.digest())
+		acquire_multi_source_bound_budget_guards(
+			keys, source_bindings=(binding,), purchase_parents=(purchase.order,) if prebind else ()
+		)
+		positions = budget_usage_observation.guarded_budget_usage_observation(keys)
+		snapshot, digest = purchase.commitment_snapshot(source)
+		proposed = reservation_commitment_intent(
+			original,
+			records,
+			order_snapshot=snapshot,
+			order_digest=digest,
+			material_snapshot=original.source_snapshot,
+			material_digest=original.source_snapshot_digest,
+			amount=amount,
+			reason="Synthetic capacity review",
+		)
+		inspection = PurchaseUsageInspection(
+			source, original.budget_date, (), positions, positions, (), keys, (source,), discovered
+		)
+		return inspection, purchase, proposed, pairs
+
+	def check_quota(self, inspection, purchase, proposed):
+		with (
+			patch.object(
+				allocations, "locked_purchase_order_source", return_value=(inspection.source, purchase)
+			),
+			patch.object(
+				material_usage_sources, "locked_material_request_source", return_value=inspection.source
+			),
+			patch.object(observation, "locked_material_request_source", return_value=inspection.source),
+		):
+			return allocations.verify_guarded_commitment_capacity(inspection, purchase, proposed)
+
+	def test_global_purchase_capacity_counts_two_independently_authorized_budget_roots(self):
+		inspection, purchase, proposed, _ = self.quota_fixture()
+		result = self.check_quota(inspection, purchase, proposed)
+		self.assertEqual(
+			(result.committed, result.remaining, result.decision_count), ("8.000000000", "4.000000000", 2)
+		)
+		self.assertNotIn("decision_set_digest", repr(result))
+		assert_budget_guards(inspection.keys)
+
+	def test_purchase_capacity_overflow_poisons_guard_even_after_savepoint_rollback(self):
+		inspection, purchase, proposed, _ = self.quota_fixture(amount="4.01")
+		frappe.db.savepoint("before_quota_failure")
+		with self.assertRaises(IoneApplicationError):
+			self.check_quota(inspection, purchase, proposed)
+		frappe.db.rollback(save_point="before_quota_failure")
+		with self.assertRaises(IoneApplicationError):
+			assert_budget_guards(inspection.keys)
+
+	def test_global_purchase_capacity_does_not_ignore_allocation_outside_guarded_budget(self):
+		inspection, purchase, proposed, _ = self.quota_fixture(guard_all=False)
+		with self.assertRaises(IoneApplicationError):
+			self.check_quota(inspection, purchase, proposed)
+
+	def test_purchase_capacity_separates_other_lines_on_same_order(self):
+		inspection, purchase, proposed, _ = self.quota_fixture(other_line=True)
+		result = self.check_quota(inspection, purchase, proposed)
+		self.assertEqual(
+			(result.decision_count, result.committed, result.remaining), (2, "8.000000000", "4.000000000")
+		)
+
+	def test_purchase_capacity_rejects_changed_economic_facts_even_with_free_capacity(self):
+		inspection, purchase, proposed, _ = self.quota_fixture(
+			amount="1.00",
+			purchase_changes={"rate": "5.500000000", "amount": "11.000000000", "base_amount": "11.000000000"},
+		)
+		with self.assertRaises(IoneApplicationError):
+			self.check_quota(inspection, purchase, proposed)
+
+	def test_purchase_capacity_requires_prebound_purchase_parent(self):
+		inspection, purchase, proposed, _ = self.quota_fixture(prebind=False)
+		with self.assertRaises(IoneApplicationError):
+			self.check_quota(inspection, purchase, proposed)
+
+	def test_purchase_capacity_stable_identity_query_detects_hidden_parent_mutation(self):
+		inspection, purchase, proposed, pairs = self.quota_fixture()
+		frappe.db.sql(
+			"UPDATE `tabHRP Budget Commitment Authorization` SET purchase_order=%s WHERE name=%s",
+			("OTHER-ORDER", pairs[1][1]["name"]),
+		)
+		with self.assertRaises(IoneApplicationError):
+			self.check_quota(inspection, purchase, proposed)
+
+	def test_purchase_capacity_checks_decimal_totals_without_float_tolerance(self):
+		inspection, purchase, proposed, _ = self.quota_fixture(
+			amount="0.01",
+			commits=("0.10", "0.20"),
+			order_changes={"quantity": "0.050000000", "amount": "0.300000000", "base_amount": "0.300000000"},
+		)
+		with self.assertRaises(IoneApplicationError):
+			self.check_quota(inspection, purchase, proposed)
+
+	def test_purchase_capacity_bounded_inventory_does_not_return_partial_totals(self):
+		inspection, purchase, proposed, _ = self.quota_fixture()
+		with patch.object(allocations, "MAX_ORDER_DECISIONS", 1), self.assertRaises(IoneApplicationError):
+			self.check_quota(inspection, purchase, proposed)

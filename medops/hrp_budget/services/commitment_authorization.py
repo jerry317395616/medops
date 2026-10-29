@@ -50,6 +50,7 @@ def require_commitment_evidence_storage():
 		or engine[0][0] != "InnoDB"
 		or not COMMITMENT_ROW_FIELDS <= {row[0] for row in columns}
 		or not {"evidence_key", "confirmation", "one_time_key", "event_digest"} <= unique_columns
-		or not {"reservation", "purchase_order", "company", "budget_subject"} <= first_columns
+		or not {"reservation", "purchase_order", "commitment_identity", "company", "budget_subject"}
+		<= first_columns
 	):
 		raise_ione_error("CONFIGURATION_INVALID")

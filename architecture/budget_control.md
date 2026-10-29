@@ -369,3 +369,8 @@ The internal multi-source guard accepts at most100 canonical sorted unique PO pa
 ## Independent Commit history (ADR-0047)
 
 Mixed release/Commit history uses separate complete confirmation/decision pairs,one ordered replay and immutable initial roots. Commit events retain original MR lineage;their Commit:decision action binds private native PO/MR snapshots and exact intent. The intent root now follows the actual root-v1 derivation,not the source allocation identity. Full budget/source observations and original/renewed receipts read both evidence tables,including zero-expected/orphan decisions and reverse-parent scope errors. Remaining open_reservation may be released after a verified Commit;open_commitment/Actual are not supported by the release protocol. No real commitment writer/API/UI is enabled. Current PO authority,full membership,global allocations,lifecycle and atomic conversion still require completion.
+
+
+## Cross-root purchase capacity (ADR-0048)
+
+A native capacity check requires a complete prebound purchase inspection. It discovers canonical independent pairs through both order and stable-line indexes,then rechecks complete source/budget histories and every related root,including other budgets. Missing outside-key allocations fail rather than contributing zero. The selected original intent is rebuilt from current real MR/PO snapshots and full records;old PO economic facts must match. Exact sums plus the proposed amount must fit the current PO line cap;membership/source/actor checks repeat before returning. This is a private observation only;whole source/key preparation,controlled evidence persistence,lifecycle protection and atomic human-authorized Commit/actual remain prerequisites.

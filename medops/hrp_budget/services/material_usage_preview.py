@@ -6,7 +6,12 @@ from dataclasses import asdict, dataclass
 
 import frappe
 
-from medops.common.budget_control import MAX_CONTROL_KEYS, budget_control_key, ordered_budget_keys
+from medops.common.budget_control import (
+	MAX_CONTROL_KEYS,
+	BudgetControlKey,
+	budget_control_key,
+	ordered_budget_keys,
+)
 from medops.common.budget_material_match import (
 	PurchaseBudgetCandidate,
 	PurchaseMatchInputs,
@@ -42,6 +47,9 @@ class PurchaseUsageInspection:
 	usage: tuple[ReservationPosition, ...]
 	source_usage: tuple[ReservationPosition, ...]
 	budget_observations: tuple[BudgetScopeObservation, ...]
+	keys: tuple[BudgetControlKey, ...] = ()
+	sources: tuple[MaterialRequestSource, ...] = ()
+	discovered: tuple[MaterialSourceReference, ...] = ()
 
 
 def _assert_actor(actor: str) -> None:
@@ -84,6 +92,7 @@ def inspect_existing_purchase_usage(
 	*,
 	budget_date: str,
 	proposed_keys: object,
+	purchase_parents: tuple[str, ...] = (),
 ) -> PurchaseUsageInspection:
 	"""Inspect an existing authorized source by identity, allowing normal progress.
 
@@ -98,11 +107,20 @@ def inspect_existing_purchase_usage(
 		budget_date=budget_date,
 		proposed_keys=proposed_keys,
 		existing_only=True,
+		purchase_parents=purchase_parents,
 	)
 
 
 def _inspect_purchase_usage(
-	request, line, organization_unit, *, expected_source_digest, budget_date, proposed_keys, existing_only
+	request,
+	line,
+	organization_unit,
+	*,
+	expected_source_digest,
+	budget_date,
+	proposed_keys,
+	existing_only,
+	purchase_parents: tuple[str, ...] = (),
 ) -> PurchaseUsageInspection:
 	try:
 		actor = frappe.session.user
@@ -131,7 +149,12 @@ def _inspect_purchase_usage(
 			for ref in discovered
 		}
 		references[identity] = proposed
-		sources = acquire_material_budget_guards_for_sources(tuple(references.values()), keys)
+		if purchase_parents:
+			sources = acquire_material_budget_guards_for_sources(
+				tuple(references.values()), keys, purchase_parents=purchase_parents
+			)
+		else:
+			sources = acquire_material_budget_guards_for_sources(tuple(references.values()), keys)
 		_assert_actor(actor)
 		selected = [
 			source
@@ -179,7 +202,9 @@ def _inspect_purchase_usage(
 			raise ValueError("budget key references changed")
 		_assert_actor(actor)
 		assert_budget_guards(keys)
-		return PurchaseUsageInspection(source, date, candidates, usage, source_usage, budget_observations)
+		return PurchaseUsageInspection(
+			source, date, candidates, usage, source_usage, budget_observations, keys, sources, discovered
+		)
 	except ValueError as error:
 		invalidate_budget_guards()
 		raise_ione_error("CONFLICT", cause=error)

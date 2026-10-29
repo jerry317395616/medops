@@ -29,7 +29,8 @@
 		"ADR-0044",
 		"ADR-0045",
 		"ADR-0046",
-		"ADR-0047"
+		"ADR-0047",
+		"ADR-0048"
 	],
 	"path_globs": [
 		"DELIVERY_MANIFEST.json",
@@ -166,7 +167,8 @@
 		"Native40849741378/b9d4e35 both:20 pure passed;schema/controller case passed,second case errored only finally DROP after writes (ImplicitCommitError),later PO/source/boundary groups not run. Preserve failure. Test-only fix rolls back owned synthetic data before temp DROP; no commit/guard disabling/product behavior change. Fixed-source full quality and native retry required.",
 		"Cleanup-fixed source re-passed652 pure/19 frontend/all12 gates,0 type errors/1 old warning. Corrected native40851511007/bc0a8cf running same20 pure+2 schema/access+24 PO+1 actual source+4 boundary each;11 files match. First failed run40849741378 retained. No product/controller/access gate change; actual evidence writing/Commit/API/UI still closed,server untouched.",
 		"ADR0046 full local652 pure/19 frontend/all12 passed,0 type errors/1 existing warning;initial ADR-count-only failure retained/fixed45->46. Native40854728952/788b387 passed plain/Core20 pure+9 guards+2 evidence+14 multi+29 PO+1 actual source+4 boundary;6 source files match,no skips,2 zero logs,pristine apps/Core inventory verified. Full current CI pending;actual persistence/Commit/actual/UI remains closed.",
-		"ADR0047 fixture-corrected663 pure/19 frontend/all12 passed,0 type errors/1 old warning. Native v2 40859656646/a1691cf runs both44 pure+128 regular+1 committed probe;19 source files match,pending. First40858364254 both failed10 old arbitrary-name fixtures;25 history cases passed. Standard initial docs fixed fixtures/actual source,no guard relaxed. Real commitment writes/actual/UI closed."
+		"ADR0047 fixture-corrected663 pure/19 frontend/all12 passed,0 type errors/1 old warning. Native v2 40859656646/a1691cf runs both44 pure+128 regular+1 committed probe;19 source files match,pending. First40858364254 both failed10 old arbitrary-name fixtures;25 history cases passed. Standard initial docs fixed fixtures/actual source,no guard relaxed. Real commitment writes/actual/UI closed.",
+		"ADR0048 fixed663 pure/19 frontend/all12 passed,0 type errors/1 old warning;checksum-only first failure retained/fixed. Focus40863049983/102f8c3 passed both44 pure+151 native,no skips,2 zero logs,pristine apps/Core seal;7 files match.9 cross-root/different-budget capacity cases and actual MR/PO bridge. Prior709 focus/probe passed;full709 live excludes observer. Complete preparation,persistence,lifecycle,atomic Commit/actual/UI remain."
 	],
 	"owner": "MedOps Maintainers",
 	"created_on": "2026-10-27",
