@@ -16,7 +16,7 @@
     "ADR-0043",
     "ADR-0044"
   ],
-  "current_scope": "ADR0044 purchase commitment slice started: canonical current PO/MR provenance and exact original/tail/open/amount/period-bound intent;640 pure/19 frontend/all12 fixed-source quality passed; native25 each40841183689 running. PO digest/identity unchanged; no evidence table/Commit writer/API/UI/grants/schema. Prior ADR0043 backend524 full40832608462 native live; cookie/browser/Posted recovery passed both, excluding new component. UI hint35f3be3 local632/19/all12 passed; visual40837475564 live. Controlled A/B40836398869 live. Gates remain default off;no server. Entire HRP/commitment/actual/UAT incomplete.",
+  "current_scope": "ADR0044 purchase commitment slice started: canonical current PO/MR provenance and exact original/tail/open/amount/period-bound intent;640 pure/19 frontend/all12 passed; focused40841183689 both passed8 pure+24 adapter+1 actual source each,0 logs/Core inventory. Producte048175 full40842314848 dispatched on separate ref; no full pass. PO digest/identity unchanged; no evidence table/Commit writer/API/UI/grants/schema. Prior ADR0043 backend524 full40832608462 native live; cookie/browser/Posted recovery passed both, excluding new component. UI hint35f3be3 local632/19/all12 passed; visual40837475564 live. Controlled A/B40836398869 live. Gates remain default off;no server. Entire HRP/commitment/actual/UAT incomplete.",
   "checks": {
     "pure_tests_expected": 640,
     "complete_frappe_tests_expected": 666,
@@ -2106,7 +2106,7 @@
       "Core_source_sealed_inventory_verified": true
     },
     "purchase_commitment_vertical_slice": {
-      "status": "final fixed source local640 pure/19 frontend/all12 passed,0 type errors/1 existing warning; native focused validation running",
+      "status": "initial provenance/intent component passed local640/19/all12 and focused plain/Core8 pure+24 adapter+1 real submitted source each; full financial conversion not implemented",
       "adr": "ADR-0044",
       "pure_added": 8,
       "expected_pure": 640,
@@ -2137,13 +2137,38 @@
       "native_focus": {
         "run": 40841183689,
         "candidate": "1f6291b84d7e6beb60200c5841acdc8e90fd0300",
-        "status": "plain/Core running",
+        "status": "passed both profiles",
         "required_each": {
           "pure": 8,
           "PO_native": 24,
           "real_submitted_MR_PO": 1
         },
-        "source_files_match": 5
+        "source_files_match": 5,
+        "profiles": [
+          "plain",
+          "ione_core"
+        ],
+        "pure_each": 8,
+        "adapter_cases_each": 24,
+        "actual_submitted_source_each": 1,
+        "actual_source_seconds": {
+          "plain": 31.34,
+          "Core": 24.068
+        },
+        "error_log_sites": 2,
+        "error_log_count": 0,
+        "skips": 0,
+        "Core_source_sealed_inventory_verified": true,
+        "scope": "24 adapter input/locking/discovery cases use native test framework with document/SQL substitutes; one actual submitted MR/PO controller case verifies native facts and new snapshot/digest equality. No commitment posting or independent decision proof.",
+        "log": "purchase-commitment-provenance-40841183689.log"
+      },
+      "product_commit": "e048175bb524f4002a0e92ff4c158224433486a0",
+      "full_ci": {
+        "run": 40842314848,
+        "commit": "e048175bb524f4002a0e92ff4c158224433486a0",
+        "ref": "cod/full-budget-commitment-provenance-e048175",
+        "status": "dispatched; not full pass",
+        "reason": "Separate exact-source ref preserves verified-live prior backend full40832608462; no cancellation/restart of that run."
       }
     }
   },
