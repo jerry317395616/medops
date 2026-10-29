@@ -15,12 +15,13 @@
     "ADR-0042",
     "ADR-0043",
     "ADR-0044",
-    "ADR-0045"
+    "ADR-0045",
+    "ADR-0046"
   ],
-  "current_scope": "ADR0045 candidate adds v2 source modification floor,independent confirmation/decision/proof/row contracts and private schema (406 design/10180 fields/48 runtime).20 targeted pure passed;18 type issues repaired without ignored diagnostics,0 errors/1 old warning.652 pure/19 frontend/all12 quality passed; first native40849741378 failed cleanup implicit-commit guard; test rollback-before-drop fixed,full652/19/all12 re-passed,v2 native40851511007 running. No real evidence persistence/Commit API/UI/server migration. Prior backend524 full40832608462 succeeded,617+49 regular+1 probe each,8 zero logs,Core inventory; e048175 full40842314848 live excludes new candidate. Whole HRP/commitment/actual/UAT incomplete.",
+  "current_scope": "ADR0045 schema focus40851511007/bc0a8cf passed both profiles:20 pure+2 schema/access+24 PO adapter+1 actual submitted MR/PO+4 boundary each;2 zero Error Log sites,Core sealed inventory/pristine sources. Producte570543 source matches. New ADR0046 adds bounded common MR/PO parent prelocking and exact source-bound PO revisit;12 additional native cases plus actual source extension,expected680 regular+1/652 pure/19 frontend/46 ADR/48 runtime. Full quality/new native pending. No real evidence persistence/Commit/API/UI/migration/server access; whole HRP incomplete.",
   "checks": {
     "pure_tests_expected": 652,
-    "complete_frappe_tests_expected": 668,
+    "complete_frappe_tests_expected": 680,
     "exact_foundation_pure_tests_passed": 21,
     "native_foundation": {
       "status": "passed",
@@ -3258,5 +3259,40 @@
     "real_browser_pending": true,
     "full_native_pending": true,
     "scope": "Names describe current master data and are not historical financial facts; no generic unguarded title RPC."
+  },
+  "commitment_evidence_schema_validation": {
+    "run": 40851511007,
+    "candidate": "bc0a8cf75fdaf2d1e5e9d4a3a8dd8be8e06622d0",
+    "product_source": "e5705431d185347c6674f3a1d34bdf2f279916ea",
+    "profiles": [
+      "plain",
+      "IONE Core"
+    ],
+    "result": "passed",
+    "pure_each": 20,
+    "native_each": [
+      2,
+      24,
+      1,
+      4
+    ],
+    "actual_source_seconds": {
+      "plain": 17.49,
+      "Core": 21.98
+    },
+    "zero_error_log_sites": 2,
+    "Core_build_inventory": "verified",
+    "source_worktrees": "pristine",
+    "actual_evidence_persistence": "not implemented",
+    "previous_failed_run": 40849741378
+  },
+  "purchase_parent_prebinding": {
+    "adr": "ADR-0046",
+    "status": "candidate; local quality and plain/Core native pending",
+    "new_native_cases": 12,
+    "actual_source_case": "extended real submitted MR/PO with prebound revisit",
+    "schema_permissions_api": "unchanged",
+    "financial_writes": "closed",
+    "server": "maintenance; no access"
   }
 }

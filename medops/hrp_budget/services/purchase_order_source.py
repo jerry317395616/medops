@@ -14,7 +14,11 @@ from medops.common.exact_money import MAX_APPROVAL_AMOUNT, exact_decimal_amount
 from medops.common.material_source_snapshot import material_source_snapshot
 from medops.common.organization import normalize_reference, normalize_required_date
 from medops.common.reservation_commitment import purchase_order_snapshot
-from medops.hrp_budget.services.control_guards import invalidate_budget_guards
+from medops.hrp_budget.services.control_guards import (
+	MaterialBinding,
+	invalidate_budget_guards,
+	require_purchase_source_lock_order,
+)
 from medops.hrp_budget.services.material_request_source import (
 	SOURCE_FIELDS,
 	UNIT_FIELDS,
@@ -103,10 +107,12 @@ def _identity(value: object, label: str) -> str:
 	return name
 
 
-def _require_transaction():
+def _require_transaction(*, order: str | None = None, binding: MaterialBinding | None = None):
 	db = frappe.local.db
 	if getattr(db, "_medops_budget_guard_marker", None) is not None:
-		raise_ione_error("OPERATION_NOT_ALLOWED")
+		if order is None or binding is None:
+			raise_ione_error("OPERATION_NOT_ALLOWED")
+		require_purchase_source_lock_order(order, binding)
 	if db.db_type != "mariadb" or db.auto_commit_on_many_writes:
 		raise_ione_error("CONFIGURATION_INVALID")
 	state = db.sql("SELECT @@tx_isolation, @@autocommit")
@@ -249,8 +255,11 @@ def locked_purchase_order_source(
 ) -> tuple[MaterialRequestSource, PurchaseOrderSource]:
 	"""Lock both native parents before dependent data, then recheck their facts.
 
-	Call only at the beginning of a clean, owned transaction before any source,
-	master or budget locks. The caller must roll back the whole transaction on
+	Call at the beginning of a clean, owned transaction before source/master or
+	budget locks, or revisit a PO parent prelocked with this exact MR binding by
+	the multi-source guard protocol. A revisit still rechecks current native
+	facts; the parent name does not establish its previous version or membership.
+	The caller must roll back the whole transaction on
 	failure. This cannot detect arbitrary prior locks or enforce other writers'
 	ordering. It does not establish human approval, split-order totals, historic
 	data, budget sufficiency, allocation policy, or permission to post anything.
@@ -267,7 +276,7 @@ def locked_purchase_order_source(
 		digest = normalize_sha256(expected_request_digest, label="expected_request_digest")
 		if digest != expected_request_digest:
 			raise ValueError("canonical request digest required")
-		_require_transaction()
+		_require_transaction(order=order_name, binding=(request_name, request_line_name, unit, digest))
 		actor = frappe.session.user
 		require_roles(READ_ROLES)
 		refresh_financial_authority(actor)
@@ -290,6 +299,9 @@ def locked_purchase_order_source(
 		require_roles(READ_ROLES)
 		if _read_order(order_name, line_name, source, actor) != purchase or frappe.session.user != actor:
 			raise_ione_error("CONFLICT")
+		require_purchase_source_lock_order(
+			order_name, (source.request, source.line, source.organization_unit, source.digest())
+		)
 		return source, purchase
 	except (TypeError, ValueError, KeyError) as error:
 		invalidate_budget_guards()

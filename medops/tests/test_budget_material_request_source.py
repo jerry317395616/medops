@@ -790,6 +790,29 @@ class TestBudgetMaterialRequestSource(FrappeTestCase):
 				)
 				self.assertEqual((linked_source, linked_orders), (material, (purchase,)))
 				primary.rollback()
+				# Revisit the real submitted PO only after the common protocol has
+				# prelocked it, both parents and the exact current MR snapshot.
+				bound = material_budget_guards.acquire_material_budget_guards_for_sources(
+					[
+						material_budget_guards.MaterialSourceReference(
+							material.request, material.line, material.organization_unit, material.digest()
+						)
+					],
+					[intent.key],
+					purchase_parents=(order.name,),
+				)
+				self.assertEqual(bound, (material,))
+				revisited = purchase_order_source.locked_purchase_order_source(
+					order.name,
+					order.items[0].name,
+					material.request,
+					material.line,
+					material.organization_unit,
+					expected_request_digest=material.digest(),
+				)
+				self.assertEqual(revisited, (material, purchase))
+				assert_budget_guards([intent.key])
+				primary.rollback()
 				# Only connection-private synthetic evidence is inserted; the real source
 				# and its locks remain native. Budget resolution and release are fixtures.
 				tables = (
