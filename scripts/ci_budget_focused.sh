@@ -94,4 +94,4 @@ PY
 uv pip install --python "$BENCH_DIR/env/bin/python" playwright==1.64.1
 "$BENCH_DIR/env/bin/python" -m playwright install --with-deps chromium
 cd "$BENCH_DIR/sites"
-MEDOPS_CI_RESERVATION_CONCURRENCY=1 "$BENCH_DIR/env/bin/python" "$ROOT_DIR/scripts/ci_native_reservation_desk_boolean_ready.py"
+MEDOPS_CI_RESERVATION_CONCURRENCY=1 "$BENCH_DIR/env/bin/python" "$ROOT_DIR/scripts/ci_native_reservation_desk_guarded.py"
