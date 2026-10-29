@@ -24,7 +24,8 @@
 		"ADR-0039",
 		"ADR-0040",
 		"ADR-0041",
-		"ADR-0042"
+		"ADR-0042",
+		"ADR-0043"
 	],
 	"path_globs": [
 		"DELIVERY_MANIFEST.json",
@@ -47,8 +48,8 @@
 		"medops/tests/test_budget_reservation_storage.py",
 		"medops/hrp_budget/services/purchase_order_source.py",
 		"medops/tests/test_budget_purchase_order_source.py",
-		"medops/common/material_source_snapshot.py",
-		"tests/test_material_source_snapshot.py",
+		"medops/common/material_source_*.py",
+		"tests/test_material_source_*.py",
 		"doctype_blueprints/hrp_budget/hrp_budget_reservation.json",
 		"medops/hrp_budget/doctype/hrp_budget_reservation/hrp_budget_reservation.json",
 		"medops/common/reservation_authorization.py",
@@ -119,21 +120,21 @@
 		"medops/common/reservation_recovery.py",
 		"medops/tests/test_budget_reservation_recovery.py",
 		"medops/hrp_budget/services/material_*.py",
-		"medops/common/material_source_edit.py",
-		"tests/test_material_source_edit.py",
 		"medops/tests/test_budget_material_source_integrity.py",
 		"architecture/adr/ADR-004*.md",
 		"medops/hooks.py",
 		"scripts/bootstrap_latest_develop.sh",
 		"scripts/core_build_integrity.py",
-		"tests/test_core_build_integrity.py"
+		"tests/test_core_build_integrity.py",
+		"medops/hrp_budget/services/authority_metadata.py",
+		"medops/tests/test_budget_authority_metadata.py"
 	],
-	"permissions_impact": "No grants, roles, scopes or sharing added. Standard native controller permissions remain; before native rename private binding lookup explicitly requires native write permission. Registered purchase sources gain denial-only economic/status/lifecycle integrity protection, independent of financial feature flags; unbound sources/lines retain native behavior.",
-	"migration_impact": "No schema/index/model migration;47 runtime models unchanged. Future update must refresh DocEvents/cache and reload Python. Server maintenance remains active: no server access/deploy.",
-	"rollback_plan": "Keep equivalent native source protection whenever immutable roots exist, or place affected native source entry points in maintenance until replacement. Closing reservation flags alone does not make removing hooks safe. Preserve all original/renewal/release evidence, roots/events/receipts and compatible full-history/recovery readers.",
-	"security_impact": "ADR0041 denial-only native source hooks remain; current valid-root HTTP proof passed in focus40716449289. Full a02d81e CI40719053510 failed only final Core worktree gate after Core business tests passed. ADR0042 retains all-app build and adds pinned-source/generated-output attestation: pre-build clean checkout/index, exact finite output paths, generated route/public-copy consistency, full post-build content/mode inventory and parent-shell pre-test proof digest. Any other source/untracked code change, symlink, index mutation or post-build file/proof change fails; four other apps retain pristine Git gate. No Core/upstream edits, new dependencies, schema, grants, financial writes or server access. Five real temporary-Git tests plus existing627 pure and19 frontend are expected locally; Linux CI adds actual symlink/mode assertions within the same test. Current native658+1 must rerun with the new build gate; old business success cannot certify the new gate. Native password login authenticated Admin but Desk initialization still times out; browser diagnostic40720837738 failed and remains separate. Shared-CI profile identified repeated fresh metadata refresh; no authorization checks relaxed. Source lifecycle/commitment/actual/all-writer/root UI/performance/hospital acceptance remain incomplete.",
+	"permissions_impact": "No grants or role/scope changes. Preserve every current authority checkpoint, actor/session, current roles/User Permission, field/scope/source checks. Group raw DocType/child configuration reads and keep native Meta processing. Unsupported/overridden constructors retain native cached=False reads.",
+	"migration_impact": "No model/schema/index/dependency migration;47 runtime models unchanged. Future Python reload needed; no financial flags enabled. User server maintenance active: no access/deploy.",
+	"rollback_plan": "Restore per-type native cached=False metadata refresh; retain all current identity/role/field/scope/source/guard checks, ADR0041 bound-source protection and immutable original/renewal/release evidence, roots/events/receipts and compatible history/recovery readers. No data reversal for this read-only optimization.",
+	"security_impact": "ADR0043 batches fresh primary-transaction DocType/five child reads at every existing authority refresh, retaining full child traversal and256 bound. No metadata or permission success cache, extra connection, commit or grant. Match pinned native header/child initialization, run unchanged Meta.process and native metadata cache publishing; Property Setter/Custom Field/Custom DocPerm remain native fresh reads. Eight normalized constructor hashes, reader identity, class/new/setup and table-map compatibility select the path; unsupported/overridden code falls back to original cached=False. Only function/code compatibility is memoized. Native8 candidate covers full equality/SQL reduction, non-admin role, own field/DocPerm/role-assignment revocation+rollback, native-reader/source mismatch fallback, bounds/missing metadata. Existing4 actual financial post-write revocation rollbacks and full ordinary/Core/committed/HTTP timing remain mandatory. Earlier29-model experiment matched but does not validate this new DB/header-child candidate. Empty native Desk passed40821426381. Root40822250244 failed login before inspect,1 JS error; improve user guard and live capture before retry. Old17781ac full40816048987 Q/S passed,native live. No server access/production enablement; lifecycle/commitment/actual/all-writer/Core UI/hospital acceptance incomplete.",
 	"test_plan": [
-		"Expected632 pure/658 regular native+1 dedicated committed probe/19 frontend/42 ADR/37 records/47 runtime DocTypes; run all12 quality gates, current-source full plain/Core CI, governance/checksums.",
+		"Expected632 pure/666 regular native+1 dedicated committed probe/19 frontend/43 ADR/37 records/47 runtime DocTypes; all12 quality gates, native8 metadata+4 actual financial revoke cases, exact plain/Core full CI, committed/HTTP timings, governance/checksums.",
 		"Five pure source-edit tests: allow operational progress/unbound rows, reject bound header/economic changes, missing/duplicate identities, native float precision loss/nonfinite values and uninspectable lifecycle states.",
 		"Eight native temporary binding-presence cases: real MR stop/reopen without bindings; bound stop/ignore-links cancel; trusted after-submit flag economic edits; child db_set before optional commit; supported progress/unbound line; native parent rename/direct child lifecycle; generic guard refuses before late SQL; prebound parent retains real witness. Presence rows are not valid financial evidence.",
 		"Extend exact disposable committed probe with valid roots and actual cookie native ERP status/set_value/cancel requests: deny destructive edits, allow normal progress, frozen root unchanged, complete current inspection and scoped recovery still succeed. Retain all previous financial concurrency/replay/rollback/privacy checks.",
@@ -146,7 +147,8 @@
 		"ADR0042 five temporary-Git tests exercise legitimate hashed output replacement, source/untracked/ignored-output/index/revision rejection, route/public-file consistency, final inventory/proof tamper and symlink/mode rejection. Full40719053510 plain passed; Core658+1 business passed but final worktree gate failed, Required failed. New candidate needs exact full rerun; no server access.",
 		"Final fixed candidate passed632 pure/19 frontend/all12 quality gates,0 type errors/1 existing warning. First quality attempt failed only new contract-token formatting; fixed and full rerun passed. Bash syntax/governance passed; real unchanged local pinned Core outputs prepare/seal/verify passed without modifying upstream. Exact fresh Linux/plain/Core run still required.",
 		"Native empty Desk40821426381/519c23c passed actual password login, Page route, no modal/RPC/JS/assets error, financial snapshot unchanged, ErrorLog0/logout; visually reviewed. Green40816808093 rejected: Page null modal. Cause was CI wait returning callable set_route, auto-invoked by Playwright; boolean fixed. Setup-only40818500994/route trace40820539001 failed and preserved. Valid-root40822250244/d74a028 live; not yet passed.",
-		"Metadata-only40820688375/a1521cf passed complete29-Meta equality using fresh raw native constructor; SQL342->174,3-sample median0.255582->0.153388s, own DocField/DocPerm mutation+rollback detected, snapshots unchanged/ErrorLog0. Document and official get_docs clones had29 mismatches, rejected. Not adopted: require pinned compatibility, real permission/financial/Core tests and actual latency; full40816048987 native still live."
+		"Metadata-only40820688375/a1521cf passed complete29-Meta equality using fresh raw native constructor; SQL342->174,3-sample median0.255582->0.153388s, own DocField/DocPerm mutation+rollback detected, snapshots unchanged/ErrorLog0. Document and official get_docs clones had29 mismatches, rejected. Not adopted: require pinned compatibility, real permission/financial/Core tests and actual latency; full40816048987 native still live.",
+		"ADR0043 candidate8 native: complete metadata graph equality and SQL reduction; budget actor with no DocType read; own field/DocPerm/role assignment revocation and rollback; overridden reader and unsupported source fresh fallback; bounds/missing model. Preserve actual financial post-write role/field/scope/User Permission rollback tests. Candidate direct DB/header-child path differs from experiment; exact native validation required, no skips."
 	],
 	"owner": "MedOps Maintainers",
 	"created_on": "2026-10-27",

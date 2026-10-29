@@ -12,12 +12,13 @@
     "ADR-0039",
     "ADR-0040",
     "ADR-0041",
-    "ADR-0042"
+    "ADR-0042",
+    "ADR-0043"
   ],
-  "current_scope": "Product17781ac Core generated-build attestation passed632 pure/19 frontend/all12 local quality; exact full40816048987 Quality/Security passed, both native jobs live. Native empty-Page Chromium40821426381/519c23c passed password login, explicit Page route, no modal/JS/asset/RPC failure, financial snapshots unchanged, ErrorLog0 and logout; screenshot visually verified. Earlier green40816808093 had Page null modal and is rejected as clean UI proof. Root UI40822250244/d74a028 runs independently. Metadata-only experiment40820688375/a1521cf matched all29 full native dictionaries with fresh raw construction, SQL342->174, median0.255582->0.153388s; own DocField/DocPerm mutation/rollback observed. Prototype not adopted; full permission/financial/Core/actual latency still required. No server access/deploy, whole HRP lifecycle/hospital readiness incomplete.",
+  "current_scope": "ADR0043 fresh metadata batching candidate retains all authority checkpoints/roles/scope/field/source rules and current primary connection. Pinned header/child initialization plus native processing; unknown/overridden construction retains native fresh reads. Expected632 pure/666 native+1 committed/19 frontend/43 ADR; candidate quality/native validation pending. Prior17781ac full40816048987 Q/S passed,native live. Root40822250244 failed native_login before inspect,1 page error; improved guard/live capture retry needed. Empty native Desk passed40821426381. Experiment40820688375 is not this candidate proof. No schema/grants/deps/server/deploy/production enablement; whole HRP readiness unproven.",
   "checks": {
     "pure_tests_expected": 632,
-    "complete_frappe_tests_expected": 658,
+    "complete_frappe_tests_expected": 666,
     "exact_foundation_pure_tests_passed": 21,
     "native_foundation": {
       "status": "passed",
@@ -1753,7 +1754,7 @@
     "native_valid_root_desk_candidate": {
       "run": 40822250244,
       "source": "d74a0287d24418618e2f91e73bb5fa614f242d2b",
-      "status": "running, no pass claimed",
+      "status": "failed native_login before inspect,1 JS error; failure screenshot attempted after Playwright exit. Guard/live-context capture retry pending.",
       "scope": "native19/frontend19/committed1 then actual Chromium valid-root inspect/reload/release-input; no browser financial writes"
     },
     "fresh_metadata_experiment": {
@@ -1782,6 +1783,20 @@
         40818511295
       ],
       "remaining": "review pinned raw Meta constructor compatibility; current roles/field/scope and concurrent revocation/own transaction tests; ordinary/Core native suite; actual API latency. No metadata or permission success cache introduced."
+    },
+    "fresh_authority_metadata_candidate": {
+      "status": "worktree candidate pending validation",
+      "expected_new_native_tests": 8,
+      "runtime_models": 47,
+      "constructor_hashes": 8,
+      "all_authority_checkpoints_retained": true,
+      "metadata_or_allow_cache": false,
+      "primary_transaction": true,
+      "native_processing_unchanged": true,
+      "fallback": "original native cached=False for unsupported/overridden construction",
+      "actual_financial_revocation_cases_required": 4,
+      "current_full_ci": "pending",
+      "server_access": false
     }
   },
   "previous_verified_release": {

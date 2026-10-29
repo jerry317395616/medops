@@ -34,6 +34,7 @@ from medops.common.domain_service import DomainServiceDefinition
 from medops.common.integration_outbox import OUTBOX_DEFINITION
 from medops.common.transactional_message import normalize_payload, processing_token_matches
 from medops.hrp_budget.services.access_graph import access_graph_cache
+from medops.hrp_budget.services.authority_metadata import fresh_metadata_batch
 from medops.hrp_budget.services.planning_access import MANAGER_ROLES
 from medops.hrp_budget.services.release import lock_release_source, release_result
 from medops.hrp_budget.services.release_access import get_release
@@ -132,20 +133,21 @@ def refresh_financial_authority(actor):
 	)
 	seen = set()
 	while pending:
-		name = pending.pop()
-		if name in seen:
-			continue
-		seen.add(name)
-		if len(seen) > 256:
+		pending.difference_update(seen)
+		if not pending:
+			break
+		if len(seen | pending) > 256:
 			raise_ione_error("CONFIGURATION_INVALID")
-		meta = frappe.get_meta(name, cached=False)
-		pending.update(
+		metas = fresh_metadata_batch(pending)
+		seen.update(pending)
+		pending = {
 			field.options
+			for meta in metas.values()
 			for field in meta.fields
 			if field.fieldtype in {"Table", "Table MultiSelect"}
 			and field.options
 			and field.options not in seen
-		)
+		}
 
 
 def message_authority(message):
