@@ -17,12 +17,13 @@
     "ADR-0044",
     "ADR-0045",
     "ADR-0046",
-    "ADR-0047"
+    "ADR-0047",
+    "ADR-0048"
   ],
-  "current_scope": "ADR0047 corrected source passed663 pure/19 frontend/all12 quality gates,0 type errors/1 old warning. Independent Commit/release history now flows through budget/source/original+renewed receipts;actual root-v1 derivation corrected. First native40858364254 failed10 new fixture preparations in each profile;25 history cases including renewed Commit passed. Fixtures/actual source now use standard initial document construction;no authority gate relaxed. Fixed native40859656646/a1691cf runs44 pure+128 regular+1 committed probe each;19 source files match,not yet passed. Expected691 regular+1/47 ADR/48 runtime. No real commitment writes/actual/API/UI/server;whole HRP incomplete.",
+  "current_scope": "ADR0048 candidate adds native cross-root/global PO-line capacity with dual indexed inventory,complete independent histories,exact sums,current source/economic checks and original intent re-derivation. Inspection retains complete keys/sources/discovery and optional prebound PO.9 new native cases plus real submitted MR/PO bridge;expected700 regular+1/663 pure/19 frontend/48 ADR/48 runtime. Type check0 errors/1 old warning;full quality/native pending. No real commitment evidence writes/Commit/API/UI/server migration;complete preparation/lifecycle/atomic conversion/actual/hospital acceptance remain.",
   "checks": {
     "pure_tests_expected": 663,
-    "complete_frappe_tests_expected": 691,
+    "complete_frappe_tests_expected": 700,
     "exact_foundation_pure_tests_passed": 21,
     "native_foundation": {
       "status": "passed",
@@ -3416,5 +3417,14 @@
     "zero_error_log_sites": 8,
     "Core_sealed_inventory": "verified",
     "scope_limit": "excludes ADR45/46/47;full052ca3 run40855709340 still live"
+  },
+  "cross_root_commitment_capacity": {
+    "adr": "ADR-0048",
+    "status": "candidate; full quality/native pending",
+    "new_native_cases": 9,
+    "actual_source_case": "extended with real native source/prebinding and zero-global-allocation capacity",
+    "schema_permissions_api": "unchanged; existing stable-line index now required",
+    "write_authority": "none",
+    "real_commitment_controller": "still closed"
   }
 }

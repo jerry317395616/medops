@@ -82,6 +82,52 @@ def _original(root, *, lock):
 	return item, first, second
 
 
+def read_reservation_original(reservation, *, lock=False):
+	"""Read the independent original pair under current root write scope.
+
+	The caller must check actor/session and complete history independently. A
+	root and its original decision alone grant no permission to append an event.
+	"""
+	name = normalize_sha256(reservation, label="reservation")
+	if name != reservation:
+		raise ValueError("canonical reservation required")
+	root = frappe.get_doc(ROOT, name, for_update=lock)
+	require_scope(
+		ROOT,
+		company=root.company,
+		hospital=root.hospital,
+		organization_unit=root.organization_unit,
+		action="write",
+	)
+	columns = ", ".join(f"`{field}`" for field in sorted(AUTHORIZATION_ROW_FIELDS))
+	suffix = " FOR UPDATE" if lock else ""
+	decisions = frappe.db.sql(
+		f"SELECT {columns} FROM `tabHRP Budget Reservation Authorization` "  # nosec B608 - fixed fields/bound identity
+		f"WHERE `reservation_identity`=%s AND `event_kind`=%s ORDER BY `name` LIMIT 2{suffix}",
+		(root.source_identity_key, "Decision"),
+		as_dict=True,
+	)
+	if len(decisions) != 1:
+		raise ValueError("one independent original decision required")
+	second = decisions[0]
+	confirmations = frappe.db.sql(
+		f"SELECT {columns} FROM `tabHRP Budget Reservation Authorization` WHERE `name`=%s{suffix}",  # nosec B608 - fixed fields/bound name
+		(second["confirmation"],),
+		as_dict=True,
+	)
+	if len(confirmations) != 1:
+		raise ValueError("one independent original confirmation required")
+	first = confirmations[0]
+	item, _ = verify_reservation_authorization_rows(first, second)
+	if item.reservation_identity != root.source_identity_key or (
+		item.key.company,
+		item.key.hospital,
+		item.key.organization_unit,
+	) != (root.company, root.hospital, root.organization_unit):
+		raise ValueError("original decision differs from reservation scope")
+	return root, item, first, second
+
+
 def check_release_state_access(state):
 	actor = frappe.session.user
 	require_web_session()

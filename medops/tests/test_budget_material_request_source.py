@@ -41,6 +41,7 @@ from medops.hrp_budget.services import (
 	material_usage_preview,
 	purchase_order_source,
 	release_execution,
+	reservation_commitment_allocations,
 	reservation_confirmation,
 	reservation_confirmation_service,
 )
@@ -887,14 +888,21 @@ class TestBudgetMaterialRequestSource(FrappeTestCase):
 					),
 					patch.object(material_usage_preview, "guarded_release_inventory", return_value=(entry,)),
 				):
-					inspection = material_usage_preview.inspect_purchase_usage(
+					inspection = material_usage_preview.inspect_existing_purchase_usage(
 						material.request,
 						material.line,
 						material.organization_unit,
-						expected_source_digest=material.digest(),
 						budget_date=initial_material.transaction_date,
 						proposed_keys=[asdict(intent.key)],
+						purchase_parents=(order.name,),
 					)
+				capacity = reservation_commitment_allocations.verify_guarded_commitment_capacity(
+					inspection, purchase, actual_intent
+				)
+				self.assertEqual(
+					(capacity.committed, capacity.remaining, capacity.decision_count),
+					("0.000000000", "10.000000000", 0),
+				)
 				self.assertEqual(inspection.source, material)
 				self.assertEqual(len(inspection.usage), 1)
 				self.assertEqual(inspection.source_usage, inspection.usage)
