@@ -50,45 +50,68 @@ cd "$BENCH_DIR"
   --correlation-id "FOCUSED-${GITHUB_RUN_ID:-local}-verify"
 bench --site "$SITE_NAME" migrate --skip-search-index
 
-test_log="$BENCH_DIR/logs/focused-budget-tests.log"
-bench --site "$SITE_NAME" run-tests --app medops --module medops.tests.test_budget_release_execution \
-  --test test_persisted_authorized_release_guard_checks_original_units_without_posting \
-  --test test_persisted_release_guard_poisoned_when_actor_check_is_revoked \
-  --test test_persisted_release_guard_detects_role_revocation_from_another_transaction \
-  --test test_persisted_reversal_guard_verifies_the_complete_original_batch \
-  --test test_guarded_release_inventory_reconciles_posted_batches_and_physical_entries \
-  2>&1 | tee "$test_log"
-if ! grep -Eq 'Ran 5 tests? in [0-9.]+s' "$test_log"; then
-  echo "Focused CI did not execute the expected five tests" >&2
+
+#!/usr/bin/env bash
+set -euo pipefail
+
+# ROOT_DIR remains the absolute path resolved before entering the Bench.
+BENCH_DIR="${BENCH_DIR:?Set BENCH_DIR to an existing isolated CI Bench}"
+PROBE_SITE="hrp-reservation-concurrency.localhost"
+if [[ "${GITHUB_ACTIONS:-}" != "true" || -z "${RUNNER_TEMP:-}" ]]; then
+  echo "Reservation concurrency probe only runs on a disposable GitHub runner" >&2
   exit 1
 fi
-
-storage_log="$BENCH_DIR/logs/focused-budget-storage-tests.log"
-bench --site "$SITE_NAME" run-tests --app medops --module medops.tests.test_budget_reservation_storage \
-  --case TestBudgetReservationStorage 2>&1 | tee "$storage_log"
-if ! grep -Eq 'Ran 3 tests? in [0-9.]+s' "$storage_log"; then
-  echo "Focused CI did not execute the expected three storage tests" >&2
+runner_real="$(realpath -e -- "$RUNNER_TEMP")"
+bench_real="$(realpath -e -- "$BENCH_DIR")"
+case "$bench_real" in
+  "$runner_real"/*) ;;
+  *) echo "Probe Bench must be inside runner temporary storage" >&2; exit 1 ;;
+esac
+if [[ -e "$bench_real/sites/$PROBE_SITE" ]]; then
+  echo "Disposable concurrency site already exists" >&2
   exit 1
 fi
-
-"$BENCH_DIR/env/bin/python" - "$BENCH_DIR" "$SITE_NAME" <<'PY'
+: "${DB_ROOT_PASSWORD:?Set DB_ROOT_PASSWORD}"
+: "${ADMIN_PASSWORD:?Set ADMIN_PASSWORD}"
+export PATH="$HOME/.local/bin:$PATH"
+cd "$bench_real"
+bench new-site "$PROBE_SITE" \
+  --db-type "${DB_TYPE:-mariadb}" --db-host "${DB_HOST:-127.0.0.1}" --db-port "${DB_PORT:-3306}" \
+  --db-root-username "${DB_ROOT_USERNAME:-root}" --db-root-password "$DB_ROOT_PASSWORD" \
+  --admin-password "$ADMIN_PASSWORD"
+bench --site "$PROBE_SITE" install-app erpnext
+bench --site "$PROBE_SITE" install-app hrms
+if [[ "${INCLUDE_IONE_CORE:-0}" == "1" ]]; then
+  bench --site "$PROBE_SITE" install-app ione_core
+fi
+bench --site "$PROBE_SITE" install-app medops
+"$bench_real/env/bin/python" "$ROOT_DIR/scripts/environment_manager.py" configure test \
+  --bench-dir "$bench_real" --site-name "$PROBE_SITE" --allow-target-override \
+  --correlation-id "CI-${GITHUB_RUN_ID:-local}-reservation-concurrency"
+"$bench_real/env/bin/python" "$ROOT_DIR/scripts/environment_manager.py" verify test \
+  --bench-dir "$bench_real" --site-name "$PROBE_SITE" --allow-target-override \
+  --correlation-id "CI-${GITHUB_RUN_ID:-local}-reservation-concurrency-verify"
+bench --site "$PROBE_SITE" migrate --skip-search-index
+"$bench_real/env/bin/python" - "$bench_real/sites/$PROBE_SITE/site_config.json" <<'PY'
 import json
-import os
-import subprocess
 import sys
 from pathlib import Path
 
-bench_dir = Path(sys.argv[1]).resolve()
-site = json.loads((bench_dir / "sites" / sys.argv[2] / "site_config.json").read_text(encoding="utf-8"))
-common = json.loads((bench_dir / "sites" / "common_site_config.json").read_text(encoding="utf-8"))
-result = subprocess.run(
-    ["mariadb", "--batch", "--skip-column-names", "--host", site.get("db_host") or common.get("db_host") or "127.0.0.1",
-     "--port", str(site.get("db_port") or common.get("db_port") or 3306), "--user", site["db_name"],
-     site["db_name"], "--execute", "SELECT COUNT(*) FROM `tabError Log`"],
-    env={**os.environ, "MYSQL_PWD": site["db_password"]}, capture_output=True, text=True, check=True,
+path = Path(sys.argv[1]).resolve()
+config = json.loads(path.read_text(encoding="utf-8"))
+config.update(
+    medops_ci_disposable_reservation_site=True,
+    medops_internal_reservation_write_enabled=True,
+    medops_internal_reservation_renewal_enabled=True,
+    medops_internal_renewed_reservation_write_enabled=True,
+    medops_internal_reservation_release_write_enabled=True,
+    medops_reservation_confirmation_enabled=True,
+    medops_reservation_operations_enabled=True,
 )
-count = int(result.stdout.strip())
-print(json.dumps({"site": sys.argv[2], "error_log_count": count, "scope": "focused_budget_only"}))
-if count:
-    raise SystemExit("Focused CI site contains Error Log records")
+path.write_text(json.dumps(config, indent=2) + "\n", encoding="utf-8")
 PY
+
+uv pip install --python "$BENCH_DIR/env/bin/python" playwright==1.64.1
+"$BENCH_DIR/env/bin/python" -m playwright install --with-deps chromium
+cd "$BENCH_DIR/sites"
+MEDOPS_CI_RESERVATION_CONCURRENCY=1 "$BENCH_DIR/env/bin/python" "$ROOT_DIR/scripts/ci_native_desk_boolean_ready.py"
