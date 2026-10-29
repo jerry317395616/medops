@@ -124,6 +124,7 @@ class TestBudgetReservationOperationsBoundary(FrappeTestCase):
 			"HRP Budget Reservation Authorization",
 			"HRP Budget Reservation Renewal",
 			"HRP Budget Reservation Release",
+			"HRP Budget Commitment Authorization",
 		):
 			self.assertEqual(list(frappe.get_meta(doctype).permissions), [])
 
