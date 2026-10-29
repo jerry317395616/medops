@@ -15,7 +15,7 @@
     "ADR-0042",
     "ADR-0043"
   ],
-  "current_scope": "ADR0043 product524557a passed local632 pure/19 frontend/all12 and plain/Core metadata8+actual financial revocation4 each. Full40832608462 Quality/Security passed; native live. Current exact-runtime Core cookie/committed/Chromium40832870602 passed19 regular+1 probe483.601s,35 timed native requests, root display/reload/release-input/logout,3 inspect200,zero errors/financial commands/data changes; screenshot reviewed,Core source/sealed build verified. Plain profile still live, no whole-matrix pass. Fresh posted-directory UI40834757012 plain/Core live. No server access/deploy/schema/grants/new dependencies; full HRP incomplete.",
+  "current_scope": "ADR0043 backend524557a local632/19/all12 and plain/Core8+4 freshness/actual revoke passed. Full40832608462 Q/S passed,native live. Native cookie/committed/Chromium40832870602 passed both profiles; recovery medians plain19.268498s/Core8.138741s, separate runners not controlled comparison. Posted recovery Page40834757012 passed both: fresh source/budget controls, repeat history,open existing root,5 inspect200/2 recovery200,zero commands/data changes/errors; screenshots exposed stale top instruction. UI-only hint correction passed632 pure/19 frontend/all12 local gates; new visual check pending. Same-runner A/B40836398869 running. No server/deploy/schema/grants/new dependencies; whole HRP incomplete.",
   "checks": {
     "pure_tests_expected": 632,
     "complete_frappe_tests_expected": 666,
@@ -1894,7 +1894,7 @@
         "helper_instrumentation": "three timing-only lines; all original assertions unchanged",
         "profiles": {
           "Core": "passed; screenshot visually verified",
-          "plain": "running"
+          "plain": "passed; screenshot visually verified"
         },
         "core_native_tests": [
           8,
@@ -1944,16 +1944,106 @@
           "native_logout": true,
           "core_source_and_sealed_inventory_verified": true
         },
-        "scope": "Shared disposable CI native WSGI/cookie request times, no network transit. Small samples and different runners do not prove production SLO/capacity or a controlled before/after percentage. Expired-decision/recovery controls/non-admin UI/hospital UAT not established.",
+        "scope": "Exact backend524557a in both profiles; request helper only timing instrumentation. Shared runner differences are large: these are native WSGI/cookie times without network transit, not a controlled optimization comparison or production SLO/capacity. Excludes current UI status-only correction.",
         "artifact": "metadata-http-desk-v3-Core1-40832870602/native-reservation-desk.png",
-        "timings": "metadata-http-desk-v3-Core1-timings.json"
+        "timings": "metadata-http-desk-v3-Core1-timings.json",
+        "plain_native_tests": [
+          8,
+          4,
+          4,
+          3
+        ],
+        "plain_frontend": 19,
+        "plain_committed_probe_seconds": 1032.555,
+        "plain_native_cookie_timed_requests": 35,
+        "plain_successful_request_observations": {
+          "inspect": {
+            "n": 3,
+            "median_seconds": 19.279243
+          },
+          "recovery": {
+            "n": 7,
+            "median_seconds": 19.268498
+          },
+          "post": {
+            "n": 3,
+            "median_seconds": 15.612963
+          },
+          "prepare_release": {
+            "n": 3,
+            "median_seconds": 27.347117
+          },
+          "post_release": {
+            "n": 3,
+            "median_seconds": 30.896844
+          }
+        },
+        "full_timing_report": "metadata-http-desk-v3-timings.json"
       },
       "posted_recovery_browser_candidate": {
         "run": 40834757012,
         "candidate": "1e114d1ddc85b1b39e87b4d73a72670f0f6555d9",
-        "status": "plain/Core running",
+        "status": "functional passed both profiles; screenshots reviewed and stale top hint found",
         "runtime_product": "524557a20a8ffaf41e9fc25ccb64e8fd9c7a2dc2",
-        "scope": "Fresh native Page controls choose real MR line and ledger budget, query directory/repeat/open Posted root; no preview/confirm/post. Expired renewal/non-admin/hospital acceptance remain separate."
+        "scope": "Fresh native Page controls choose real MR line and ledger budget, query directory/repeat/open Posted root; no preview/confirm/post. Expired renewal/non-admin/hospital acceptance remain separate.",
+        "profiles": [
+          "plain",
+          "ione_core"
+        ],
+        "native_regular_each": [
+          8,
+          4,
+          4,
+          3
+        ],
+        "frontend_each": 19,
+        "committed_probe_seconds": [
+          525.621,
+          525.436
+        ],
+        "inspection_statuses_each": [
+          200,
+          200,
+          200,
+          200,
+          200
+        ],
+        "recovery_statuses_each": [
+          200,
+          200
+        ],
+        "financial_commands_each": 0,
+        "page_errors_each": 0,
+        "failed_native_requests_each": [],
+        "financial_snapshots_identical_each": true,
+        "error_log_count_each": 0,
+        "fresh_page_directory_repeat_and_open_posted_root_each": true,
+        "native_logout_each": true,
+        "core_source_sealed_inventory_verified": true,
+        "visual_issue": "Selected budget and correct Posted history are visible, but top status still says select a budget. Fix Page status after complete current directory validation; keep guards and explicit new-allocation choice.",
+        "log": "posted-recovery-desk-40834757012.log"
+      },
+      "controlled_same_runner_ab": {
+        "run": 40836398869,
+        "candidate": "10a31bec448d2aa5ebef0f02f73059451f33f68d",
+        "status": "running, no result claimed",
+        "scope": "Core same native cookie/input, forced original native fresh fallback vs batched, warmups then8 interleaved samples, full business-result equality and financial/receipt snapshots, request-thread profiling; no authority gates removed."
+      }
+    },
+    "reservation_recovery_status_hint": {
+      "status": "local all12 gates passed632 pure/19 frontend; new native screenshot pending",
+      "trigger": "Successful current recovery directory still left source-selection instruction visible",
+      "behavior": "No history: fill money/date/reason before review. Existing history: view/recover it first and explicitly choose any new independent allocation.",
+      "financial_logic_permissions_schema_migration_changed": false,
+      "backend_baseline": "524557a20a8ffaf41e9fc25ccb64e8fd9c7a2dc2",
+      "native_browser_baseline": 40834757012,
+      "local_quality": {
+        "pure": 632,
+        "frontend": 19,
+        "gates": 12,
+        "type_errors": 0,
+        "existing_type_warnings": 1,
+        "log": "recovery-status-hint-quality-20261029.log"
       }
     }
   },

@@ -344,6 +344,13 @@ frappe.pages["hrp-budget-reservations"].on_page_load = async (wrapper) => {
 			if (decision) return result;
 			recovery = result;
 			newAllowed = result.total_rows === 0;
+			status.text(
+				__(
+					newAllowed
+						? "当前范围暂无已确认记录，请填写金额、日期和理由后核对新预占。"
+						: "历史操作已核验，请先查看或恢复已有记录；新增独立分摊需明确选择。",
+				),
+			);
 			recoveryPanel.empty();
 			fact(
 				recoveryPanel,
