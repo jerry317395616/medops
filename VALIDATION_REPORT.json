@@ -2,7 +2,7 @@
   "schema_version": 1,
   "status": "IN_PROGRESS_COD_035",
   "task_id": "COD-035",
-  "recorded_on": "2026-10-28",
+  "recorded_on": "2026-10-29",
   "runtime_namespace": "medops",
   "architecture_decisions": [
     "ADR-0030",
@@ -11,11 +11,12 @@
     "ADR-0038",
     "ADR-0039",
     "ADR-0040",
-    "ADR-0041"
+    "ADR-0041",
+    "ADR-0042"
   ],
-  "current_scope": "Producta02d81e ADR0041 source/asset focus40716449289/6cd42d3 passed8+4+4+3 native,19 frontend,1 committed1473.593s,2 zero Error Log sites;9 runtime/native/pure/bootstrap blobs match. Current full40719053510 Quality/Security passed,native plain/Core live. Prior4b recovery full passed650+1 each,separate source. Real native password login reached Admin /desk,Desk initialization unproven; diagnostic40720837738 live. Profile one recovery34.523s:74 fresh-authority calls31.562s,2258 native Meta constructions,28208 SQL; performance bottleneck measured, no authorization checks removed. No server access/deploy/schema/grants/production enablement. Whole lifecycle/commitment/actual/all writers/root UI/hospital performance and acceptance incomplete.",
+  "current_scope": "Build integrity candidate ADR0042: preserve all-app build, pinned Core source immutability and explicit generated outputs, seal full output/source inventory before tests, verify pre-test digest and final files. Expected632 pure/658 regular+1 committed/19 frontend/42 ADR; All12 local quality gates passed:632 pure/19 frontend,0 type errors/1 existing warning. Current full CI pending. Producta02d81e full40719053510 failed: plain success, Core business658+1 passed but final generated-file worktree gate failed; Required failed. No production readiness, browser initialization/performance/lifecycle/hospital acceptance claim. Server maintenance active; no connections/deploy.",
   "checks": {
-    "pure_tests_expected": 627,
+    "pure_tests_expected": 632,
     "complete_frappe_tests_expected": 658,
     "exact_foundation_pure_tests_passed": 21,
     "native_foundation": {
@@ -1678,6 +1679,39 @@
       "get_meta_calls": 15042,
       "sql_calls": 28208,
       "scope": "One cProfile-instrumented actual native request on shared CI; cumulative times include callees and instrumentation overhead. No controlled production latency/SLO/capacity claim. Keep independent current-role/permission/field/data-scope checks; investigate coherent current metadata reuse rather than relaxing authorization."
+    },
+    "core_generated_build_candidate": {
+      "status": "all12 local quality gates passed; exact full plain/Core CI pending",
+      "expected_pure_tests": 5,
+      "source_revision": "8c697bafd30aebd418aee18f618b287bbab557f3",
+      "previous_full_ci": {
+        "run": 40719053510,
+        "source": "a02d81e962bcf45cbb4126163b4a6bf494d27cc4",
+        "status": "failure",
+        "plain": "success",
+        "core_business": "658 regular + 1 committed passed",
+        "core_final_gate": "failed on generated mobile assets/route",
+        "required": "failure"
+      },
+      "browser_diagnostic": {
+        "run": 40720837738,
+        "status": "failure",
+        "authenticated_admin": true,
+        "desk_ready": false,
+        "financial_calls": 0,
+        "page_errors": 0,
+        "asset_failures": 0
+      },
+      "local_quality": {
+        "pure_passed": 632,
+        "frontend_passed": 19,
+        "steps_passed": 12,
+        "type_errors": 0,
+        "existing_type_warnings": 1,
+        "log": "core-build-integrity-quality-20261029-v2.log",
+        "first_attempt": "failed only Ruff formatting; fixed and full rerun passed",
+        "actual_locked_checkout": "prepare/seal/verify passed against unchanged local Core committed outputs; this is not a fresh Linux build"
+      }
     }
   },
   "previous_verified_release": {

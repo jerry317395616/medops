@@ -23,7 +23,8 @@
 		"ADR-0038",
 		"ADR-0039",
 		"ADR-0040",
-		"ADR-0041"
+		"ADR-0041",
+		"ADR-0042"
 	],
 	"path_globs": [
 		"DELIVERY_MANIFEST.json",
@@ -117,21 +118,22 @@
 		"tests/test_reservation_*.py",
 		"medops/common/reservation_recovery.py",
 		"medops/tests/test_budget_reservation_recovery.py",
-		"architecture/adr/ADR-0040-scoped-reservation-decision-recovery.md",
 		"medops/hrp_budget/services/material_*.py",
 		"medops/common/material_source_edit.py",
 		"tests/test_material_source_edit.py",
 		"medops/tests/test_budget_material_source_integrity.py",
-		"architecture/adr/ADR-0041-native-material-source-binding-integrity.md",
+		"architecture/adr/ADR-004*.md",
 		"medops/hooks.py",
-		"scripts/bootstrap_latest_develop.sh"
+		"scripts/bootstrap_latest_develop.sh",
+		"scripts/core_build_integrity.py",
+		"tests/test_core_build_integrity.py"
 	],
 	"permissions_impact": "No grants, roles, scopes or sharing added. Standard native controller permissions remain; before native rename private binding lookup explicitly requires native write permission. Registered purchase sources gain denial-only economic/status/lifecycle integrity protection, independent of financial feature flags; unbound sources/lines retain native behavior.",
 	"migration_impact": "No schema/index/model migration;47 runtime models unchanged. Future update must refresh DocEvents/cache and reload Python. Server maintenance remains active: no server access/deploy.",
 	"rollback_plan": "Keep equivalent native source protection whenever immutable roots exist, or place affected native source entry points in maintenance until replacement. Closing reservation flags alone does not make removing hooks safe. Preserve all original/renewal/release evidence, roots/events/receipts and compatible full-history/recovery readers.",
-	"security_impact": "ADR0041 adds denial-only native Material Request/Item DocEvents for save/after-submit/db_set and destructive lifecycle operations. Lock parent before current root binding reads, refuse late unbound parent locks under budget guards, and revalidate child parent after locking to prevent stale RR discovery. Cap10000 physical roots per parent, reject overflow; no capacity claim. Only referenced lines and shared company/type/date/identity are economically immutable; supported purchase progress and unrelated lines remain native. Native decimal strings compare exactly; in-memory floats confer no authority and cannot hide lost digits. Bound stop/cancel/delete/rename refused even after release until a reviewed archival/amendment protocol exists; early native rename checks write permission before private queries. No source/financial writes, commits, grants, public API or automatic consent in hooks. Existing ADR0040 full scoped recovery and all human financial confirmation/idempotency/history gates retained. Five pure edit tests passed, eight native temporary-presence tests and actual valid-root standard HTTP counterpart pending. Temporary bindings do not prove financial authorization. Current-source whole quality/native pending; prior4b70f5a CI does not cover these hooks. Native browser51f3983 failed before HRP route at login; per-request recovery samples22.76-31.79s on shared CI are a measured performance gap, not hospital SLO/capacity evidence. CI-only safe login diagnostic pending. Source cancellation/amendment, commitment/actual conversions, other native/direct writers, real Desk/role matrix/hospital acceptance remain incomplete. Server untouched. Fresh bootstrap now builds all installed apps: actual login evidence found missing native web/Desk assets when only MedOps was built. Native boundary verifies five required core JS/CSS bundles plus existing content-hashed MedOps journal.",
+	"security_impact": "ADR0041 denial-only native source hooks remain; current valid-root HTTP proof passed in focus40716449289. Full a02d81e CI40719053510 failed only final Core worktree gate after Core business tests passed. ADR0042 retains all-app build and adds pinned-source/generated-output attestation: pre-build clean checkout/index, exact finite output paths, generated route/public-copy consistency, full post-build content/mode inventory and parent-shell pre-test proof digest. Any other source/untracked code change, symlink, index mutation or post-build file/proof change fails; four other apps retain pristine Git gate. No Core/upstream edits, new dependencies, schema, grants, financial writes or server access. Five real temporary-Git tests plus existing627 pure and19 frontend are expected locally; Linux CI adds actual symlink/mode assertions within the same test. Current native658+1 must rerun with the new build gate; old business success cannot certify the new gate. Native password login authenticated Admin but Desk initialization still times out; browser diagnostic40720837738 failed and remains separate. Shared-CI profile identified repeated fresh metadata refresh; no authorization checks relaxed. Source lifecycle/commitment/actual/all-writer/root UI/performance/hospital acceptance remain incomplete.",
 	"test_plan": [
-		"Expected627 pure/658 regular native+1 dedicated committed probe/19 frontend/41 ADR/37 records/47 runtime DocTypes; run all12 quality gates, current-source full plain/Core CI, governance/checksums.",
+		"Expected632 pure/658 regular native+1 dedicated committed probe/19 frontend/42 ADR/37 records/47 runtime DocTypes; run all12 quality gates, current-source full plain/Core CI, governance/checksums.",
 		"Five pure source-edit tests: allow operational progress/unbound rows, reject bound header/economic changes, missing/duplicate identities, native float precision loss/nonfinite values and uninspectable lifecycle states.",
 		"Eight native temporary binding-presence cases: real MR stop/reopen without bindings; bound stop/ignore-links cancel; trusted after-submit flag economic edits; child db_set before optional commit; supported progress/unbound line; native parent rename/direct child lifecycle; generic guard refuses before late SQL; prebound parent retains real witness. Presence rows are not valid financial evidence.",
 		"Extend exact disposable committed probe with valid roots and actual cookie native ERP status/set_value/cancel requests: deny destructive edits, allow normal progress, frozen root unchanged, complete current inspection and scoped recovery still succeed. Retain all previous financial concurrency/replay/rollback/privacy checks.",
@@ -140,9 +142,11 @@
 		"First local source candidate627 pure/19 frontend/all12 passed before transient-flag hardening; native40709871350/5c5ad8a failed all8 setup on duplicate Item lines, no body/probe/profile execution. Distinct Items and persisted-row checks even under __islocal fixed; frozen v2/retry pending. Login40708508528 failed before browser on relative shell root; corrected87cab6d uses existing absolute root, no product changes.",
 		"Second source focus40712668918/38396dd passed6 ordinary native-source cases under RR;2 guard tests failed at strict isolation precondition before target checks. Configure only those2 cases RC before their transaction, restore RR; no production gate relaxed. Native login40711957910 proved undefined $/no jQuery and unstyled page. Fix fresh bootstrap to build every app, extend native asset checks; empty-login assets28f4397 retry dispatched.",
 		"Producta02d81e pushed; full40719053510 Quality/Security passed, native plain/Core live. Native focus40716449289 live. Real password login40717947212 reached Admin /desk with jquery/styles and zero JS/asset errors; Desk readiness unproven, screenshot masked primary failure. CI-only diagnostic40720837738/d94dd6a retains original type/hash and safe state/network metadata; no app/financial changes.",
-		"Source focus40716449289 at6cd42d3 passed8+4+4+3 native,19 frontend,1 committed1473.593s;2 zero Error Log sites,no skips,9 current runtime/native/pure/bootstrap blobs match. Current full40719053510 still live. One profiled recovery34.523s spent31.562s in74 fresh-authority calls/2258 Meta constructions/28208 SQL; no authority checks relaxed, optimize only with freshness/own-transaction/revocation proof."
+		"Source focus40716449289 at6cd42d3 passed8+4+4+3 native,19 frontend,1 committed1473.593s;2 zero Error Log sites,no skips,9 current runtime/native/pure/bootstrap blobs match. Current full40719053510 still live. One profiled recovery34.523s spent31.562s in74 fresh-authority calls/2258 Meta constructions/28208 SQL; no authority checks relaxed, optimize only with freshness/own-transaction/revocation proof.",
+		"ADR0042 five temporary-Git tests exercise legitimate hashed output replacement, source/untracked/ignored-output/index/revision rejection, route/public-file consistency, final inventory/proof tamper and symlink/mode rejection. Full40719053510 plain passed; Core658+1 business passed but final worktree gate failed, Required failed. New candidate needs exact full rerun; no server access.",
+		"Final fixed candidate passed632 pure/19 frontend/all12 quality gates,0 type errors/1 existing warning. First quality attempt failed only new contract-token formatting; fixed and full rerun passed. Bash syntax/governance passed; real unchanged local pinned Core outputs prepare/seal/verify passed without modifying upstream. Exact fresh Linux/plain/Core run still required."
 	],
 	"owner": "MedOps Maintainers",
 	"created_on": "2026-10-27",
-	"updated_on": "2026-10-28"
+	"updated_on": "2026-10-29"
 }

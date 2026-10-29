@@ -42,6 +42,10 @@ export KEEP_TEMPORARY_REDIS=1
 # during its bootstrap migration; ordinary bootstrap retains native behavior.
 export MEDOPS_BOOTSTRAP_SKIP_SEARCH_INDEX=1
 bash "$ROOT_DIR/scripts/bootstrap_latest_develop.sh"
+if [[ "$INCLUDE_IONE_CORE" == "1" ]]; then
+  # Keep the sealed digest in this parent shell before any integration tests.
+  read -r CORE_BUILD_DIGEST _ < <(sha256sum "$BENCH_DIR/.medops-core-build-integrity.json")
+fi
 
 for port in "$REDIS_CACHE_PORT" "$REDIS_QUEUE_PORT"; do
   if [[ "$(redis-cli -p "$port" ping)" != "PONG" ]]; then
@@ -232,8 +236,9 @@ PY
 
 apps=(frappe erpnext hrms medops)
 if [[ "$INCLUDE_IONE_CORE" == "1" ]]; then
-  apps+=(ione_core)
-  [[ "$(git -C "$BENCH_DIR/apps/ione_core" rev-parse HEAD)" == "8c697bafd30aebd418aee18f618b287bbab557f3" ]]
+  "$BENCH_DIR/env/bin/python" "$ROOT_DIR/scripts/core_build_integrity.py" verify \
+    --app "$BENCH_DIR/apps/ione_core" --proof "$BENCH_DIR/.medops-core-build-integrity.json" \
+    --digest "$CORE_BUILD_DIGEST"
 fi
 for app in "${apps[@]}"; do
   if [[ -n "$(git -C "$BENCH_DIR/apps/$app" status --porcelain)" ]]; then

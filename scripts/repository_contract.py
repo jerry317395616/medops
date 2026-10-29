@@ -598,6 +598,9 @@ def validate_ci_pipeline(root: Path) -> list[str]:
 		"run-tests --app medops",
 		"SELECT COUNT(*) FROM `tabError Log`",
 		"git -C",
+		'"$ROOT_DIR/scripts/core_build_integrity.py" verify',
+		'--digest "$CORE_BUILD_DIGEST"',
+		"read -r CORE_BUILD_DIGEST _ < <(sha256sum",
 	):
 		if required_token not in integration_script:
 			violations.append(f"CI integration script is missing: {required_token}")
@@ -620,6 +623,9 @@ def validate_ci_pipeline(root: Path) -> list[str]:
 			"https://github.com/jerry317395616/ione_core.git",
 			"8c697bafd30aebd418aee18f618b287bbab557f3",
 			'bench --site "$SITE_NAME" install-app ione_core',
+			'"$ROOT_DIR/scripts/core_build_integrity.py" prepare',
+			'"$ROOT_DIR/scripts/core_build_integrity.py" seal',
+			"\nbench build\n",
 		):
 			if required_token not in bootstrap:
 				violations.append(f"IONE Core CI bootstrap is missing: {required_token}")

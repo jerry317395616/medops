@@ -206,6 +206,13 @@ else
 fi
 # Fresh Bench initialization skips assets. Build every installed app so the
 # native website/login/Desk dependencies exist before verifying the custom UI.
+if [[ "$INCLUDE_IONE_CORE" == "1" ]]; then
+  ./env/bin/python "$ROOT_DIR/scripts/core_build_integrity.py" prepare --app "$BENCH_DIR/apps/ione_core"
+fi
 bench build
+if [[ "$INCLUDE_IONE_CORE" == "1" ]]; then
+  ./env/bin/python "$ROOT_DIR/scripts/core_build_integrity.py" seal \
+    --app "$BENCH_DIR/apps/ione_core" --proof "$BENCH_DIR/.medops-core-build-integrity.json"
+fi
 
 echo "Ready. Run: cd '$BENCH_DIR' && bench start"
