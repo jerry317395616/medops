@@ -14,7 +14,7 @@ from medops.common.commitment_evidence import (
 	commitment_sources,
 	verify_commitment_evidence_row,
 )
-from medops.common.domain_service import fingerprint_json
+from medops.common.domain_service import fingerprint_json, normalize_sha256
 from medops.common.exact_money import exact_decimal_amount
 from medops.common.organization import normalize_reference
 from medops.common.reservation_commitment import require_commitment_intent, reservation_commitment_intent
@@ -125,15 +125,24 @@ class PurchaseCommitmentCapacity:
 	decision_set_digest: str = field(repr=False)
 
 
-def _read_selected_records(item):
+def read_guarded_commitment_records(keys, reservation, expected_sequence):
+	"""Read a complete selected chain under already-authorized shared guards."""
+	assert_budget_guards(keys)
+	if (
+		normalize_sha256(reservation, label="reservation") != reservation
+		or type(expected_sequence) is not int
+		or not 1 <= expected_sequence < MAX_RESERVATION_EVENTS
+	):
+		raise ValueError("canonical bounded reservation predecessor required")
 	rows = frappe.db.sql(
 		f"SELECT {_columns(ROW_FIELDS)} FROM `tabHRP Budget Reservation Event` "  # nosec B608 - fixed fields/bound root
 		"WHERE `reservation`=%s ORDER BY `sequence`,`name` LIMIT %s FOR UPDATE",
-		(item.reservation, MAX_RESERVATION_EVENTS + 1),
+		(reservation, MAX_RESERVATION_EVENTS + 1),
 		as_dict=True,
 	)
-	if len(rows) != item.previous_sequence:
+	if len(rows) != expected_sequence:
 		raise ValueError("complete selected reservation predecessor required")
+	assert_budget_guards(keys)
 	return tuple(reservation_record_from_row(row) for row in rows)
 
 
@@ -179,7 +188,7 @@ def verify_guarded_commitment_capacity(inspection, purchase, proposed):
 		if item.reservation not in by_root or item.key != by_root[item.reservation].key:
 			raise ValueError("selected reservation is outside complete guarded usage")
 		_, original, _, _ = read_reservation_original(item.reservation, lock=True)
-		records = _read_selected_records(item)
+		records = read_guarded_commitment_records(inspection.keys, item.reservation, item.previous_sequence)
 		order_snapshot, order_digest = purchase.commitment_snapshot(material)
 		from medops.common.material_source_snapshot import material_source_snapshot
 

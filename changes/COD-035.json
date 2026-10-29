@@ -30,7 +30,8 @@
 		"ADR-0045",
 		"ADR-0046",
 		"ADR-0047",
-		"ADR-0048"
+		"ADR-0048",
+		"ADR-0049"
 	],
 	"path_globs": [
 		"DELIVERY_MANIFEST.json",
@@ -129,7 +130,7 @@
 		"medops/common/commitment_evidence.py",
 		"medops/hrp_budget/services/commitment_authorization.py",
 		"medops/hrp_budget/doctype/hrp_budget_commitment_authorization/**",
-		"medops/tests/commitment_evidence_fixtures.py",
+		"medops/tests/commitment_*.py",
 		"medops/tests/test_budget_commitment_authorization.py",
 		"tests/test_commitment_evidence.py",
 		"doctype_blueprints/hrp_budget/hrp_budget_commitment_authorization.json"
@@ -139,8 +140,7 @@
 	"rollback_plan": "Actual evidence writes remain closed; revert code while retaining the empty new table and original facts. After future valid persistence/Commit writes, first close entry points and preserve all evidence/indexes/receipts and compatible mixed-history readers. Never delete facts or revert to release-only history.",
 	"security_impact": "ADR0045 binds actor/proof/session, strict True, half-open<=5-minute window, predecessor and max current MR/PO parent/child modification time; v2 digest and every scope/source column cross-check. Raw proof never stored; hashes/reason hidden from repr. Real controller always rejects mutation, raw hooks deny configured grants. Temp-only native copies test schema/roundtrip/unique successor/extra Custom DocPerm denial, not actual person or authorization writing. Shared release/Commit exclusion still needs common locks,event uniqueness and full atomic rollback. Owned persistence, pre-budget MR/PO parent discovery, global allocations, authorized mixed history/old receipts, source lifecycle,human HTTP/UI and actual conversion remain. Default-off gates retained; no upstream edits/role grants/server access.",
 	"test_plan": [
-		"Expected632 pure/666 regular native+1 dedicated committed probe/19 frontend/43 ADR/37 records/47 runtime DocTypes; all12 quality gates, native8 metadata+4 actual financial revoke cases, exact plain/Core full CI, committed/HTTP timings, governance/checksums.",
-		"Five pure source-edit tests: allow operational progress/unbound rows, reject bound header/economic changes, missing/duplicate identities, native float precision loss/nonfinite values and uninspectable lifecycle states.",
+		"Expected663 pure/705 regular native+1 committed probe/19 frontend/49 ADR/48 runtime;all12 quality gates,exact plain/Core full CI,HTTP timings/governance/checksums. Preserve5 pure source-edit cases:progress/unbound allowed;bound economics/header,missing/duplicate identity,float precision/nonfinite/uninspectable states denied;native8 metadata+4 actual financial revoke gates.",
 		"Eight native temporary binding-presence cases: real MR stop/reopen without bindings; bound stop/ignore-links cancel; trusted after-submit flag economic edits; child db_set before optional commit; supported progress/unbound line; native parent rename/direct child lifecycle; generic guard refuses before late SQL; prebound parent retains real witness. Presence rows are not valid financial evidence.",
 		"Extend exact disposable committed probe with valid roots and actual cookie native ERP status/set_value/cancel requests: deny destructive edits, allow normal progress, frozen root unchanged, complete current inspection and scoped recovery still succeed. Retain all previous financial concurrency/replay/rollback/privacy checks.",
 		"Recover scoped directories only under current source/key/field/scope with full independent original/latest-renewal/root history; fresh post-expiry human review, immutable original allocation and uncertainty keys retained. Existing19 frontend regressions mandatory.",
@@ -168,7 +168,8 @@
 		"Cleanup-fixed source re-passed652 pure/19 frontend/all12 gates,0 type errors/1 old warning. Corrected native40851511007/bc0a8cf running same20 pure+2 schema/access+24 PO+1 actual source+4 boundary each;11 files match. First failed run40849741378 retained. No product/controller/access gate change; actual evidence writing/Commit/API/UI still closed,server untouched.",
 		"ADR0046 full local652 pure/19 frontend/all12 passed,0 type errors/1 existing warning;initial ADR-count-only failure retained/fixed45->46. Native40854728952/788b387 passed plain/Core20 pure+9 guards+2 evidence+14 multi+29 PO+1 actual source+4 boundary;6 source files match,no skips,2 zero logs,pristine apps/Core inventory verified. Full current CI pending;actual persistence/Commit/actual/UI remains closed.",
 		"ADR0047 fixture-corrected663 pure/19 frontend/all12 passed,0 type errors/1 old warning. Native v2 40859656646/a1691cf runs both44 pure+128 regular+1 committed probe;19 source files match,pending. First40858364254 both failed10 old arbitrary-name fixtures;25 history cases passed. Standard initial docs fixed fixtures/actual source,no guard relaxed. Real commitment writes/actual/UI closed.",
-		"ADR0048 fixed663 pure/19 frontend/all12 passed,0 type errors/1 old warning;checksum-only first failure retained/fixed. Focus40863049983/102f8c3 passed both44 pure+151 native,no skips,2 zero logs,pristine apps/Core seal;7 files match.9 cross-root/different-budget capacity cases and actual MR/PO bridge. Prior709 focus/probe passed;full709 live excludes observer. Complete preparation,persistence,lifecycle,atomic Commit/actual/UI remain."
+		"ADR0048 fixed663 pure/19 frontend/all12 passed,0 type errors/1 old warning;checksum-only first failure retained/fixed. Focus40863049983/102f8c3 passed both44 pure+151 native,no skips,2 zero logs,pristine apps/Core seal;7 files match.9 cross-root/different-budget capacity cases and actual MR/PO bridge. Prior709 focus/probe passed;full709 live excludes observer. Complete preparation,persistence,lifecycle,atomic Commit/actual/UI remain.",
+		"ADR0049: native whole key/source closure,historical nonfinancial versions versus economic rejection,alias/bounds/late-guard denial;raw controller denial even new flag true. Extended disposable real-budget/root/MR/PO/controller probe tests Confirmation commit/rollback/expiry/immutable facts;synthetic actor/clock,no real human or Commit. Expected705+1;quality/native pending. API/audit/idempotency,Decision/Commit/lifecycle/actual/UI remain incomplete."
 	],
 	"owner": "MedOps Maintainers",
 	"created_on": "2026-10-27",
