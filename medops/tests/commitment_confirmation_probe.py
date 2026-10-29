@@ -178,11 +178,15 @@ def exercise_commitment_confirmation(test, reservation):
 		test.assertEqual(frozen, {name: current.get(name) for name in frozen})
 		state = reservation_release_state.inspect_reservation_release(reservation)
 		test.assertEqual(state.source.status, "Ordered")
+		commit_amount = state.position.open_reservation if state.position.last_sequence == 1 else amount
 		primary.rollback()
 	print(
 		"MEDOPS_COMMITMENT_CONFIRMATION_CI:real standard-controller append/commit/rollback/expiry/immutable checks passed;Decision/event writes zero",
 		flush=True,
 	)
+	from medops.tests.commitment_post_probe import exercise_commitment_post
+
+	exercise_commitment_post(test, reservation, order, amount=commit_amount, clock=clock)
 
 
 class TestDisposableCommitmentConfirmation(TestDisposableReservationConcurrency):

@@ -144,8 +144,8 @@ class LockedCommitmentState:
 	session: str = field(repr=False)
 
 
-def inspect_reservation_commitment(reservation, order, line, *, amount, reason):
-	"""Prepare native full scope and exact intent in a clean owned transaction."""
+def inspect_commitment_history(reservation, order, line):
+	"""Prepare native full scope without assuming any amount remains to convert."""
 	try:
 		actor = frappe.session.user
 		_actor(actor)
@@ -188,6 +188,22 @@ def inspect_reservation_commitment(reservation, order, line, *, amount, reason):
 		)
 		if source != inspection.source:
 			raise ValueError("prepared material source changed")
+		_actor(actor)
+		return actor, original, inspection, purchase
+	except (TypeError, ValueError, KeyError) as error:
+		invalidate_budget_guards()
+		raise_ione_error("CONFLICT", cause=error)
+	except BaseException:
+		invalidate_budget_guards()
+		raise
+
+
+def inspect_reservation_commitment(reservation, order, line, *, amount, reason):
+	"""Prepare native full scope and exact intent in a clean owned transaction."""
+	try:
+		actor, original, inspection, purchase = inspect_commitment_history(reservation, order, line)
+		source = inspection.source
+		keys = inspection.keys
 		positions = [p for p in inspection.source_usage if p.reservation == reservation]
 		if len(positions) != 1:
 			raise ValueError("one complete selected reservation required")

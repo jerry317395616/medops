@@ -1198,6 +1198,20 @@ class TestBudgetMaterialAuthorizationObservation(IntegrationTestCase):
 		with self.assertRaises(IoneApplicationError):
 			self.check_quota(inspection, purchase, proposed)
 
+	def test_purchase_capacity_rejects_backdated_native_order_parent(self):
+		inspection, purchase, proposed, _ = self.quota_fixture(
+			amount="1.00", purchase_changes={"order_modified": "2020-01-01 00:00:00"}
+		)
+		with self.assertRaises(IoneApplicationError):
+			self.check_quota(inspection, purchase, proposed)
+
+	def test_purchase_capacity_rejects_backdated_native_order_line(self):
+		inspection, purchase, proposed, _ = self.quota_fixture(
+			amount="1.00", purchase_changes={"line_modified": "2020-01-01 00:00:00"}
+		)
+		with self.assertRaises(IoneApplicationError):
+			self.check_quota(inspection, purchase, proposed)
+
 	def test_purchase_capacity_stable_identity_query_detects_hidden_parent_mutation(self):
 		inspection, purchase, proposed, pairs = self.quota_fixture()
 		frappe.db.sql(
