@@ -46,6 +46,7 @@ class TestBudgetCommitmentAuthorization(IntegrationTestCase):
 				{
 					"medops_internal_commitment_authorization_enabled": enabled,
 					"medops_internal_commitment_confirmation_enabled": enabled,
+					"medops_internal_commitment_write_enabled": enabled,
 				},
 			):
 				for action in (
