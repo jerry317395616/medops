@@ -22,7 +22,7 @@ from frappe.utils import get_bench_path, set_request
 from medops.common.budget_control import budget_control_key, budget_guard_names
 from medops.common.budget_control_history import ReleaseInventoryEntry
 from medops.common.budget_reservation_anchor import ANCHOR_ROW_FIELDS
-from medops.common.budget_reservation_storage import ROW_FIELDS
+from medops.common.budget_reservation_storage import ROW_FIELDS, reservation_record_from_row
 from medops.common.budget_workflow import build_human_confirmation
 from medops.common.domain_service import idempotency_record_name
 from medops.common.error_catalog import IoneApplicationError
@@ -32,6 +32,7 @@ from medops.common.reservation_authorization import (
 	reservation_intent,
 	verify_reservation_authorization_rows,
 )
+from medops.common.reservation_commitment import reservation_commitment_intent
 from medops.common.reservation_renewal import RENEWAL_ROW_FIELDS
 from medops.hrp_budget.services import (
 	material_budget_guards,
@@ -770,6 +771,18 @@ class TestBudgetMaterialRequestSource(FrappeTestCase):
 				self.assertEqual(verified, material)
 				commitment_snapshot, commitment_digest = purchase.commitment_snapshot(verified)
 				self.assertEqual(commitment_digest, purchase.digest())
+				current_snapshot, current_digest = material_source_snapshot(asdict(verified))
+				actual_intent = reservation_commitment_intent(
+					intent,
+					[reservation_record_from_row(events[0])],
+					order_snapshot=commitment_snapshot,
+					order_digest=commitment_digest,
+					material_snapshot=current_snapshot,
+					material_digest=current_digest,
+					amount="1.00",
+					reason="Synthetic real source commitment review",
+				)
+				self.assertEqual(actual_intent.reservation, root["name"])
 				self.assertEqual(
 					json.loads(commitment_snapshot)["material_request_digest"], material.digest()
 				)

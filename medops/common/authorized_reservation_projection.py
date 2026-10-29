@@ -18,9 +18,9 @@ from medops.common.reservation_renewal import verify_reservation_renewal_chain
 
 
 def verify_authorized_released_reservation(
-	root, event_rows, confirmation_row, decision_row, releases, *, current_facts, renewals=()
+	root, event_rows, confirmation_row, decision_row, releases, *, current_facts, renewals=(), commitments=()
 ):
-	"""Verify the frozen initial root and every independently authorized release.
+	"""Verify the frozen root and all independent release/optional Commit pairs.
 
 	This supplied-data contract does not discover or lock database rows. Callers
 	must read all physical events and posted release decisions, authenticate their
@@ -33,6 +33,8 @@ def verify_authorized_released_reservation(
 		raise ValueError("complete bounded reservation history required")
 	if not isinstance(renewals, (tuple, list)):
 		raise ValueError("complete original renewal evidence required")
+	if not isinstance(commitments, (tuple, list)):
+		raise ValueError("complete independent commitment evidence required")
 	first = reservation_record_from_row(event_rows[0])
 	if first.renewal_decision is not None:
 		_, comparison, decision = verify_renewed_initial_reservation(
@@ -46,7 +48,12 @@ def verify_authorized_released_reservation(
 		)
 	item, _ = verify_reservation_authorization_rows(confirmation_row, decision_row)
 	records = [reservation_record_from_row(row) for row in event_rows]
-	position = verify_released_reservation_records(item, records, releases)
+	if commitments:
+		from medops.common.reservation_commitment_history import verify_reservation_action_records
+
+		position = verify_reservation_action_records(item, records, releases, commitments)
+	else:
+		position = verify_released_reservation_records(item, records, releases)
 	return position, comparison, decision
 
 

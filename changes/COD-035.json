@@ -28,7 +28,8 @@
 		"ADR-0043",
 		"ADR-0044",
 		"ADR-0045",
-		"ADR-0046"
+		"ADR-0046",
+		"ADR-0047"
 	],
 	"path_globs": [
 		"DELIVERY_MANIFEST.json",
@@ -164,7 +165,8 @@
 		"Fixed ADR0045 local652 pure/19 frontend/all12 passed,0 type errors/1 existing warning; focused40849741378/b9d4e35 running both20 pure+2 schema/access+24 PO+1 actual source+4 boundary,no skips/zero logs/pristine/Core required,11 files match. Prior524 full40832608462 passed617+49 regular+1 probe each,8 zero logs,Core inventory/Required; excludes current schema and v2 component. Current model writes stay closed.",
 		"Native40849741378/b9d4e35 both:20 pure passed;schema/controller case passed,second case errored only finally DROP after writes (ImplicitCommitError),later PO/source/boundary groups not run. Preserve failure. Test-only fix rolls back owned synthetic data before temp DROP; no commit/guard disabling/product behavior change. Fixed-source full quality and native retry required.",
 		"Cleanup-fixed source re-passed652 pure/19 frontend/all12 gates,0 type errors/1 old warning. Corrected native40851511007/bc0a8cf running same20 pure+2 schema/access+24 PO+1 actual source+4 boundary each;11 files match. First failed run40849741378 retained. No product/controller/access gate change; actual evidence writing/Commit/API/UI still closed,server untouched.",
-		"ADR0046 full local652 pure/19 frontend/all12 passed,0 type errors/1 existing warning;initial ADR-count-only failure retained/fixed45->46. Native40854728952/788b387 passed plain/Core20 pure+9 guards+2 evidence+14 multi+29 PO+1 actual source+4 boundary;6 source files match,no skips,2 zero logs,pristine apps/Core inventory verified. Full current CI pending;actual persistence/Commit/actual/UI remains closed."
+		"ADR0046 full local652 pure/19 frontend/all12 passed,0 type errors/1 existing warning;initial ADR-count-only failure retained/fixed45->46. Native40854728952/788b387 passed plain/Core20 pure+9 guards+2 evidence+14 multi+29 PO+1 actual source+4 boundary;6 source files match,no skips,2 zero logs,pristine apps/Core inventory verified. Full current CI pending;actual persistence/Commit/actual/UI remains closed.",
+		"ADR0047: actual-root derivation,independent Commit records,mixed release/Commit full history and original/renewed receipt compatibility,canonical snapshots/times,orphan/scope/duplicate/missing evidence,linear replay and101-scope discovery.11 targeted new pure passed;expected663 pure/691 native+1/47 ADR. Native/quality pending;real evidence/controller/Commit/actual/UI remain closed."
 	],
 	"owner": "MedOps Maintainers",
 	"created_on": "2026-10-27",

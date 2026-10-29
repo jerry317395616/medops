@@ -126,7 +126,7 @@ def verify_existing_initial_reservation(command: ReservationPostCommand, result:
 		if lineage.original != decision or lineage.renewals:
 			raise ValueError("original receipt cannot have a renewal successor")
 		root = frappe.get_doc(ROOT, result["reservation"], for_update=True)
-		event_rows, releases = read_locked_initial_receipt_history(
+		event_rows, releases, commitments = read_locked_initial_receipt_history(
 			item, source, root.name, result["event"], observed_position=observed_position
 		)
 		event = frappe.get_doc(EVENT, result["event"], for_update=True)
@@ -136,7 +136,13 @@ def verify_existing_initial_reservation(command: ReservationPostCommand, result:
 		_check_persisted_document(event, documents.event, 0)
 		root_row = {field: root.get(field) for field in ANCHOR_ROW_FIELDS | {"source_snapshot_json"}}
 		position, _, checked = verify_authorized_released_reservation(
-			root_row, event_rows, locked_first, locked_second, releases, current_facts=asdict(source)
+			root_row,
+			event_rows,
+			locked_first,
+			locked_second,
+			releases,
+			current_facts=asdict(source),
+			commitments=commitments,
 		)
 		if (
 			result["intent_digest"] != item.intent_digest

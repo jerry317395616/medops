@@ -29,6 +29,7 @@ from medops.common.budget_reservation_storage import (
 	reservation_record_from_row,
 	reservation_record_row,
 )
+from medops.common.commitment_evidence import COMMITMENT_ROW_FIELDS
 from medops.common.error_catalog import IoneApplicationError
 from medops.common.initial_reservation_posting import renewed_initial_reservation_documents
 from medops.common.material_source_snapshot import (
@@ -61,8 +62,10 @@ from medops.hrp_budget.services.control_guards import (
 	assert_budget_guards,
 )
 from medops.hrp_budget.services.material_request_source import MaterialRequestSource
+from medops.hrp_budget.services.reservation_action_observation import guarded_commitment_decision_inventory
 from medops.hrp_budget.services.reservation_receipt_history import read_locked_initial_receipt_history
 from medops.services.errors import raise_ione_error
+from medops.tests.commitment_evidence_fixtures import history_commitment
 from medops.tests.reservation_release_fixtures import release_evidence
 from medops.tests.reservation_release_fixtures import rows as release_rows
 
@@ -227,6 +230,7 @@ class TestBudgetMaterialAuthorizationObservation(IntegrationTestCase):
 			("tabHRP Budget Reservation Authorization", AUTHORIZATION_ROW_FIELDS),
 			("tabHRP Budget Reservation Renewal", RENEWAL_ROW_FIELDS),
 			("tabHRP Budget Reservation Release", RELEASE_ROW_FIELDS),
+			("tabHRP Budget Commitment Authorization", COMMITMENT_ROW_FIELDS),
 		)
 		integers = {
 			"event_count",
@@ -237,18 +241,16 @@ class TestBudgetMaterialAuthorizationObservation(IntegrationTestCase):
 			"acknowledged",
 		}
 		for table, fields in self.tables:
-			if table == "tabHRP Budget Reservation Release":
+			if table in {"tabHRP Budget Reservation Release", "tabHRP Budget Commitment Authorization"}:
 				# Preserve the actual engine, column types and unique/index contracts.
 				# A hand-built shadow cannot represent the storage required by readers.
-				frappe.db.sql(
-					"CREATE TEMPORARY TABLE `medops_release_structure_template` LIKE `tabHRP Budget Reservation Release`"
-				)
+				frappe.db.sql(f"CREATE TEMPORARY TABLE `medops_action_structure_template` LIKE `{table}`")  # nosec B608 - fixed private table list
 				try:
 					frappe.db.sql(
-						"CREATE TEMPORARY TABLE `tabHRP Budget Reservation Release` LIKE `medops_release_structure_template`"
+						f"CREATE TEMPORARY TABLE `{table}` LIKE `medops_action_structure_template`"  # nosec B608 - fixed private table list
 					)
 				finally:
-					frappe.db.sql("DROP TEMPORARY TABLE `medops_release_structure_template`")
+					frappe.db.sql("DROP TEMPORARY TABLE `medops_action_structure_template`")
 				continue
 			columns = []
 			for name in sorted(fields):
@@ -323,10 +325,11 @@ class TestBudgetMaterialAuthorizationObservation(IntegrationTestCase):
 		first_event = records[0].event.name
 		with self.assertRaises(ValueError):
 			read_locked_initial_receipt_history(item, source, root["name"], first_event)
-		rows, pairs = read_locked_initial_receipt_history(
+		rows, pairs, commitments = read_locked_initial_receipt_history(
 			item, source, root["name"], first_event, observed_position=expected
 		)
 		self.assertEqual((len(rows), len(pairs)), (3, 2))
+		self.assertEqual(commitments, [])
 		self.assertEqual(rows[0]["name"], first_event)
 		assert_budget_guards([item.key])
 
@@ -861,3 +864,171 @@ class TestBudgetMaterialAuthorizationObservation(IntegrationTestCase):
 
 	def test_historical_decision_rejects_backdated_line(self):
 		self.verify_progressed_source(backdated_field="line_modified")
+
+	def committed_fixture(self, *, mixed=False, renewed=False):
+		if renewed:
+			fixture = synthetic_renewed_rows()
+			source, item, root, events, first, original, _, _, confirmed, decision = fixture
+			self.insert_renewed_fixture(fixture)
+			lineage = [(confirmed, decision)]
+		else:
+			source, item, root, events, first, original = synthetic_rows()
+			for table, row in (
+				("tabHRP Budget Reservation", root),
+				("tabHRP Budget Reservation Event", events[0]),
+				("tabHRP Budget Reservation Authorization", first),
+				("tabHRP Budget Reservation Authorization", original),
+			):
+				self.insert_row(table, row)
+			lineage = []
+		records = [reservation_record_from_row(events[0])]
+		releases, commitments = [], []
+		for number in range(2 if mixed else 1):
+			_, pair, record = history_commitment(item, records, amount="4.00")
+			for row in pair:
+				self.insert_row("tabHRP Budget Commitment Authorization", row)
+			self.insert_row("tabHRP Budget Reservation Event", reservation_record_row(record))
+			records.append(record)
+			commitments.append(pair)
+			if mixed and number == 0:
+				intent, confirmed, decided, released = release_evidence(item, records, "2.00", 20)
+				pair = release_rows(intent, confirmed, decided)
+				for row in pair:
+					self.insert_row("tabHRP Budget Reservation Release", row)
+				self.insert_row("tabHRP Budget Reservation Event", reservation_record_row(released))
+				records.append(released)
+				releases.append(pair)
+		position, _, _ = verify_authorized_released_reservation(
+			root,
+			[reservation_record_row(r) for r in records],
+			first,
+			original,
+			releases,
+			commitments=commitments,
+			current_facts=asdict(source),
+			renewals=lineage,
+		)
+		return source, item, root, records, releases, commitments, position
+
+	def observe_commitment(self, source, item):
+		self.bind_release_source(source, item)
+		positions = budget_usage_observation.guarded_budget_usage_observation([item.key])
+		with patch.object(observation, "locked_material_request_source", return_value=source):
+			checked = observation.verify_guarded_initial_authorizations([item.key], (source,), positions)
+		return positions, checked
+
+	def test_mixed_commits_releases_and_old_receipt_read_preserve_frozen_root(self):
+		source, item, root, records, releases, commitments, expected = self.committed_fixture(mixed=True)
+		positions, _ = self.observe_commitment(source, item)
+		self.assertEqual(positions, (expected,))
+		rows, checked_releases, checked_commits = read_locked_initial_receipt_history(
+			item, source, root["name"], records[0].event.name, observed_position=expected
+		)
+		self.assertEqual((len(rows), len(checked_releases), len(checked_commits)), (4, 1, 2))
+		self.assertEqual((expected.open_reservation, expected.open_commitment), ("0.00", "8.00"))
+		stored = frappe.db.sql(
+			"SELECT event_count,reserved_amount FROM `tabHRP Budget Reservation` WHERE name=%s",
+			(root["name"],),
+		)
+		self.assertEqual((int(stored[0][0]), str(stored[0][1])), (1, "10.00"))
+		self.assertEqual((len(releases), len(commitments)), (1, 2))
+		assert_budget_guards([item.key])
+
+	def test_missing_commitment_decision_invalidates_usage_guard(self):
+		source, item, _, _, _, pairs, _ = self.committed_fixture()
+		frappe.db.sql(
+			"DELETE FROM `tabHRP Budget Commitment Authorization` WHERE name=%s", (pairs[0][1]["name"],)
+		)
+		with self.assertRaises(IoneApplicationError):
+			self.observe_commitment(source, item)
+		with self.assertRaises(IoneApplicationError):
+			assert_budget_guards([item.key])
+
+	def test_commitment_decision_without_event_is_not_ignored(self):
+		source, item, _, records, _, _, _ = self.committed_fixture()
+		frappe.db.sql(
+			"DELETE FROM `tabHRP Budget Reservation Event` WHERE name=%s", (records[-1].event.name,)
+		)
+		with self.assertRaises(IoneApplicationError):
+			self.observe_commitment(source, item)
+
+	def test_orphan_commitment_decision_is_found_without_any_roots(self):
+		source, item, _, _, _, _, _ = self.committed_fixture()
+		frappe.db.sql("DELETE FROM `tabHRP Budget Reservation Event`")
+		frappe.db.sql("DELETE FROM `tabHRP Budget Reservation`")
+		with self.assertRaises(IoneApplicationError):
+			self.observe_commitment(source, item)
+
+	def test_missing_independent_commitment_confirmation_invalidates_guard(self):
+		source, item, _, _, _, pairs, _ = self.committed_fixture()
+		frappe.db.sql(
+			"DELETE FROM `tabHRP Budget Commitment Authorization` WHERE name=%s", (pairs[0][0]["name"],)
+		)
+		with self.assertRaises(IoneApplicationError):
+			self.observe_commitment(source, item)
+		with self.assertRaises(IoneApplicationError):
+			assert_budget_guards([item.key])
+
+	def test_commitment_private_order_snapshot_tamper_is_rejected(self):
+		source, item, _, _, _, pairs, _ = self.committed_fixture()
+		frappe.db.sql(
+			"UPDATE `tabHRP Budget Commitment Authorization` SET order_snapshot_json=CONCAT(order_snapshot_json,' ') WHERE name=%s",
+			(pairs[0][0]["name"],),
+		)
+		with self.assertRaises(IoneApplicationError):
+			self.observe_commitment(source, item)
+
+	def test_commitment_scope_mismatch_is_found_by_reverse_parent_read(self):
+		source, item, _, _, _, pairs, _ = self.committed_fixture()
+		frappe.db.sql(
+			"UPDATE `tabHRP Budget Commitment Authorization` SET funding_source=%s WHERE name=%s",
+			("Other Fund", pairs[0][1]["name"]),
+		)
+		with self.assertRaises(IoneApplicationError):
+			self.observe_commitment(source, item)
+
+	def test_renewed_initial_receipt_accepts_independent_commitment_tail(self):
+		source, item, root, records, _, _, expected = self.committed_fixture(renewed=True)
+		positions, _ = self.observe_commitment(source, item)
+		self.assertEqual(positions, (expected,))
+		rows, _, pairs = read_locked_initial_receipt_history(
+			item, source, root["name"], records[0].event.name, observed_position=expected
+		)
+		self.assertEqual((rows[0]["proof_version"], len(pairs)), (2, 1))
+
+	def test_release_and_commitment_decisions_cannot_share_one_physical_successor(self):
+		source, item, _, records, _, _, _ = self.committed_fixture()
+		intent, confirmed, decided, _ = release_evidence(item, records[:1], "4.00", 20)
+		for row in release_rows(intent, confirmed, decided):
+			self.insert_row("tabHRP Budget Reservation Release", row)
+		with self.assertRaises(IoneApplicationError):
+			self.observe_commitment(source, item)
+
+	def test_unknown_actual_event_cannot_use_a_commitment_decision(self):
+		source, item, _, records, _, _, _ = self.committed_fixture()
+		previous = records[-1]
+		event = replace(
+			previous.event,
+			name=reservation_event_key(previous.event.reservation, 3),
+			sequence=3,
+			kind="Actual",
+			amount="1.00",
+		)
+		forged = reservation_record(
+			event,
+			replace(previous.source, action="Unsupported actual"),
+			actor=previous.actor,
+			occurred_at=previous.occurred_at,
+			previous_digest=previous.event_digest,
+		)
+		self.insert_row("tabHRP Budget Reservation Event", reservation_record_row(forged))
+		with self.assertRaises(IoneApplicationError):
+			self.observe_commitment(source, item)
+
+	def test_commitment_scope_inventory_does_not_truncate_after_first_hundred(self):
+		source, item, _, _, _, pairs, _ = self.committed_fixture()
+		keys = [replace(item.key, funding_source=f"AAA-{i:03}") for i in range(100)] + [item.key]
+		binding = (source.request, source.line, source.organization_unit, source.digest())
+		acquire_multi_source_bound_budget_guards(keys, source_bindings=(binding,))
+		found = guarded_commitment_decision_inventory(keys, [])
+		self.assertEqual(set(found), {pairs[0][1]["name"]})
