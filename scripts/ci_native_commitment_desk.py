@@ -180,7 +180,10 @@ def main():
                 expect(review).to_be_visible(timeout=180000)
                 page.screenshot(path=str(output / "native-commitment-review-visible.png"), full_page=True)
                 stage = "native_review_checkbox"
-                checkbox = review.locator(".frappe-control[data-fieldname='acknowledge'] input[type='checkbox']")
+                checkbox = review.locator("input[type='checkbox'][data-fieldname='acknowledge']")
+                expect(checkbox).to_have_count(1)
+                expect(checkbox).to_be_visible()
+                expect(checkbox).to_be_enabled()
                 expect(checkbox).not_to_be_checked()
                 stage = "native_review_actor"
                 expect(review.get_by_text("执行人：" + MANAGER, exact=True)).to_be_visible()
