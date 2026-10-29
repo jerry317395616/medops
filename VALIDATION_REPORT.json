@@ -15,7 +15,7 @@
     "ADR-0042",
     "ADR-0043"
   ],
-  "current_scope": "ADR0043 final v3 passed local632 pure/19 frontend/all12 gates and ordinary/Core native8 metadata+4 actual financial revocation cases each (40831342696/91684d8); constructor compatibility and source equality verified, no skips, zero Error Log, Core sealed inventory verified. Full current666+1 CI and actual HTTP timings remain required. Prior17781ac full40816048987 passed658+1 each,Required. Plain valid-root browser40828185333 passed inspect/reload/release-input, screenshot reviewed, no financial command/data change; excludes ADR0043. No server access/deploy/schema/grants/new dependencies. Whole HRP incomplete.",
+  "current_scope": "ADR0043 product524557a passed local632 pure/19 frontend/all12 and plain/Core metadata8+actual financial revocation4 each. Full40832608462 Quality/Security passed; native live. Current exact-runtime Core cookie/committed/Chromium40832870602 passed19 regular+1 probe483.601s,35 timed native requests, root display/reload/release-input/logout,3 inspect200,zero errors/financial commands/data changes; screenshot reviewed,Core source/sealed build verified. Plain profile still live, no whole-matrix pass. Fresh posted-directory UI40834757012 plain/Core live. No server access/deploy/schema/grants/new dependencies; full HRP incomplete.",
   "checks": {
     "pure_tests_expected": 632,
     "complete_frappe_tests_expected": 666,
@@ -1834,7 +1834,11 @@
       "native_processing_unchanged": true,
       "fallback": "original native cached=False for unsupported/overridden construction",
       "actual_financial_revocation_cases_required": 4,
-      "current_full_ci": "pending",
+      "current_full_ci": {
+        "run": 40832608462,
+        "commit": "524557a20a8ffaf41e9fc25ccb64e8fd9c7a2dc2",
+        "status": "Quality/Security passed; plain/Core integration running; not full pass"
+      },
       "server_access": false,
       "first_focus": {
         "source": "aad420be9f4ef0dae31b0b89337446c984996c7a",
@@ -1880,7 +1884,77 @@
         "source_proof": "authority-metadata-v3-source-proof.json",
         "log": "authority-metadata-v3-40831342696.log"
       },
-      "cache_scope": "Only code-object compatibility is memoized; no extra metadata/configuration/actor/allow cache. Native Meta.process and native client_cache publishing retained."
+      "cache_scope": "Only code-object compatibility is memoized; no extra metadata/configuration/actor/allow cache. Native Meta.process and native client_cache publishing retained.",
+      "actual_http_and_native_desk": {
+        "run": 40832870602,
+        "candidate": "e5a0270390fcf3ad25654de2ce2475d7b7b5d94c",
+        "product": "524557a20a8ffaf41e9fc25ccb64e8fd9c7a2dc2",
+        "source_proof": "metadata-http-desk-v3-source-proof.json",
+        "runtime_app_matches_product": true,
+        "helper_instrumentation": "three timing-only lines; all original assertions unchanged",
+        "profiles": {
+          "Core": "passed; screenshot visually verified",
+          "plain": "running"
+        },
+        "core_native_tests": [
+          8,
+          4,
+          4,
+          3
+        ],
+        "core_frontend": 19,
+        "core_committed_probe_seconds": 483.601,
+        "core_native_cookie_timed_requests": 35,
+        "core_successful_request_observations": {
+          "inspect": {
+            "n": 3,
+            "median_seconds": 8.409846
+          },
+          "recovery": {
+            "n": 7,
+            "median_seconds": 8.138741
+          },
+          "post": {
+            "n": 3,
+            "median_seconds": 6.882094
+          },
+          "prepare_release": {
+            "n": 3,
+            "median_seconds": 12.876039
+          },
+          "post_release": {
+            "n": 3,
+            "median_seconds": 13.776089
+          }
+        },
+        "core_browser": {
+          "inspection_statuses": [
+            200,
+            200,
+            200
+          ],
+          "page_errors": 0,
+          "failed_local_requests": [],
+          "financial_commands": 0,
+          "financial_snapshots_identical": true,
+          "error_log_count": 0,
+          "native_password_login": true,
+          "reload": true,
+          "release_input_dialog": true,
+          "native_logout": true,
+          "core_source_and_sealed_inventory_verified": true
+        },
+        "scope": "Shared disposable CI native WSGI/cookie request times, no network transit. Small samples and different runners do not prove production SLO/capacity or a controlled before/after percentage. Expired-decision/recovery controls/non-admin UI/hospital UAT not established.",
+        "artifact": "metadata-http-desk-v3-Core1-40832870602/native-reservation-desk.png",
+        "timings": "metadata-http-desk-v3-Core1-timings.json"
+      },
+      "posted_recovery_browser_candidate": {
+        "run": 40834757012,
+        "candidate": "1e114d1ddc85b1b39e87b4d73a72670f0f6555d9",
+        "status": "plain/Core running",
+        "runtime_product": "524557a20a8ffaf41e9fc25ccb64e8fd9c7a2dc2",
+        "scope": "Fresh native Page controls choose real MR line and ledger budget, query directory/repeat/open Posted root; no preview/confirm/post. Expired renewal/non-admin/hospital acceptance remain separate."
+      }
     }
   },
   "previous_verified_release": {
@@ -2478,10 +2552,11 @@
     "proof": "cod033-e87d901-recovery-ui-integrity-v3.json"
   },
   "next_unblocked_tasks": [
-    "Run full current-source quality, real native permission revocation and complete native suite, then verify current-page names in a real browser",
-    "Evaluate bounded cross-document directory performance with independent final authorization",
-    "Complete protected CI and release/promotion gates; no partial release PR",
-    "COD034/035, remaining HRP and hospital capacity/interfaces/UAT"
+    "Finish exact524557a full native/committed plain and Core CI40832608462; keep current authority/rollback gates",
+    "Finish plain actual cookie timings/browser40832870602 and fresh Page posted-recovery controls40834757012; inspect screenshots and financial snapshots",
+    "Optimize measured request latency without weakening freshness; complete non-admin/expired-recovery UI and protected release gates",
+    "Implement native procurement cancellation/amendment compatibility and independent purchase commitment/actual authorization, complete all writers",
+    "Remaining HRP modules and hospital rules/interfaces/capacity/backup/operations/UAT; server work only after maintenance ends"
   ],
   "input_invalidation_followup": {
     "status": "actual browser verification passed at bcc952c",
