@@ -12,12 +12,13 @@
     "ADR-0039",
     "ADR-0040",
     "ADR-0041",
-    "ADR-0042"
+    "ADR-0042",
+    "ADR-0043"
   ],
-  "current_scope": "Product17781ac Core generated-build attestation passed632 pure/19 frontend/all12 local quality; exact full40816048987 Quality/Security passed, both native jobs live. Native empty-Page Chromium40821426381/519c23c passed password login, explicit Page route, no modal/JS/asset/RPC failure, financial snapshots unchanged, ErrorLog0 and logout; screenshot visually verified. Earlier green40816808093 had Page null modal and is rejected as clean UI proof. Root UI40822250244/d74a028 runs independently. Metadata-only experiment40820688375/a1521cf matched all29 full native dictionaries with fresh raw construction, SQL342->174, median0.255582->0.153388s; own DocField/DocPerm mutation/rollback observed. Prototype not adopted; full permission/financial/Core/actual latency still required. No server access/deploy, whole HRP lifecycle/hospital readiness incomplete.",
+  "current_scope": "ADR0043 final v3 passed local632 pure/19 frontend/all12 gates and ordinary/Core native8 metadata+4 actual financial revocation cases each (40831342696/91684d8); constructor compatibility and source equality verified, no skips, zero Error Log, Core sealed inventory verified. Full current666+1 CI and actual HTTP timings remain required. Prior17781ac full40816048987 passed658+1 each,Required. Plain valid-root browser40828185333 passed inspect/reload/release-input, screenshot reviewed, no financial command/data change; excludes ADR0043. No server access/deploy/schema/grants/new dependencies. Whole HRP incomplete.",
   "checks": {
     "pure_tests_expected": 632,
-    "complete_frappe_tests_expected": 658,
+    "complete_frappe_tests_expected": 666,
     "exact_foundation_pure_tests_passed": 21,
     "native_foundation": {
       "status": "passed",
@@ -1681,7 +1682,7 @@
       "scope": "One cProfile-instrumented actual native request on shared CI; cumulative times include callees and instrumentation overhead. No controlled production latency/SLO/capacity claim. Keep independent current-role/permission/field/data-scope checks; investigate coherent current metadata reuse rather than relaxing authorization."
     },
     "core_generated_build_candidate": {
-      "status": "all12 local quality gates passed; exact full plain/Core CI pending",
+      "status": "full exact product17781ac CI40816048987 passed quality/security/plain/Core/Required",
       "expected_pure_tests": 5,
       "source_revision": "8c697bafd30aebd418aee18f618b287bbab557f3",
       "previous_full_ci": {
@@ -1711,6 +1712,17 @@
         "log": "core-build-integrity-quality-20261029-v2.log",
         "first_attempt": "failed only Ruff formatting; fixed and full rerun passed",
         "actual_locked_checkout": "prepare/seal/verify passed against unchanged local Core committed outputs; this is not a fresh Linux build"
+      },
+      "full_success": {
+        "source": "17781ac4c35533149f03e9ac36d60767cba3b1b9",
+        "run": 40816048987,
+        "native_regular_each": 658,
+        "committed_each": 1,
+        "plain_probe_seconds": 1460.186,
+        "core_probe_seconds": 1432.865,
+        "zero_error_log_sites": 8,
+        "core_source_and_sealed_build_verified": true,
+        "does_not_cover": "ADR0043 current metadata candidate"
       }
     },
     "native_empty_desk_current": {
@@ -1743,7 +1755,6 @@
         "result": "failed before boolean fix; preserve evidence"
       },
       "remaining": [
-        "valid-root UI/reload/release input",
         "recovery-directory controls",
         "Core browser",
         "non-admin permission matrix",
@@ -1751,10 +1762,39 @@
       ]
     },
     "native_valid_root_desk_candidate": {
-      "run": 40822250244,
-      "source": "d74a0287d24418618e2f91e73bb5fa614f242d2b",
-      "status": "running, no pass claimed",
-      "scope": "native19/frontend19/committed1 then actual Chromium valid-root inspect/reload/release-input; no browser financial writes"
+      "run": 40828185333,
+      "source": "22bb8d6124f80679b664e866b93f63dc398f906b",
+      "status": "passed and screenshot visually verified",
+      "scope": "Plain native Chromium/password login, current-cookie eligible-root selection, display/reload/release-input only. Synthetic data; no browser preview/confirm/post. Excludes ADR0043, Core browser, recovery controls, non-admin UI, human hospital UAT/capacity.",
+      "prior_failed_run": {
+        "run": 40822250244,
+        "source": "d74a0287d24418618e2f91e73bb5fa614f242d2b",
+        "status": "failed native_login before inspect,1 JS error; failure screenshot attempted after Playwright exit. Guard/live-context capture retry pending."
+      },
+      "product_base": "17781ac4c35533149f03e9ac36d60767cba3b1b9",
+      "native_before_browser": [
+        8,
+        4,
+        4,
+        3
+      ],
+      "frontend": 19,
+      "committed_probe_seconds": 1224.354,
+      "inspection_statuses": [
+        200,
+        200,
+        200
+      ],
+      "page_errors": 0,
+      "failed_local_requests": [],
+      "financial_commands": 0,
+      "financial_snapshots_identical": true,
+      "error_log_count": 0,
+      "authenticated_native_login": true,
+      "native_reload": true,
+      "release_input_dialog": true,
+      "native_logout": true,
+      "screenshot": "native-root-guarded-40828185333/native-reservation-desk.png"
     },
     "fresh_metadata_experiment": {
       "run": 40820688375,
@@ -1782,6 +1822,65 @@
         40818511295
       ],
       "remaining": "review pinned raw Meta constructor compatibility; current roles/field/scope and concurrent revocation/own transaction tests; ordinary/Core native suite; actual API latency. No metadata or permission success cache introduced."
+    },
+    "fresh_authority_metadata_candidate": {
+      "status": "final v3 local and focused ordinary/Core native passed; full current CI and actual latency pending",
+      "expected_new_native_tests": 8,
+      "runtime_models": 47,
+      "constructor_hashes": 8,
+      "all_authority_checkpoints_retained": true,
+      "metadata_or_allow_cache": false,
+      "primary_transaction": true,
+      "native_processing_unchanged": true,
+      "fallback": "original native cached=False for unsupported/overridden construction",
+      "actual_financial_revocation_cases_required": 4,
+      "current_full_ci": "pending",
+      "server_access": false,
+      "first_focus": {
+        "source": "aad420be9f4ef0dae31b0b89337446c984996c7a",
+        "run": 40829024154,
+        "status": "both profiles failed before tests",
+        "executed_cases": 0,
+        "reason": "direct Python test wrapper started from Bench root; native logger expected sites cwd and could not open runner-temp/logs/frappe.testing.log",
+        "fix": "run wrapper from Bench/sites; do not create unrelated log directory"
+      },
+      "source_guard": "inspect executed code without decorator unwrapping; never store function closures in compatibility memo",
+      "local_quality": {
+        "log": "fresh-authority-metadata-quality-20261029-v3.log",
+        "pure": 632,
+        "frontend": 19,
+        "gates": 12,
+        "type_errors": 0,
+        "existing_type_warnings": 1
+      },
+      "focused_native": {
+        "run": 40831342696,
+        "source": "91684d81afc757459d9bfc0acded6a6ea709c124",
+        "profiles": [
+          "plain",
+          "ione_core"
+        ],
+        "each_profile": {
+          "metadata_cases": 8,
+          "actual_financial_revocation_cases": 4,
+          "skips": 0,
+          "error_log_count": 0,
+          "all_eight_source_checks": true,
+          "compatibility_path_active": true
+        },
+        "metadata_seconds": [
+          4.811,
+          4.863
+        ],
+        "financial_revocation_seconds": [
+          93.46,
+          96.943
+        ],
+        "core_source_and_sealed_build_verified": true,
+        "source_proof": "authority-metadata-v3-source-proof.json",
+        "log": "authority-metadata-v3-40831342696.log"
+      },
+      "cache_scope": "Only code-object compatibility is memoized; no extra metadata/configuration/actor/allow cache. Native Meta.process and native client_cache publishing retained."
     }
   },
   "previous_verified_release": {
