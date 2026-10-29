@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from dataclasses import replace
 from types import SimpleNamespace
+from typing import Any
 from unittest.mock import patch
 from uuid import uuid4
 
@@ -91,7 +92,15 @@ class TestBudgetPurchaseOrderSource(IntegrationTestCase):
 		frappe.db.begin()
 		super().tearDown()
 
-	def read(self, *, native_effect=None, source_effect=None, sql_effect=None, transaction_state=None):
+	def read(
+		self,
+		*,
+		native_effect=None,
+		source_effect=None,
+		sql_effect=None,
+		transaction_state=None,
+		historical: Any = False,
+	):
 		calls = []
 		original_sql = frappe.db.sql
 
@@ -125,6 +134,7 @@ class TestBudgetPurchaseOrderSource(IntegrationTestCase):
 				self.source.line,
 				self.source.organization_unit,
 				expected_request_digest=self.source.digest(),
+				historical=historical,
 			)
 		return result, calls
 
@@ -201,6 +211,61 @@ class TestBudgetPurchaseOrderSource(IntegrationTestCase):
 			with self.subTest(field=field), self.assertRaises(IoneApplicationError):
 				self.read()
 			self.values[field] = original
+
+	def test_historical_statuses_preserve_real_native_facts_without_allowing_new_snapshots(self):
+		(_, original), _ = self.read()
+		for status in sorted(adapter.HISTORICAL_ORDER_STATUSES - adapter.ORDER_STATUSES):
+			self.order.status = status
+			with self.subTest(status=status):
+				(source, current), _ = self.read(historical=True)
+				self.assertEqual(current, replace(original, status=status))
+				self.assertNotEqual(current.digest(), original.digest())
+				self.assertEqual(current.commitment_identity(), original.commitment_identity())
+				with self.assertRaises(ValueError):
+					current.commitment_snapshot(source)
+				with self.assertRaises(IoneApplicationError):
+					self.read()
+
+	def test_historical_reads_still_reject_unsubmitted_and_unknown_states(self):
+		for status, docstatus in (("Closed", 0), ("Closed", 2), ("Cancelled", 1), ("Unknown", 1)):
+			self.order.status, self.order.docstatus = status, docstatus
+			with self.subTest(status=status, docstatus=docstatus), self.assertRaises(IoneApplicationError):
+				self.read(historical=True)
+
+	def test_historical_policy_must_be_an_explicit_boolean(self):
+		for historical in (1, "yes", None):
+			with self.subTest(historical=historical), self.assertRaises(IoneApplicationError):
+				self.read(historical=historical)
+
+	def test_historical_status_change_during_final_read_requires_retry(self):
+		self.order.status = "Completed"
+		calls = 0
+
+		def progress(doctype, name, lock):
+			nonlocal calls
+			if doctype != "Purchase Order":
+				return SimpleNamespace(name=name)
+			calls += 1
+			if calls == 4:
+				self.order.status = "Closed"
+			return self.order
+
+		with self.assertRaises(IoneApplicationError):
+			self.read(native_effect=progress, historical=True)
+
+	def test_historical_read_still_checks_native_permissions_before_locks(self):
+		self.order.status = "Closed"
+		seen = []
+
+		def deny(doctype, name, lock):
+			seen.append(lock)
+			if doctype == "Purchase Order":
+				raise PermissionError("synthetic historical denial")
+			return SimpleNamespace(name=name)
+
+		with self.assertRaises(PermissionError):
+			self.read(native_effect=deny, historical=True)
+		self.assertEqual(seen, [False, False])
 
 	def test_changed_material_source_is_rejected(self):
 		values = iter([self.source, replace(self.source, amount="31.000000000")])
@@ -318,7 +383,8 @@ class TestBudgetPurchaseOrderSource(IntegrationTestCase):
 		def discover(request, line):
 			return discovery_effect() if discovery_effect else rows
 
-		def read_order(order, line, source, actor):
+		def read_order(order, line, source, actor, *, historical):
+			self.assertIs(historical, True)
 			return {(item.order, item.line): item for item in orders}[(order, line)]
 
 		with (
@@ -380,6 +446,16 @@ class TestBudgetPurchaseOrderSource(IntegrationTestCase):
 		values = iter([first, changed])
 		with self.assertRaises(IoneApplicationError):
 			self.linked(first, [], discovery_effect=lambda: next(values))
+
+	def test_linked_historical_lines_remain_in_complete_quantity_observation(self):
+		(_, original), _ = self.read()
+		opened = replace(original, order="order-a", line="line-a", quantity="2.000000000")
+		closed = replace(original, order="order-b", line="line-b", quantity="3.000000000", status="Closed")
+		rows = (("order-a", "line-a", 1), ("order-b", "line-b", 1))
+		(source, orders), _ = self.linked(rows, [opened, closed])
+		self.assertEqual((source, orders), (self.source, (opened, closed)))
+		with self.assertRaises(IoneApplicationError):
+			self.linked(rows, [opened, replace(closed, quantity="4.000000000")])
 
 	def test_linked_order_read_permission_is_required_before_any_parent_lock(self):
 		seen = []

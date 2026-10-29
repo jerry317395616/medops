@@ -21,12 +21,13 @@
     "ADR-0048",
     "ADR-0049",
     "ADR-0050",
-    "ADR-0051"
+    "ADR-0051",
+    "ADR-0052"
   ],
-  "current_scope": "ADR0051 recovery-fixed source passed669pure in97.084s,27frontend and all12 quality gates;0 type errors/1 existing warning. Native backend matches both-passed40900532573. First real Chromium40902425863 plain failed during unchecked-review assertions after successful ordinary login/current-source picker/CSRF400 denial,with0post/0page errors/0failed native requests;browser acceptance not established. Failure screenshot was unavailable because the harness caught after Playwright teardown;diagnostics now capture inside the live context with distinct review stages. Original Core handle retained;fixed Page/browser verification and exact current full CI pending. No server access or production readiness claim.",
+  "current_scope": "ADR0052 candidate separates current native PO history states from strict open-state new commitments,including complete linked-line quantities/global allocations/posted receipts. Picker filters only after full verification. Decision-bound native parent/child economic facts and lifecycle protected;Confirmation-only/unbound rows and normal progress remain native. Child independent save/cancel is covered;parent-level guard revisit checks added. No schema/grants/upstream writes. Expected678pure/734regular+1 existing main committed/27frontend/52ADR/48runtime;new standalone actual lifecycle HTTP probe is separate. Local full quality passed678pure/27frontend/all12 gates (purchase-lifecycle-candidate-quality-20261029.log);734regular native and new real invoice-receipt progression pending. DocEvents do not establish all native prelock ordering or new-PO membership fencing;those,Commit concurrency,release/Actual and entire HRP remain incomplete. No server access.",
   "checks": {
-    "pure_tests_expected": 669,
-    "complete_frappe_tests_expected": 707,
+    "pure_tests_expected": 678,
+    "complete_frappe_tests_expected": 734,
     "exact_foundation_pure_tests_passed": 21,
     "native_foundation": {
       "status": "passed",
@@ -47,10 +48,10 @@
       "public_sites_untouched": true,
       "migrations": 0
     },
-    "protected_ci": "not run for COD-033",
-    "local_quality": "Full458/11 quality steps and1449 committed Git blobs passed at f500cf4; proof cod033-f500cf4-quality.json",
-    "pure_tests_passed": 669,
-    "complete_frappe_tests": "Prior f500 full446 passed at its own source; current 448 candidate has not yet run.",
+    "protected_ci": "Prior af9ef2b full409-independent run40885255791 passed Required;03e1ad2 full40905820852 Quality/Security passed and native pending;ADR0052 new full run not yet dispatched.",
+    "local_quality": "ADR0052 candidate:678pure/27frontend/all12 local gates passed; see purchase_order_lifecycle.local_quality. No new native result implied.",
+    "pure_tests_passed": 678,
+    "complete_frappe_tests": "Prior af9ef2b full40885255791 passed707regular+1main committed probe in each plain/Core profile;current ADR0052 expects734regular, still pending. Focus40910804602 tests188regular plus standalone lifecycle case, not entire suite.",
     "current_protocol": {
       "status": "full local quality passed",
       "tests": 11,
@@ -73,7 +74,7 @@
         "Outbox stale-snapshot full transaction retry"
       ]
     },
-    "current_local_quality": "Recovery-fixed ADR0051:669pure97.084s/27frontend/all12 passed;0type errors/1existing warning. Subsequent documentation evidence only.",
+    "current_local_quality": "ADR0052:678pure83.840s/27frontend/all12 passed;0type errors/1existing privacy_diagnostics warning. Metadata-only count/evidence corrections passed package/checksums/diff.",
     "runtime_native_partial": {
       "source_commit": "daaed16f7765c0fb2e796fa100ca817970585499",
       "passed_counts": [
@@ -3895,7 +3896,7 @@
     "browser": {
       "run": 40902425863,
       "candidate": "33eddc362d446e18799e59bc941fc929e76f5256",
-      "status": "plain failed unchecked-review assertion before any post;original Core still observed live",
+      "status": "40902425863 both profiles failed before post; initial harness could not capture screenshot",
       "failure_stage": "native_review_unchecked",
       "posts": 0,
       "page_errors": 0,
@@ -3911,6 +3912,68 @@
       "result": "passed",
       "native_backend": "unchanged from40900532573",
       "real_browser": "40902425863 predates this fix"
+    },
+    "browser_diagnostic": {
+      "run": 40905804060,
+      "candidate": "8aca3388fca05d113f67b4e353c043c79ef8bd98",
+      "status": "both failed native_review_checkbox; no posts/errors",
+      "cause": "locator matched writable input and native hidden disabled display checkbox",
+      "evidence": "JSON and screenshot inspected; visible independent review has unchecked input. Product was unchanged by selector fix."
+    },
+    "browser_selector_retry": {
+      "run": 40909871527,
+      "candidate": "7b49114a72cbf6996157d3aa73fada7a64b96fe6",
+      "product": "03e1ad2",
+      "status": "both running; excludes ADR52",
+      "scope": "exact named checkbox count1/visible/enabled/unchecked; no-post until acknowledgement, explicit single post and reload retained"
+    }
+  },
+  "purchase_order_lifecycle": {
+    "adr": "ADR-0052",
+    "status": "candidate;local full quality passed;native pending",
+    "current_history_states": [
+      "To Receive and Bill",
+      "To Bill",
+      "To Receive",
+      "Completed",
+      "Delivered",
+      "To Pay",
+      "On Hold",
+      "Closed"
+    ],
+    "new_commitment_states": [
+      "To Receive and Bill",
+      "To Bill",
+      "To Receive"
+    ],
+    "protects": "actual Decision-bound parent/child economic identity;raw evidence access stays closed",
+    "retains": "native progress,Confirmation-only/unbound ordinary purchasing;no automatic budget release or Actual",
+    "limits": "native pre-DocEvents lock ordering/new PO membership fencing not yet complete;no production readiness",
+    "new_probe": "purchase_lifecycle_http_probe explicit separate disposable site invocation;not ordinary discovery",
+    "server": "maintenance;no connection",
+    "local_quality": {
+      "status": "passed",
+      "pure_tests": 678,
+      "pure_seconds": 83.84,
+      "frontend_tests": 27,
+      "quality_steps": 12,
+      "type_errors": 0,
+      "existing_type_warnings": 1,
+      "log": "purchase-lifecycle-candidate-quality-20261029.log"
+    },
+    "regular_native_tests_expected": 734,
+    "regular_native_status": "pending CI;not established by local quality",
+    "native_count_basis": "707 prior regular +6 purchase source +4 history +17 source integrity;exclude3 module-level test_* functions and separate committed probes",
+    "focused_ci": {
+      "run": 40910804602,
+      "candidate": "a113eb1cefd04c22f6e834a388b24e4052c5e7a0",
+      "source_tree": "a338c5963a3c65da9d036e625203afe1663ad02f",
+      "status": "running in plain and Core; no native pass claimed",
+      "pure": 59,
+      "regular": 188,
+      "frontend": 27,
+      "actual_cookie_lifecycle": 1,
+      "source_inventory": "purchase-lifecycle-product-inventory-20261029-162019-487770.json"
     }
   }
 }

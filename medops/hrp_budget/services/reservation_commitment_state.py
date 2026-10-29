@@ -10,7 +10,11 @@ from medops.common.budget_control import KEY_FIELDS, MAX_CONTROL_KEYS, budget_co
 from medops.common.exact_money import MAX_APPROVAL_AMOUNT, exact_decimal_amount
 from medops.common.material_source_snapshot import material_source_snapshot, parse_material_source_snapshot
 from medops.common.organization import normalize_reference
-from medops.common.reservation_commitment import ReservationCommitmentIntent, reservation_commitment_intent
+from medops.common.reservation_commitment import (
+	ORDER_STATUSES,
+	ReservationCommitmentIntent,
+	reservation_commitment_intent,
+)
 from medops.hrp_budget.services import budget_usage_observation as access
 from medops.hrp_budget.services.approval import require_web_session, session_digest
 from medops.hrp_budget.services.control_guards import (
@@ -146,7 +150,10 @@ class LockedCommitmentState:
 
 
 def inspect_commitment_history(reservation, order, line):
-	"""Prepare native full scope without assuming any amount remains to convert."""
+	"""Prepare full historical scope, preserving current reviewed PO progress states.
+
+	This does not assert that the current state permits any new commitment.
+	"""
 	try:
 		actor = frappe.session.user
 		_actor(actor)
@@ -186,6 +193,7 @@ def inspect_commitment_history(reservation, order, line):
 			facts["line"],
 			original.key.organization_unit,
 			expected_request_digest=inspection.source.digest(),
+			historical=True,
 		)
 		if source != inspection.source:
 			raise ValueError("prepared material source changed")
@@ -203,6 +211,8 @@ def inspect_reservation_commitment(reservation, order, line, *, amount, reason):
 	"""Prepare native full scope and exact intent in a clean owned transaction."""
 	try:
 		actor, original, inspection, purchase = inspect_commitment_history(reservation, order, line)
+		if purchase.status not in ORDER_STATUSES:
+			raise ValueError("new commitment requires an open submitted purchase order")
 		source = inspection.source
 		keys = inspection.keys
 		positions = [p for p in inspection.source_usage if p.reservation == reservation]
@@ -234,13 +244,14 @@ def inspect_reservation_commitment(reservation, order, line, *, amount, reason):
 		raise
 
 
-def check_commitment_state_access(state):
+def check_commitment_state_access(state, *, historical: bool = False):
 	"""Refresh current rights and exact sources at each controller stage.
 
 	This does not replace the full immutable history/capacity checks on entry
-	and exit of the complete persistence operation.
+	and exit of the complete persistence operation. Completed receipt reads opt
+	into historical current states; every new controller stage defaults to open.
 	"""
-	if type(state) is not LockedCommitmentState:
+	if type(state) is not LockedCommitmentState or type(historical) is not bool:
 		raise ValueError("native locked commitment state required")
 	_actor(state.actor)
 	if commitment_session(state.item.reservation) != state.session:
@@ -268,6 +279,7 @@ def check_commitment_state_access(state):
 		source.line,
 		source.organization_unit,
 		expected_request_digest=source.digest(),
+		historical=historical,
 	):
 		raise ValueError("commitment source changed")
 	_actor(state.actor)

@@ -134,6 +134,25 @@ def require_purchase_source_lock_order(order: str, binding: MaterialBinding) -> 
 	assert_material_guard_binding(marker.keys, binding)
 
 
+def require_purchase_parent_lock_order(order: str) -> None:
+	"""Permit native hooks to revisit only a live prebound purchase parent.
+
+	This checks the hook's own lock acquisition, not native locks acquired before
+	DocEvents. Parent membership never supplies source or financial authority.
+	"""
+	marker = getattr(getattr(frappe.local, "db", None), "_medops_budget_guard_marker", None)
+	if marker is None:
+		return
+	if (
+		not isinstance(marker, _GuardMarker)
+		or marker.state.invalidated
+		or order not in marker.purchase_parents
+	):
+		invalidate_budget_guards()
+		raise_ione_error("OPERATION_NOT_ALLOWED")
+	assert_budget_guards(marker.keys)
+
+
 def _before_guard_commit(db, marker):
 	# Frappe clears rollback callbacks before running before_commit. Restore the
 	# marker cleanup in case this callback or a later callback fails.

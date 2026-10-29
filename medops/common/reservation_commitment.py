@@ -57,6 +57,11 @@ ORDER_FIELDS = frozenset(
 )
 MONEY_FIELDS = frozenset({"quantity", "rate", "amount", "base_amount"})
 ORDER_STATUSES = frozenset({"To Receive and Bill", "To Receive", "To Bill"})
+# Native current history may advance beyond the states in which a new
+# commitment can be authorized. Stored authorization snapshots remain strict.
+HISTORICAL_ORDER_STATUSES = ORDER_STATUSES | frozenset(
+	{"Completed", "Delivered", "To Pay", "On Hold", "Closed"}
+)
 MAX_ORDER_SNAPSHOT_BYTES = 32768
 
 

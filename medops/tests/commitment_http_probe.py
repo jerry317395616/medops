@@ -281,7 +281,8 @@ def item_source(item):
 
 
 class TestDisposableCommitmentHTTP(TestDisposableReservationConcurrency):
-	def test_real_cookie_ordinary_manager_commitment_workflow(self):
+	def _make_commitment_fixture(self):
+		"""Build the shared native fixture only on the fresh disposable CI site."""
 		require_disposable_reservation_site(empty=True)
 		self.assertEqual(self.execute(self.claim())["status"], "Posted")
 		frappe.db.rollback()
@@ -318,6 +319,10 @@ class TestDisposableCommitmentHTTP(TestDisposableReservationConcurrency):
 		).insert(ignore_permissions=True)
 		connection = frappe.local.db
 		connection.commit()
+		return row, item, unit
+
+	def test_real_cookie_ordinary_manager_commitment_workflow(self):
+		row, item, unit = self._make_commitment_fixture()
 		exercise_commitment_http(self, row, item, unit)
 
 

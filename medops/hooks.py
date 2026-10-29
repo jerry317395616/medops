@@ -43,6 +43,24 @@ extend_doctype_class = {
 	"Error Log": ["medops.extensions.error_log.MedOpsErrorLogMixin"],
 }
 doc_events = {
+	"Purchase Order": {
+		"before_save": "medops.hrp_budget.services.purchase_source_integrity.protect_purchase_order_edit",
+		"before_submit": "medops.hrp_budget.services.purchase_source_integrity.protect_purchase_order_edit",
+		"before_update_after_submit": "medops.hrp_budget.services.purchase_source_integrity.protect_purchase_order_edit",
+		"before_change": "medops.hrp_budget.services.purchase_source_integrity.protect_purchase_order_edit",
+		"before_cancel": "medops.hrp_budget.services.purchase_source_integrity.protect_purchase_order_lifecycle",
+		"on_trash": "medops.hrp_budget.services.purchase_source_integrity.protect_purchase_order_lifecycle",
+		"before_rename": "medops.hrp_budget.services.purchase_source_integrity.protect_purchase_order_lifecycle",
+	},
+	"Purchase Order Item": {
+		"before_save": "medops.hrp_budget.services.purchase_source_integrity.protect_purchase_order_item_edit",
+		"before_submit": "medops.hrp_budget.services.purchase_source_integrity.protect_purchase_order_item_edit",
+		"before_update_after_submit": "medops.hrp_budget.services.purchase_source_integrity.protect_purchase_order_item_edit",
+		"before_change": "medops.hrp_budget.services.purchase_source_integrity.protect_purchase_order_item_edit",
+		"before_cancel": "medops.hrp_budget.services.purchase_source_integrity.protect_purchase_order_item_lifecycle",
+		"on_trash": "medops.hrp_budget.services.purchase_source_integrity.protect_purchase_order_item_lifecycle",
+		"before_rename": "medops.hrp_budget.services.purchase_source_integrity.protect_purchase_order_item_lifecycle",
+	},
 	"Material Request": {
 		"before_save": "medops.hrp_budget.services.material_source_integrity.protect_material_request_edit",
 		"before_update_after_submit": "medops.hrp_budget.services.material_source_integrity.protect_material_request_edit",

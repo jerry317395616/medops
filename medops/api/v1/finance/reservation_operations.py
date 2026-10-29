@@ -15,6 +15,7 @@ import frappe
 from medops.api.v1.finance.planning import request_guard
 from medops.common.budget_planning import FUND, VALUE, object_payload
 from medops.common.material_source_snapshot import parse_material_source_snapshot
+from medops.common.reservation_commitment import ORDER_STATUSES
 from medops.common.reservation_commitment_request import (
 	build_commitment_orders_query,
 	build_commitment_post,
@@ -214,7 +215,9 @@ def commitment_orders(payload: Any = None, correlation_id: Any = None, **extra):
 			original.key.organization_unit,
 			expected_request_digest=digest,
 		)
-		rows = [_order_review(order) for order in orders]
+		# The adapter validates every submitted line and the full quantity first.
+		# Only open current lines can be selected for a new commitment.
+		rows = [_order_review(order) for order in orders if order.status in ORDER_STATUSES]
 		_, checked, checked_first, checked_second = read_reservation_original(name)
 		refresh_financial_authority(actor)
 		require_roles(MANAGER_ROLES)

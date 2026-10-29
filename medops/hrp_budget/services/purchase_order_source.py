@@ -13,7 +13,11 @@ from medops.common.domain_service import fingerprint_json, normalize_sha256
 from medops.common.exact_money import MAX_APPROVAL_AMOUNT, exact_decimal_amount
 from medops.common.material_source_snapshot import material_source_snapshot
 from medops.common.organization import normalize_reference, normalize_required_date
-from medops.common.reservation_commitment import purchase_order_snapshot
+from medops.common.reservation_commitment import (
+	HISTORICAL_ORDER_STATUSES,
+	ORDER_STATUSES,
+	purchase_order_snapshot,
+)
 from medops.hrp_budget.services.control_guards import (
 	MaterialBinding,
 	invalidate_budget_guards,
@@ -167,14 +171,18 @@ def _discover_order_rows(request: str, line: str) -> tuple[tuple[str, str, int],
 	return tuple(sorted(result))
 
 
-def _read_order(order: str, line: str, source: MaterialRequestSource, actor: str) -> PurchaseOrderSource:
+def _read_order(
+	order: str, line: str, source: MaterialRequestSource, actor: str, *, historical: bool = False
+) -> PurchaseOrderSource:
+	if type(historical) is not bool:
+		raise ValueError("explicit purchase read policy required")
 	if frappe.session.user != actor:
 		raise_ione_error("CONFLICT")
 	doc = native_document("Purchase Order", order, ORDER_FIELDS, lock=True)
 	if (
 		doc.name != order
 		or int(doc.docstatus) != 1
-		or doc.status not in {"To Receive and Bill", "To Bill", "To Receive"}
+		or doc.status not in (HISTORICAL_ORDER_STATUSES if historical else ORDER_STATUSES)
 		or not 1 <= len(doc.items) <= MAX_LINES
 		or doc.company != source.company
 		or doc.currency != source.currency
@@ -252,6 +260,7 @@ def locked_purchase_order_source(
 	organization_unit: object,
 	*,
 	expected_request_digest: object,
+	historical: bool = False,
 ) -> tuple[MaterialRequestSource, PurchaseOrderSource]:
 	"""Lock both native parents before dependent data, then recheck their facts.
 
@@ -263,11 +272,15 @@ def locked_purchase_order_source(
 	failure. This cannot detect arbitrary prior locks or enforce other writers'
 	ordering. It does not establish human approval, split-order totals, historic
 	data, budget sufficiency, allocation policy, or permission to post anything.
-	Only currently submitted, open orders in the request currency are supported.
+	New commitments require currently submitted open orders. Explicit historical
+	reads also accept reviewed submitted progress/closed states, with all the same
+	rights and economic checks; they cannot construct a new commitment snapshot.
 	"""
 	from medops.hrp_budget.services.release_execution import refresh_financial_authority
 
 	try:
+		if type(historical) is not bool:
+			raise ValueError("explicit purchase read policy required")
 		order_name = _identity(order, "purchase_order")
 		line_name = _identity(line, "purchase_order_line")
 		request_name = _identity(request, "material_request")
@@ -292,12 +305,15 @@ def locked_purchase_order_source(
 		source = locked_material_request_source(request_name, request_line_name, unit)
 		if source.digest() != digest or source.docstatus != 1:
 			raise_ione_error("CONFLICT")
-		purchase = _read_order(order_name, line_name, source, actor)
+		purchase = _read_order(order_name, line_name, source, actor, historical=historical)
 		if locked_material_request_source(request_name, request_line_name, unit) != source:
 			raise_ione_error("CONFLICT")
 		refresh_financial_authority(actor)
 		require_roles(READ_ROLES)
-		if _read_order(order_name, line_name, source, actor) != purchase or frappe.session.user != actor:
+		if (
+			_read_order(order_name, line_name, source, actor, historical=historical) != purchase
+			or frappe.session.user != actor
+		):
 			raise_ione_error("CONFLICT")
 		require_purchase_source_lock_order(
 			order_name, (source.request, source.line, source.organization_unit, source.digest())
@@ -317,8 +333,10 @@ def locked_linked_purchase_orders(
 	"""Inspect a bounded current set of linked PO lines before any budget lock.
 
 	All discovered parents, including draft/cancelled ones, are locked in a fixed
-	order before dependent master data. Submitted open lines are checked and their
-	combined quantity cannot exceed the request line. Caller must start in a clean
+	order before dependent master data. Every submitted line, including reviewed
+	completed/closed progress states, is checked and participates in combined
+	quantity; closure never restores capacity. A caller may subsequently filter
+	open lines for a new-commitment picker. Caller must start in a clean
 	owned transaction and fully roll back on failure. Re-enumeration detects changes
 	before the last read but cannot fence native writers that ignore this protocol;
 	this is not approval, proof of deleted history, a balance, or write authority.
@@ -364,7 +382,9 @@ def locked_linked_purchase_orders(
 		if _discover_order_rows(request_name, line_name) != discovered:
 			raise_ione_error("CONFLICT")
 		orders = tuple(
-			_read_order(order, line, source, actor) for order, line, status in discovered if status == 1
+			_read_order(order, line, source, actor, historical=True)
+			for order, line, status in discovered
+			if status == 1
 		)
 		with localcontext() as context:
 			context.prec = 48
@@ -376,7 +396,8 @@ def locked_linked_purchase_orders(
 		require_roles(READ_ROLES)
 		if (
 			frappe.session.user != actor
-			or tuple(_read_order(order.order, order.line, source, actor) for order in orders) != orders
+			or tuple(_read_order(order.order, order.line, source, actor, historical=True) for order in orders)
+			!= orders
 			or locked_material_request_source(request_name, line_name, unit) != source
 			or _discover_order_rows(request_name, line_name) != discovered
 			or frappe.session.user != actor

@@ -162,6 +162,8 @@ def verify_guarded_purchase_allocations(inspection, purchase):
 	The inspector must have prelocked the PO parent and the complete source/key
 	set in an owned transaction. Missing outside-scope allocations fail instead
 	of being ignored. This observes capacity, never grants human or write authority.
+	Completed/closed native progress retains every allocation and its old snapshot;
+	only the separate new-intent verifier can require an open current order.
 	Any failure invalidates the active guard and requires a full rollback.
 	"""
 	try:
@@ -181,6 +183,7 @@ def verify_guarded_purchase_allocations(inspection, purchase):
 			material.line,
 			material.organization_unit,
 			expected_request_digest=material.digest(),
+			historical=True,
 		):
 			raise ValueError("current purchase source changed")
 		require_roles(MANAGER_ROLES)
@@ -233,6 +236,7 @@ def verify_guarded_purchase_allocations(inspection, purchase):
 			material.line,
 			material.organization_unit,
 			expected_request_digest=material.digest(),
+			historical=True,
 		) or frappe.session.user != actor:
 			raise ValueError("purchase source or actor changed")
 		require_roles(MANAGER_ROLES)
@@ -289,6 +293,7 @@ def verify_guarded_commitment_capacity(inspection, purchase, proposed):
 			material.line,
 			material.organization_unit,
 			expected_request_digest=material.digest(),
+			historical=False,
 		) or frappe.session.user != actor:
 			raise ValueError("purchase source or actor changed during exact intent verification")
 		require_roles(MANAGER_ROLES)
