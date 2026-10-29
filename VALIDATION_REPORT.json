@@ -13,11 +13,12 @@
     "ADR-0040",
     "ADR-0041",
     "ADR-0042",
-    "ADR-0043"
+    "ADR-0043",
+    "ADR-0044"
   ],
-  "current_scope": "ADR0043 backend524557a local632/19/all12 and plain/Core8+4 freshness/actual revoke passed. Full40832608462 Q/S passed,native live. Native cookie/committed/Chromium40832870602 passed both profiles; recovery medians plain19.268498s/Core8.138741s, separate runners not controlled comparison. Posted recovery Page40834757012 passed both: fresh source/budget controls, repeat history,open existing root,5 inspect200/2 recovery200,zero commands/data changes/errors; screenshots exposed stale top instruction. UI-only hint correction passed632 pure/19 frontend/all12 local gates; new visual check pending. Same-runner A/B40836398869 running. No server/deploy/schema/grants/new dependencies; whole HRP incomplete.",
+  "current_scope": "ADR0044 purchase commitment slice started: canonical current PO/MR provenance and exact original/tail/open/amount/period-bound intent;640 pure/19 frontend/all12 fixed-source quality passed; native25 each40841183689 running. PO digest/identity unchanged; no evidence table/Commit writer/API/UI/grants/schema. Prior ADR0043 backend524 full40832608462 native live; cookie/browser/Posted recovery passed both, excluding new component. UI hint35f3be3 local632/19/all12 passed; visual40837475564 live. Controlled A/B40836398869 live. Gates remain default off;no server. Entire HRP/commitment/actual/UAT incomplete.",
   "checks": {
-    "pure_tests_expected": 632,
+    "pure_tests_expected": 640,
     "complete_frappe_tests_expected": 666,
     "exact_foundation_pure_tests_passed": 21,
     "native_foundation": {
@@ -2026,12 +2027,38 @@
       "controlled_same_runner_ab": {
         "run": 40836398869,
         "candidate": "10a31bec448d2aa5ebef0f02f73059451f33f68d",
-        "status": "running, no result claimed",
-        "scope": "Core same native cookie/input, forced original native fresh fallback vs batched, warmups then8 interleaved samples, full business-result equality and financial/receipt snapshots, request-thread profiling; no authority gates removed."
+        "status": "passed; same runner/session/input full business results equal",
+        "scope": "Exact backend524 synthetic same-cookie Posted recovery, forced native fresh fallback vs batched, interleaved4 each after warmups. Profiling separate/instrumented. No production SLO/capacity, non-admin or new ADR0044 proof.",
+        "measured_samples_per_mode": 4,
+        "warmup_per_mode": 1,
+        "batched_median_seconds": 20.0195965,
+        "native_fallback_median_seconds": 30.065283,
+        "observed_reduction_percent": 33.41,
+        "financial_and_receipt_snapshots_identical": true,
+        "native_regular": [
+          8,
+          4,
+          4,
+          3
+        ],
+        "frontend": 19,
+        "committed_probe_seconds": 1234.273,
+        "error_log_sites": 2,
+        "error_log_count": 0,
+        "Core_source_sealed_inventory_verified": true,
+        "profile": {
+          "thread": "actual native request",
+          "seconds": 30.674885,
+          "authority_refresh_calls": 102,
+          "authority_refresh_cumulative_seconds": 26.227049,
+          "fresh_metadata_batch_calls": 204,
+          "sql_execute_calls": 21005
+        },
+        "artifact": "controlled-authority-ab-40836398869.json"
       }
     },
     "reservation_recovery_status_hint": {
-      "status": "local all12 gates passed632 pure/19 frontend; new native screenshot pending",
+      "status": "exact35f3be3 Core actual browser passed; screenshot visually verified",
       "trigger": "Successful current recovery directory still left source-selection instruction visible",
       "behavior": "No history: fill money/date/reason before review. Existing history: view/recover it first and explicitly choose any new independent allocation.",
       "financial_logic_permissions_schema_migration_changed": false,
@@ -2044,6 +2071,79 @@
         "type_errors": 0,
         "existing_type_warnings": 1,
         "log": "recovery-status-hint-quality-20261029.log"
+      },
+      "native_run": 40837475564,
+      "native_candidate": "0d4f019b5af68afd1ba8f5a8baadfccc49e0890b",
+      "runtime_product": "35f3be35b3c6ea4a578723c2216faa12232b822b",
+      "native_status_hint_verified_after_initial_and_repeat": true,
+      "inspection_statuses": [
+        200,
+        200,
+        200,
+        200,
+        200
+      ],
+      "recovery_statuses": [
+        200,
+        200
+      ],
+      "financial_commands": 0,
+      "page_errors": 0,
+      "financial_snapshots_identical": true,
+      "error_log_count": 0,
+      "native_logout": true,
+      "screenshot": "recovery-status-hint-40837475564/native-recovery-directory.png",
+      "excludes": "ADR0044 new provenance/intent component",
+      "native_test_runs": [
+        8,
+        4,
+        4,
+        3
+      ],
+      "frontend": 19,
+      "committed_probe_seconds": 477.161,
+      "zero_error_log_sites": 2,
+      "Core_source_sealed_inventory_verified": true
+    },
+    "purchase_commitment_vertical_slice": {
+      "status": "final fixed source local640 pure/19 frontend/all12 passed,0 type errors/1 existing warning; native focused validation running",
+      "adr": "ADR-0044",
+      "pure_added": 8,
+      "expected_pure": 640,
+      "regular_native_expected": 666,
+      "runtime_models": 47,
+      "PO_digest_and_stable_line_identity_unchanged": true,
+      "native_DTO_method": "PurchaseOrderSource.commitment_snapshot(source)",
+      "real_native_case_extended": "test_real_submitted_purchase_order_is_linked_to_material_request",
+      "structure_only_not_financial_authority": true,
+      "new_schema_role_hook_api_event_or_dependency": false,
+      "remaining": [
+        "Independent Confirmation/Decision and atomic Commit append",
+        "Complete MR/PO parent discovery/locks before budget guards; lifecycle writer protection",
+        "Cross-root PO allocation limits and independently authorized complete mixed history/old receipts",
+        "Human HTTP/UI, actual conversion, rollback/concurrency/plain/Core and hospital acceptance"
+      ],
+      "server_access": false,
+      "first_local_quality": "640 pure and checksums passed; pyright rejected17 heterogeneous **kwargs/negative-test type errors. Fixed with explicit typed dataclass construction and object input in rejection fixture; no ignores or runtime validation relaxation.",
+      "local_quality": {
+        "log": "purchase-commitment-provenance-quality-20261029-v2.log",
+        "pure": 640,
+        "pure_seconds": 89.359,
+        "frontend": 19,
+        "gates": 12,
+        "type_errors": 0,
+        "existing_type_warnings": 1
+      },
+      "native_focus": {
+        "run": 40841183689,
+        "candidate": "1f6291b84d7e6beb60200c5841acdc8e90fd0300",
+        "status": "plain/Core running",
+        "required_each": {
+          "pure": 8,
+          "PO_native": 24,
+          "real_submitted_MR_PO": 1
+        },
+        "source_files_match": 5
       }
     }
   },
@@ -2642,11 +2742,11 @@
     "proof": "cod033-e87d901-recovery-ui-integrity-v3.json"
   },
   "next_unblocked_tasks": [
-    "Finish exact524557a full native/committed plain and Core CI40832608462; keep current authority/rollback gates",
-    "Finish plain actual cookie timings/browser40832870602 and fresh Page posted-recovery controls40834757012; inspect screenshots and financial snapshots",
-    "Optimize measured request latency without weakening freshness; complete non-admin/expired-recovery UI and protected release gates",
-    "Implement native procurement cancellation/amendment compatibility and independent purchase commitment/actual authorization, complete all writers",
-    "Remaining HRP modules and hospital rules/interfaces/capacity/backup/operations/UAT; server work only after maintenance ends"
+    "Validate ADR0044 component with fixed640 full quality and native PO/source cases",
+    "Continue same full commitment slice: independent Confirmation/Decision, guarded atomic append, all authorized mixed history and old receipts",
+    "Complete cross-root PO allocation/native lifecycle protocol, actual conversion and human HTTP/UI",
+    "Get existing live full40832608462, A/B40836398869 and hint40837475564 results; do not restart live jobs",
+    "Remaining HRP,capacity/interfaces/backup/operations/UAT and protected release; server only after maintenance ends"
   ],
   "input_invalidation_followup": {
     "status": "actual browser verification passed at bcc952c",

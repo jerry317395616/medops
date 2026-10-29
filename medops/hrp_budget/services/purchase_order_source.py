@@ -11,7 +11,9 @@ from medops.common.budget_ledger import LEDGER
 from medops.common.budget_planning import MAX_LINES
 from medops.common.domain_service import fingerprint_json, normalize_sha256
 from medops.common.exact_money import MAX_APPROVAL_AMOUNT, exact_decimal_amount
+from medops.common.material_source_snapshot import material_source_snapshot
 from medops.common.organization import normalize_reference, normalize_required_date
+from medops.common.reservation_commitment import purchase_order_snapshot
 from medops.hrp_budget.services.control_guards import invalidate_budget_guards
 from medops.hrp_budget.services.material_request_source import (
 	SOURCE_FIELDS,
@@ -75,6 +77,13 @@ class PurchaseOrderSource:
 
 	def digest(self) -> str:
 		return fingerprint_json({"schema_version": 1, "kind": "purchase_order_source", **asdict(self)})
+
+	def commitment_snapshot(self, source: MaterialRequestSource) -> tuple[str, str]:
+		"""Bind supplied native facts for later independent review; never grant a write."""
+		if type(source) is not MaterialRequestSource:
+			raise ValueError("current native material source required")
+		text, digest = material_source_snapshot(asdict(source))
+		return purchase_order_snapshot(asdict(self), material_snapshot=text, material_digest=digest)
 
 	def commitment_identity(self) -> str:
 		"""Identify a PO line across snapshot changes; this does not authorize it."""

@@ -768,6 +768,11 @@ class TestBudgetMaterialRequestSource(FrappeTestCase):
 					expected_request_digest=material.digest(),
 				)
 				self.assertEqual(verified, material)
+				commitment_snapshot, commitment_digest = purchase.commitment_snapshot(verified)
+				self.assertEqual(commitment_digest, purchase.digest())
+				self.assertEqual(
+					json.loads(commitment_snapshot)["material_request_digest"], material.digest()
+				)
 				self.assertEqual(
 					(purchase.order, purchase.line, purchase.material_request_line),
 					(order.name, order.items[0].name, self.line),
