@@ -13,6 +13,7 @@ CONFIRM_METHODS = frozenset(
 		"medops.api.v1.finance.reservation_operations.renew",
 		"medops.api.v1.finance.reservation_operations.post_renewed",
 		"medops.api.v1.finance.reservation_operations.post_release",
+		"medops.api.v1.finance.reservation_operations.post_commitment",
 	}
 )
 RPC_PREFIXES = ("/api/method/", "/api/v1/method/", "/api/v2/method/")

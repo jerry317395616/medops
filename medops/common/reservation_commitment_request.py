@@ -57,3 +57,13 @@ def build_commitment_post(value):
 		raise ValueError("complete commitment post command required")
 	human = build_human_confirmation(data)
 	return CommitmentPost(normalize_sha256(human.confirmation, label="confirmation"), human.proof, True)
+
+
+def build_commitment_orders_query(value):
+	data = object_payload(value, {"reservation", "source_digest"})
+	if set(data) != {"reservation", "source_digest"}:
+		raise ValueError("complete current source reference required")
+	return (
+		normalize_sha256(data["reservation"], label="reservation"),
+		normalize_sha256(data["source_digest"], label="source_digest"),
+	)

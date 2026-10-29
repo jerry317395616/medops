@@ -45,7 +45,7 @@ class TestChangeGovernance(unittest.TestCase):
 
 		self.assertEqual(len(self.report.tasks), 118)
 		self.assertEqual(len(self.report.changes), 37)
-		self.assertEqual(len(self.report.decisions), 50)
+		self.assertEqual(len(self.report.decisions), 51)
 		self.assertEqual(self.report.sha256, repeated.sha256)
 		self.assertRegex(self.report.sha256, r"^[0-9a-f]{64}$")
 

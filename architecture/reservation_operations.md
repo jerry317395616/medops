@@ -16,6 +16,8 @@
 | `reservation_operations.post_renewed` | 首次预占开关及 `medops_internal_renewed_reservation_write_enabled` | 基于当前有效续期的首次预占 |
 | `reservation_operations.prepare_release` / `post_release` | `medops_internal_reservation_release_write_enabled` | 保存独立释放确认 / 追加释放决定及事件 |
 | `reservation_operations.inspect` | 无额外财务写入开关 | 核验完整历史后返回当前位置 |
+| `reservation_operations.commitment_orders` / `prepare_commitment` | `medops_internal_commitment_confirmation_enabled` | 查询当前关联订单 / 保存独立承诺核对预览 |
+| `reservation_operations.post_commitment` | 承诺预览开关及 `medops_internal_commitment_write_enabled` | 同一事务追加承诺决定与 Commit 事件 |
 
 所有 `reservation_operations.*` 另需 `medops_reservation_operations_enabled is True`。缺失、数字1和字符串 `"true"` 都不能开启。开发、安装和迁移过程不自动开启任何生产开关；目前仅精确命名的一次性 CI 探针站点显式开启。
 
@@ -58,7 +60,17 @@
 
 历史已完成回执可验证当时的合法决定而重放，不延长任何新写入的凭证有效期。以后发生合法释放后，原首笔和早先释放的回执仍须核验完整当前历史；这不是允许使用过期凭证创建新事件。
 
-proof 只在页面私有内存保存，不能显示、复制进 URL、写浏览器存储、日志或通用对象序列化。预览响应提取后删除公开对象中的 proof。编辑输入清除旧确认，异步返回须比较页面代次；尚未核实的提交结果应使用原命令重试。前置隐私钩子覆盖四个新凭证方法及原有确认方法，屏蔽 form/JSON 与原生 SDK/错误日志诊断视图。
+proof 只在页面私有内存保存，不能显示、复制进 URL、写浏览器存储、日志或通用对象序列化。预览响应提取后删除公开对象中的 proof。编辑输入清除旧确认，异步返回须比较页面代次；尚未核实的提交结果应使用原命令重试。前置隐私钩子覆盖首次预占、续期、释放、承诺提交及原有确认方法，屏蔽 form/JSON 与原生 SDK/错误日志诊断视图。
+
+## 采购承诺转换（ADR-0051）
+
+1. `inspect` 返回完整当前位置及当前 `source_digest`。把 `{reservation, source_digest}` 传给 `commitment_orders`，选择其中实际存在的原生订单明细。摘要只是版本标记；服务器仍锁定申请与关联订单，逐字段检查当前权限、组织、链接和经济事实。列表不表示可用预算或订单可承诺余额。
+2. `prepare_commitment` 接收 `{reservation, purchase_order, purchase_order_line, amount, reason}`；金额必须是精确字符串。服务器独立发现完整来源、历史、预算与跨预占的订单分配，再保存当前会话的独立确认。返回 `confirmation_only`、confirmation、proof、expires_at、intent_digest 及受限 review。
+3. review 包括原始申请、实际订单与明细行序、供应商、成本中心、费用科目、预算键及名称/代码、精确金额、转换前未结预占、订单行未承诺金额、执行人、理由及有效期。页面必须检查信息完整及引用匹配，再显示默认未勾选的确认窗口。新增名称字段同样检查原生字段权限；生成确认后失权会使整个 HTTP 事务回滚，不能留下孤立确认或完成回执。
+4. 人工核对并明确勾选后，`post_commitment` 接收 `{confirmation, proof, acknowledge: true}`。当前身份、原生字段与组织范围、完整历史、订单全局容量和凭证都须再次有效。只有 `reservation_committed` 才表示承诺决定和一条 Commit 事件在同一事务保存；它不调用首次预占或续期流程。
+5. Commit 将本次金额从 open_reservation 转入 open_commitment，原始预占根保持不变。页面的 released 显示“累计转出预占”，因为转换和真正释放都会增加该累计值。实际支出与承诺释放仍未完成。
+
+确认与提交各使用自己的稳定幂等键。未知提交结果保留原命令、会话、凭证和原键；重试只核验既有结果，不延长新写入的有效期。已成功承诺的回执可在凭证到期后核验并重放，仍须通过当前权限、来源、完整历史与全局订单分配检查。浏览器不保存凭证到 DOM、URL 或持久存储。
 
 ## 当前验证范围
 
@@ -112,3 +124,15 @@ CI真实登录发现仅编译MedOps会遗漏Frappe网站/登录/Desk核心资源
 Recovery status-only fixed candidate passed632 pure/19 frontend and all12 local quality gates,zero type errors/one existing warning; exact-runtime visual check still required. No Python/service/schema/grant change or server access.
 
 Exact UI35f3be3 Core40837475564 passed native19/frontend19/committed1(477.161s),then actual fresh Posted directory and repeat query with correct current status and no stale source-selection instruction;5 inspect200/2 recovery200,zero errors/commands/data change,screenshot reviewed,Core inventory verified. Prior controlled same-cookie/input recovery A/B40836398869 observed4 timed samples each: batched20.0195965s/native fresh fallback30.065283s,identical business result/financial hashes; synthetic CI is not hospital SLO/capacity. ADR0044 begins independent PO/commitment intent structure only; this document does not expose a commitment command/API/UI.
+
+
+ADR0051 candidate adds current-source linked-order picker,authorized full commitment review and explicit cookie POST conversion using existing audited/idempotent services. Private proof protection includes new method before auth. Desk uses actual native order line choice,complete current review,unchecked consent and exact original-key retry;shows commitment/actual positions and labels released as total transferred-out reservation.2 new pure parser and6 frontend cases passed (expected669 pure/707 regular+1 main committed/25 frontend/51 ADR/48 runtime). Actual-cookie ordinary manager/scope+field revoke/public-review rollback probe added,not yet proved;browser visual and new full/native pending. Both stages/default total gates stay off outside exact disposable CI. No production grants/schema/upstream/server changes. Whole HRP incomplete.
+
+
+ADR0051 human commitment passed fixed local669pure(70.672s)/25frontend/all12 quality gates,0 type errors/1 old warning. Focus40900532573/ad7ee7f passed both plain/Core:50pure+161regular+25frontend+1 actual-cookie ordinary-manager probe each (423.490s/350.559s),zero skips,4zero Error Log sites,pristine sources/Core sealed inventory. Current source/field/Scope denial,observed post-preview label failure with complete outer rollback,explicit synthetic acknowledgement,actual Commit and expired same-key receipt replay passed. All runtime/native/pure/frontend/ADR source hashes match;only documentation evidence was updated afterward. Real Chromium40902425863/33eddc3 running;current full CI pending. No actual human/hospital capacity claim or server access. PO lifecycle/concurrency,commitment release/Actual and whole HRP remain incomplete.
+
+
+ADR0051 review reproduced lost-preview response followed by expired same-key403: closing/reopening the same intent reused the expired key indefinitely. Commitment and release input dialogs now reset the preview journal only on their own safe close,when neither busy nor uncertain;successful handoff to consent and unknown financial requests retain existing protection. Two actual Page VM regressions passed,27frontend total;669pure/707regular+1 main committed/51ADR/48runtime unchanged. Final fixed-source full quality and current browser/full CI pending. Backend unchanged from both-passed40900532573;that run had25frontend and predates this recovery fix. Prioraf9 full40885255791 now all passed including Required:667pure/19frontend,658+49regular+1 probe each,8zero Error Log sites/Core seal;excludes ADR51. No server access.
+
+
+ADR0051 recovery-fixed source passed669pure in97.084s,27frontend and all12 quality gates;0 type errors/1 existing warning. Native backend matches both-passed40900532573. First real Chromium40902425863 plain failed during unchecked-review assertions after successful ordinary login/current-source picker/CSRF400 denial,with0post/0page errors/0failed native requests;browser acceptance not established. Failure screenshot was unavailable because the harness caught after Playwright teardown;diagnostics now capture inside the live context with distinct review stages. Original Core handle retained;fixed Page/browser verification and exact current full CI pending. No server access or production readiness claim.

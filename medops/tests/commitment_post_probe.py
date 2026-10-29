@@ -78,8 +78,9 @@ def exercise_commitment_post(test, reservation, order, *, amount, clock):
 				}
 			)
 		)
-		with test.assertRaises(IoneApplicationError) as disabled:
-			PostReservationCommitment().execute(command, idempotency_key=post_key)
+		with patch.dict(frappe.conf, {"medops_internal_commitment_write_enabled": False}):
+			with test.assertRaises(IoneApplicationError) as disabled:
+				PostReservationCommitment().execute(command, idempotency_key=post_key)
 		test.assertEqual(disabled.exception.definition.key, "OPERATION_NOT_ALLOWED")
 		primary.rollback()
 		with patch.dict(frappe.conf, {"medops_internal_commitment_write_enabled": True}):

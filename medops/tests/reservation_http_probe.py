@@ -284,3 +284,6 @@ def exercise_reservation_http(test, row, amount, item_name, unit_name):
 	test.assertEqual(frappe.db.count(ROOT), before[ROOT] + 2)
 	test.assertEqual(frappe.db.count(EVENT), before[EVENT] + 4)
 	test.assertEqual(frappe.db.count(RELEASE), before[RELEASE] + 5)
+	from medops.tests.commitment_http_probe import exercise_commitment_http
+
+	exercise_commitment_http(test, row, item_name, unit_name)

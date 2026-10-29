@@ -38,6 +38,8 @@ frappe.medops.ReservationSession = class ReservationSession {
 			"reservation_operations.post_renewed": ["reservation_posted", "reservation", true, false],
 			"reservation_operations.prepare_release": ["confirmation_only", "confirmation", false, true],
 			"reservation_operations.post_release": ["reservation_released", "reservation", true, false],
+			"reservation_operations.prepare_commitment": ["confirmation_only", "confirmation", false, true],
+			"reservation_operations.post_commitment": ["reservation_committed", "reservation", true, false],
 		};
 		if (!Object.hasOwn(rules, method) || this.#busy) throw new Error("reservation_command_unavailable");
 		const [effect, identity, human, preview] = rules[method];

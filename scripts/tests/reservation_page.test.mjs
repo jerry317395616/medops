@@ -46,6 +46,8 @@ const sourceReview = {
 	line: facts.line,
 	item_code: facts.item_code,
 	amount: facts.amount,
+	cost_center: facts.cost_center,
+	expense_account: facts.expense_account,
 };
 const root = sha("d");
 
@@ -258,6 +260,7 @@ async function setup(override = async () => undefined, route = ["hrp-budget-rese
 					message: {
 						effect: "read_only",
 						source: sourceReview,
+						source_digest: sha("f"),
 						budget_date: "2026-10-01",
 						position: {
 							reservation: payload.reservation,
@@ -266,6 +269,9 @@ async function setup(override = async () => undefined, route = ["hrp-budget-rese
 							reserved: "10.00",
 							released: "0.00",
 							open_reservation: "10.00",
+							committed: "0.00",
+							open_commitment: "0.00",
+							actual: "0.00",
 							last_sequence: 1,
 						},
 					},
@@ -286,6 +292,67 @@ async function setup(override = async () => undefined, route = ["hrp-budget-rese
 				};
 			if (method === "reservation_operations.post_release")
 				return { message: { effect: "reservation_released", reservation: root } };
+			if (method === "reservation_operations.commitment_orders")
+				return {
+					message: {
+						effect: "read_only",
+						reservation: root,
+						source_digest: sha("f"),
+						orders: [
+							{
+								order: "PO-1",
+								line: "PO-LINE-1",
+								line_number: 2,
+								item_code: "ITEM-1",
+								currency: "CNY",
+								amount: "10.00",
+								supplier: "Supplier",
+							},
+						],
+					},
+				};
+			if (method === "reservation_operations.prepare_commitment")
+				return {
+					message: {
+						effect: "confirmation_only",
+						reservation: root,
+						confirmation: sha("c"),
+						proof,
+						purchase_order: "PO-1",
+						purchase_order_line: "PO-LINE-1",
+						currency: "CNY",
+						precision: 2,
+						amount: payload.amount,
+						expires_at: "2026-10-29 12:00:00",
+						review: {
+							actor: "manager@example.invalid",
+							source: sourceReview,
+							order: {
+								order: "PO-1",
+								line: "PO-LINE-1",
+								line_number: 2,
+								supplier: "Supplier",
+								transaction_date: "2026-10-01",
+								amount: "10.00",
+								item_code: "ITEM-1",
+								uom: "Unit",
+								quantity: "1.000000000",
+							},
+							budget_key: key,
+							budget_subject_label: "设备预算 (EQUIPMENT)",
+							funding_source_label: "自有资金 (OWN)",
+							currency: "CNY",
+							precision: 2,
+							amount: payload.amount,
+							reason: payload.reason,
+							open_before: "10.00",
+							order_remaining: "8.00",
+							budget_date: "2026-10-01",
+						},
+					},
+				};
+			if (method === "reservation_operations.post_commitment")
+				return { message: { effect: "reservation_committed", reservation: root } };
 			throw new Error("Unexpected method " + method);
 		},
 	};
@@ -617,4 +684,138 @@ test("an existing changed-source record requires an explicit independent allocat
 		app.calls.some((call) => call.method.endsWith("reservation.confirm")),
 		false,
 	);
+});
+
+test("commitment requires native order choice and a separate unchecked review", async () => {
+	const app = await setup(async () => undefined, ["hrp-budget-reservations", root]);
+	await app.click("核对采购承诺");
+	await app.dialog().submit(1, { amount: "2.00", reason: "Synthetic commitment" });
+	assert.equal(
+		app.calls.some((call) => call.method.endsWith("prepare_commitment")),
+		false,
+	);
+	await app.click(/^PO-1 · 明细行 2/);
+	await app.dialog().submit(1, { amount: "2.00", reason: "Synthetic commitment" });
+	const review = app.dialog();
+	assert.equal(review.config.fields.find((field) => field.fieldname === "acknowledge").default, 0);
+	assert.equal(app.texts().includes("设备预算 (EQUIPMENT)"), true);
+	assert.equal(app.texts().includes("订单行未承诺金额：CNY 8.00"), true);
+	assert.equal(app.texts().includes(proof), false);
+	await review.submit(0);
+	assert.equal(
+		app.calls.some((call) => call.method.endsWith("post_commitment")),
+		false,
+	);
+	await review.submit(1);
+	assert.equal(app.calls.filter((call) => call.method.endsWith("post_commitment")).length, 1);
+	assert.equal(
+		app.calls.some((call) => call.method.endsWith("reservation.confirm")),
+		false,
+	);
+});
+
+test("unknown commitment submission can only retry its original bytes and key", async () => {
+	let posts = 0;
+	const app = await setup(
+		async (call) => {
+			if (call.method.endsWith("post_commitment") && ++posts === 1) throw { status: 504 };
+		},
+		["hrp-budget-reservations", root],
+	);
+	await app.click("核对采购承诺");
+	await app.click(/^PO-1 · 明细行 2/);
+	await app.dialog().submit(1, { amount: "2.00", reason: "Synthetic commitment" });
+	await app.dialog().submit(1);
+	assert.equal(app.texts().includes("提交结果尚未核实"), true);
+	await app.dialog().submit(1);
+	const calls = app.calls.filter((call) => call.method.endsWith("post_commitment"));
+	assert.equal(calls.length, 2);
+	assert.deepEqual(calls[0].args, calls[1].args);
+	assert.equal(calls[0].headers["Idempotency-Key"], calls[1].headers["Idempotency-Key"]);
+	assert.equal(app.calls.filter((call) => call.method.endsWith("prepare_commitment")).length, 1);
+});
+
+test("incomplete commitment review never opens a consent dialog or posts", async () => {
+	const app = await setup(
+		async (call) => {
+			if (call.method.endsWith("prepare_commitment"))
+				return {
+					effect: "confirmation_only",
+					confirmation: sha("c"),
+					proof,
+					reservation: root,
+					purchase_order: "PO-1",
+					purchase_order_line: "PO-LINE-1",
+					review: { order: { order: "PO-1", line: "PO-LINE-1" } },
+				};
+		},
+		["hrp-budget-reservations", root],
+	);
+	await app.click("核对采购承诺");
+	await app.click(/^PO-1 · 明细行 2/);
+	await app.dialog().submit(1, { amount: "2.00", reason: "Synthetic commitment" });
+	assert.equal(
+		app.dialog().config.fields.some((field) => field.fieldname === "acknowledge"),
+		false,
+	);
+	assert.equal(
+		app.calls.some((call) => call.method.endsWith("post_commitment")),
+		false,
+	);
+	assert.equal(app.texts().includes(proof), false);
+});
+
+async function expiredPreviewRecovery(kind) {
+	const previewMethod = `prepare_${kind}`;
+	const postMethod = `post_${kind}`;
+	const attempts = [];
+	let expiredKey;
+	const app = await setup(
+		async (call) => {
+			if (!call.method.endsWith(previewMethod)) return;
+			attempts.push(call);
+			const requestKey = call.headers["Idempotency-Key"];
+			if (!expiredKey) {
+				expiredKey = requestKey;
+				// The preview was saved but its response was lost; a later retry
+				// reaches that same, now-expired confirmation and is rejected.
+				throw { status: 504 };
+			}
+			if (requestKey === expiredKey) throw { status: 403 };
+		},
+		["hrp-budget-reservations", root],
+	);
+	const openInput = async () => {
+		await app.click(kind === "commitment" ? "核对采购承诺" : "核对并释放");
+		if (kind === "commitment") await app.click(/^PO-1 · 明细行 2/);
+	};
+	const input = { amount: "2.00", reason: "Same reviewed intent after preview expiry" };
+	await openInput();
+	await app.dialog().submit(0, input);
+	await app.dialog().submit(0, input);
+	assert.equal(attempts.length, 2);
+	assert.equal(attempts[0].headers["Idempotency-Key"], attempts[1].headers["Idempotency-Key"]);
+	assert.equal(
+		app.dialog().config.fields.some((field) => field.fieldname === "acknowledge"),
+		false,
+	);
+	app.dialog().hide();
+	await openInput();
+	await app.dialog().submit(0, input);
+	assert.equal(attempts.length, 3);
+	assert.notEqual(attempts[2].headers["Idempotency-Key"], expiredKey);
+	assert.deepEqual(attempts[2].args, attempts[0].args);
+	assert.equal(app.dialog().config.fields.find((field) => field.fieldname === "acknowledge").default, 0);
+	assert.equal(
+		app.calls.some((call) => call.method.endsWith(postMethod)),
+		false,
+	);
+}
+
+test("closing a failed expired commitment preview allows a new unchecked preview for the same intent", async () => {
+	await expiredPreviewRecovery("commitment");
+});
+
+test("closing a failed expired release preview allows a new unchecked preview for the same intent", async () => {
+	await expiredPreviewRecovery("release");
 });
