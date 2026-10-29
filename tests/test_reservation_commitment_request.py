@@ -3,10 +3,34 @@ from __future__ import annotations
 import unittest
 
 from medops.common.confirmation_privacy import ConfirmationPayload
-from medops.common.reservation_commitment_request import build_commitment_post, build_commitment_prepare
+from medops.common.reservation_commitment_request import (
+	build_commitment_orders_query,
+	build_commitment_post,
+	build_commitment_prepare,
+)
 
 
 class CommitmentRequestTest(unittest.TestCase):
+	def test_order_lookup_requires_complete_opaque_root_and_current_source_revision(self):
+		self.assertEqual(
+			build_commitment_orders_query({"reservation": "a" * 64, "source_digest": "b" * 64}),
+			("a" * 64, "b" * 64),
+		)
+
+	def test_order_lookup_rejects_unbounded_or_client_selected_source_scope(self):
+		base = {"reservation": "a" * 64, "source_digest": "b" * 64}
+		for value in (
+			{},
+			{"reservation": "a" * 64},
+			base | {"source_digest": "invalid"},
+			base | {"request": "OTHER-MR"},
+			base | {"filters": {"company": "other"}},
+			base | {"offset": 100},
+			base | {"budget_key": {}},
+		):
+			with self.subTest(value=value), self.assertRaises(ValueError):
+				build_commitment_orders_query(value)
+
 	def test_prepare_has_no_client_snapshot_or_scope_authority_and_hides_reason(self):
 		command = build_commitment_prepare(self.preview())
 		self.assertEqual(command.amount, "0.4")

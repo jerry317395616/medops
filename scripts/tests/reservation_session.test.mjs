@@ -129,3 +129,48 @@ test("abandoned previews invalidate the page generation without creating financi
 	assert.equal(journal.status.uncertain, false);
 	journal.reset();
 });
+
+test("commitment posting requires explicit acknowledgement before transport", async () => {
+	let calls = 0;
+	const journal = session(async () => {
+		calls += 1;
+		return { ...completed, effect: "reservation_committed" };
+	});
+	for (const acknowledge of [undefined, false, 1, "true", null])
+		await assert.rejects(journal.send("reservation_operations.post_commitment", { ...command, acknowledge }));
+	assert.equal(calls, 0);
+	await journal.send("reservation_operations.post_commitment", command);
+	assert.equal(calls, 1);
+});
+
+test("unknown commitment result preserves its exact command and key until verified", async () => {
+	const calls = [];
+	const journal = session(async (method, payload, key) => {
+		calls.push({ method, payload, key });
+		if (calls.length === 1) throw { status: 504, private: proof };
+		return { effect: "reservation_committed", reservation: "b".repeat(64) };
+	});
+	await assert.rejects(journal.send("reservation_operations.post_commitment", command));
+	assert.equal(journal.status.uncertain, true);
+	journal.invalidate();
+	await assert.rejects(journal.send("reservation_operations.prepare_commitment", { amount: "2" }));
+	assert.throws(() => journal.reset());
+	await journal.retry();
+	assert.deepEqual(calls[0], calls[1]);
+	assert.equal(journal.status.uncertain, false);
+	assert.equal(JSON.stringify(journal).includes(proof), false);
+});
+
+test("commitment preview validates proof and effect without claiming a financial result", async () => {
+	const journal = session(async () => ({ effect: "confirmation_only", confirmation: "a".repeat(64), proof }));
+	const result = await journal.send("reservation_operations.prepare_commitment", { amount: "1" });
+	assert.equal(result.effect, "confirmation_only");
+	assert.equal(journal.status.uncertain, false);
+	const wrong = session(async () => ({
+		effect: "reservation_committed",
+		confirmation: "a".repeat(64),
+		proof,
+	}));
+	await assert.rejects(wrong.send("reservation_operations.prepare_commitment", { amount: "1" }));
+	assert.equal(wrong.status.uncertain, false);
+});

@@ -433,14 +433,22 @@ frappe.pages["hrp-budget-reservations"].on_page_load = async (wrapper) => {
 		newAllowed = false;
 		return startPreview(payload, lastOriginal);
 	}
-	function reviewDialog(preview, payload, original = null, releaseSource = null) {
+	function reviewDialog(preview, payload, original = null, releaseSource = null, isCommitment = false) {
 		const id = version;
 		let proof = preview.proof,
 			decision = null;
 		delete preview.proof;
 		const isRelease = !!releaseSource;
 		const dialog = new frappe.ui.Dialog({
-			title: __(isRelease ? "人工核对释放预占" : original ? "人工重新核对并续期" : "人工核对采购预占"),
+			title: __(
+				isRelease
+					? "人工核对释放预占"
+					: isCommitment
+						? "人工核对采购承诺"
+						: original
+							? "人工重新核对并续期"
+							: "人工核对采购预占",
+			),
 			size: "large",
 			fields: [
 				{ fieldtype: "HTML", fieldname: "facts" },
@@ -451,7 +459,15 @@ frappe.pages["hrp-budget-reservations"].on_page_load = async (wrapper) => {
 					default: 0,
 				},
 			],
-			primary_action_label: __(isRelease ? "确认并释放" : original ? "确认续期并预占" : "确认并提交预占"),
+			primary_action_label: __(
+				isRelease
+					? "确认并释放"
+					: isCommitment
+						? "确认并转为采购承诺"
+						: original
+							? "确认续期并预占"
+							: "确认并提交预占",
+			),
 			primary_action: async (values) => {
 				if (id !== version || journal.status.busy || !proof) return;
 				if (values.acknowledge !== 1 && values.acknowledge !== true)
@@ -461,6 +477,12 @@ frappe.pages["hrp-budget-reservations"].on_page_load = async (wrapper) => {
 					let result;
 					if (isRelease)
 						result = await send("reservation_operations.post_release", {
+							confirmation: preview.confirmation,
+							proof,
+							acknowledge: true,
+						});
+					else if (isCommitment)
+						result = await send("reservation_operations.post_commitment", {
 							confirmation: preview.confirmation,
 							proof,
 							acknowledge: true,
@@ -555,20 +577,35 @@ frappe.pages["hrp-budget-reservations"].on_page_load = async (wrapper) => {
 		const reviewed = isRelease ? releaseSource.source : preview.review.source;
 		for (const [label, value] of [
 			["采购申请", reviewed.request],
-			["采购明细", `${reviewed.item_code} · ${reviewed.line}`],
+			["采购明细", isCommitment ? reviewed.item_code : `${reviewed.item_code} · ${reviewed.line}`],
 			["原单精确金额", reviewed.amount],
 			[
 				"本次精确金额",
 				`${isRelease ? preview.currency : preview.review.currency} ${isRelease ? preview.amount : preview.review.amount}`,
 			],
 			["核对理由", isRelease ? preview.reason : preview.review.reason],
-			["执行人", frappe.session.user],
+			["执行人", isCommitment ? preview.review.actor : frappe.session.user],
 			["确认有效期至", preview.expires_at],
 		])
 			fact(facts, label, value);
 		if (isRelease) {
 			fact(facts, "预占编号", preview.reservation);
 			fact(facts, "释放前未结", preview.open_before);
+		}
+		if (isCommitment) {
+			for (const [label, value] of [
+				["预占编号", preview.reservation],
+				["成本中心", preview.review.source.cost_center],
+				["费用科目", preview.review.source.expense_account],
+				["采购订单", preview.review.order.order],
+				["订单明细行", preview.review.order.line_number],
+				["供应商", preview.review.order.supplier],
+				["订单日期", preview.review.order.transaction_date],
+				["订单行金额", `${preview.review.currency} ${preview.review.order.amount}`],
+				["订单行未承诺金额", `${preview.review.currency} ${preview.review.order_remaining}`],
+				["转换前未结预占", `${preview.review.currency} ${preview.review.open_before}`],
+			])
+				fact(facts, label, value);
 		}
 		const key = isRelease ? releaseSource.position.key : preview.review.budget_key;
 		if (original) {
@@ -580,8 +617,8 @@ frappe.pages["hrp-budget-reservations"].on_page_load = async (wrapper) => {
 			["医院", key.hospital],
 			["原始预算单位", key.organization_unit],
 			["年度", key.fiscal_year],
-			["预算分类", key.budget_subject],
-			["资金来源", key.funding_source],
+			["预算分类", isCommitment ? preview.review.budget_subject_label : key.budget_subject],
+			["资金来源", isCommitment ? preview.review.funding_source_label : key.funding_source],
 			["项目", key.project || ""],
 			["预算期间", `${key.period_start} — ${key.period_end}`],
 			["预算业务日期", isRelease ? releaseSource.budget_date : preview.review.budget_date],
@@ -699,19 +736,161 @@ frappe.pages["hrp-budget-reservations"].on_page_load = async (wrapper) => {
 			fact(results, "采购来源", `${item.source.request} · ${item.source.item_code} · ${item.source.line}`);
 			for (const [field, label] of [
 				["reserved", "首笔预占"],
-				["released", "累计释放"],
+				["released", "累计转出预占"],
 				["open_reservation", "当前未结预占"],
+				["committed", "累计采购承诺"],
+				["open_commitment", "当前未结承诺"],
+				["actual", "累计实际使用"],
 			])
 				fact(results, label, `${item.position.currency} ${item.position[field]}`);
 			fact(results, "当前事件序号", item.position.last_sequence);
 			button(results, "打开此预占", () => frappe.set_route("hrp-budget-reservations", name));
-			if (/[1-9]/.test(item.position.open_reservation))
+			if (/[1-9]/.test(item.position.open_reservation)) {
 				button(results, "核对并释放", () => releaseIntent(item));
+				button(results, "核对采购承诺", () => commitmentIntent(item));
+			}
 		} catch {
 			if (id === version) {
 				results.empty();
 				status.text(__("当前位置无法完整核验，请检查编号和当前权限。"));
 			}
+		}
+	}
+	function completeCommitmentReview(preview, selected, item) {
+		const review = preview.review,
+			order = review?.order,
+			source = review?.source,
+			key = review?.budget_key;
+		const text = (value) => typeof value === "string" && value.trim().length > 0;
+		const money = (value) => typeof value === "string" && /^(0|[1-9][0-9]*)(\.[0-9]{1,9})?$/.test(value);
+		return (
+			preview.reservation === item.position.reservation &&
+			preview.purchase_order === selected.order &&
+			preview.purchase_order_line === selected.line &&
+			order?.order === selected.order &&
+			order?.line === selected.line &&
+			review?.currency === preview.currency &&
+			review?.precision === preview.precision &&
+			review?.amount === preview.amount &&
+			text(preview.currency) &&
+			Number.isInteger(preview.precision) &&
+			preview.precision >= 0 &&
+			preview.precision <= 9 &&
+			money(preview.amount) &&
+			money(review?.open_before) &&
+			money(review?.order_remaining) &&
+			text(review?.reason) &&
+			text(review?.actor) &&
+			["request", "line", "item_code", "cost_center", "expense_account"].every((field) =>
+				text(source?.[field]),
+			) &&
+			money(source?.amount) &&
+			["supplier", "transaction_date", "item_code", "uom"].every((field) => text(order?.[field])) &&
+			money(order?.amount) &&
+			money(order?.quantity) &&
+			Number.isInteger(order?.line_number) &&
+			order.line_number > 0 &&
+			[
+				"company",
+				"hospital",
+				"organization_unit",
+				"fiscal_year",
+				"budget_subject",
+				"funding_source",
+				"period_start",
+				"period_end",
+			].every((field) => text(key?.[field])) &&
+			text(review?.budget_subject_label) &&
+			text(review?.funding_source_label) &&
+			text(review?.budget_date) &&
+			text(preview.expires_at)
+		);
+	}
+	async function commitmentIntent(item) {
+		if (blocked() || activeDialog) return;
+		const id = version;
+		try {
+			const listing = await read(
+				"medops.api.v1.finance.reservation_operations.commitment_orders",
+				{ payload: { reservation: item.position.reservation, source_digest: item.source_digest } },
+				"POST",
+			);
+			if (id !== version) return;
+			if (
+				listing.effect !== "read_only" ||
+				listing.reservation !== item.position.reservation ||
+				listing.source_digest !== item.source_digest ||
+				!Array.isArray(listing.orders)
+			)
+				throw new Error("Invalid linked order response");
+			if (!listing.orders.length)
+				return frappe.msgprint(__("当前没有可核对的已提交采购订单，请核对原生采购流程。"));
+			let selected = null;
+			const dialog = new frappe.ui.Dialog({
+				title: __("选择采购订单并填写承诺金额"),
+				size: "large",
+				fields: [
+					{ fieldtype: "HTML", fieldname: "orders" },
+					{ fieldtype: "HTML", fieldname: "selection" },
+					{ fieldtype: "Data", fieldname: "amount", label: __("精确承诺金额"), reqd: 1 },
+					{ fieldtype: "Small Text", fieldname: "reason", label: __("承诺理由"), reqd: 1 },
+				],
+				primary_action_label: __("生成独立核对预览"),
+				primary_action: async (values) => {
+					if (id !== version || journal.status.busy || !selected)
+						return frappe.msgprint(__("请先选择一条采购订单明细。"));
+					dialog.get_primary_btn().prop("disabled", true);
+					try {
+						const payload = {
+							reservation: item.position.reservation,
+							purchase_order: selected.order,
+							purchase_order_line: selected.line,
+							amount: values.amount,
+							reason: values.reason,
+						};
+						const preview = await send("reservation_operations.prepare_commitment", payload);
+						if (id !== version) {
+							delete preview.proof;
+							return;
+						}
+						if (!completeCommitmentReview(preview, selected, item)) {
+							delete preview.proof;
+							throw new Error("Invalid commitment review");
+						}
+						activeDialog = null;
+						dialog.hide();
+						reviewDialog(preview, payload, null, null, true);
+					} catch {
+						status.text(__("承诺预览未生成，请核对当前订单、预占金额和权限。"));
+					} finally {
+						dialog.get_primary_btn().prop("disabled", false);
+						update();
+					}
+				},
+				onhide: () => {
+					if (activeDialog === dialog) activeDialog = null;
+					update();
+				},
+			});
+			for (const order of listing.orders) {
+				button(
+					dialog.fields_dict.orders.$wrapper,
+					`${order.order} · ${__("明细行")} ${order.line_number} · ${order.item_code} · ${order.currency} ${order.amount}`,
+					() => {
+						if (id !== version || journal.status.busy) return;
+						selected = order;
+						const panel = dialog.fields_dict.selection.$wrapper.empty();
+						fact(panel, "已选订单", `${order.order} · ${__("明细行")} ${order.line_number}`);
+						fact(panel, "供应商", order.supplier);
+					},
+				);
+			}
+			fact(dialog.$body, "当前未结预占", `${item.position.currency} ${item.position.open_reservation}`);
+			activeDialog = dialog;
+			dialog.show();
+			update();
+		} catch {
+			if (id === version) status.text(__("关联采购订单无法核验，请刷新当前位置并核对权限。"));
 		}
 	}
 	function releaseIntent(item) {

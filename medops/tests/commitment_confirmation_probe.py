@@ -117,8 +117,9 @@ def exercise_commitment_confirmation(test, reservation):
 			reason="Disposable CI independent commitment preview",
 		)
 
-	with test.assertRaises(IoneApplicationError) as disabled:
-		prepare()
+	with patch.dict(frappe.conf, {"medops_internal_commitment_confirmation_enabled": False}):
+		with test.assertRaises(IoneApplicationError) as disabled:
+			prepare()
 	test.assertEqual(disabled.exception.definition.key, "OPERATION_NOT_ALLOWED")
 	primary.rollback()
 	with (

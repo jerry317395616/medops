@@ -54,12 +54,14 @@ config.update(
     medops_internal_reservation_release_write_enabled=True,
     medops_reservation_confirmation_enabled=True,
     medops_reservation_operations_enabled=True,
+    medops_internal_commitment_confirmation_enabled=True,
+    medops_internal_commitment_write_enabled=True,
 )
 path.write_text(json.dumps(config, indent=2) + "\n", encoding="utf-8")
 PY
 probe_log="$bench_real/logs/reservation-concurrency-probe.log"
 MEDOPS_CI_RESERVATION_CONCURRENCY=1 bench --site "$PROBE_SITE" run-tests --app medops \
-  --module medops.tests.reservation_concurrency_probe 2>&1 | tee "$probe_log"
+  --module medops.tests.commitment_http_probe 2>&1 | tee "$probe_log"
 if ! grep -Eq 'Ran 1 tests? in [0-9.]+s' "$probe_log" || grep -Eq 'OK \(skipped=|FAILED \(' "$probe_log"; then
   echo "Missing committed-data reservation concurrency probe" >&2
   exit 1

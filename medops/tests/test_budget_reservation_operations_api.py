@@ -15,6 +15,7 @@ from frappe.utils import get_assets_json, get_bench_path, set_request
 from medops.api.v1.finance import reservation_operations as api
 from medops.common.confirmation_privacy import REDACTED_CONFIRMATION
 from medops.common.error_catalog import IoneApplicationError
+from medops.common.reservation_commitment_request import build_commitment_post
 from medops.common.reservation_release_request import build_release_reservation_post
 from medops.common.reservation_renewal_request import (
 	build_renewal_command,
@@ -52,8 +53,16 @@ CASES = (
 		"reservation_released",
 		build_release_reservation_post,
 	),
+	("post_commitment", api.PostReservationCommitment, HUMAN, "reservation_committed", build_commitment_post),
 )
-ENDPOINTS = (*(case[0] for case in CASES), "prepare_release", "inspect", "recovery")
+ENDPOINTS = (
+	*(case[0] for case in CASES),
+	"prepare_release",
+	"prepare_commitment",
+	"commitment_orders",
+	"inspect",
+	"recovery",
+)
 
 
 class TestBudgetReservationOperationsBoundary(FrappeTestCase):

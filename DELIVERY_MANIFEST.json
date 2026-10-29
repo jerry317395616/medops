@@ -10,18 +10,18 @@
 		"design_fields": 10180,
 		"doctype_blueprints": 406,
 		"starter_doctypes": 48,
-		"repository_contract_tests": 667,
+		"repository_contract_tests": 669,
 		"frappe_integration_tests": 707,
 		"environment_profiles": 3,
 		"fixture_rules": 3,
 		"fixture_files": 3,
-		"architecture_decisions": 50,
+		"architecture_decisions": 51,
 		"change_records": 37,
 		"change_risk_rules": 5,
 		"error_definitions": 12,
 		"error_translations": 28,
 		"committed_reservation_concurrency_probes": 1,
-		"frontend_execution_tests": 19
+		"frontend_execution_tests": 25
 	},
 	"entrypoints": [
 		"README.md",
