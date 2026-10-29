@@ -13740,3 +13740,39 @@ medops,HRP Budget,HRP Budget Reservation Release,13,funding_source,资金来源,
 medops,HRP Budget,HRP Budget Reservation Release,14,project,项目,Link,Project,0,0,0,1,0,,,,项目,Finance
 medops,HRP Budget,HRP Budget Reservation Release,15,period_start,期间开始,Date,,1,0,0,1,0,,,,期间开始,Finance
 medops,HRP Budget,HRP Budget Reservation Release,16,period_end,期间结束,Date,,1,0,0,1,0,,,,期间结束,Finance
+medops,HRP Budget,HRP Budget Commitment Authorization,10,evidence_key,证据标识,Data,,1,1,0,1,0,,,,证据标识,Finance
+medops,HRP Budget,HRP Budget Commitment Authorization,20,event_kind,证据类型,Select,"Confirmation
+Decision",1,0,0,1,0,,,,证据类型,Finance
+medops,HRP Budget,HRP Budget Commitment Authorization,30,reservation,Reservation,Link,HRP Budget Reservation,1,0,1,1,0,,,,Reservation,Finance
+medops,HRP Budget,HRP Budget Commitment Authorization,40,previous_sequence,Previous Event Sequence,Int,,1,0,0,1,0,,,,Previous Event Sequence,Finance
+medops,HRP Budget,HRP Budget Commitment Authorization,50,previous_event_digest,Previous Event Digest,Data,,1,0,0,1,0,,,,Previous Event Digest,Finance
+medops,HRP Budget,HRP Budget Commitment Authorization,60,intent_digest,确认意图摘要,Data,,1,0,0,1,0,,,,确认意图摘要,Finance
+medops,HRP Budget,HRP Budget Commitment Authorization,70,budget_key_digest,预算范围摘要,Data,,1,0,0,1,0,,,,预算范围摘要,Finance
+medops,HRP Budget,HRP Budget Commitment Authorization,80,company,法人,Link,Company,1,0,1,1,0,,,,法人,Finance
+medops,HRP Budget,HRP Budget Commitment Authorization,90,hospital,医院,Link,HRP Hospital,1,0,1,1,0,,,,医院,Finance
+medops,HRP Budget,HRP Budget Commitment Authorization,100,organization_unit,原始科室,Link,HRP Organization Unit,1,0,1,1,0,,,,原始科室,Finance
+medops,HRP Budget,HRP Budget Commitment Authorization,110,fiscal_year,财政年度,Link,Fiscal Year,1,0,1,1,0,,,,财政年度,Finance
+medops,HRP Budget,HRP Budget Commitment Authorization,120,budget_subject,预算科目,Link,HRP Dimension Value,1,0,1,1,0,,,,预算科目,Finance
+medops,HRP Budget,HRP Budget Commitment Authorization,130,funding_source,资金来源,Link,HRP Funding Source,1,0,1,1,0,,,,资金来源,Finance
+medops,HRP Budget,HRP Budget Commitment Authorization,140,project,项目,Link,Project,0,0,0,1,0,,,,项目,Finance
+medops,HRP Budget,HRP Budget Commitment Authorization,150,period_start,期间开始,Date,,1,0,0,1,0,,,,期间开始,Finance
+medops,HRP Budget,HRP Budget Commitment Authorization,160,period_end,期间结束,Date,,1,0,0,1,0,,,,期间结束,Finance
+medops,HRP Budget,HRP Budget Commitment Authorization,170,actor,确认人,Link,User,1,0,0,1,0,,,,确认人,Finance
+medops,HRP Budget,HRP Budget Commitment Authorization,180,proof_hash,确认凭证摘要,Data,,1,0,0,1,0,,,,确认凭证摘要,Finance
+medops,HRP Budget,HRP Budget Commitment Authorization,190,session_digest,会话摘要,Data,,1,0,0,1,0,,,,会话摘要,Finance
+medops,HRP Budget,HRP Budget Commitment Authorization,200,recorded_at,记录时间,Datetime,,1,0,0,1,0,,,,记录时间,Finance
+medops,HRP Budget,HRP Budget Commitment Authorization,210,expires_at,确认有效期,Datetime,,1,0,0,1,0,,,,确认有效期,Finance
+medops,HRP Budget,HRP Budget Commitment Authorization,220,confirmation,确认记录,Link,HRP Budget Commitment Authorization,0,1,0,1,0,,,,确认记录,Finance
+medops,HRP Budget,HRP Budget Commitment Authorization,230,acknowledged,明确确认,Check,,0,0,0,1,0,,,,明确确认,Finance
+medops,HRP Budget,HRP Budget Commitment Authorization,240,one_time_key,分摊决定唯一键,Data,,0,1,0,1,0,,,,分摊决定唯一键,Finance
+medops,HRP Budget,HRP Budget Commitment Authorization,250,event_digest,证据摘要,Data,,1,1,0,1,0,,,,证据摘要,Finance
+medops,HRP Budget,HRP Budget Commitment Authorization,260,intent_snapshot_json,确认意图快照,Long Text,,1,0,0,1,0,,,,确认意图快照,Finance
+medops,HRP Budget,HRP Budget Commitment Authorization,270,proof_version,证明版本,Int,,1,0,0,1,0,,,,证明版本,Finance
+medops,HRP Budget,HRP Budget Commitment Authorization,280,commitment_identity,采购订单行稳定标识,Data,,1,0,1,1,0,,,,采购订单行稳定标识,Finance
+medops,HRP Budget,HRP Budget Commitment Authorization,290,purchase_order,采购订单标识,Data,,1,0,1,1,0,,,,采购订单标识,Finance
+medops,HRP Budget,HRP Budget Commitment Authorization,300,purchase_order_line,采购订单行标识,Data,,1,0,0,1,0,,,,采购订单行标识,Finance
+medops,HRP Budget,HRP Budget Commitment Authorization,310,current_source_digest,当前申请摘要,Data,,1,0,0,1,0,,,,当前申请摘要,Finance
+medops,HRP Budget,HRP Budget Commitment Authorization,320,order_snapshot_digest,订单快照摘要,Data,,1,0,0,1,0,,,,订单快照摘要,Finance
+medops,HRP Budget,HRP Budget Commitment Authorization,330,source_modified_at,来源最后修改时间,Datetime,,1,0,0,1,0,,,,来源最后修改时间,Finance
+medops,HRP Budget,HRP Budget Commitment Authorization,340,material_snapshot_json,当前申请私有快照,Long Text,,1,0,0,1,0,,,,当前申请私有快照,Finance
+medops,HRP Budget,HRP Budget Commitment Authorization,350,order_snapshot_json,采购订单私有快照,Long Text,,1,0,0,1,0,,,,采购订单私有快照,Finance

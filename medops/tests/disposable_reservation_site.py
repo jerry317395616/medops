@@ -35,6 +35,7 @@ def require_disposable_reservation_site(*, empty=False):
 			"HRP Budget Reservation Authorization",
 			"HRP Budget Reservation Renewal",
 			"HRP Budget Reservation Release",
+			"HRP Budget Commitment Authorization",
 		):
 			if frappe.db.count(doctype):
 				raise RuntimeError("reservation concurrency probe requires empty evidence tables")

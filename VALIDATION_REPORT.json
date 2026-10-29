@@ -14,12 +14,13 @@
     "ADR-0041",
     "ADR-0042",
     "ADR-0043",
-    "ADR-0044"
+    "ADR-0044",
+    "ADR-0045"
   ],
-  "current_scope": "ADR0044 purchase commitment slice started: canonical current PO/MR provenance and exact original/tail/open/amount/period-bound intent;640 pure/19 frontend/all12 passed; focused40841183689 both passed8 pure+24 adapter+1 actual source each,0 logs/Core inventory. Producte048175 full40842314848 dispatched on separate ref; no full pass. PO digest/identity unchanged; no evidence table/Commit writer/API/UI/grants/schema. Prior ADR0043 backend524 full40832608462 native live; cookie/browser/Posted recovery passed both, excluding new component. UI hint35f3be3 local632/19/all12 passed; visual40837475564 live. Controlled A/B40836398869 live. Gates remain default off;no server. Entire HRP/commitment/actual/UAT incomplete.",
+  "current_scope": "ADR0045 candidate adds v2 source modification floor,independent confirmation/decision/proof/row contracts and private schema (406 design/10180 fields/48 runtime).20 targeted pure passed;18 type issues repaired without ignored diagnostics,0 errors/1 old warning.652 pure/19 frontend/all12 quality passed; first native40849741378 failed cleanup implicit-commit guard; test rollback-before-drop fixed,full652/19/all12 re-passed,v2 native40851511007 running. No real evidence persistence/Commit API/UI/server migration. Prior backend524 full40832608462 succeeded,617+49 regular+1 probe each,8 zero logs,Core inventory; e048175 full40842314848 live excludes new candidate. Whole HRP/commitment/actual/UAT incomplete.",
   "checks": {
-    "pure_tests_expected": 640,
-    "complete_frappe_tests_expected": 666,
+    "pure_tests_expected": 652,
+    "complete_frappe_tests_expected": 668,
     "exact_foundation_pure_tests_passed": 21,
     "native_foundation": {
       "status": "passed",
@@ -1838,7 +1839,28 @@
       "current_full_ci": {
         "run": 40832608462,
         "commit": "524557a20a8ffaf41e9fc25ccb64e8fd9c7a2dc2",
-        "status": "Quality/Security passed; plain/Core integration running; not full pass"
+        "status": "passed Quality/Security/plain/Core/Required",
+        "regular_runs_each": [
+          617,
+          49
+        ],
+        "committed_probe_seconds": {
+          "plain": 1002.318,
+          "Core": 894.558
+        },
+        "general_native_seconds": {
+          "plain": 4217.313,
+          "Core": 3913.052
+        },
+        "selected_native_seconds": {
+          "plain": 62.143,
+          "Core": 59.582
+        },
+        "error_log_sites": 8,
+        "error_log_count": 0,
+        "Core_source_sealed_inventory_verified": true,
+        "log": "full-fresh-authority-metadata-40832608462.log",
+        "excludes": "ADR0044/45 and UI status change"
       },
       "server_access": false,
       "first_focus": {
@@ -2169,6 +2191,72 @@
         "ref": "cod/full-budget-commitment-provenance-e048175",
         "status": "dispatched; not full pass",
         "reason": "Separate exact-source ref preserves verified-live prior backend full40832608462; no cancellation/restart of that run."
+      }
+    },
+    "commitment_authorization_evidence": {
+      "status": "fixed-source local652/19/all12 passed; corrected native v2 running, no native pass claimed",
+      "adr": "ADR-0045",
+      "new_pure": 12,
+      "new_native": 2,
+      "runtime_models": 48,
+      "design_models": 406,
+      "design_fields": 10180,
+      "intent_version": 2,
+      "PO_snapshot_version_unchanged": 1,
+      "source_time_floor": "max current MR/PO parent and child modified",
+      "access": "empty grants/query/document denial; controller always rejects real mutation",
+      "new_schema": "HRP Budget Commitment Authorization",
+      "server_migration": false,
+      "actual_evidence_persistence_or_posting": false,
+      "native_scope": "temp-only copies prove structure/uniqueness/Custom DocPerm denial, not financial authority",
+      "remaining": [
+        "Owned evidence persistence with complete pre-budget MR/PO/current rights",
+        "Cross-root allocation/shared release-Commit predecessor and event exclusion",
+        "Atomic Commit/full authorized mixed history/old receipts",
+        "Lifecycle protection/human HTTP/UI/actual conversion",
+        "Full current ordinary/Core CI,hospital policies/interfaces/capacity/UAT"
+      ],
+      "server_access": false,
+      "local_quality": {
+        "pure": 652,
+        "pure_seconds": 61.336,
+        "frontend": 19,
+        "gates": 12,
+        "type_errors": 0,
+        "existing_warnings": 1,
+        "log": "commitment-evidence-schema-quality-20261029-v2.log",
+        "status": "all12 passed after test-only cleanup repair"
+      },
+      "native_focus": {
+        "run": 40849741378,
+        "candidate": "b9d4e355b02bfb11982cab958c639ae07600183a",
+        "status": "failed both profiles at temporary-table cleanup; not passed",
+        "required_each": {
+          "pure": 20,
+          "new_schema_access": 2,
+          "PO_adapter": 24,
+          "actual_source": 1,
+          "boundary": 4
+        },
+        "source_files_match": 11
+      },
+      "first_native_failure": {
+        "run": 40849741378,
+        "candidate": "b9d4e355b02bfb11982cab958c639ae07600183a",
+        "pure_each": 20,
+        "new_native_ran_each": 2,
+        "error": "ImplicitCommitError dropping temporary shadow after test writes",
+        "first_schema_controller_case": "passed",
+        "remaining_PO_source_boundary_groups": "not reached",
+        "fix": "Rollback owned synthetic test changes before DROP TEMPORARY; no commit/guard disabling or product behavior change",
+        "log": "commitment-evidence-schema-40849741378.log"
+      },
+      "native_retry": {
+        "run": 40851511007,
+        "candidate": "bc0a8cf75fdaf2d1e5e9d4a3a8dd8be8e06622d0",
+        "status": "plain/Core running",
+        "source_files_match": 11,
+        "scope": "same20 pure+2 schema/raw access+24 PO+1 actual source+4 boundary; rollback before temporary DROP only"
       }
     }
   },
